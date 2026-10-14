@@ -98,6 +98,17 @@ afficher <- function(res) {
 }
 ```
 
+Tableau des estimations d'un modèle pour plusieurs plans d'inspection, une ligne par plan :
+
+```{r}
+comparer <- function(f, listes) {
+  r <- t(sapply(listes, function(l) get(f)(l)))
+  r <- formatC(r, digits = 4, format = "fg", flag = "#")
+  tab <- knitr::kable(r, format = "latex", booktabs = TRUE, linesep = "", align = "r")
+  knitr::asis_output(paste0("\\begin{center}", tab, "\\end{center}"))
+}
+```
+
 \newpage
 
 # Application 1 : données complètes
@@ -165,22 +176,31 @@ afficher(res3)
 
 # Comparaison des trois applications
 
-Les estimations des modèles Wiener, gamma et inverse gaussien, pour les trois plans d'inspection :
+Les estimations des modèles Wiener, gamma et inverse gaussien, pour les trois plans d'inspection.
 
 ```{r}
-comparer <- function(f, nom) {
-  r <- sapply(list(liste1, liste2, liste3), function(l) get(f)(l))
-  colnames(r) <- c("Complètes", "Décroissantes", "Croissantes")
-  rownames(r) <- paste(nom, rownames(r))
-  r
-}
-tableau <- rbind(comparer("wiener_mle", "Wiener"), comparer("gamma_mle", "Gamma"),
-                 comparer("ig_mle", "IG"))
-tab <- knitr::kable(signif(tableau, 4), format = "latex", booktabs = TRUE)
-knitr::asis_output(paste0("\\begin{center}", tab, "\\end{center}"))
+listes <- list("Complètes" = liste1, "Décroissantes" = liste2, "Croissantes" = liste3)
 ```
 
-Remarques :
+## Wiener : dérive `mu`, variance `sigma2` et sa version sans biais `s2`
 
-* `b` est le paramètre de **taux** du processus gamma ; le paramètre d'échelle vaut `1 / b`.
+```{r}
+comparer("wiener_mle", listes)
+```
+
+## Gamma : forme `a` et taux `b`
+
+```{r}
+comparer("gamma_mle", listes)
+```
+
+## Inverse gaussien : `mu`, `eta` et sa version sans biais `eta_unbiased`
+
+```{r}
+comparer("ig_mle", listes)
+```
+
+## Remarques
+
+* `mu` est identique pour les trois plans : \(\hat\mu = S/T\) ne dépend que de la dégradation totale et de la durée totale, qui sont les mêmes.
 * Pour les trois plans, le variance-gamma atteint la limite gamma (\(\sigma \to 0\)) : ces données, toujours croissantes, sont mieux décrites par le processus gamma, cas limite du variance-gamma.

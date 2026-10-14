@@ -3,9 +3,11 @@ title: "Test du package levyfit"
 header-includes:
   - \renewcommand{\contentsname}{Sommaire}
   - \usepackage{booktabs}
+  - \renewcommand{\thesection}{\Roman{section}}
 output:
   pdf_document:
     toc: true
+    toc_depth: 2
     number_sections: true
 ---
 
@@ -15,7 +17,7 @@ library(levyfit)
 library(ggplot2)
 ```
 
-# Préparation
+# Préparation {-}
 
 Installation du package depuis GitHub (à faire une seule fois, puis redémarrer R) :
 
@@ -142,7 +144,9 @@ resultat <- function(estimation, vraies) {
 
 \newpage
 
-# Cas 1 : inspections régulières
+# Une trajectoire
+
+## Cas 1 : inspections régulières
 
 ```{r, fig.height = 1.6}
 set.seed(1)
@@ -150,7 +154,7 @@ t1 <- inspection_times("regular", n = n, tmax = tmax)$time
 tracer_plan(t1, "Inspections régulières")
 ```
 
-## Modèle 1 : gamma homogène
+### Modèle 1 : gamma homogène
 
 ```{r}
 x <- sim_gamma(t1)
@@ -158,7 +162,7 @@ tracer(t1, x, "Gamma homogène")
 resultat(try(gamma_mle(x, t1), silent = TRUE), vrai_gamma)
 ```
 
-## Modèle 2 : Wiener homogène
+### Modèle 2 : Wiener homogène
 
 ```{r}
 x <- sim_wiener(t1)
@@ -166,7 +170,7 @@ tracer(t1, x, "Wiener homogène")
 resultat(try(wiener_mle(x, t1), silent = TRUE), vrai_wiener)
 ```
 
-## Modèle 3 : inverse gaussien
+### Modèle 3 : inverse gaussien
 
 ```{r}
 x <- sim_ig(t1)
@@ -174,7 +178,7 @@ tracer(t1, x, "Inverse gaussien")
 resultat(try(ig_mle(x, t1), silent = TRUE), vrai_ig)
 ```
 
-## Modèle 4 : variance-gamma
+### Modèle 4 : variance-gamma
 
 ```{r}
 x <- sim_vg(t1)
@@ -182,7 +186,7 @@ tracer(t1, x, "Variance-gamma")
 resultat(try(vg_mle(x, t1), silent = TRUE), vrai_vg)
 ```
 
-## Modèle 5 : Meixner
+### Modèle 5 : Meixner
 
 ```{r}
 x <- sim_meixner(t1)
@@ -190,7 +194,7 @@ tracer(t1, x, "Meixner")
 resultat(try(meixner_mle(x, t1), silent = TRUE), vrai_meixner)
 ```
 
-## Modèle 6 : inverse gamma
+### Modèle 6 : inverse gamma
 
 ```{r, cache = TRUE}
 x <- sim_igam(t1)
@@ -200,7 +204,7 @@ resultat(try(igam_mle(x, t1), silent = TRUE), vrai_igam)
 
 \newpage
 
-# Cas 2 : inspections irrégulières, croissantes
+## Cas 2 : inspections croissantes
 
 ```{r, fig.height = 1.6}
 set.seed(2)
@@ -208,7 +212,7 @@ t2 <- inspection_times("increasing", n = n, tmax = tmax)$time
 tracer_plan(t2, "Inspections croissantes : peu au début, beaucoup à la fin")
 ```
 
-## Modèle 1 : gamma homogène
+### Modèle 1 : gamma homogène
 
 ```{r}
 x <- sim_gamma(t2)
@@ -216,7 +220,7 @@ tracer(t2, x, "Gamma homogène")
 resultat(try(gamma_mle(x, t2), silent = TRUE), vrai_gamma)
 ```
 
-## Modèle 2 : Wiener homogène
+### Modèle 2 : Wiener homogène
 
 ```{r}
 x <- sim_wiener(t2)
@@ -224,7 +228,7 @@ tracer(t2, x, "Wiener homogène")
 resultat(try(wiener_mle(x, t2), silent = TRUE), vrai_wiener)
 ```
 
-## Modèle 3 : inverse gaussien
+### Modèle 3 : inverse gaussien
 
 ```{r}
 x <- sim_ig(t2)
@@ -232,7 +236,7 @@ tracer(t2, x, "Inverse gaussien")
 resultat(try(ig_mle(x, t2), silent = TRUE), vrai_ig)
 ```
 
-## Modèle 4 : variance-gamma
+### Modèle 4 : variance-gamma
 
 ```{r}
 x <- sim_vg(t2)
@@ -240,7 +244,7 @@ tracer(t2, x, "Variance-gamma")
 resultat(try(vg_mle(x, t2), silent = TRUE), vrai_vg)
 ```
 
-## Modèle 5 : Meixner
+### Modèle 5 : Meixner
 
 ```{r}
 x <- sim_meixner(t2)
@@ -248,7 +252,7 @@ tracer(t2, x, "Meixner")
 resultat(try(meixner_mle(x, t2), silent = TRUE), vrai_meixner)
 ```
 
-## Modèle 6 : inverse gamma
+### Modèle 6 : inverse gamma
 
 ```{r, cache = TRUE}
 x <- sim_igam(t2)
@@ -258,7 +262,7 @@ resultat(try(igam_mle(x, t2), silent = TRUE), vrai_igam)
 
 \newpage
 
-# Cas 3 : inspections irrégulières, décroissantes
+## Cas 3 : inspections décroissantes
 
 ```{r, fig.height = 1.6}
 set.seed(3)
@@ -266,7 +270,7 @@ t3 <- inspection_times("decreasing", n = n, tmax = tmax)$time
 tracer_plan(t3, "Inspections décroissantes : beaucoup au début, peu à la fin")
 ```
 
-## Modèle 1 : gamma homogène
+### Modèle 1 : gamma homogène
 
 ```{r}
 x <- sim_gamma(t3)
@@ -274,7 +278,7 @@ tracer(t3, x, "Gamma homogène")
 resultat(try(gamma_mle(x, t3), silent = TRUE), vrai_gamma)
 ```
 
-## Modèle 2 : Wiener homogène
+### Modèle 2 : Wiener homogène
 
 ```{r}
 x <- sim_wiener(t3)
@@ -282,7 +286,7 @@ tracer(t3, x, "Wiener homogène")
 resultat(try(wiener_mle(x, t3), silent = TRUE), vrai_wiener)
 ```
 
-## Modèle 3 : inverse gaussien
+### Modèle 3 : inverse gaussien
 
 ```{r}
 x <- sim_ig(t3)
@@ -290,7 +294,7 @@ tracer(t3, x, "Inverse gaussien")
 resultat(try(ig_mle(x, t3), silent = TRUE), vrai_ig)
 ```
 
-## Modèle 4 : variance-gamma
+### Modèle 4 : variance-gamma
 
 ```{r}
 x <- sim_vg(t3)
@@ -298,7 +302,7 @@ tracer(t3, x, "Variance-gamma")
 resultat(try(vg_mle(x, t3), silent = TRUE), vrai_vg)
 ```
 
-## Modèle 5 : Meixner
+### Modèle 5 : Meixner
 
 ```{r}
 x <- sim_meixner(t3)
@@ -306,7 +310,7 @@ tracer(t3, x, "Meixner")
 resultat(try(meixner_mle(x, t3), silent = TRUE), vrai_meixner)
 ```
 
-## Modèle 6 : inverse gamma
+### Modèle 6 : inverse gamma
 
 ```{r, cache = TRUE}
 x <- sim_igam(t3)
@@ -316,7 +320,7 @@ resultat(try(igam_mle(x, t3), silent = TRUE), vrai_igam)
 
 \newpage
 
-# Cas 4 : inspections irrégulières, mixtes
+## Cas 4 : inspections mixtes
 
 ```{r, fig.height = 1.6}
 set.seed(4)
@@ -324,7 +328,7 @@ t4 <- inspection_times("dec-inc", n = n, tmax = tmax)$time
 tracer_plan(t4, "Inspections mixtes : beaucoup au début et à la fin, peu au milieu")
 ```
 
-## Modèle 1 : gamma homogène
+### Modèle 1 : gamma homogène
 
 ```{r}
 x <- sim_gamma(t4)
@@ -332,7 +336,7 @@ tracer(t4, x, "Gamma homogène")
 resultat(try(gamma_mle(x, t4), silent = TRUE), vrai_gamma)
 ```
 
-## Modèle 2 : Wiener homogène
+### Modèle 2 : Wiener homogène
 
 ```{r}
 x <- sim_wiener(t4)
@@ -340,7 +344,7 @@ tracer(t4, x, "Wiener homogène")
 resultat(try(wiener_mle(x, t4), silent = TRUE), vrai_wiener)
 ```
 
-## Modèle 3 : inverse gaussien
+### Modèle 3 : inverse gaussien
 
 ```{r}
 x <- sim_ig(t4)
@@ -348,7 +352,7 @@ tracer(t4, x, "Inverse gaussien")
 resultat(try(ig_mle(x, t4), silent = TRUE), vrai_ig)
 ```
 
-## Modèle 4 : variance-gamma
+### Modèle 4 : variance-gamma
 
 ```{r}
 x <- sim_vg(t4)
@@ -356,7 +360,7 @@ tracer(t4, x, "Variance-gamma")
 resultat(try(vg_mle(x, t4), silent = TRUE), vrai_vg)
 ```
 
-## Modèle 5 : Meixner
+### Modèle 5 : Meixner
 
 ```{r}
 x <- sim_meixner(t4)
@@ -364,7 +368,7 @@ tracer(t4, x, "Meixner")
 resultat(try(meixner_mle(x, t4), silent = TRUE), vrai_meixner)
 ```
 
-## Modèle 6 : inverse gamma
+### Modèle 6 : inverse gamma
 
 ```{r, cache = TRUE}
 x <- sim_igam(t4)
@@ -375,7 +379,9 @@ resultat(try(igam_mle(x, t4), silent = TRUE), vrai_igam)
 
 \newpage
 
-# Cas 5 : plusieurs trajectoires, inspections régulières
+# Plusieurs trajectoires
+
+## Cas 5 : inspections régulières
 
 `r n_traj` trajectoires indépendantes, chacune inspectée 10 fois jusqu'à `r tmax`. Chaque trajectoire est un `data.frame(t, X)`, et les fonctions du package reçoivent la liste de ces tableaux.
 
@@ -385,7 +391,7 @@ t5 <- inspection_times("regular", n = 10, tmax = tmax)$time
 tracer_plan(t5, "Plan de chaque trajectoire : inspections régulières")
 ```
 
-## Modèle 1 : gamma homogène
+### Modèle 1 : gamma homogène
 
 ```{r}
 liste <- simuler(sim_gamma, t5)
@@ -393,7 +399,7 @@ tracer_plusieurs(liste, paste("Gamma homogène :", n_traj, "trajectoires"))
 resultat(try(gamma_mle(liste), silent = TRUE), vrai_gamma)
 ```
 
-## Modèle 2 : Wiener homogène
+### Modèle 2 : Wiener homogène
 
 ```{r}
 liste <- simuler(sim_wiener, t5)
@@ -401,7 +407,7 @@ tracer_plusieurs(liste, paste("Wiener homogène :", n_traj, "trajectoires"))
 resultat(try(wiener_mle(liste), silent = TRUE), vrai_wiener)
 ```
 
-## Modèle 3 : inverse gaussien
+### Modèle 3 : inverse gaussien
 
 ```{r}
 liste <- simuler(sim_ig, t5)
@@ -409,7 +415,7 @@ tracer_plusieurs(liste, paste("Inverse gaussien :", n_traj, "trajectoires"))
 resultat(try(ig_mle(liste), silent = TRUE), vrai_ig)
 ```
 
-## Modèle 4 : variance-gamma
+### Modèle 4 : variance-gamma
 
 ```{r}
 liste <- simuler(sim_vg, t5)
@@ -417,7 +423,7 @@ tracer_plusieurs(liste, paste("Variance-gamma :", n_traj, "trajectoires"))
 resultat(try(vg_mle(liste), silent = TRUE), vrai_vg)
 ```
 
-## Modèle 5 : Meixner
+### Modèle 5 : Meixner
 
 ```{r}
 liste <- simuler(sim_meixner, t5)
@@ -425,7 +431,7 @@ tracer_plusieurs(liste, paste("Meixner :", n_traj, "trajectoires"))
 resultat(try(meixner_mle(liste), silent = TRUE), vrai_meixner)
 ```
 
-## Modèle 6 : inverse gamma
+### Modèle 6 : inverse gamma
 
 ```{r, cache = TRUE}
 liste <- simuler(sim_igam, t5)
@@ -435,7 +441,7 @@ resultat(try(igam_mle(liste), silent = TRUE), vrai_igam)
 
 \newpage
 
-# Cas 6 : plusieurs trajectoires, inspections croissantes
+## Cas 6 : inspections croissantes
 
 `r n_traj` trajectoires indépendantes, chacune inspectée 10 fois jusqu'à `r tmax`. Chaque trajectoire est un `data.frame(t, X)`, et les fonctions du package reçoivent la liste de ces tableaux.
 
@@ -445,7 +451,7 @@ t6 <- inspection_times("increasing", n = 10, tmax = tmax)$time
 tracer_plan(t6, "Plan de chaque trajectoire : peu au début, beaucoup à la fin")
 ```
 
-## Modèle 1 : gamma homogène
+### Modèle 1 : gamma homogène
 
 ```{r}
 liste <- simuler(sim_gamma, t6)
@@ -453,7 +459,7 @@ tracer_plusieurs(liste, paste("Gamma homogène :", n_traj, "trajectoires"))
 resultat(try(gamma_mle(liste), silent = TRUE), vrai_gamma)
 ```
 
-## Modèle 2 : Wiener homogène
+### Modèle 2 : Wiener homogène
 
 ```{r}
 liste <- simuler(sim_wiener, t6)
@@ -461,7 +467,7 @@ tracer_plusieurs(liste, paste("Wiener homogène :", n_traj, "trajectoires"))
 resultat(try(wiener_mle(liste), silent = TRUE), vrai_wiener)
 ```
 
-## Modèle 3 : inverse gaussien
+### Modèle 3 : inverse gaussien
 
 ```{r}
 liste <- simuler(sim_ig, t6)
@@ -469,7 +475,7 @@ tracer_plusieurs(liste, paste("Inverse gaussien :", n_traj, "trajectoires"))
 resultat(try(ig_mle(liste), silent = TRUE), vrai_ig)
 ```
 
-## Modèle 4 : variance-gamma
+### Modèle 4 : variance-gamma
 
 ```{r}
 liste <- simuler(sim_vg, t6)
@@ -477,7 +483,7 @@ tracer_plusieurs(liste, paste("Variance-gamma :", n_traj, "trajectoires"))
 resultat(try(vg_mle(liste), silent = TRUE), vrai_vg)
 ```
 
-## Modèle 5 : Meixner
+### Modèle 5 : Meixner
 
 ```{r}
 liste <- simuler(sim_meixner, t6)
@@ -485,7 +491,7 @@ tracer_plusieurs(liste, paste("Meixner :", n_traj, "trajectoires"))
 resultat(try(meixner_mle(liste), silent = TRUE), vrai_meixner)
 ```
 
-## Modèle 6 : inverse gamma
+### Modèle 6 : inverse gamma
 
 ```{r, cache = TRUE}
 liste <- simuler(sim_igam, t6)
@@ -495,7 +501,7 @@ resultat(try(igam_mle(liste), silent = TRUE), vrai_igam)
 
 \newpage
 
-# Cas 7 : plusieurs trajectoires, inspections décroissantes
+## Cas 7 : inspections décroissantes
 
 `r n_traj` trajectoires indépendantes, chacune inspectée 10 fois jusqu'à `r tmax`. Chaque trajectoire est un `data.frame(t, X)`, et les fonctions du package reçoivent la liste de ces tableaux.
 
@@ -505,7 +511,7 @@ t7 <- inspection_times("decreasing", n = 10, tmax = tmax)$time
 tracer_plan(t7, "Plan de chaque trajectoire : beaucoup au début, peu à la fin")
 ```
 
-## Modèle 1 : gamma homogène
+### Modèle 1 : gamma homogène
 
 ```{r}
 liste <- simuler(sim_gamma, t7)
@@ -513,7 +519,7 @@ tracer_plusieurs(liste, paste("Gamma homogène :", n_traj, "trajectoires"))
 resultat(try(gamma_mle(liste), silent = TRUE), vrai_gamma)
 ```
 
-## Modèle 2 : Wiener homogène
+### Modèle 2 : Wiener homogène
 
 ```{r}
 liste <- simuler(sim_wiener, t7)
@@ -521,7 +527,7 @@ tracer_plusieurs(liste, paste("Wiener homogène :", n_traj, "trajectoires"))
 resultat(try(wiener_mle(liste), silent = TRUE), vrai_wiener)
 ```
 
-## Modèle 3 : inverse gaussien
+### Modèle 3 : inverse gaussien
 
 ```{r}
 liste <- simuler(sim_ig, t7)
@@ -529,7 +535,7 @@ tracer_plusieurs(liste, paste("Inverse gaussien :", n_traj, "trajectoires"))
 resultat(try(ig_mle(liste), silent = TRUE), vrai_ig)
 ```
 
-## Modèle 4 : variance-gamma
+### Modèle 4 : variance-gamma
 
 ```{r}
 liste <- simuler(sim_vg, t7)
@@ -537,7 +543,7 @@ tracer_plusieurs(liste, paste("Variance-gamma :", n_traj, "trajectoires"))
 resultat(try(vg_mle(liste), silent = TRUE), vrai_vg)
 ```
 
-## Modèle 5 : Meixner
+### Modèle 5 : Meixner
 
 ```{r}
 liste <- simuler(sim_meixner, t7)
@@ -545,7 +551,7 @@ tracer_plusieurs(liste, paste("Meixner :", n_traj, "trajectoires"))
 resultat(try(meixner_mle(liste), silent = TRUE), vrai_meixner)
 ```
 
-## Modèle 6 : inverse gamma
+### Modèle 6 : inverse gamma
 
 ```{r, cache = TRUE}
 liste <- simuler(sim_igam, t7)
@@ -555,7 +561,7 @@ resultat(try(igam_mle(liste), silent = TRUE), vrai_igam)
 
 \newpage
 
-# Cas 8 : plusieurs trajectoires, inspections mixtes
+## Cas 8 : inspections mixtes
 
 `r n_traj` trajectoires indépendantes, chacune inspectée 10 fois jusqu'à `r tmax`. Chaque trajectoire est un `data.frame(t, X)`, et les fonctions du package reçoivent la liste de ces tableaux.
 
@@ -565,7 +571,7 @@ t8 <- inspection_times("dec-inc", n = 10, tmax = tmax)$time
 tracer_plan(t8, "Plan de chaque trajectoire : beaucoup au début et à la fin, peu au milieu")
 ```
 
-## Modèle 1 : gamma homogène
+### Modèle 1 : gamma homogène
 
 ```{r}
 liste <- simuler(sim_gamma, t8)
@@ -573,7 +579,7 @@ tracer_plusieurs(liste, paste("Gamma homogène :", n_traj, "trajectoires"))
 resultat(try(gamma_mle(liste), silent = TRUE), vrai_gamma)
 ```
 
-## Modèle 2 : Wiener homogène
+### Modèle 2 : Wiener homogène
 
 ```{r}
 liste <- simuler(sim_wiener, t8)
@@ -581,7 +587,7 @@ tracer_plusieurs(liste, paste("Wiener homogène :", n_traj, "trajectoires"))
 resultat(try(wiener_mle(liste), silent = TRUE), vrai_wiener)
 ```
 
-## Modèle 3 : inverse gaussien
+### Modèle 3 : inverse gaussien
 
 ```{r}
 liste <- simuler(sim_ig, t8)
@@ -589,7 +595,7 @@ tracer_plusieurs(liste, paste("Inverse gaussien :", n_traj, "trajectoires"))
 resultat(try(ig_mle(liste), silent = TRUE), vrai_ig)
 ```
 
-## Modèle 4 : variance-gamma
+### Modèle 4 : variance-gamma
 
 ```{r}
 liste <- simuler(sim_vg, t8)
@@ -597,7 +603,7 @@ tracer_plusieurs(liste, paste("Variance-gamma :", n_traj, "trajectoires"))
 resultat(try(vg_mle(liste), silent = TRUE), vrai_vg)
 ```
 
-## Modèle 5 : Meixner
+### Modèle 5 : Meixner
 
 ```{r}
 liste <- simuler(sim_meixner, t8)
@@ -605,7 +611,7 @@ tracer_plusieurs(liste, paste("Meixner :", n_traj, "trajectoires"))
 resultat(try(meixner_mle(liste), silent = TRUE), vrai_meixner)
 ```
 
-## Modèle 6 : inverse gamma
+### Modèle 6 : inverse gamma
 
 ```{r, cache = TRUE}
 liste <- simuler(sim_igam, t8)
