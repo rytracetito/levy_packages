@@ -79,8 +79,10 @@
 #' @export
 gamma_mle <- function(x, t = NULL) {
   d <- increments(x, t)
-  dt <- d$dt
-  dx <- d$dx
+  gamma_fit(d$dt, d$dx)
+}
+
+gamma_fit <- function(dt, dx) {
   if (any(dx <= 0)) stop("increments must be strictly positive")
   r <- dx / dt
   if (all(abs(r - r[1]) <= 1e-12 * r[1])) stop("the MLE does not exist: all speeds dx/dt are equal")

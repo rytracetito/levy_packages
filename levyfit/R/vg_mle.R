@@ -39,6 +39,17 @@
 #' single trajectory of ten increments). The function then stops and the
 #' Wiener model, see [wiener_mle()], should be used.
 #'
+#' As \eqn{\sigma \to 0}, \eqn{X_s \to \theta \gamma_s}: if \eqn{\theta > 0},
+#' the VG process tends to the gamma process with shape \eqn{a = 1 / \nu} and
+#' rate \eqn{b = 1 / (\theta \nu)}, and when all the increments are positive
+#' \eqn{\ell} tends to the gamma log-likelihood. Hence
+#' \eqn{\sup \ell \ge \ell_\Gamma(\hat a, \hat b)}, the maximum of the gamma
+#' log-likelihood. When all the increments are positive and the VG estimate
+#' does not exceed this value, the supremum is reached at the gamma limit
+#' \eqn{\sigma = 0}: the function stops and the gamma model, see
+#' [gamma_mle()], should be used. This typically happens with monotone
+#' degradation data.
+#'
 #' @section EM algorithm:
 #' Let \eqn{G_j} be the increment of the hidden gamma time on the \eqn{j}-th
 #' interval. Given \eqn{\Delta x_j}, \eqn{G_j} follows a generalized inverse
@@ -61,7 +72,9 @@
 #'
 #' Each iteration increases the likelihood (Dempster, Laird and Rubin, 1977).
 #' The EM limit is then refined by BFGS on
-#' \eqn{(\theta, \ln \sigma, \ln \nu)}. Starting values: the Wiener MLE for
+#' \eqn{(\theta, \ln \sigma, \ln \nu)}; if this refinement fails or does not
+#' increase the likelihood (for instance with data on a very small scale), the
+#' EM limit is returned. Starting values: the Wiener MLE for
 #' \eqn{(\theta, \sigma)} and \eqn{\nu = T / m}. The algorithm stops at the
 #' Brownian limit when \eqn{\nu < \max_j \Delta t_j / 300}.
 #'
@@ -128,9 +141,27 @@ vg_mle <- function(x, t = NULL) {
     if (conv) break
   }
 
-  nll <- function(p) -vg_loglik(dx, dt, p[1], exp(p[2]), exp(p[3]))
-  opt <- optim(c(theta, log(sigma), log(nu)), nll, method = "BFGS", control = list(reltol = 1e-14, maxit = 1000))
-  c(theta = opt$par[1], sigma = exp(opt$par[2]), nu = exp(opt$par[3]))
+  nll <- function(p) {
+    v <- -vg_loglik(dx, dt, p[1], exp(p[2]), exp(p[3]))
+    if (is.finite(v)) v else 1e10
+  }
+  s0 <- sd(dx / sqrt(dt))
+  lower <- c(-Inf, log(s0 / 100), log(max(dt) / 300))
+  upper <- c(Inf, log(100 * s0), log(1000 * max(dt)))
+  p_em <- pmin(pmax(c(theta, log(sigma), log(nu)), lower), upper)
+  opt <- tryCatch(optim(p_em, nll, method = "L-BFGS-B", lower = lower, upper = upper,
+                        control = list(factr = 1, maxit = 1000)),
+                  error = function(e) NULL)
+  p <- if (!is.null(opt) && opt$value <= nll(p_em)) opt$par else p_em
+
+  if (all(dx > 0)) {
+    g <- gamma_fit(dt, dx)
+    ll_gamma <- sum(dgamma(dx, shape = g[["a"]] * dt, rate = g[["b"]], log = TRUE))
+    if (-nll(p) <= ll_gamma + 1e-8 * abs(ll_gamma)) {
+      stop("sigma tends to 0: the likelihood is maximal at the gamma limit, use gamma_mle()")
+    }
+  }
+  c(theta = p[1], sigma = exp(p[2]), nu = exp(p[3]))
 }
 
 vg_loglik <- function(dx, dt, theta, sigma, nu) {

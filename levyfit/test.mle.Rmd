@@ -2,6 +2,7 @@
 title: "Test du package levyfit"
 header-includes:
   - \renewcommand{\contentsname}{Sommaire}
+  - \usepackage{booktabs}
 output:
   pdf_document:
     toc: true
@@ -133,7 +134,8 @@ resultat <- function(estimation, vraies) {
   } else {
     tableau <- data.frame(Paramètre = names(vraies), Vraie = vraies,
                           Estimée = estimation)
-    knitr::kable(tableau, digits = 3, row.names = FALSE)
+    tab <- knitr::kable(tableau, format = "latex", booktabs = TRUE, digits = 3, row.names = FALSE)
+    knitr::asis_output(paste0("\\begin{center}", tab, "\\end{center}"))
   }
 }
 ```

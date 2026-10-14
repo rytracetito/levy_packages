@@ -62,6 +62,17 @@ of the likelihood can therefore be reached at the Brownian limit
 \eqn{\nu = 0}: the MLE does not always exist (about one case in four with a
 single trajectory of ten increments). The function then stops and the
 Wiener model, see \code{\link[=wiener_mle]{wiener_mle()}}, should be used.
+
+As \eqn{\sigma \to 0}, \eqn{X_s \to \theta \gamma_s}: if \eqn{\theta > 0},
+the VG process tends to the gamma process with shape \eqn{a = 1 / \nu} and
+rate \eqn{b = 1 / (\theta \nu)}, and when all the increments are positive
+\eqn{\ell} tends to the gamma log-likelihood. Hence
+\eqn{\sup \ell \ge \ell_\Gamma(\hat a, \hat b)}, the maximum of the gamma
+log-likelihood. When all the increments are positive and the VG estimate
+does not exceed this value, the supremum is reached at the gamma limit
+\eqn{\sigma = 0}: the function stops and the gamma model, see
+\code{\link[=gamma_mle]{gamma_mle()}}, should be used. This typically happens with monotone
+degradation data.
 }
 
 \section{EM algorithm}{
@@ -89,7 +100,9 @@ parameters.
 
 Each iteration increases the likelihood (Dempster, Laird and Rubin, 1977).
 The EM limit is then refined by BFGS on
-\eqn{(\theta, \ln \sigma, \ln \nu)}. Starting values: the Wiener MLE for
+\eqn{(\theta, \ln \sigma, \ln \nu)}; if this refinement fails or does not
+increase the likelihood (for instance with data on a very small scale), the
+EM limit is returned. Starting values: the Wiener MLE for
 \eqn{(\theta, \sigma)} and \eqn{\nu = T / m}. The algorithm stops at the
 Brownian limit when \eqn{\nu < \max_j \Delta t_j / 300}.
 }

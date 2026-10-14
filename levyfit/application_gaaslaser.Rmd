@@ -1,0 +1,186 @@
+---
+title: "Application du package levyfit : lasers GaAs"
+header-includes:
+  - \renewcommand{\contentsname}{Sommaire}
+  - \usepackage{booktabs}
+output:
+  pdf_document:
+    toc: true
+    number_sections: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.height = 3.2, fig.width = 6.5, fig.align = "center")
+library(levyfit)
+library(ggplot2)
+```
+
+# Préparation
+
+Installation des packages (à faire une seule fois, puis redémarrer R) :
+
+```{r, eval = FALSE}
+remotes::install_github("Auburngrads/SMRD.data")
+remotes::install_github("rytracetito/levy_packages", subdir = "levyfit")
+```
+
+Les données `gaaslaser` donnent l'augmentation relative (en %) du courant de fonctionnement de 15 lasers GaAs, mesurée toutes les 250 heures, de 0 à 4000 heures. Un laser est considéré défaillant quand cette augmentation atteint 10 %.
+
+```{r}
+d <- SMRD.data::gaaslaser
+seuil <- 10
+```
+
+Construction de la liste des trajectoires, un `data.frame(t, X)` par laser, en ne gardant que les instants d'inspection donnés :
+
+```{r}
+extraire <- function(temps) {
+  lapply(sort(unique(d$unit)), function(k) {
+    s <- d[d$unit == k & d$hours %in% temps, ]
+    s <- s[order(s$hours), ]
+    data.frame(t = s$hours, X = s$increase)
+  })
+}
+```
+
+Représentation des instants d'inspection et des trajectoires :
+
+```{r}
+tracer_plan <- function(temps, titre) {
+  ggplot(data.frame(t = temps), aes(x = t, y = 0)) +
+    geom_point() +
+    labs(title = titre, x = "Temps (heures)", y = NULL) +
+    theme_minimal() +
+    theme(axis.text.y = element_blank(),
+          panel.grid.major.y = element_blank(),
+          panel.grid.minor.y = element_blank())
+}
+
+tracer_lasers <- function(liste, titre) {
+  donnees <- do.call(rbind, lapply(seq_along(liste), function(i)
+    data.frame(laser = i, t = liste[[i]]$t, x = liste[[i]]$X)))
+  donnees$etat <- ifelse(ave(donnees$x, donnees$laser, FUN = max) >= seuil,
+                         "Dépasse le seuil", "Reste sous le seuil")
+  ggplot(donnees, aes(x = t, y = x, group = laser, colour = etat)) +
+    geom_hline(yintercept = seuil, linetype = "dashed", colour = "grey45") +
+    geom_line(linewidth = 0.6) +
+    geom_point(size = 1.2) +
+    scale_colour_manual(values = c("Dépasse le seuil" = "#C2410C",
+                                   "Reste sous le seuil" = "#2563EB")) +
+    labs(title = titre, x = "Temps (heures)", y = "Dégradation (%)", colour = NULL) +
+    theme_minimal() +
+    theme(legend.position = "top")
+}
+```
+
+Estimation des six modèles sur une liste de trajectoires. Quand une estimation est impossible, le tableau donne la raison :
+
+```{r}
+modeles <- c("Wiener" = "wiener_mle", "Gamma" = "gamma_mle",
+             "Inverse gaussien" = "ig_mle", "Variance-gamma" = "vg_mle",
+             "Meixner" = "meixner_mle", "Inverse gamma" = "igam_mle")
+
+estimer_tout <- function(liste) {
+  texte <- sapply(modeles, function(f) {
+    r <- try(get(f)(liste), silent = TRUE)
+    if (inherits(r, "try-error")) {
+      paste("Impossible :", conditionMessage(attr(r, "condition")))
+    } else {
+      paste(names(r), signif(r, 4), sep = " = ", collapse = ", ")
+    }
+  })
+  data.frame(Modèle = names(modeles), Estimations = texte, row.names = NULL)
+}
+
+afficher <- function(res) {
+  lignes <- paste0("* **", res$Modèle, "** : ", gsub("_", "\\\\_", res$Estimations))
+  knitr::asis_output(paste(lignes, collapse = "\n"))
+}
+```
+
+\newpage
+
+# Application 1 : données complètes
+
+Les 17 instants d'inspection, de 0 à 4000 heures toutes les 250 heures.
+
+```{r, fig.height = 1.6}
+temps1 <- sort(unique(d$hours))
+tracer_plan(temps1, "Inspections régulières")
+```
+
+```{r}
+liste1 <- extraire(temps1)
+tracer_lasers(liste1, "Lasers GaAs : données complètes")
+```
+
+```{r, cache = TRUE}
+res1 <- estimer_tout(liste1)
+afficher(res1)
+```
+
+\newpage
+
+# Application 2 : inspections irrégulières, fréquence décroissante
+
+Inspections fréquentes au début, plus espacées ensuite.
+
+```{r, fig.height = 1.6}
+temps2 <- c(0, 250, 500, 750, 1000, 1500, 2000, 2500, 3000, 4000)
+tracer_plan(temps2, "Inspections décroissantes : beaucoup au début, peu à la fin")
+```
+
+```{r}
+liste2 <- extraire(temps2)
+tracer_lasers(liste2, "Lasers GaAs : inspections décroissantes")
+```
+
+```{r, cache = TRUE}
+res2 <- estimer_tout(liste2)
+afficher(res2)
+```
+
+\newpage
+
+# Application 3 : inspections irrégulières, fréquence croissante
+
+Inspections espacées au début, plus fréquentes ensuite.
+
+```{r, fig.height = 1.6}
+temps3 <- c(0, 1000, 1500, 2000, 2500, 3000, 3250, 3500, 3750, 4000)
+tracer_plan(temps3, "Inspections croissantes : peu au début, beaucoup à la fin")
+```
+
+```{r}
+liste3 <- extraire(temps3)
+tracer_lasers(liste3, "Lasers GaAs : inspections croissantes")
+```
+
+```{r, cache = TRUE}
+res3 <- estimer_tout(liste3)
+afficher(res3)
+```
+
+\newpage
+
+# Comparaison des trois applications
+
+Les estimations des modèles Wiener, gamma et inverse gaussien, pour les trois plans d'inspection :
+
+```{r}
+comparer <- function(f, nom) {
+  r <- sapply(list(liste1, liste2, liste3), function(l) get(f)(l))
+  colnames(r) <- c("Complètes", "Décroissantes", "Croissantes")
+  rownames(r) <- paste(nom, rownames(r))
+  r
+}
+tableau <- rbind(comparer("wiener_mle", "Wiener"), comparer("gamma_mle", "Gamma"),
+                 comparer("ig_mle", "IG"))
+tab <- knitr::kable(signif(tableau, 4), format = "latex", booktabs = TRUE)
+knitr::asis_output(paste0("\\begin{center}", tab, "\\end{center}"))
+```
+
+Remarques :
+
+* `b` est le paramètre de **taux** du processus gamma ; le paramètre d'échelle vaut `1 / b`.
+* Pour les trois plans, le variance-gamma atteint la limite gamma (\(\sigma \to 0\)) : ces données, toujours croissantes, sont mieux décrites par le processus gamma, cas limite du variance-gamma.
