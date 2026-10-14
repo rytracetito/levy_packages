@@ -1,0 +1,18 @@
+Package: levyfit
+Title: Maximum Likelihood Estimation for Levy Degradation Processes
+Version: 0.0.0.9000
+Authors@R: 
+    person("Amedée Rytrace", "Tito", , "rytracetito5@gmail.com", role = c("aut", "cre"))
+Description: Maximum likelihood estimation of the parameters of
+    degradation models based on Levy processes (Wiener, gamma and inverse
+    Gaussian processes) from a trajectory observed at possibly irregular
+    inspection times.
+License: GPL-3
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Imports: 
+    stats
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
