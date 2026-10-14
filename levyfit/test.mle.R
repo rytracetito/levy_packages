@@ -1,4 +1,4 @@
-devtools::install("C:/Users/ADMIN/Desktop/Ma Thèse/Thèse_1/Recherche_1/levy_packages/levyfit", upgrade = "never")
+remotes::install_github("rytracetito/levy_packages", subdir = "levyfit")
 library(levyfit)
 
 set.seed(1)
@@ -6,6 +6,10 @@ t <- inspection_times("increasing", n = 10, tmax = 22.5)$time
 t_long <- inspection_times("dec-inc", n = 1000, tmax = 2000)$time
 t_mc <- inspection_times("regular", n = 100, tmax = 100)$time
 R <- 1000
+
+plot(x = t, y = rep(1, length(t)), pch = 19, ylab = "", main = "increasing, n = 10")
+hist(t_long, breaks = 40, xlab = "t_long", ylab = "Nombre d'inspections", main = "dec-inc, n = 1000")
+plot(x = t_mc, y = rep(1, length(t_mc)), pch = 19, ylab = "", main = "regular, n = 100")
 
 ##############
 ### WIENER ###
