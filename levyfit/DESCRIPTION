@@ -4,9 +4,10 @@ Version: 0.0.0.9000
 Authors@R: 
     person("Amedée Rytrace", "Tito", , "rytracetito5@gmail.com", role = c("aut", "cre"))
 Description: Maximum likelihood estimation of the parameters of
-    degradation models based on Levy processes (Wiener, gamma and inverse
-    Gaussian processes) from a trajectory observed at possibly irregular
-    inspection times.
+    degradation models based on Levy and related processes (Wiener, gamma,
+    inverse Gaussian, variance-gamma, Meixner and inverse gamma processes)
+    from one or several trajectories observed at possibly irregular
+    inspection times, and generation of inspection schedules.
 License: GPL-3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

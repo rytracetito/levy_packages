@@ -4,12 +4,75 @@
 \name{levyfit-package}
 \alias{levyfit}
 \alias{levyfit-package}
-\title{levyfit: Maximum Likelihood Estimation for Levy Degradation Processes}
+\title{levyfit: maximum likelihood estimation for degradation processes}
 \description{
-Maximum likelihood estimation of the parameters of degradation models based on Levy processes (Wiener, gamma and inverse Gaussian processes) from a trajectory observed at possibly irregular inspection times.
+\code{levyfit} estimates the parameters of stochastic degradation models from one
+or several degradation trajectories observed at inspection times, which can
+be irregular and differ from one trajectory to another. Each estimator is the
+maximum likelihood estimator (MLE); the help page of each function details
+the main mathematical steps of its derivation.
+}
+\section{Functions of the package}{
+
+Estimation of the parameters (click on a function name for its help page):\tabular{llll}{
+   Function \tab Model \tab Parameters \tab Method \cr
+   \code{\link[=wiener_mle]{wiener_mle()}} \tab Wiener process with drift \tab \code{mu}, \code{sigma2} (and unbiased \code{s2}) \tab closed form \cr
+   \code{\link[=gamma_mle]{gamma_mle()}} \tab homogeneous gamma process \tab shape \code{a}, rate \code{b} \tab root of one equation \cr
+   \code{\link[=ig_mle]{ig_mle()}} \tab inverse Gaussian process \tab \code{mu}, \code{eta} (and unbiased \code{eta_unbiased}) \tab closed form \cr
+   \code{\link[=vg_mle]{vg_mle()}} \tab variance-gamma process \tab \code{theta}, \code{sigma}, \code{nu} \tab EM algorithm then quasi-Newton \cr
+   \code{\link[=meixner_mle]{meixner_mle()}} \tab Meixner process \tab \code{a}, \code{b}, \code{d}, \code{m} \tab profile likelihood, several starts \cr
+   \code{\link[=igam_mle]{igam_mle()}} \tab inverse gamma process \tab \code{theta}, \code{alpha}, \code{beta} \tab exact likelihood by forward filtering \cr
+}
+
+
+Inspection schedules:\tabular{ll}{
+   Function \tab Use \cr
+   \code{\link[=inspection_times]{inspection_times()}} \tab inspection times on \eqn{[0, t_{max}]} for one or several trajectories, with a regular, increasing, decreasing or alternating number of inspections over time \cr
+}
+}
+
+\section{Data}{
+
+Every estimation function accepts the data in two forms:
+\itemize{
+\item one trajectory: \code{f(x, t)}, with \code{x} the degradation levels and \code{t} the
+inspection times;
+\item several trajectories: \code{f(liste)}, with \code{liste} a list of data frames, one
+per trajectory, whose first column contains the inspection times and
+second column the degradation levels.
+}
+
+The trajectories are assumed independent and with the same law. For the
+Lévy processes, the increments are computed within each trajectory and then
+pooled; for the inverse gamma process, which is not a Lévy process, the
+log-likelihoods of the trajectories are added.
+}
+
+\section{Parametrizations}{
+
+\itemize{
+\item Wiener: \eqn{X_t - X_s \sim N(\mu (t - s), \sigma^2 (t - s))}.
+\item Gamma: \eqn{X_t - X_s \sim \Gamma(a (t - s), b)}, shape \eqn{a(t - s)} and
+\strong{rate} \eqn{b}, so that \eqn{E[X_t] = a t / b}. The scale is \eqn{1 / b}.
+\item Inverse Gaussian: \eqn{X_t - X_s \sim IG(\mu (t - s), \eta (t - s)^2)}.
+\item Variance-gamma: \eqn{X_s = \theta \gamma_s + \sigma W(\gamma_s)}, with
+\eqn{\gamma_s} of mean \eqn{s} and variance \eqn{\nu s}.
+\item Meixner: \eqn{X_s \sim Meixner(a, b, d s, m s)}.
+\item Inverse gamma: \eqn{W(t) = \inf\{w : T(w) > t\}}, with \eqn{T} a gamma
+process of shape \eqn{(w / \alpha)^\beta} and scale \eqn{\theta}.
+}
+}
+
+\examples{
+t <- inspection_times("increasing", n = 20, tmax = 100)$time
+set.seed(1)
+liste <- lapply(1:10, function(i)
+  data.frame(t = t, X = c(0, cumsum(rgamma(20, shape = 2 * diff(t), rate = 3)))))
+gamma_mle(liste)
+wiener_mle(liste)
 }
 \author{
 \strong{Maintainer}: Amedée Rytrace Tito \email{rytracetito5@gmail.com}
 
 }
-\keyword{internal}
+\keyword{package}
