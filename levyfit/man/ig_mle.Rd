@@ -2,7 +2,7 @@
 % Please edit documentation in R/ig_mle.R
 \name{ig_mle}
 \alias{ig_mle}
-\title{Estimation of the parameters of the inverse Gaussian process}
+\title{Maximum likelihood estimation for the inverse Gaussian process}
 \usage{
 ig_mle(x, t)
 }
@@ -12,13 +12,16 @@ ig_mle(x, t)
 \item{t}{Inspection times, strictly increasing.}
 }
 \value{
-A named vector with \code{mu} \eqn{= \hat\mu} and
-\code{eta} \eqn{= \tilde\eta}.
+A named vector with the maximum likelihood estimates
+\code{mu} \eqn{= \hat\mu} and \code{eta} \eqn{= \hat\eta}, and the unbiased
+estimate \code{eta_unbiased} \eqn{= \tilde\eta} of \eqn{\eta}.
 }
 \description{
-Estimates the parameters \eqn{\mu} and \eqn{\eta} of the homogeneous
-inverse Gaussian (IG) process from one trajectory observed at possibly
-irregular inspection times. Both estimators are explicit and unbiased.
+Computes the maximum likelihood estimator (MLE) of the parameters \eqn{\mu}
+and \eqn{\eta} of the homogeneous inverse Gaussian (IG) process from one
+trajectory observed at possibly irregular inspection times. The MLE is
+obtained in closed form by maximizing the likelihood directly, without
+numerical optimization.
 }
 \section{Model and data}{
 
@@ -59,7 +62,7 @@ unbounded and the function stops.
 }
 }
 
-\section{Unbiased estimators}{
+\section{Bias}{
 
 For \eqn{m \ge 2},
 \deqn{\hat\mu \sim IG(\mu, \eta T), \qquad \eta \hat Q \sim \chi^2_{m-1},}
@@ -68,11 +71,10 @@ increments given \eqn{S} does not depend on \eqn{\mu}, and its exponent only
 involves \eqn{\hat Q} (this extends a result of Tweedie (1957) to irregular
 inspection times). Hence \eqn{\hat\mu} is unbiased, while, since
 \eqn{E[1/V] = 1/(k - 2)} for \eqn{V \sim \chi^2_k},
-\eqn{E[\hat\eta] = \frac{m}{m - 3} \eta} for \eqn{m > 3}: the maximum
-likelihood estimator of \eqn{\eta} is biased upwards. The function returns
-its unbiased version
-\deqn{\tilde\eta = \frac{m - 3}{\hat Q},}
-which requires at least four increments.
+\eqn{E[\hat\eta] = \frac{m}{m - 3} \eta} for \eqn{m > 3}: \eqn{\hat\eta} is
+biased upwards. The function also returns its unbiased version
+\deqn{\tilde\eta = \frac{m - 3}{\hat Q} = \frac{m - 3}{m} \hat\eta,}
+which requires at least four increments (\code{NA} otherwise).
 }
 
 \examples{

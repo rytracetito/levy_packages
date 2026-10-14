@@ -28,10 +28,10 @@ wiener_mle(x, t1)
 x <- sim_wiener(t3)
 wiener_mle(x, t3)
 
-est <- matrix(NA, R, 2)
+est <- matrix(NA, R, 3)
 for (r in 1:R) est[r, ] <- wiener_mle(sim_wiener(t4), t4)
 colMeans(est)
-c(mu, sigma^2)
+c(mu, sigma^2, sigma^2)
 
 #############
 ### GAMMA ###
@@ -73,10 +73,63 @@ ig_mle(x, t1)
 x <- sim_ig(t3)
 ig_mle(x, t3)
 
-est <- matrix(NA, R, 2)
+est <- matrix(NA, R, 3)
 for (r in 1:R) est[r, ] <- ig_mle(sim_ig(t4), t4)
 colMeans(est)
-c(mu, eta)
+c(mu, eta, eta)
+
+t5 <- inspection_times("regular", n = 1000, tmax = 2000)$time
+
+######################
+### VARIANCE-GAMMA ###
+######################
+
+theta <- 0.5
+sigma <- 1.5
+nu <- 2
+sim_vg <- function(t) {
+  g <- rgamma(length(t) - 1, shape = diff(t) / nu, scale = nu)
+  c(0, cumsum(theta * g + sigma * sqrt(g) * rnorm(length(t) - 1)))
+}
+
+x <- sim_vg(t5)
+plot(x = t5, y = x, type = "l", main = "Variance-gamma")
+vg_mle(x, t5)
+c(theta, sigma, nu)
+
+###############
+### MEIXNER ###
+###############
+
+a <- 1
+b <- 0.3
+d <- 1.5
+m <- 0.2
+gen <- Runuran::pinvd.new(Runuran::udmeixner(alpha = a, beta = b, delta = d * 2, mu = m * 2))
+sim_meixner <- function() c(0, cumsum(Runuran::ur(gen, 1000)))
+
+x <- sim_meixner()
+plot(x = t5, y = x, type = "l", main = "Meixner")
+meixner_mle(x, t5)
+c(a, b, d, m)
+
+#####################
+### INVERSE GAMMA ###
+#####################
+
+theta <- 1
+alpha <- 1
+beta <- 1.5
+du <- 1e-3
+sim_igam <- function(t) {
+  G <- cumsum(rgamma(1e5, shape = du))
+  c(0, alpha * (du * findInterval(t[-1] / theta, G))^(1 / beta))
+}
+
+x <- sim_igam(t1)
+plot(x = t1, y = x, type = "b", pch = 19, main = "Inverse gamma")
+igam_mle(x, t1)
+c(theta, alpha, beta)
 
 ###############################
 ### DONNEES NON VALABLES ###
@@ -86,3 +139,6 @@ try(wiener_mle(c(0, 1), c(0, 1)))
 try(gamma_mle(c(0, 1, 1, 2), c(0, 1, 2, 3)))
 try(gamma_mle(c(0, 1, 2, 3), c(0, 1, 2, 3)))
 try(ig_mle(c(0, 1, 2), c(0, 1, 1)))
+try(vg_mle(c(0, 1, 1, 2), c(0, 1, 2, 3)))
+try(meixner_mle(c(0, 1, 2), c(0, 1, 2)))
+try(igam_mle(c(0, 2, 1), c(0, 1, 2)))

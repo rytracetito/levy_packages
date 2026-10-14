@@ -1,5 +1,5 @@
 #' @keywords internal
 "_PACKAGE"
 
-#' @importFrom stats uniroot
+#' @importFrom stats coef integrate lm optim optimize pgamma runif uniroot
 NULL

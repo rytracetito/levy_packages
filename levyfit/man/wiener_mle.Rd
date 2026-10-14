@@ -2,7 +2,7 @@
 % Please edit documentation in R/wiener_mle.R
 \name{wiener_mle}
 \alias{wiener_mle}
-\title{Estimation of the parameters of the Wiener process}
+\title{Maximum likelihood estimation for the Wiener process}
 \usage{
 wiener_mle(x, t)
 }
@@ -12,13 +12,17 @@ wiener_mle(x, t)
 \item{t}{Inspection times, strictly increasing.}
 }
 \value{
-A named vector with \code{mu} \eqn{= \hat\mu} and \code{s2} \eqn{= s^2}.
+A named vector with the maximum likelihood estimates
+\code{mu} \eqn{= \hat\mu} and \code{sigma2} \eqn{= \hat\sigma^2}, and the unbiased
+estimate \code{s2} \eqn{= s^2} of \eqn{\sigma^2}.
 }
 \description{
-Estimates the drift \eqn{\mu} and the variance \eqn{\sigma^2} of the Wiener
-process \eqn{X_t = \mu t + \sigma B_t}, where \eqn{B} is a standard Brownian
-motion, from one trajectory observed at possibly irregular inspection times.
-Both estimators are explicit and unbiased.
+Computes the maximum likelihood estimator (MLE) of the drift \eqn{\mu} and
+the variance \eqn{\sigma^2} of the Wiener process
+\eqn{X_t = \mu t + \sigma B_t}, where \eqn{B} is a standard Brownian motion,
+from one trajectory observed at possibly irregular inspection times. The MLE
+is obtained in closed form by maximizing the likelihood directly, without
+numerical optimization.
 }
 \section{Model and data}{
 
@@ -59,17 +63,16 @@ observations: the intermediate inspections only bring information on
 \eqn{\sigma^2}.
 }
 
-\section{Unbiased estimators}{
+\section{Bias}{
 
 Writing the standardized increments as a Gaussian vector and applying an
 orthogonal rotation shows that, for \eqn{m \ge 2},
 \deqn{\hat\mu \sim N(\mu, \sigma^2 / T), \qquad \hat Q / \sigma^2 \sim \chi^2_{m-1},}
 and that \eqn{\hat\mu} and \eqn{\hat Q} are independent. Hence
 \eqn{\hat\mu} is unbiased, while
-\eqn{E[\hat\sigma^2] = \frac{m - 1}{m} \sigma^2}: the maximum likelihood
-estimator of \eqn{\sigma^2} is biased downwards. The function returns its
-unbiased version
-\deqn{s^2 = \frac{\hat Q}{m - 1}.}
+\eqn{E[\hat\sigma^2] = \frac{m - 1}{m} \sigma^2}: \eqn{\hat\sigma^2} is
+biased downwards. The function also returns its unbiased version
+\deqn{s^2 = \frac{\hat Q}{m - 1} = \frac{m}{m - 1} \hat\sigma^2.}
 }
 
 \examples{
@@ -79,5 +82,6 @@ x <- c(0, cumsum(0.5 * diff(t) + 1.5 * sqrt(diff(t)) * rnorm(20)))
 wiener_mle(x, t)
 }
 \seealso{
-\code{\link[=gamma_mle]{gamma_mle()}}, \code{\link[=ig_mle]{ig_mle()}}, \code{\link[=inspection_times]{inspection_times()}}
+\code{\link[=gamma_mle]{gamma_mle()}}, \code{\link[=ig_mle]{ig_mle()}}, \code{\link[=vg_mle]{vg_mle()}}, \code{\link[=meixner_mle]{meixner_mle()}},
+\code{\link[=igam_mle]{igam_mle()}}, \code{\link[=inspection_times]{inspection_times()}}
 }

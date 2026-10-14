@@ -1,8 +1,10 @@
-#' Estimation of the parameters of the inverse Gaussian process
+#' Maximum likelihood estimation for the inverse Gaussian process
 #'
-#' Estimates the parameters \eqn{\mu} and \eqn{\eta} of the homogeneous
-#' inverse Gaussian (IG) process from one trajectory observed at possibly
-#' irregular inspection times. Both estimators are explicit and unbiased.
+#' Computes the maximum likelihood estimator (MLE) of the parameters \eqn{\mu}
+#' and \eqn{\eta} of the homogeneous inverse Gaussian (IG) process from one
+#' trajectory observed at possibly irregular inspection times. The MLE is
+#' obtained in closed form by maximizing the likelihood directly, without
+#' numerical optimization.
 #'
 #' @section Model and data:
 #' \eqn{IG(m, \lambda)} denotes the inverse Gaussian distribution with mean
@@ -35,7 +37,7 @@
 #'    probability one as soon as \eqn{m \ge 2}. Otherwise the likelihood is
 #'    unbounded and the function stops.
 #'
-#' @section Unbiased estimators:
+#' @section Bias:
 #' For \eqn{m \ge 2},
 #' \deqn{\hat\mu \sim IG(\mu, \eta T), \qquad \eta \hat Q \sim \chi^2_{m-1},}
 #' and \eqn{\hat Q} is independent of \eqn{S}: the conditional density of the
@@ -43,17 +45,17 @@
 #' involves \eqn{\hat Q} (this extends a result of Tweedie (1957) to irregular
 #' inspection times). Hence \eqn{\hat\mu} is unbiased, while, since
 #' \eqn{E[1/V] = 1/(k - 2)} for \eqn{V \sim \chi^2_k},
-#' \eqn{E[\hat\eta] = \frac{m}{m - 3} \eta} for \eqn{m > 3}: the maximum
-#' likelihood estimator of \eqn{\eta} is biased upwards. The function returns
-#' its unbiased version
-#' \deqn{\tilde\eta = \frac{m - 3}{\hat Q},}
-#' which requires at least four increments.
+#' \eqn{E[\hat\eta] = \frac{m}{m - 3} \eta} for \eqn{m > 3}: \eqn{\hat\eta} is
+#' biased upwards. The function also returns its unbiased version
+#' \deqn{\tilde\eta = \frac{m - 3}{\hat Q} = \frac{m - 3}{m} \hat\eta,}
+#' which requires at least four increments (`NA` otherwise).
 #'
 #' @param x Degradation levels, with strictly positive increments.
 #' @param t Inspection times, strictly increasing.
 #'
-#' @return A named vector with `mu` \eqn{= \hat\mu} and
-#'   `eta` \eqn{= \tilde\eta}.
+#' @return A named vector with the maximum likelihood estimates
+#'   `mu` \eqn{= \hat\mu} and `eta` \eqn{= \hat\eta}, and the unbiased
+#'   estimate `eta_unbiased` \eqn{= \tilde\eta} of \eqn{\eta}.
 #'
 #' @references
 #' Tweedie, M. C. K. (1957). Statistical properties of inverse Gaussian
@@ -89,11 +91,10 @@ ig_mle <- function(x, t) {
   if (any(dx <= 0)) stop("increments must be strictly positive")
 
   m <- length(dx)
-  if (m < 4) stop("at least four increments are needed")
   Tt <- sum(dt)
   S <- sum(dx)
   Q <- sum(dt^2 / dx) - Tt^2 / S
-  if (Q <= 1e-12 * sum(dt^2 / dx)) stop("the MLE does not exist: all speeds dx/dt are equal")
+  if (m < 2 || Q <= 1e-12 * sum(dt^2 / dx)) stop("the MLE does not exist: all speeds dx/dt are equal")
 
-  c(mu = S / Tt, eta = (m - 3) / Q)
+  c(mu = S / Tt, eta = m / Q, eta_unbiased = if (m > 3) (m - 3) / Q else NA)
 }
