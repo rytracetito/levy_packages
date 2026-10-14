@@ -4,20 +4,23 @@
 \alias{gamma_mle}
 \title{Maximum likelihood estimation for the gamma process}
 \usage{
-gamma_mle(x, t)
+gamma_mle(x, t = NULL)
 }
 \arguments{
-\item{x}{Degradation levels, with strictly positive increments.}
+\item{x}{Degradation levels of one trajectory, with strictly positive increments;
+or a list of data frames, one per trajectory, whose first column contains
+the inspection times and second column the degradation levels.}
 
-\item{t}{Inspection times, strictly increasing.}
+\item{t}{Inspection times of the trajectory, strictly increasing. Not used
+when \code{x} is a list.}
 }
 \value{
 A named vector with \code{a} \eqn{= \hat a} and \code{b} \eqn{= \hat b}.
 }
 \description{
 Computes the maximum likelihood estimator (MLE) of the shape \eqn{a} and
-the rate \eqn{b} of the homogeneous gamma process from one trajectory
-observed at possibly irregular inspection times. The MLE always exists
+the rate \eqn{b} of the homogeneous gamma process from one or several
+trajectories observed at possibly irregular inspection times. The MLE always exists
 (with probability one), is unique, and is the root of an equation in one
 variable.
 }
@@ -26,8 +29,11 @@ variable.
 The gamma process is increasing, with independent increments
 \eqn{X_t - X_s \sim \Gamma(a (t - s), b)} (shape \eqn{a(t - s)}, rate
 \eqn{b}), so that \eqn{E[X_t] = a t / b} and \eqn{Var(X_t) = a t / b^2}.
-From the observations \eqn{(t_j, x_j)}, \eqn{j = 0, \dots, m}, let
-\eqn{\Delta t_j = t_j - t_{j-1}}, \eqn{\Delta x_j = x_j - x_{j-1} > 0},
+The trajectories are independent and have the same law; each one is
+observed at its own inspection times. Let
+\eqn{(\Delta t_j, \Delta x_j)}, \eqn{j = 1, \dots, m}, be the durations and
+degradation increments (\eqn{\Delta x_j > 0}) between two consecutive
+inspections of a same trajectory, gathered over all the trajectories,
 \eqn{T = \sum_j \Delta t_j}, \eqn{S = \sum_j \Delta x_j},
 \eqn{U = \sum_j \Delta t_j \ln \Delta x_j}, the speeds
 \eqn{r_j = \Delta x_j / \Delta t_j} and the weights

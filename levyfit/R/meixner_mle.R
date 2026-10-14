@@ -1,7 +1,7 @@
 #' Maximum likelihood estimation for the Meixner process
 #'
 #' Computes the maximum likelihood estimator of the four parameters
-#' \eqn{(a, b, d, m)} of the Meixner process from one trajectory observed at
+#' \eqn{(a, b, d, m)} of the Meixner process from one or several trajectories observed at
 #' possibly irregular inspection times. The likelihood is unbounded, so the
 #' estimator is defined as the interior local maximum of largest likelihood.
 #'
@@ -13,9 +13,11 @@
 #' The Meixner process is the Lévy process such that
 #' \eqn{X_s \sim Meixner(a, b, d s, m s)}. Its mean and variance per unit of
 #' time are \eqn{\kappa_1 = m + a d \tan(b/2)} and
-#' \eqn{\kappa_2 = a^2 d / (2 \cos^2(b/2))}. From the observations
-#' \eqn{(t_j, x_j)}, \eqn{j = 0, \dots, N}, let
-#' \eqn{\Delta t_j = t_j - t_{j-1}}, \eqn{\Delta x_j = x_j - x_{j-1}},
+#' \eqn{\kappa_2 = a^2 d / (2 \cos^2(b/2))}. The trajectories are independent
+#' and have the same law; each one is observed at its own inspection times. Let
+#' \eqn{(\Delta t_j, \Delta x_j)}, \eqn{j = 1, \dots, N}, be the durations and
+#' degradation increments between two consecutive inspections of a same
+#' trajectory, gathered over all the trajectories,
 #' \eqn{T = \sum_j \Delta t_j}, \eqn{S = \sum_j \Delta x_j},
 #' \eqn{s_j = d \Delta t_j} and \eqn{y_j = (\Delta x_j - m \Delta t_j) / a}.
 #'
@@ -70,8 +72,11 @@
 #' estimation, and with few increments there is often no interior maximum, in
 #' which case the function stops.
 #'
-#' @param x Degradation levels.
-#' @param t Inspection times, strictly increasing.
+#' @param x Degradation levels of one trajectory; or a list of data frames,
+#'   one per trajectory, whose first column contains the inspection times and
+#'   second column the degradation levels.
+#' @param t Inspection times of the trajectory, strictly increasing. Not used
+#'   when `x` is a list.
 #' @param n_start Number of starting points.
 #'
 #' @return A named vector with the estimates `a`, `b`, `d` and `m`.
@@ -96,10 +101,10 @@
 #'   meixner_mle(x, t)
 #' }
 #' @export
-meixner_mle <- function(x, t, n_start = 5) {
-  dt <- diff(t)
-  dx <- diff(x)
-  if (any(dt <= 0)) stop("inspection times must be strictly increasing")
+meixner_mle <- function(x, t = NULL, n_start = 5) {
+  d <- increments(x, t)
+  dt <- d$dt
+  dx <- d$dx
   if (length(dx) < 4) stop("at least four increments are needed to estimate four parameters")
   Tt <- sum(dt)
 

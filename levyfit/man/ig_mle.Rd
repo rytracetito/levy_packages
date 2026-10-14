@@ -4,12 +4,15 @@
 \alias{ig_mle}
 \title{Maximum likelihood estimation for the inverse Gaussian process}
 \usage{
-ig_mle(x, t)
+ig_mle(x, t = NULL)
 }
 \arguments{
-\item{x}{Degradation levels, with strictly positive increments.}
+\item{x}{Degradation levels of one trajectory, with strictly positive increments;
+or a list of data frames, one per trajectory, whose first column contains
+the inspection times and second column the degradation levels.}
 
-\item{t}{Inspection times, strictly increasing.}
+\item{t}{Inspection times of the trajectory, strictly increasing. Not used
+when \code{x} is a list.}
 }
 \value{
 A named vector with the maximum likelihood estimates
@@ -18,8 +21,8 @@ estimate \code{eta_unbiased} \eqn{= \tilde\eta} of \eqn{\eta}.
 }
 \description{
 Computes the maximum likelihood estimator (MLE) of the parameters \eqn{\mu}
-and \eqn{\eta} of the homogeneous inverse Gaussian (IG) process from one
-trajectory observed at possibly irregular inspection times. The MLE is
+and \eqn{\eta} of the homogeneous inverse Gaussian (IG) process from one or several
+trajectories observed at possibly irregular inspection times. The MLE is
 obtained in closed form by maximizing the likelihood directly, without
 numerical optimization.
 }
@@ -30,10 +33,12 @@ numerical optimization.
 \deqn{\sqrt{\frac{\lambda}{2 \pi x^3}} \exp\Big(-\frac{\lambda (x - m)^2}{2 m^2 x}\Big), \qquad x > 0.}
 The IG process is increasing, with independent increments
 \eqn{X_t - X_s \sim IG(\mu (t - s), \eta (t - s)^2)}, so that
-\eqn{E[X_t] = \mu t} and \eqn{Var(X_t) = \mu^3 t / \eta}. From the
-observations \eqn{(t_j, x_j)}, \eqn{j = 0, \dots, m}, let
-\eqn{\Delta t_j = t_j - t_{j-1}}, \eqn{\Delta x_j = x_j - x_{j-1} > 0},
-\eqn{T = \sum_j \Delta t_j} and \eqn{S = \sum_j \Delta x_j}.
+\eqn{E[X_t] = \mu t} and \eqn{Var(X_t) = \mu^3 t / \eta}. The trajectories
+are independent and have the same law; each one is observed at its own
+inspection times. Let \eqn{(\Delta t_j, \Delta x_j)}, \eqn{j = 1, \dots, m},
+be the durations and degradation increments (\eqn{\Delta x_j > 0}) between
+two consecutive inspections of a same trajectory, gathered over all the
+trajectories, \eqn{T = \sum_j \Delta t_j} and \eqn{S = \sum_j \Delta x_j}.
 }
 
 \section{Likelihood}{

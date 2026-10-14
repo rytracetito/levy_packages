@@ -1,8 +1,8 @@
 #' Maximum likelihood estimation for the inverse gamma process
 #'
 #' Computes the maximum likelihood estimator of the parameters
-#' \eqn{(\theta, \alpha, \beta)} of the inverse gamma process from one
-#' trajectory observed at inspection times. The exact likelihood, which accounts
+#' \eqn{(\theta, \alpha, \beta)} of the inverse gamma process from one or
+#' several trajectories observed at inspection times. The exact likelihood, which accounts
 #' for equal observations, is computed by forward filtering over the hidden
 #' positions of the underlying gamma process, then maximized numerically.
 #'
@@ -16,8 +16,10 @@
 #' be equal with positive probability. Writing \eqn{T(w) = \theta G(\eta(w))},
 #' with \eqn{G} a standard gamma process, gives
 #' \eqn{W(t) = \eta^{-1}(L(t / \theta))} with \eqn{L(z) = \inf\{u : G(u) > z\}}.
-#' The trajectory is observed at \eqn{0 = t_0 < t_1 < \dots < t_N}, with
-#' \eqn{0 = w_0 < w_1 \le \dots \le w_N}.
+#' Each trajectory is observed at its own times
+#' \eqn{0 = t_0 < t_1 < \dots < t_N}, with
+#' \eqn{0 = w_0 < w_1 \le \dots \le w_N}. The trajectories are independent and
+#' have the same law.
 #'
 #' @section Reduced data:
 #' Let \eqn{z_j = t_j / \theta} and \eqn{u_j = \eta(w_j)}. Equal observations
@@ -42,7 +44,10 @@
 #'   \Pi(s_K; \underline z_K - x_{K-1}, \overline z_K - x_{K-1})\, dx_1 \cdots dx_{K-1},}
 #' with \eqn{x_0 = 0} and \eqn{\overline z_k < x_k < \underline z_{k+1}}: the
 #' \eqn{x_k} are the hidden positions of \eqn{G} after each jump. The
-#' probability of equal observations is included through the plateaus.
+#' probability of equal observations is included through the plateaus. Since
+#' the process is not a Lévy process, the increments of different trajectories
+#' cannot be pooled: the log-likelihood of several trajectories is the sum of
+#' the logarithms of their densities.
 #'
 #' @section Computation:
 #' \eqn{\Lambda} is computed by forward filtering: each integral is computed by
@@ -66,9 +71,12 @@
 #' is \eqn{-\infty} as soon as two observations are equal and is biased
 #' otherwise; it is not used here.
 #'
-#' @param x Degradation levels, starting at 0 at time 0, non-decreasing, with
-#'   \eqn{x_1 > 0}.
-#' @param t Inspection times, strictly increasing, starting at 0.
+#' @param x Degradation levels of one trajectory, starting at 0 at time 0,
+#'   non-decreasing, with \eqn{x_1 > 0}; or a list of data frames, one per
+#'   trajectory, whose first column contains the inspection times and second
+#'   column the degradation levels.
+#' @param t Inspection times of the trajectory, strictly increasing, starting
+#'   at 0. Not used when `x` is a list.
 #'
 #' @return A named vector with the estimates `theta`, `alpha` and `beta`.
 #'
@@ -90,13 +98,15 @@
 #' igam_mle(x, t)
 #' }
 #' @export
-igam_mle <- function(x, t) {
-  if (t[1] != 0 || x[1] != 0) stop("the trajectory must start at t = 0 with x = 0")
-  if (any(diff(t) <= 0)) stop("inspection times must be strictly increasing")
-  if (any(diff(x) < 0) || x[2] <= 0) stop("levels must be non-decreasing, with x[2] > 0")
+igam_mle <- function(x, t = NULL) {
+  traj <- as_trajectories(x, t)
+  for (d in traj) {
+    if (d$t[1] != 0 || d$x[1] != 0) stop("each trajectory must start at t = 0 with x = 0")
+    if (any(diff(d$x) < 0) || d$x[2] <= 0) stop("levels must be non-decreasing, with x[2] > 0")
+  }
 
-  W <- list(x)
-  tt <- list(t)
+  W <- lapply(traj, function(d) d$x)
+  tt <- lapply(traj, function(d) d$t)
   nll <- function(p) {
     v <- -igam_loglik(W, tt, exp(p[1]), exp(p[2]), exp(p[3]))
     if (is.finite(v)) v else 1e10

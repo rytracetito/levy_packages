@@ -1,8 +1,8 @@
 #' Maximum likelihood estimation for the inverse Gaussian process
 #'
 #' Computes the maximum likelihood estimator (MLE) of the parameters \eqn{\mu}
-#' and \eqn{\eta} of the homogeneous inverse Gaussian (IG) process from one
-#' trajectory observed at possibly irregular inspection times. The MLE is
+#' and \eqn{\eta} of the homogeneous inverse Gaussian (IG) process from one or several
+#' trajectories observed at possibly irregular inspection times. The MLE is
 #' obtained in closed form by maximizing the likelihood directly, without
 #' numerical optimization.
 #'
@@ -12,10 +12,12 @@
 #' \deqn{\sqrt{\frac{\lambda}{2 \pi x^3}} \exp\Big(-\frac{\lambda (x - m)^2}{2 m^2 x}\Big), \qquad x > 0.}
 #' The IG process is increasing, with independent increments
 #' \eqn{X_t - X_s \sim IG(\mu (t - s), \eta (t - s)^2)}, so that
-#' \eqn{E[X_t] = \mu t} and \eqn{Var(X_t) = \mu^3 t / \eta}. From the
-#' observations \eqn{(t_j, x_j)}, \eqn{j = 0, \dots, m}, let
-#' \eqn{\Delta t_j = t_j - t_{j-1}}, \eqn{\Delta x_j = x_j - x_{j-1} > 0},
-#' \eqn{T = \sum_j \Delta t_j} and \eqn{S = \sum_j \Delta x_j}.
+#' \eqn{E[X_t] = \mu t} and \eqn{Var(X_t) = \mu^3 t / \eta}. The trajectories
+#' are independent and have the same law; each one is observed at its own
+#' inspection times. Let \eqn{(\Delta t_j, \Delta x_j)}, \eqn{j = 1, \dots, m},
+#' be the durations and degradation increments (\eqn{\Delta x_j > 0}) between
+#' two consecutive inspections of a same trajectory, gathered over all the
+#' trajectories, \eqn{T = \sum_j \Delta t_j} and \eqn{S = \sum_j \Delta x_j}.
 #'
 #' @section Likelihood:
 #' With \eqn{\delta = 1 / \mu}, the log-likelihood is
@@ -50,8 +52,11 @@
 #' \deqn{\tilde\eta = \frac{m - 3}{\hat Q} = \frac{m - 3}{m} \hat\eta,}
 #' which requires at least four increments (`NA` otherwise).
 #'
-#' @param x Degradation levels, with strictly positive increments.
-#' @param t Inspection times, strictly increasing.
+#' @param x Degradation levels of one trajectory, with strictly positive increments;
+#'   or a list of data frames, one per trajectory, whose first column contains
+#'   the inspection times and second column the degradation levels.
+#' @param t Inspection times of the trajectory, strictly increasing. Not used
+#'   when `x` is a list.
 #'
 #' @return A named vector with the maximum likelihood estimates
 #'   `mu` \eqn{= \hat\mu} and `eta` \eqn{= \hat\eta}, and the unbiased
@@ -84,10 +89,10 @@
 #' x <- c(0, cumsum(rig(30, 0.5 * diff(t), 2 * diff(t)^2)))
 #' ig_mle(x, t)
 #' @export
-ig_mle <- function(x, t) {
-  dt <- diff(t)
-  dx <- diff(x)
-  if (any(dt <= 0)) stop("inspection times must be strictly increasing")
+ig_mle <- function(x, t = NULL) {
+  d <- increments(x, t)
+  dt <- d$dt
+  dx <- d$dx
   if (any(dx <= 0)) stop("increments must be strictly positive")
 
   m <- length(dx)

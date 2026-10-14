@@ -4,12 +4,15 @@
 \alias{wiener_mle}
 \title{Maximum likelihood estimation for the Wiener process}
 \usage{
-wiener_mle(x, t)
+wiener_mle(x, t = NULL)
 }
 \arguments{
-\item{x}{Degradation levels.}
+\item{x}{Degradation levels of one trajectory; or a list of data frames,
+one per trajectory, whose first column contains the inspection times and
+second column the degradation levels.}
 
-\item{t}{Inspection times, strictly increasing.}
+\item{t}{Inspection times of the trajectory, strictly increasing. Not used
+when \code{x} is a list.}
 }
 \value{
 A named vector with the maximum likelihood estimates
@@ -20,7 +23,7 @@ estimate \code{s2} \eqn{= s^2} of \eqn{\sigma^2}.
 Computes the maximum likelihood estimator (MLE) of the drift \eqn{\mu} and
 the variance \eqn{\sigma^2} of the Wiener process
 \eqn{X_t = \mu t + \sigma B_t}, where \eqn{B} is a standard Brownian motion,
-from one trajectory observed at possibly irregular inspection times. The MLE
+from one or several trajectories observed at possibly irregular inspection times. The MLE
 is obtained in closed form by maximizing the likelihood directly, without
 numerical optimization.
 }
@@ -28,10 +31,14 @@ numerical optimization.
 
 The increments are independent and
 \eqn{X_t - X_s \sim N(\mu (t - s), \sigma^2 (t - s))} for \eqn{s < t}; they
-can be negative. From the observations \eqn{(t_j, x_j)}, \eqn{j = 0, \dots, m},
-let \eqn{\Delta t_j = t_j - t_{j-1}}, \eqn{\Delta x_j = x_j - x_{j-1}},
-\eqn{T = \sum_j \Delta t_j}, \eqn{S = \sum_j \Delta x_j} and
-\eqn{r_j = \Delta x_j / \Delta t_j} (speeds).
+can be negative. The trajectories are independent and have the same law;
+each one is observed at its own inspection times. Let
+\eqn{(\Delta t_j, \Delta x_j)}, \eqn{j = 1, \dots, m}, be the durations and
+degradation increments between two consecutive inspections of a same
+trajectory, gathered over all the trajectories, \eqn{T = \sum_j \Delta t_j},
+\eqn{S = \sum_j \Delta x_j} and \eqn{r_j = \Delta x_j / \Delta t_j} (speeds).
+The likelihood is a product over all these independent increments, so the
+formulas below hold for one or several trajectories.
 }
 
 \section{Likelihood}{

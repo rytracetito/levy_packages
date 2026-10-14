@@ -22,17 +22,17 @@ Installation du package depuis GitHub (à faire une seule fois, puis redémarrer
 remotes::install_github("rytracetito/levy_packages", subdir = "levyfit")
 ```
 
-Nombre d'inspections et dernier instant d'inspection, communs aux quatre cas :
+Nombre d'inspections et dernier instant d'inspection des cas 1 à 4 :
 
 ```{r}
-n <- 50
+n <- 100
 tmax <- 100
 ```
 
 Vraies valeurs des paramètres :
 
 ```{r}
-vrai_gamma   <- c(a = 2, b = 3)
+vrai_gamma   <- c(a = 1.5, b = 3)
 vrai_wiener  <- c(mu = 0.5, sigma2 = 2.25, s2 = 2.25)
 vrai_ig      <- c(mu = 0.5, eta = 2, eta_unbiased = 2)
 vrai_vg      <- c(theta = 0.5, sigma = 1.5, nu = 2)
@@ -75,6 +75,9 @@ sim_meixner <- function(t) {
 sim_igam <- function(t) {
   du <- 1e-3
   G <- cumsum(rgamma(ceiling(1.5 * max(t) / du), shape = du))
+  while (G[length(G)] <= max(t)) {
+    G <- c(G, G[length(G)] + cumsum(rgamma(1e4, shape = du)))
+  }
   c(0, (du * findInterval(t[-1], G))^(1 / 1.5))
 }
 ```
@@ -96,6 +99,16 @@ tracer <- function(t, x, titre) {
   ggplot(data.frame(t = t, x = x), aes(x = t, y = x)) +
     geom_line(colour = "grey60") +
     geom_point(size = 1) +
+    labs(title = titre, x = "Temps", y = "Dégradation") +
+    theme_minimal()
+}
+
+tracer_plusieurs <- function(liste, titre) {
+  donnees <- do.call(rbind, lapply(seq_along(liste), function(i)
+    data.frame(trajectoire = i, t = liste[[i]]$t, x = liste[[i]]$X)))
+  ggplot(donnees, aes(x = t, y = x, group = trajectoire)) +
+    geom_line(colour = "grey60") +
+    geom_point(size = 0.6) +
     labs(title = titre, x = "Temps", y = "Dégradation") +
     theme_minimal()
 }
@@ -342,4 +355,65 @@ resultat(try(meixner_mle(x, t4), silent = TRUE), vrai_meixner)
 x <- sim_igam(t4)
 tracer(t4, x, "Inverse gamma")
 resultat(try(igam_mle(x, t4), silent = TRUE), vrai_igam)
+```
+
+\newpage
+
+# Cas 5 : plusieurs trajectoires
+
+20 trajectoires indépendantes, chacune inspectée 10 fois de façon régulière jusqu'à 100. Chaque trajectoire est un `data.frame(t, X)`, et les fonctions du package reçoivent la liste de ces tableaux.
+
+```{r, fig.height = 1.6}
+set.seed(5)
+t5 <- inspection_times("regular", n = 10, tmax = tmax)$time
+tracer_plan(t5, "Plan de chaque trajectoire : 10 inspections régulières")
+simuler <- function(sim) lapply(1:20, function(i) data.frame(t = t5, X = sim(t5)))
+```
+
+## Modèle 1 : gamma homogène
+
+```{r}
+liste <- simuler(sim_gamma)
+tracer_plusieurs(liste, "Gamma homogène : 20 trajectoires")
+resultat(try(gamma_mle(liste), silent = TRUE), vrai_gamma)
+```
+
+## Modèle 2 : Wiener homogène
+
+```{r}
+liste <- simuler(sim_wiener)
+tracer_plusieurs(liste, "Wiener homogène : 20 trajectoires")
+resultat(try(wiener_mle(liste), silent = TRUE), vrai_wiener)
+```
+
+## Modèle 3 : inverse gaussien
+
+```{r}
+liste <- simuler(sim_ig)
+tracer_plusieurs(liste, "Inverse gaussien : 20 trajectoires")
+resultat(try(ig_mle(liste), silent = TRUE), vrai_ig)
+```
+
+## Modèle 4 : variance-gamma
+
+```{r}
+liste <- simuler(sim_vg)
+tracer_plusieurs(liste, "Variance-gamma : 20 trajectoires")
+resultat(try(vg_mle(liste), silent = TRUE), vrai_vg)
+```
+
+## Modèle 5 : Meixner
+
+```{r}
+liste <- simuler(sim_meixner)
+tracer_plusieurs(liste, "Meixner : 20 trajectoires")
+resultat(try(meixner_mle(liste), silent = TRUE), vrai_meixner)
+```
+
+## Modèle 6 : inverse gamma
+
+```{r, cache = TRUE}
+liste <- simuler(sim_igam)
+tracer_plusieurs(liste, "Inverse gamma : 20 trajectoires")
+resultat(try(igam_mle(liste), silent = TRUE), vrai_igam)
 ```

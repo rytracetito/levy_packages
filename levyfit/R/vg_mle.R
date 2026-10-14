@@ -1,8 +1,8 @@
 #' Maximum likelihood estimation for the variance-gamma process
 #'
 #' Computes the maximum likelihood estimator (MLE) of the parameters
-#' \eqn{(\theta, \sigma, \nu)} of the variance-gamma (VG) process from one
-#' trajectory observed at possibly irregular inspection times. There is no
+#' \eqn{(\theta, \sigma, \nu)} of the variance-gamma (VG) process from one or several
+#' trajectories observed at possibly irregular inspection times. There is no
 #' closed form: the MLE is computed by an EM algorithm, whose steps are explicit
 #' or reduce to an equation with a unique root, followed by a quasi-Newton
 #' refinement.
@@ -17,9 +17,12 @@
 #' \eqn{X_s} has the density
 #' \deqn{f_s(x) = \frac{2 e^{\theta x / \sigma^2}}{\sqrt{2\pi}\, \sigma\, \nu^{\lambda_s} \Gamma(\lambda_s)}
 #'   \Big(\frac{|x|}{c}\Big)^{\lambda_s - 1/2} K_{|\lambda_s - 1/2|}(\kappa |x|), \qquad x \ne 0,}
-#' where \eqn{K_\alpha} is the modified Bessel function of the second kind. From
-#' the observations \eqn{(t_j, x_j)}, \eqn{j = 0, \dots, m}, let
-#' \eqn{\Delta t_j = t_j - t_{j-1}} and \eqn{\Delta x_j = x_j - x_{j-1} \ne 0}.
+#' where \eqn{K_\alpha} is the modified Bessel function of the second kind. The
+#' trajectories are independent and have the same law; each one is observed at
+#' its own inspection times. Let \eqn{(\Delta t_j, \Delta x_j)},
+#' \eqn{j = 1, \dots, m}, be the durations and degradation increments
+#' (\eqn{\Delta x_j \ne 0}) between two consecutive inspections of a same
+#' trajectory, gathered over all the trajectories.
 #'
 #' @section Likelihood:
 #' The increments being independent,
@@ -62,8 +65,11 @@
 #' \eqn{(\theta, \sigma)} and \eqn{\nu = T / m}. The algorithm stops at the
 #' Brownian limit when \eqn{\nu < \max_j \Delta t_j / 300}.
 #'
-#' @param x Degradation levels, with non-zero increments.
-#' @param t Inspection times, strictly increasing.
+#' @param x Degradation levels of one trajectory, with non-zero increments;
+#'   or a list of data frames, one per trajectory, whose first column contains
+#'   the inspection times and second column the degradation levels.
+#' @param t Inspection times of the trajectory, strictly increasing. Not used
+#'   when `x` is a list.
 #'
 #' @return A named vector with the maximum likelihood estimates `theta`,
 #'   `sigma` and `nu`.
@@ -91,10 +97,10 @@
 #' x <- c(0, cumsum(0.5 * g + 1.5 * sqrt(g) * rnorm(200)))
 #' vg_mle(x, t)
 #' @export
-vg_mle <- function(x, t) {
-  dt <- diff(t)
-  dx <- diff(x)
-  if (any(dt <= 0)) stop("inspection times must be strictly increasing")
+vg_mle <- function(x, t = NULL) {
+  d <- increments(x, t)
+  dt <- d$dt
+  dx <- d$dx
   if (any(dx == 0)) stop("zero increment: log|dx| is not defined")
   m <- length(dx)
   if (m < 3) stop("at least three increments are needed to estimate three parameters")

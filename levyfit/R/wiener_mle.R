@@ -3,17 +3,21 @@
 #' Computes the maximum likelihood estimator (MLE) of the drift \eqn{\mu} and
 #' the variance \eqn{\sigma^2} of the Wiener process
 #' \eqn{X_t = \mu t + \sigma B_t}, where \eqn{B} is a standard Brownian motion,
-#' from one trajectory observed at possibly irregular inspection times. The MLE
+#' from one or several trajectories observed at possibly irregular inspection times. The MLE
 #' is obtained in closed form by maximizing the likelihood directly, without
 #' numerical optimization.
 #'
 #' @section Model and data:
 #' The increments are independent and
 #' \eqn{X_t - X_s \sim N(\mu (t - s), \sigma^2 (t - s))} for \eqn{s < t}; they
-#' can be negative. From the observations \eqn{(t_j, x_j)}, \eqn{j = 0, \dots, m},
-#' let \eqn{\Delta t_j = t_j - t_{j-1}}, \eqn{\Delta x_j = x_j - x_{j-1}},
-#' \eqn{T = \sum_j \Delta t_j}, \eqn{S = \sum_j \Delta x_j} and
-#' \eqn{r_j = \Delta x_j / \Delta t_j} (speeds).
+#' can be negative. The trajectories are independent and have the same law;
+#' each one is observed at its own inspection times. Let
+#' \eqn{(\Delta t_j, \Delta x_j)}, \eqn{j = 1, \dots, m}, be the durations and
+#' degradation increments between two consecutive inspections of a same
+#' trajectory, gathered over all the trajectories, \eqn{T = \sum_j \Delta t_j},
+#' \eqn{S = \sum_j \Delta x_j} and \eqn{r_j = \Delta x_j / \Delta t_j} (speeds).
+#' The likelihood is a product over all these independent increments, so the
+#' formulas below hold for one or several trajectories.
 #'
 #' @section Likelihood:
 #' The increments being independent and Gaussian, the log-likelihood is
@@ -48,8 +52,11 @@
 #' biased downwards. The function also returns its unbiased version
 #' \deqn{s^2 = \frac{\hat Q}{m - 1} = \frac{m}{m - 1} \hat\sigma^2.}
 #'
-#' @param x Degradation levels.
-#' @param t Inspection times, strictly increasing.
+#' @param x Degradation levels of one trajectory; or a list of data frames,
+#'   one per trajectory, whose first column contains the inspection times and
+#'   second column the degradation levels.
+#' @param t Inspection times of the trajectory, strictly increasing. Not used
+#'   when `x` is a list.
 #'
 #' @return A named vector with the maximum likelihood estimates
 #'   `mu` \eqn{= \hat\mu} and `sigma2` \eqn{= \hat\sigma^2}, and the unbiased
@@ -64,10 +71,10 @@
 #' x <- c(0, cumsum(0.5 * diff(t) + 1.5 * sqrt(diff(t)) * rnorm(20)))
 #' wiener_mle(x, t)
 #' @export
-wiener_mle <- function(x, t) {
-  dt <- diff(t)
-  dx <- diff(x)
-  if (any(dt <= 0)) stop("inspection times must be strictly increasing")
+wiener_mle <- function(x, t = NULL) {
+  d <- increments(x, t)
+  dt <- d$dt
+  dx <- d$dx
 
   m <- length(dx)
   mu <- sum(dx) / sum(dt)

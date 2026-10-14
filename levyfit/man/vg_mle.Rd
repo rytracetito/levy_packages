@@ -4,12 +4,15 @@
 \alias{vg_mle}
 \title{Maximum likelihood estimation for the variance-gamma process}
 \usage{
-vg_mle(x, t)
+vg_mle(x, t = NULL)
 }
 \arguments{
-\item{x}{Degradation levels, with non-zero increments.}
+\item{x}{Degradation levels of one trajectory, with non-zero increments;
+or a list of data frames, one per trajectory, whose first column contains
+the inspection times and second column the degradation levels.}
 
-\item{t}{Inspection times, strictly increasing.}
+\item{t}{Inspection times of the trajectory, strictly increasing. Not used
+when \code{x} is a list.}
 }
 \value{
 A named vector with the maximum likelihood estimates \code{theta},
@@ -17,8 +20,8 @@ A named vector with the maximum likelihood estimates \code{theta},
 }
 \description{
 Computes the maximum likelihood estimator (MLE) of the parameters
-\eqn{(\theta, \sigma, \nu)} of the variance-gamma (VG) process from one
-trajectory observed at possibly irregular inspection times. There is no
+\eqn{(\theta, \sigma, \nu)} of the variance-gamma (VG) process from one or several
+trajectories observed at possibly irregular inspection times. There is no
 closed form: the MLE is computed by an EM algorithm, whose steps are explicit
 or reduce to an equation with a unique root, followed by a quasi-Newton
 refinement.
@@ -34,9 +37,12 @@ decrease. With \eqn{\lambda_s = s / \nu},
 \eqn{X_s} has the density
 \deqn{f_s(x) = \frac{2 e^{\theta x / \sigma^2}}{\sqrt{2\pi}\, \sigma\, \nu^{\lambda_s} \Gamma(\lambda_s)}
   \Big(\frac{|x|}{c}\Big)^{\lambda_s - 1/2} K_{|\lambda_s - 1/2|}(\kappa |x|), \qquad x \ne 0,}
-where \eqn{K_\alpha} is the modified Bessel function of the second kind. From
-the observations \eqn{(t_j, x_j)}, \eqn{j = 0, \dots, m}, let
-\eqn{\Delta t_j = t_j - t_{j-1}} and \eqn{\Delta x_j = x_j - x_{j-1} \ne 0}.
+where \eqn{K_\alpha} is the modified Bessel function of the second kind. The
+trajectories are independent and have the same law; each one is observed at
+its own inspection times. Let \eqn{(\Delta t_j, \Delta x_j)},
+\eqn{j = 1, \dots, m}, be the durations and degradation increments
+(\eqn{\Delta x_j \ne 0}) between two consecutive inspections of a same
+trajectory, gathered over all the trajectories.
 }
 
 \section{Likelihood}{
