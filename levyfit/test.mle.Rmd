@@ -1,0 +1,345 @@
+---
+title: "Test du package levyfit"
+header-includes:
+  - \renewcommand{\contentsname}{Sommaire}
+output:
+  pdf_document:
+    toc: true
+    number_sections: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.height = 2.8, fig.width = 6, fig.align = "center")
+library(levyfit)
+library(ggplot2)
+```
+
+# Préparation
+
+Installation du package depuis GitHub (à faire une seule fois, puis redémarrer R) :
+
+```{r, eval = FALSE}
+remotes::install_github("rytracetito/levy_packages", subdir = "levyfit")
+```
+
+Nombre d'inspections et dernier instant d'inspection, communs aux quatre cas :
+
+```{r}
+n <- 50
+tmax <- 100
+```
+
+Vraies valeurs des paramètres :
+
+```{r}
+vrai_gamma   <- c(a = 2, b = 3)
+vrai_wiener  <- c(mu = 0.5, sigma2 = 2.25, s2 = 2.25)
+vrai_ig      <- c(mu = 0.5, eta = 2, eta_unbiased = 2)
+vrai_vg      <- c(theta = 0.5, sigma = 1.5, nu = 2)
+vrai_meixner <- c(a = 1, b = 0.3, d = 1.5, m = 0.2)
+vrai_igam    <- c(theta = 1, alpha = 1, beta = 1.5)
+```
+
+Simulation d'une trajectoire de chaque modèle aux instants `t` :
+
+```{r}
+sim_gamma <- function(t) {
+  c(0, cumsum(rgamma(length(t) - 1, shape = 2 * diff(t), rate = 3)))
+}
+
+sim_wiener <- function(t) {
+  c(0, cumsum(0.5 * diff(t) + 1.5 * sqrt(diff(t)) * rnorm(length(t) - 1)))
+}
+
+sim_ig <- function(t) {
+  moy <- 0.5 * diff(t)
+  forme <- 2 * diff(t)^2
+  nu <- rnorm(length(moy))^2
+  y <- moy + moy^2 * nu / (2 * forme) -
+    moy / (2 * forme) * sqrt(4 * moy * forme * nu + moy^2 * nu^2)
+  c(0, cumsum(ifelse(runif(length(moy)) <= moy / (moy + y), y, moy^2 / y)))
+}
+
+sim_vg <- function(t) {
+  g <- rgamma(length(t) - 1, shape = diff(t) / 2, scale = 2)
+  c(0, cumsum(0.5 * g + 1.5 * sqrt(g) * rnorm(length(t) - 1)))
+}
+
+sim_meixner <- function(t) {
+  c(0, cumsum(vapply(diff(t), function(s) {
+    loi <- Runuran::udmeixner(alpha = 1, beta = 0.3, delta = 1.5 * s, mu = 0.2 * s)
+    Runuran::ur(Runuran::pinvd.new(loi), 1)
+  }, 0)))
+}
+
+sim_igam <- function(t) {
+  du <- 1e-3
+  G <- cumsum(rgamma(ceiling(1.5 * max(t) / du), shape = du))
+  c(0, (du * findInterval(t[-1], G))^(1 / 1.5))
+}
+```
+
+Représentation d'un plan d'inspection, d'une trajectoire, et tableau des estimations :
+
+```{r}
+tracer_plan <- function(t, titre) {
+  ggplot(data.frame(t = t), aes(x = t, y = 0)) +
+    geom_point() +
+    labs(title = titre, x = "Temps", y = NULL) +
+    theme_minimal() +
+    theme(axis.text.y = element_blank(),
+          panel.grid.major.y = element_blank(),
+          panel.grid.minor.y = element_blank())
+}
+
+tracer <- function(t, x, titre) {
+  ggplot(data.frame(t = t, x = x), aes(x = t, y = x)) +
+    geom_line(colour = "grey60") +
+    geom_point(size = 1) +
+    labs(title = titre, x = "Temps", y = "Dégradation") +
+    theme_minimal()
+}
+
+resultat <- function(estimation, vraies) {
+  if (inherits(estimation, "try-error")) {
+    message <- conditionMessage(attr(estimation, "condition"))
+    knitr::asis_output(paste("**Estimation impossible** :", message))
+  } else {
+    tableau <- data.frame(Paramètre = names(vraies), Vraie = vraies,
+                          Estimée = estimation)
+    knitr::kable(tableau, digits = 3, row.names = FALSE)
+  }
+}
+```
+
+\newpage
+
+# Cas 1 : inspections régulières
+
+```{r, fig.height = 1.6}
+set.seed(1)
+t1 <- inspection_times("regular", n = n, tmax = tmax)$time
+tracer_plan(t1, "Inspections régulières")
+```
+
+## Modèle 1 : gamma homogène
+
+```{r}
+x <- sim_gamma(t1)
+tracer(t1, x, "Gamma homogène")
+resultat(try(gamma_mle(x, t1), silent = TRUE), vrai_gamma)
+```
+
+## Modèle 2 : Wiener homogène
+
+```{r}
+x <- sim_wiener(t1)
+tracer(t1, x, "Wiener homogène")
+resultat(try(wiener_mle(x, t1), silent = TRUE), vrai_wiener)
+```
+
+## Modèle 3 : inverse gaussien
+
+```{r}
+x <- sim_ig(t1)
+tracer(t1, x, "Inverse gaussien")
+resultat(try(ig_mle(x, t1), silent = TRUE), vrai_ig)
+```
+
+## Modèle 4 : variance-gamma
+
+```{r}
+x <- sim_vg(t1)
+tracer(t1, x, "Variance-gamma")
+resultat(try(vg_mle(x, t1), silent = TRUE), vrai_vg)
+```
+
+## Modèle 5 : Meixner
+
+```{r}
+x <- sim_meixner(t1)
+tracer(t1, x, "Meixner")
+resultat(try(meixner_mle(x, t1), silent = TRUE), vrai_meixner)
+```
+
+## Modèle 6 : inverse gamma
+
+```{r, cache = TRUE}
+x <- sim_igam(t1)
+tracer(t1, x, "Inverse gamma")
+resultat(try(igam_mle(x, t1), silent = TRUE), vrai_igam)
+```
+
+\newpage
+
+# Cas 2 : inspections irrégulières, croissantes
+
+```{r, fig.height = 1.6}
+set.seed(2)
+t2 <- inspection_times("increasing", n = n, tmax = tmax)$time
+tracer_plan(t2, "Inspections croissantes : peu au début, beaucoup à la fin")
+```
+
+## Modèle 1 : gamma homogène
+
+```{r}
+x <- sim_gamma(t2)
+tracer(t2, x, "Gamma homogène")
+resultat(try(gamma_mle(x, t2), silent = TRUE), vrai_gamma)
+```
+
+## Modèle 2 : Wiener homogène
+
+```{r}
+x <- sim_wiener(t2)
+tracer(t2, x, "Wiener homogène")
+resultat(try(wiener_mle(x, t2), silent = TRUE), vrai_wiener)
+```
+
+## Modèle 3 : inverse gaussien
+
+```{r}
+x <- sim_ig(t2)
+tracer(t2, x, "Inverse gaussien")
+resultat(try(ig_mle(x, t2), silent = TRUE), vrai_ig)
+```
+
+## Modèle 4 : variance-gamma
+
+```{r}
+x <- sim_vg(t2)
+tracer(t2, x, "Variance-gamma")
+resultat(try(vg_mle(x, t2), silent = TRUE), vrai_vg)
+```
+
+## Modèle 5 : Meixner
+
+```{r}
+x <- sim_meixner(t2)
+tracer(t2, x, "Meixner")
+resultat(try(meixner_mle(x, t2), silent = TRUE), vrai_meixner)
+```
+
+## Modèle 6 : inverse gamma
+
+```{r, cache = TRUE}
+x <- sim_igam(t2)
+tracer(t2, x, "Inverse gamma")
+resultat(try(igam_mle(x, t2), silent = TRUE), vrai_igam)
+```
+
+\newpage
+
+# Cas 3 : inspections irrégulières, décroissantes
+
+```{r, fig.height = 1.6}
+set.seed(3)
+t3 <- inspection_times("decreasing", n = n, tmax = tmax)$time
+tracer_plan(t3, "Inspections décroissantes : beaucoup au début, peu à la fin")
+```
+
+## Modèle 1 : gamma homogène
+
+```{r}
+x <- sim_gamma(t3)
+tracer(t3, x, "Gamma homogène")
+resultat(try(gamma_mle(x, t3), silent = TRUE), vrai_gamma)
+```
+
+## Modèle 2 : Wiener homogène
+
+```{r}
+x <- sim_wiener(t3)
+tracer(t3, x, "Wiener homogène")
+resultat(try(wiener_mle(x, t3), silent = TRUE), vrai_wiener)
+```
+
+## Modèle 3 : inverse gaussien
+
+```{r}
+x <- sim_ig(t3)
+tracer(t3, x, "Inverse gaussien")
+resultat(try(ig_mle(x, t3), silent = TRUE), vrai_ig)
+```
+
+## Modèle 4 : variance-gamma
+
+```{r}
+x <- sim_vg(t3)
+tracer(t3, x, "Variance-gamma")
+resultat(try(vg_mle(x, t3), silent = TRUE), vrai_vg)
+```
+
+## Modèle 5 : Meixner
+
+```{r}
+x <- sim_meixner(t3)
+tracer(t3, x, "Meixner")
+resultat(try(meixner_mle(x, t3), silent = TRUE), vrai_meixner)
+```
+
+## Modèle 6 : inverse gamma
+
+```{r, cache = TRUE}
+x <- sim_igam(t3)
+tracer(t3, x, "Inverse gamma")
+resultat(try(igam_mle(x, t3), silent = TRUE), vrai_igam)
+```
+
+\newpage
+
+# Cas 4 : inspections irrégulières, mixtes
+
+```{r, fig.height = 1.6}
+set.seed(4)
+t4 <- inspection_times("dec-inc", n = n, tmax = tmax)$time
+tracer_plan(t4, "Inspections mixtes : beaucoup au début et à la fin, peu au milieu")
+```
+
+## Modèle 1 : gamma homogène
+
+```{r}
+x <- sim_gamma(t4)
+tracer(t4, x, "Gamma homogène")
+resultat(try(gamma_mle(x, t4), silent = TRUE), vrai_gamma)
+```
+
+## Modèle 2 : Wiener homogène
+
+```{r}
+x <- sim_wiener(t4)
+tracer(t4, x, "Wiener homogène")
+resultat(try(wiener_mle(x, t4), silent = TRUE), vrai_wiener)
+```
+
+## Modèle 3 : inverse gaussien
+
+```{r}
+x <- sim_ig(t4)
+tracer(t4, x, "Inverse gaussien")
+resultat(try(ig_mle(x, t4), silent = TRUE), vrai_ig)
+```
+
+## Modèle 4 : variance-gamma
+
+```{r}
+x <- sim_vg(t4)
+tracer(t4, x, "Variance-gamma")
+resultat(try(vg_mle(x, t4), silent = TRUE), vrai_vg)
+```
+
+## Modèle 5 : Meixner
+
+```{r}
+x <- sim_meixner(t4)
+tracer(t4, x, "Meixner")
+resultat(try(meixner_mle(x, t4), silent = TRUE), vrai_meixner)
+```
+
+## Modèle 6 : inverse gamma
+
+```{r, cache = TRUE}
+x <- sim_igam(t4)
+tracer(t4, x, "Inverse gamma")
+resultat(try(igam_mle(x, t4), silent = TRUE), vrai_igam)
+```

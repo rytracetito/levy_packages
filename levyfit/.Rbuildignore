@@ -1,3 +1,6 @@
 ^levyfit\.Rproj$
 ^\.Rproj\.user$
-^test\.mle\.R$
+^test\.mle\.Rmd$
+^test\.mle\.pdf$
+^test\.mle_cache$
+^test\.mle_files$
