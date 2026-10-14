@@ -2,29 +2,23 @@
 % Please edit documentation in R/ig_mle.R
 \name{ig_mle}
 \alias{ig_mle}
-\title{Maximum likelihood estimation for the inverse Gaussian process}
+\title{Estimation of the parameters of the inverse Gaussian process}
 \usage{
-ig_mle(x, t, level = 0.95)
+ig_mle(x, t)
 }
 \arguments{
 \item{x}{Degradation levels, with strictly positive increments.}
 
 \item{t}{Inspection times, strictly increasing.}
-
-\item{level}{Confidence level \eqn{1 - \alpha} of the exact intervals.}
 }
 \value{
-A list with the estimates \code{mu} and \code{eta}, the unbiased estimate
-\code{eta_unbiased} of \eqn{\eta}, the standard errors \code{se}, the maximum
-log-likelihood \code{loglik}, the exact confidence intervals \code{ci_mu} and
-\code{ci_eta} and the number of increments \code{n_incr}.
+A named vector with \code{mu} \eqn{= \hat\mu} and
+\code{eta} \eqn{= \tilde\eta}.
 }
 \description{
-Computes the maximum likelihood estimator (MLE) of the parameters \eqn{\mu}
-and \eqn{\eta} of the homogeneous inverse Gaussian (IG) process from one
-trajectory observed at possibly irregular inspection times. The estimator is
-explicit and its exact distribution is known, which gives exact confidence
-intervals.
+Estimates the parameters \eqn{\mu} and \eqn{\eta} of the homogeneous
+inverse Gaussian (IG) process from one trajectory observed at possibly
+irregular inspection times. Both estimators are explicit and unbiased.
 }
 \section{Model and data}{
 
@@ -47,7 +41,7 @@ With \eqn{\delta = 1 / \mu}, the log-likelihood is
   \qquad c_0 = \sum_j \Big[\ln \Delta t_j - \frac{1}{2} \ln(2\pi) - \frac{3}{2} \ln \Delta x_j\Big].}
 }
 
-\section{Derivation of the estimator}{
+\section{Maximum likelihood estimator}{
 
 \enumerate{
 \item Expanding the square gives
@@ -60,38 +54,25 @@ with \eqn{\hat Q = 0} if and only if the speeds
 \item The remaining function \eqn{\frac{m}{2} \ln \eta - \frac{\eta}{2} \hat Q}
 is maximal at \eqn{\hat\eta = m / \hat Q}.
 \item The MLE exists and is unique if and only if \eqn{\hat Q > 0}, which has
-probability one as soon as \eqn{m \ge 2}. Otherwise (in particular if
-\eqn{m = 1}) the likelihood is unbounded and the function stops.
+probability one as soon as \eqn{m \ge 2}. Otherwise the likelihood is
+unbounded and the function stops.
 }
 }
 
-\section{Exact distributions and confidence intervals}{
+\section{Unbiased estimators}{
 
 For \eqn{m \ge 2},
 \deqn{\hat\mu \sim IG(\mu, \eta T), \qquad \eta \hat Q \sim \chi^2_{m-1},}
 and \eqn{\hat Q} is independent of \eqn{S}: the conditional density of the
 increments given \eqn{S} does not depend on \eqn{\mu}, and its exponent only
 involves \eqn{\hat Q} (this extends a result of Tweedie (1957) to irregular
-inspection times). Consequently
-\itemize{
-\item \eqn{\hat\mu} is unbiased, \eqn{E[\hat\eta] = m \eta / (m - 3)} for
-\eqn{m > 3}, and \code{eta_unbiased} \eqn{= (m - 3) / \hat Q} is unbiased;
-\item \eqn{[\chi^2_{m-1, \alpha/2} / \hat Q, \chi^2_{m-1, 1-\alpha/2} / \hat Q]}
-is an exact interval for \eqn{\eta};
-\item \eqn{F = \frac{(\delta S - T)^2 / S}{\hat Q / (m - 1)}} follows the
-Fisher distribution \eqn{F(1, m - 1)} whatever \eqn{\mu} and \eqn{\eta};
-with \eqn{c = \sqrt{F_{1, m-1, 1-\alpha}\, \hat Q S / (m - 1)}},
-\eqn{[S / (T + c), S / (T - c)]} is an exact interval for \eqn{\mu}
-(upper bound \eqn{+\infty} if \eqn{c \ge T}).
-}
-}
-
-\section{Standard errors}{
-
-The Fisher information is
-\eqn{I(\mu, \eta) = \mathrm{diag}(\eta T / \mu^3, m / (2 \eta^2))}, hence
-\eqn{se(\hat\mu) = \sqrt{\hat\mu^3 / (\hat\eta T)}} and
-\eqn{se(\hat\eta) = \hat\eta \sqrt{2 / m}}.
+inspection times). Hence \eqn{\hat\mu} is unbiased, while, since
+\eqn{E[1/V] = 1/(k - 2)} for \eqn{V \sim \chi^2_k},
+\eqn{E[\hat\eta] = \frac{m}{m - 3} \eta} for \eqn{m > 3}: the maximum
+likelihood estimator of \eqn{\eta} is biased upwards. The function returns
+its unbiased version
+\deqn{\tilde\eta = \frac{m - 3}{\hat Q},}
+which requires at least four increments.
 }
 
 \examples{
@@ -104,10 +85,7 @@ rig <- function(n, mean, shape) {
 }
 set.seed(1)
 x <- c(0, cumsum(rig(30, 0.5 * diff(t), 2 * diff(t)^2)))
-fit <- ig_mle(x, t)
-c(mu = fit$mu, eta = fit$eta, eta_unbiased = fit$eta_unbiased)
-fit$ci_mu
-fit$ci_eta
+ig_mle(x, t)
 }
 \references{
 Tweedie, M. C. K. (1957). Statistical properties of inverse Gaussian

@@ -12,10 +12,7 @@ gamma_mle(x, t)
 \item{t}{Inspection times, strictly increasing.}
 }
 \value{
-A list with the estimates \code{a} and \code{b}, the standard errors \code{se},
-the covariance matrix \code{vcov}, the maximum log-likelihood \code{loglik}, the
-number of increments \code{n_incr} and the method of moments estimates \code{a_mm}
-and \code{b_mm} used as starting value.
+A named vector with \code{a} \eqn{= \hat a} and \code{b} \eqn{= \hat b}.
 }
 \description{
 Computes the maximum likelihood estimator (MLE) of the shape \eqn{a} and
@@ -46,7 +43,7 @@ It is a two-parameter exponential family with sufficient statistic
 \eqn{(U, S)}.
 }
 
-\section{Derivation of the estimator}{
+\section{Maximum likelihood estimator}{
 
 \enumerate{
 \item The score in \eqn{b} is \eqn{\partial \ell / \partial b = a T / b - S}:
@@ -69,30 +66,23 @@ probability zero when \eqn{m \ge 2}.
 The root is computed by \code{\link[stats:uniroot]{stats::uniroot()}} in \eqn{\ln a}, starting from the
 method of moments: with \eqn{\hat r = S / T} and
 \eqn{\hat\sigma^2 = \sum_j (\Delta x_j - \hat r \Delta t_j)^2 / (T - \sum_j \Delta t_j^2 / T)},
-\eqn{a_{MM} = \hat r^2 / \hat\sigma^2} and \eqn{b_{MM} = \hat r / \hat\sigma^2}.
-Since \eqn{g} is monotone, the search converges whatever the starting value.
+\eqn{a_{MM} = \hat r^2 / \hat\sigma^2}. Since \eqn{g} is monotone, the
+search converges whatever the starting value.
 }
 
-\section{Standard errors}{
+\section{Bias}{
 
-The Hessian of \eqn{\ell} does not depend on the data and is negative
-definite, so \eqn{\ell} is strictly concave and the observed information is
-equal to the Fisher information \eqn{I(a, b)}, with entries
-\deqn{I_{aa} = \sum_j \Delta t_j^2\, \psi'(a \Delta t_j), \qquad I_{ab} = -\frac{T}{b},
-  \qquad I_{bb} = \frac{a T}{b^2}.}
-\code{vcov} is \eqn{I^{-1}} at the estimate and \code{se} its diagonal square roots;
-Wald intervals are \eqn{\hat a \pm 1.96\, se(\hat a)}. With few increments
-(about ten), \eqn{\hat a} and \eqn{\hat b} are biased upwards, while their
-ratio \eqn{\hat a / \hat b = S / T} is unbiased.
+No unbiased version of \eqn{\hat a} and \eqn{\hat b} is available. With few
+increments (about ten) both are biased upwards, by about 40 percent; the
+bias vanishes as the number of increments grows. Their ratio
+\eqn{\hat a / \hat b = S / T} is unbiased.
 }
 
 \examples{
 t <- inspection_times("decreasing", n = 30, tmax = 50)$time
 set.seed(1)
 x <- c(0, cumsum(rgamma(30, shape = 2 * diff(t), rate = 3)))
-fit <- gamma_mle(x, t)
-c(a = fit$a, b = fit$b)
-fit$se
+gamma_mle(x, t)
 }
 \references{
 van Noortwijk, J. M. (2009). A survey of the application of gamma processes

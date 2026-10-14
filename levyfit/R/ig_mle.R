@@ -1,10 +1,8 @@
-#' Maximum likelihood estimation for the inverse Gaussian process
+#' Estimation of the parameters of the inverse Gaussian process
 #'
-#' Computes the maximum likelihood estimator (MLE) of the parameters \eqn{\mu}
-#' and \eqn{\eta} of the homogeneous inverse Gaussian (IG) process from one
-#' trajectory observed at possibly irregular inspection times. The estimator is
-#' explicit and its exact distribution is known, which gives exact confidence
-#' intervals.
+#' Estimates the parameters \eqn{\mu} and \eqn{\eta} of the homogeneous
+#' inverse Gaussian (IG) process from one trajectory observed at possibly
+#' irregular inspection times. Both estimators are explicit and unbiased.
 #'
 #' @section Model and data:
 #' \eqn{IG(m, \lambda)} denotes the inverse Gaussian distribution with mean
@@ -23,7 +21,7 @@
 #'   - \frac{\eta}{2} \sum_j \frac{(\delta \Delta x_j - \Delta t_j)^2}{\Delta x_j},
 #'   \qquad c_0 = \sum_j \Big[\ln \Delta t_j - \frac{1}{2} \ln(2\pi) - \frac{3}{2} \ln \Delta x_j\Big].}
 #'
-#' @section Derivation of the estimator:
+#' @section Maximum likelihood estimator:
 #' 1. Expanding the square gives
 #'    \deqn{\sum_j \frac{(\delta \Delta x_j - \Delta t_j)^2}{\Delta x_j} = \frac{(\delta S - T)^2}{S} + \hat Q,
 #'      \qquad \hat Q = \sum_j \frac{\Delta t_j^2}{\Delta x_j} - \frac{T^2}{S} \ge 0,}
@@ -34,40 +32,28 @@
 #' 3. The remaining function \eqn{\frac{m}{2} \ln \eta - \frac{\eta}{2} \hat Q}
 #'    is maximal at \eqn{\hat\eta = m / \hat Q}.
 #' 4. The MLE exists and is unique if and only if \eqn{\hat Q > 0}, which has
-#'    probability one as soon as \eqn{m \ge 2}. Otherwise (in particular if
-#'    \eqn{m = 1}) the likelihood is unbounded and the function stops.
+#'    probability one as soon as \eqn{m \ge 2}. Otherwise the likelihood is
+#'    unbounded and the function stops.
 #'
-#' @section Exact distributions and confidence intervals:
+#' @section Unbiased estimators:
 #' For \eqn{m \ge 2},
 #' \deqn{\hat\mu \sim IG(\mu, \eta T), \qquad \eta \hat Q \sim \chi^2_{m-1},}
 #' and \eqn{\hat Q} is independent of \eqn{S}: the conditional density of the
 #' increments given \eqn{S} does not depend on \eqn{\mu}, and its exponent only
 #' involves \eqn{\hat Q} (this extends a result of Tweedie (1957) to irregular
-#' inspection times). Consequently
-#' * \eqn{\hat\mu} is unbiased, \eqn{E[\hat\eta] = m \eta / (m - 3)} for
-#'   \eqn{m > 3}, and `eta_unbiased` \eqn{= (m - 3) / \hat Q} is unbiased;
-#' * \eqn{[\chi^2_{m-1, \alpha/2} / \hat Q, \chi^2_{m-1, 1-\alpha/2} / \hat Q]}
-#'   is an exact interval for \eqn{\eta};
-#' * \eqn{F = \frac{(\delta S - T)^2 / S}{\hat Q / (m - 1)}} follows the
-#'   Fisher distribution \eqn{F(1, m - 1)} whatever \eqn{\mu} and \eqn{\eta};
-#'   with \eqn{c = \sqrt{F_{1, m-1, 1-\alpha}\, \hat Q S / (m - 1)}},
-#'   \eqn{[S / (T + c), S / (T - c)]} is an exact interval for \eqn{\mu}
-#'   (upper bound \eqn{+\infty} if \eqn{c \ge T}).
-#'
-#' @section Standard errors:
-#' The Fisher information is
-#' \eqn{I(\mu, \eta) = \mathrm{diag}(\eta T / \mu^3, m / (2 \eta^2))}, hence
-#' \eqn{se(\hat\mu) = \sqrt{\hat\mu^3 / (\hat\eta T)}} and
-#' \eqn{se(\hat\eta) = \hat\eta \sqrt{2 / m}}.
+#' inspection times). Hence \eqn{\hat\mu} is unbiased, while, since
+#' \eqn{E[1/V] = 1/(k - 2)} for \eqn{V \sim \chi^2_k},
+#' \eqn{E[\hat\eta] = \frac{m}{m - 3} \eta} for \eqn{m > 3}: the maximum
+#' likelihood estimator of \eqn{\eta} is biased upwards. The function returns
+#' its unbiased version
+#' \deqn{\tilde\eta = \frac{m - 3}{\hat Q},}
+#' which requires at least four increments.
 #'
 #' @param x Degradation levels, with strictly positive increments.
 #' @param t Inspection times, strictly increasing.
-#' @param level Confidence level \eqn{1 - \alpha} of the exact intervals.
 #'
-#' @return A list with the estimates `mu` and `eta`, the unbiased estimate
-#'   `eta_unbiased` of \eqn{\eta}, the standard errors `se`, the maximum
-#'   log-likelihood `loglik`, the exact confidence intervals `ci_mu` and
-#'   `ci_eta` and the number of increments `n_incr`.
+#' @return A named vector with `mu` \eqn{= \hat\mu} and
+#'   `eta` \eqn{= \tilde\eta}.
 #'
 #' @references
 #' Tweedie, M. C. K. (1957). Statistical properties of inverse Gaussian
@@ -94,33 +80,20 @@
 #' }
 #' set.seed(1)
 #' x <- c(0, cumsum(rig(30, 0.5 * diff(t), 2 * diff(t)^2)))
-#' fit <- ig_mle(x, t)
-#' c(mu = fit$mu, eta = fit$eta, eta_unbiased = fit$eta_unbiased)
-#' fit$ci_mu
-#' fit$ci_eta
+#' ig_mle(x, t)
 #' @export
-ig_mle <- function(x, t, level = 0.95) {
+ig_mle <- function(x, t) {
   dt <- diff(t)
   dx <- diff(x)
   if (any(dt <= 0)) stop("inspection times must be strictly increasing")
   if (any(dx <= 0)) stop("increments must be strictly positive")
 
   m <- length(dx)
+  if (m < 4) stop("at least four increments are needed")
   Tt <- sum(dt)
   S <- sum(dx)
-  mu <- S / Tt
   Q <- sum(dt^2 / dx) - Tt^2 / S
-  if (m < 2 || Q <= 1e-12 * sum(dt^2 / dx)) stop("the MLE does not exist: all speeds dx/dt are equal")
+  if (Q <= 1e-12 * sum(dt^2 / dx)) stop("the MLE does not exist: all speeds dx/dt are equal")
 
-  eta <- m / Q
-  loglik <- sum(log(dt) + 0.5 * log(eta / (2 * pi)) - 1.5 * log(dx) - eta * (dx - mu * dt)^2 / (2 * mu^2 * dx))
-  se <- c(mu = sqrt(mu^3 / (eta * Tt)), eta = eta * sqrt(2 / m))
-
-  alpha <- 1 - level
-  ci_eta <- qchisq(c(alpha / 2, 1 - alpha / 2), m - 1) / Q
-  cF <- sqrt(qf(1 - alpha, 1, m - 1) * Q * S / (m - 1))
-  ci_mu <- c(S / (Tt + cF), if (Tt > cF) S / (Tt - cF) else Inf)
-
-  list(mu = mu, eta = eta, eta_unbiased = (m - 3) / Q, se = se, loglik = loglik,
-       ci_mu = ci_mu, ci_eta = ci_eta, n_incr = m)
+  c(mu = S / Tt, eta = (m - 3) / Q)
 }

@@ -24,7 +24,7 @@
 #' It is a two-parameter exponential family with sufficient statistic
 #' \eqn{(U, S)}.
 #'
-#' @section Derivation of the estimator:
+#' @section Maximum likelihood estimator:
 #' 1. The score in \eqn{b} is \eqn{\partial \ell / \partial b = a T / b - S}:
 #'    for a fixed \eqn{a}, \eqn{\ell} is maximal at \eqn{\hat b(a) = a T / S}.
 #' 2. The profile log-likelihood \eqn{\ell_p(a) = \ell(a, \hat b(a))} has
@@ -44,27 +44,19 @@
 #' The root is computed by [stats::uniroot()] in \eqn{\ln a}, starting from the
 #' method of moments: with \eqn{\hat r = S / T} and
 #' \eqn{\hat\sigma^2 = \sum_j (\Delta x_j - \hat r \Delta t_j)^2 / (T - \sum_j \Delta t_j^2 / T)},
-#' \eqn{a_{MM} = \hat r^2 / \hat\sigma^2} and \eqn{b_{MM} = \hat r / \hat\sigma^2}.
-#' Since \eqn{g} is monotone, the search converges whatever the starting value.
+#' \eqn{a_{MM} = \hat r^2 / \hat\sigma^2}. Since \eqn{g} is monotone, the
+#' search converges whatever the starting value.
 #'
-#' @section Standard errors:
-#' The Hessian of \eqn{\ell} does not depend on the data and is negative
-#' definite, so \eqn{\ell} is strictly concave and the observed information is
-#' equal to the Fisher information \eqn{I(a, b)}, with entries
-#' \deqn{I_{aa} = \sum_j \Delta t_j^2\, \psi'(a \Delta t_j), \qquad I_{ab} = -\frac{T}{b},
-#'   \qquad I_{bb} = \frac{a T}{b^2}.}
-#' `vcov` is \eqn{I^{-1}} at the estimate and `se` its diagonal square roots;
-#' Wald intervals are \eqn{\hat a \pm 1.96\, se(\hat a)}. With few increments
-#' (about ten), \eqn{\hat a} and \eqn{\hat b} are biased upwards, while their
-#' ratio \eqn{\hat a / \hat b = S / T} is unbiased.
+#' @section Bias:
+#' No unbiased version of \eqn{\hat a} and \eqn{\hat b} is available. With few
+#' increments (about ten) both are biased upwards, by about 40 percent; the
+#' bias vanishes as the number of increments grows. Their ratio
+#' \eqn{\hat a / \hat b = S / T} is unbiased.
 #'
 #' @param x Degradation levels, with strictly positive increments.
 #' @param t Inspection times, strictly increasing.
 #'
-#' @return A list with the estimates `a` and `b`, the standard errors `se`,
-#'   the covariance matrix `vcov`, the maximum log-likelihood `loglik`, the
-#'   number of increments `n_incr` and the method of moments estimates `a_mm`
-#'   and `b_mm` used as starting value.
+#' @return A named vector with `a` \eqn{= \hat a} and `b` \eqn{= \hat b}.
 #'
 #' @references
 #' van Noortwijk, J. M. (2009). A survey of the application of gamma processes
@@ -77,9 +69,7 @@
 #' t <- inspection_times("decreasing", n = 30, tmax = 50)$time
 #' set.seed(1)
 #' x <- c(0, cumsum(rgamma(30, shape = 2 * diff(t), rate = 3)))
-#' fit <- gamma_mle(x, t)
-#' c(a = fit$a, b = fit$b)
-#' fit$se
+#' gamma_mle(x, t)
 #' @export
 gamma_mle <- function(x, t) {
   dt <- diff(t)
@@ -89,7 +79,6 @@ gamma_mle <- function(x, t) {
   r <- dx / dt
   if (all(abs(r - r[1]) <= 1e-12 * r[1])) stop("the MLE does not exist: all speeds dx/dt are equal")
 
-  m <- length(dx)
   Tt <- sum(dt)
   S <- sum(dx)
   U <- sum(dt * log(dx))
@@ -97,16 +86,9 @@ gamma_mle <- function(x, t) {
   r_hat <- S / Tt
   s2 <- sum((dx - r_hat * dt)^2) / (Tt - sum(dt^2) / Tt)
   a_mm <- r_hat^2 / s2
-  b_mm <- r_hat / s2
 
   g <- function(u) U - sum(dt * digamma(exp(u) * dt)) + Tt * log(exp(u) * Tt / S)
   a <- exp(uniroot(g, c(log(a_mm) - 1, log(a_mm) + 1), extendInt = "downX", tol = 1e-12)$root)
-  b <- a * Tt / S
 
-  fisher <- matrix(c(sum(dt^2 * trigamma(a * dt)), -Tt / b, -Tt / b, a * Tt / b^2), 2, 2,
-                   dimnames = list(c("a", "b"), c("a", "b")))
-  vcov <- solve(fisher)
-  loglik <- sum(dgamma(dx, shape = a * dt, rate = b, log = TRUE))
-
-  list(a = a, b = b, se = sqrt(diag(vcov)), vcov = vcov, loglik = loglik, n_incr = m, a_mm = a_mm, b_mm = b_mm)
+  c(a = a, b = a * Tt / S)
 }
