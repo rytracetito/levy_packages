@@ -78,7 +78,7 @@
 #' process and option pricing. *European Finance Review*, 2(1), 79-105.
 #' \doi{10.1023/A:1009703431535}
 #'
-#' @seealso [plot_traj()], [traj_df()], [inspection_times()]
+#' @seealso [plot_traj()], [traj_df()], [inspection_times()], [plot_plan()]
 #'
 #' @examples
 #' # One trajectory inspected every 0.5 time unit up to 10

@@ -40,6 +40,8 @@
 #' @return A data frame with columns `id` (trajectory) and `time`, time 0
 #'   included.
 #'
+#' @seealso [plot_plan()] to plot the inspection times
+#'
 #' @examples
 #' inspection_times("increasing", n = 10, digits = 0)
 #' inspection_times("dec-inc", n = c(10, 20), n_traj = 2, tmax = c(50, 100))

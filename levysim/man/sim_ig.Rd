@@ -114,5 +114,5 @@ degradation data. \emph{Technometrics}, 52(2), 188-197.
 \doi{10.1198/TECH.2009.08197}
 }
 \seealso{
-\code{\link[=plot_traj]{plot_traj()}}, \code{\link[=traj_df]{traj_df()}}, \code{\link[=inspection_times]{inspection_times()}}
+\code{\link[=plot_traj]{plot_traj()}}, \code{\link[=traj_df]{traj_df()}}, \code{\link[=inspection_times]{inspection_times()}}, \code{\link[=plot_plan]{plot_plan()}}
 }

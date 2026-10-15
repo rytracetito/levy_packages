@@ -26,6 +26,7 @@
 #' | Function | Use |
 #' |---|---|
 #' | [plot_traj()] | plot of the simulated trajectories (`ggplot2`) |
+#' | [plot_plan()] | plot of the inspection times, one row per trajectory (`ggplot2`) |
 #' | [traj_df()] | simulated data as a data frame with columns `id`, `t`, `X` |
 #' | [inspection_times()] | inspection times with a regular, increasing, decreasing or alternating number of inspections over time |
 #'
@@ -66,6 +67,7 @@
 #' @examples
 #' # 1. Inspection times: 10 trajectories, inspected more and more often
 #' plan <- inspection_times("increasing", n = 20, n_traj = 10, tmax = 100)
+#' plot_plan(plan)
 #'
 #' # 2. Simulation of a homogeneous gamma process
 #' set.seed(1)

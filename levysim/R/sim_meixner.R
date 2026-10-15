@@ -48,7 +48,7 @@
 #' martingales. *Communications in Statistics. Stochastic Models*, 14(1-2),
 #' 335-349.
 #'
-#' @seealso [plot_traj()], [traj_df()], [inspection_times()]
+#' @seealso [plot_traj()], [traj_df()], [inspection_times()], [plot_plan()]
 #'
 #' @examples
 #' # One trajectory inspected every 0.5 time unit up to 10

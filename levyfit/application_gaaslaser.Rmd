@@ -6,22 +6,25 @@ header-includes:
 output:
   pdf_document:
     toc: true
+    toc_depth: 1
     number_sections: true
 ---
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.height = 3.2, fig.width = 6.5, fig.align = "center")
 library(levyfit)
+library(levysim)
 library(ggplot2)
 ```
 
 # Préparation
 
-Installation des packages (à faire une seule fois, puis redémarrer R) :
+Installation des packages :
 
 ```{r, eval = FALSE}
 remotes::install_github("Auburngrads/SMRD.data")
 remotes::install_github("rytracetito/levy_packages", subdir = "levyfit")
+remotes::install_github("rytracetito/levy_packages", subdir = "levysim")
 ```
 
 Les données `gaaslaser` donnent l'augmentation relative (en %) du courant de fonctionnement de 15 lasers GaAs, mesurée toutes les 250 heures, de 0 à 4000 heures. Un laser est considéré défaillant quand cette augmentation atteint 10 %.
@@ -43,42 +46,19 @@ extraire <- function(temps) {
 }
 ```
 
-Représentation des instants d'inspection et des trajectoires :
+Les instants d'inspection et les trajectoires sont tracés avec `plot_plan()` et `plot_traj()` du package `levysim`, complétés par le seuil de défaillance et le nom des axes :
 
 ```{r}
-tracer_plan <- function(temps, titre) {
-  ggplot(data.frame(t = temps), aes(x = t, y = 0)) +
-    geom_point() +
-    labs(title = titre, x = "Temps (heures)", y = NULL) +
-    theme_minimal() +
-    theme(axis.text.y = element_blank(),
-          panel.grid.major.y = element_blank(),
-          panel.grid.minor.y = element_blank())
-}
-
-tracer_lasers <- function(liste, titre) {
-  donnees <- do.call(rbind, lapply(seq_along(liste), function(i)
-    data.frame(laser = i, t = liste[[i]]$t, x = liste[[i]]$X)))
-  donnees$etat <- ifelse(ave(donnees$x, donnees$laser, FUN = max) >= seuil,
-                         "Dépasse le seuil", "Reste sous le seuil")
-  ggplot(donnees, aes(x = t, y = x, group = laser, colour = etat)) +
-    geom_hline(yintercept = seuil, linetype = "dashed", colour = "grey45") +
-    geom_line(linewidth = 0.6) +
-    geom_point(size = 1.2) +
-    scale_colour_manual(values = c("Dépasse le seuil" = "#C2410C",
-                                   "Reste sous le seuil" = "#2563EB")) +
-    labs(title = titre, x = "Temps (heures)", y = "Dégradation (%)", colour = NULL) +
-    theme_minimal() +
-    theme(legend.position = "top")
-}
+seuil_et_axes <- list(geom_hline(yintercept = seuil, linetype = "dashed", colour = "red"),
+                      labs(x = "Temps (heures)", y = "Dégradation (%)"))
 ```
 
-Estimation des six modèles sur une liste de trajectoires. Quand une estimation est impossible, le tableau donne la raison :
+Estimation des cinq modèles sur une liste de trajectoires. Quand une estimation est impossible, le tableau donne la raison :
 
 ```{r}
 modeles <- c("Wiener" = "wiener_mle", "Gamma" = "gamma_mle",
              "Inverse gaussien" = "ig_mle", "Variance-gamma" = "vg_mle",
-             "Meixner" = "meixner_mle", "Inverse gamma" = "igam_mle")
+             "Meixner" = "meixner_mle")
 
 estimer_tout <- function(liste) {
   texte <- sapply(modeles, function(f) {
@@ -117,12 +97,13 @@ Les 17 instants d'inspection, de 0 à 4000 heures toutes les 250 heures.
 
 ```{r, fig.height = 1.6}
 temps1 <- sort(unique(d$hours))
-tracer_plan(temps1, "Inspections régulières")
+plot_plan(temps1, "Inspections régulières") +
+  labs(x = "Temps (heures)")
 ```
 
 ```{r}
 liste1 <- extraire(temps1)
-tracer_lasers(liste1, "Lasers GaAs : données complètes")
+plot_traj(liste1, "Lasers GaAs : données complètes") + seuil_et_axes
 ```
 
 ```{r, cache = TRUE}
@@ -138,12 +119,13 @@ Inspections fréquentes au début, plus espacées ensuite.
 
 ```{r, fig.height = 1.6}
 temps2 <- c(0, 250, 500, 750, 1000, 1500, 2000, 2500, 3000, 4000)
-tracer_plan(temps2, "Inspections décroissantes : beaucoup au début, peu à la fin")
+plot_plan(temps2, "Inspections décroissantes : beaucoup au début, peu à la fin") +
+  labs(x = "Temps (heures)")
 ```
 
 ```{r}
 liste2 <- extraire(temps2)
-tracer_lasers(liste2, "Lasers GaAs : inspections décroissantes")
+plot_traj(liste2, "Lasers GaAs : inspections décroissantes") + seuil_et_axes
 ```
 
 ```{r, cache = TRUE}
@@ -159,12 +141,13 @@ Inspections espacées au début, plus fréquentes ensuite.
 
 ```{r, fig.height = 1.6}
 temps3 <- c(0, 1000, 1500, 2000, 2500, 3000, 3250, 3500, 3750, 4000)
-tracer_plan(temps3, "Inspections croissantes : peu au début, beaucoup à la fin")
+plot_plan(temps3, "Inspections croissantes : peu au début, beaucoup à la fin") +
+  labs(x = "Temps (heures)")
 ```
 
 ```{r}
 liste3 <- extraire(temps3)
-tracer_lasers(liste3, "Lasers GaAs : inspections croissantes")
+plot_traj(liste3, "Lasers GaAs : inspections croissantes") + seuil_et_axes
 ```
 
 ```{r, cache = TRUE}

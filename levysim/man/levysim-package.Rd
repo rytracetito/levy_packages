@@ -31,6 +31,7 @@ is never a Lévy process).
 Results and inspection schedules:\tabular{ll}{
    Function \tab Use \cr
    \code{\link[=plot_traj]{plot_traj()}} \tab plot of the simulated trajectories (\code{ggplot2}) \cr
+   \code{\link[=plot_plan]{plot_plan()}} \tab plot of the inspection times, one row per trajectory (\code{ggplot2}) \cr
    \code{\link[=traj_df]{traj_df()}} \tab simulated data as a data frame with columns \code{id}, \code{t}, \code{X} \cr
    \code{\link[=inspection_times]{inspection_times()}} \tab inspection times with a regular, increasing, decreasing or alternating number of inspections over time \cr
 }
@@ -83,6 +84,7 @@ uses a specific exact algorithm.
 \examples{
 # 1. Inspection times: 10 trajectories, inspected more and more often
 plan <- inspection_times("increasing", n = 20, n_traj = 10, tmax = 100)
+plot_plan(plan)
 
 # 2. Simulation of a homogeneous gamma process
 set.seed(1)

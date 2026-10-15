@@ -18,6 +18,12 @@
 #' | [meixner_mle()] | Meixner process | `a`, `b`, `d`, `m` | profile likelihood, several starts |
 #' | [igam_mle()] | inverse gamma process | `theta`, `alpha`, `beta` | exact likelihood by forward filtering |
 #'
+#' Confidence intervals:
+#'
+#' | Function | Use |
+#' |---|---|
+#' | [confint_mle()] | estimates and asymptotic confidence intervals of the parameters of any of the six models |
+#'
 #' Inspection schedules:
 #'
 #' | Function | Use |
@@ -58,5 +64,5 @@
 #' @keywords package
 "_PACKAGE"
 
-#' @importFrom stats coef dgamma integrate lm optim optimize pgamma runif sd uniroot
+#' @importFrom stats coef dgamma dnorm integrate lm optim optimHess optimize pgamma qnorm runif sd uniroot
 NULL

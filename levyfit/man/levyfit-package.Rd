@@ -25,6 +25,12 @@ Estimation of the parameters (click on a function name for its help page):\tabul
 }
 
 
+Confidence intervals:\tabular{ll}{
+   Function \tab Use \cr
+   \code{\link[=confint_mle]{confint_mle()}} \tab estimates and asymptotic confidence intervals of the parameters of any of the six models \cr
+}
+
+
 Inspection schedules:\tabular{ll}{
    Function \tab Use \cr
    \code{\link[=inspection_times]{inspection_times()}} \tab inspection times on \eqn{[0, t_{max}]} for one or several trajectories, with a regular, increasing, decreasing or alternating number of inspections over time \cr

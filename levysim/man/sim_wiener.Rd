@@ -110,5 +110,5 @@ Whitmore, G. A. (1995). Estimating degradation by a Wiener diffusion process
 subject to measurement error. \emph{Lifetime Data Analysis}, 1, 307-319.
 }
 \seealso{
-\code{\link[=plot_traj]{plot_traj()}}, \code{\link[=traj_df]{traj_df()}}, \code{\link[=inspection_times]{inspection_times()}}
+\code{\link[=plot_traj]{plot_traj()}}, \code{\link[=traj_df]{traj_df()}}, \code{\link[=inspection_times]{inspection_times()}}, \code{\link[=plot_plan]{plot_plan()}}
 }

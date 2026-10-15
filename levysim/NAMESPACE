@@ -2,6 +2,7 @@
 
 S3method(print,levysim)
 export(inspection_times)
+export(plot_plan)
 export(plot_traj)
 export(sim_gamma)
 export(sim_ig)

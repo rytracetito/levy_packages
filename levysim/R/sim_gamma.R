@@ -50,7 +50,7 @@
 #' in maintenance. *Reliability Engineering & System Safety*, 94(1), 2-21.
 #' \doi{10.1016/j.ress.2007.03.019}
 #'
-#' @seealso [plot_traj()], [traj_df()], [inspection_times()]
+#' @seealso [plot_traj()], [traj_df()], [inspection_times()], [plot_plan()]
 #'
 #' @examples
 #' # One trajectory inspected every 0.5 time unit up to 10

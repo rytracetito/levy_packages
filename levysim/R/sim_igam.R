@@ -60,7 +60,7 @@
 #' phenomena. *Reliability Engineering & System Safety*, 120, 72-79.
 #' \doi{10.1016/j.ress.2013.03.013}
 #'
-#' @seealso [plot_traj()], [traj_df()], [inspection_times()]
+#' @seealso [plot_traj()], [traj_df()], [inspection_times()], [plot_plan()]
 #'
 #' @examples
 #' # One trajectory inspected every time unit up to 10

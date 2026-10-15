@@ -161,5 +161,5 @@ process and option pricing. \emph{European Finance Review}, 2(1), 79-105.
 \doi{10.1023/A:1009703431535}
 }
 \seealso{
-\code{\link[=plot_traj]{plot_traj()}}, \code{\link[=traj_df]{traj_df()}}, \code{\link[=inspection_times]{inspection_times()}}
+\code{\link[=plot_traj]{plot_traj()}}, \code{\link[=traj_df]{traj_df()}}, \code{\link[=inspection_times]{inspection_times()}}, \code{\link[=plot_plan]{plot_plan()}}
 }

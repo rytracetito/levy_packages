@@ -2,12 +2,11 @@
 title: "Exemple d'utilisation du package levysim"
 header-includes:
   - \renewcommand{\contentsname}{Sommaire}
-  - \renewcommand{\thesection}{\Roman{section}}
 output:
   pdf_document:
     toc: true
     toc_depth: 2
-    number_sections: true
+    number_sections: false
 ---
 
 ```{r setup, include = FALSE}
@@ -18,13 +17,13 @@ library(ggplot2)
 
 # Préparation {-}
 
-Installation du package depuis GitHub (à faire une seule fois, puis redémarrer R) :
+Installation du package depuis GitHub :
 
 ```{r, eval = FALSE}
 remotes::install_github("rytracetito/levy_packages", subdir = "levysim")
 ```
 
-Tous les exemples utilisent les **processus homogènes** : les fonctions `sim_` sont appelées sans fonction du temps, et les valeurs par défaut (`A`, `Lambda` et `tau` égales à l'identité) donnent des processus de Lévy. Le processus inverse gamma n'a pas de version de Lévy ; on prend la fonction de forme linéaire \(\eta(w) = w/\alpha\) (`beta = 1`), pour laquelle le processus gamma sous-jacent \(T(w)\) est homogène en niveau.
+Tous les exemples utilisent les **processus homogènes** : les valeurs par défaut (`A`, `Lambda` et `tau` égales à l'identité).
 
 Paramètres utilisés :
 
@@ -35,23 +34,8 @@ Paramètres utilisés :
 | Inverse gaussien | `sim_ig` | `mu = 0.5`, `eta = 2` |
 | Variance-gamma | `sim_vg` | `theta = 0.5`, `sigma = 1.5`, `nu = 2` |
 | Meixner | `sim_meixner` | `a = 1`, `b = 0.3`, `d = 1.5`, `m = 0.2` |
-| Inverse gamma | `sim_igam` | `theta = 1`, `alpha = 1`, `beta = 1` |
 
-Représentation d'un plan d'inspection :
-
-```{r}
-tracer_plan <- function(t, titre) {
-  ggplot(data.frame(t = t), aes(x = t, y = 0)) +
-    geom_point() +
-    labs(title = titre, x = "Temps", y = NULL) +
-    theme_minimal() +
-    theme(axis.text.y = element_blank(),
-          panel.grid.major.y = element_blank(),
-          panel.grid.minor.y = element_blank())
-}
-```
-
-# Une trajectoire
+# I - Une trajectoire
 
 Une trajectoire inspectée 50 fois entre 0 et 100.
 
@@ -59,8 +43,8 @@ Une trajectoire inspectée 50 fois entre 0 et 100.
 
 ```{r, fig.height = 1.6}
 set.seed(1)
-t1 <- inspection_times("regular", n = 50, tmax = 100)$time
-tracer_plan(t1, "Inspections régulières")
+t1 <- inspection_times("regular", n = 49, tmax = 100)$time
+plot_plan(t1, "Inspections régulières")
 ```
 
 ### Modèle 1 : gamma homogène
@@ -93,20 +77,14 @@ plot_traj(sim_vg(t1, theta = 0.5, sigma = 1.5, nu = 2), "Variance-gamma homogèn
 plot_traj(sim_meixner(t1, a = 1, b = 0.3, d = 1.5, m = 0.2), "Meixner homogène")
 ```
 
-### Modèle 6 : inverse gamma
-
-```{r}
-plot_traj(sim_igam(t1, theta = 1, alpha = 1, beta = 1), "Inverse gamma")
-```
-
 \newpage
 
 ## Cas 2 : inspections croissantes
 
 ```{r, fig.height = 1.6}
 set.seed(2)
-t2 <- inspection_times("increasing", n = 50, tmax = 100)$time
-tracer_plan(t2, "Inspections croissantes : peu au début, beaucoup à la fin")
+t2 <- inspection_times("increasing", n = 49, tmax = 100)$time
+plot_plan(t2, "Inspections croissantes : peu au début, beaucoup à la fin")
 ```
 
 ### Modèle 1 : gamma homogène
@@ -139,20 +117,14 @@ plot_traj(sim_vg(t2, theta = 0.5, sigma = 1.5, nu = 2), "Variance-gamma homogèn
 plot_traj(sim_meixner(t2, a = 1, b = 0.3, d = 1.5, m = 0.2), "Meixner homogène")
 ```
 
-### Modèle 6 : inverse gamma
-
-```{r}
-plot_traj(sim_igam(t2, theta = 1, alpha = 1, beta = 1), "Inverse gamma")
-```
-
 \newpage
 
 ## Cas 3 : inspections décroissantes
 
 ```{r, fig.height = 1.6}
 set.seed(3)
-t3 <- inspection_times("decreasing", n = 50, tmax = 100)$time
-tracer_plan(t3, "Inspections décroissantes : beaucoup au début, peu à la fin")
+t3 <- inspection_times("decreasing", n = 49, tmax = 100)$time
+plot_plan(t3, "Inspections décroissantes : beaucoup au début, peu à la fin")
 ```
 
 ### Modèle 1 : gamma homogène
@@ -185,20 +157,14 @@ plot_traj(sim_vg(t3, theta = 0.5, sigma = 1.5, nu = 2), "Variance-gamma homogèn
 plot_traj(sim_meixner(t3, a = 1, b = 0.3, d = 1.5, m = 0.2), "Meixner homogène")
 ```
 
-### Modèle 6 : inverse gamma
-
-```{r}
-plot_traj(sim_igam(t3, theta = 1, alpha = 1, beta = 1), "Inverse gamma")
-```
-
 \newpage
 
 ## Cas 4 : inspections mixtes
 
 ```{r, fig.height = 1.6}
 set.seed(4)
-t4 <- inspection_times("dec-inc", n = 50, tmax = 100)$time
-tracer_plan(t4, "Inspections mixtes : beaucoup au début et à la fin, peu au milieu")
+t4 <- inspection_times("dec-inc", n = 49, tmax = 100)$time
+plot_plan(t4, "Inspections mixtes : beaucoup au début et à la fin, peu au milieu")
 ```
 
 ### Modèle 1 : gamma homogène
@@ -231,209 +197,179 @@ plot_traj(sim_vg(t4, theta = 0.5, sigma = 1.5, nu = 2), "Variance-gamma homogèn
 plot_traj(sim_meixner(t4, a = 1, b = 0.3, d = 1.5, m = 0.2), "Meixner homogène")
 ```
 
-### Modèle 6 : inverse gamma
-
-```{r}
-plot_traj(sim_igam(t4, theta = 1, alpha = 1, beta = 1), "Inverse gamma")
-```
-
 \newpage
 
-# Plusieurs trajectoires
+# II - Plusieurs trajectoires
 
-10 trajectoires, chacune inspectée 20 fois entre 0 et 100. Le résultat de `inspection_times()` est passé directement aux fonctions `sim_` : il contient les instants de chaque trajectoire.
+10 trajectoires, chacune inspectée 20 fois entre 0 et 100.
 
-## Cas 5 : inspections régulières
+## Cas 1 : inspections régulières
 
-```{r, fig.height = 1.6}
+```{r, fig.height = 2.6}
 set.seed(5)
-p5 <- inspection_times("regular", n = 20, n_traj = 10, tmax = 100)
-tracer_plan(p5$time[p5$id == 1], "Chaque trajectoire : inspections régulières")
+p1 <- inspection_times("regular", n = 19, n_traj = 10, tmax = 100)
+plot_plan(p1, "Plans des 10 trajectoires : inspections régulières")
 ```
 
 ### Modèle 1 : gamma homogène
 
 ```{r}
-plot_traj(sim_gamma(p5, a = 2, b = 3), "Gamma homogène")
+plot_traj(sim_gamma(p1, a = 2, b = 3), "Gamma homogène")
 ```
 
 ### Modèle 2 : Wiener homogène
 
 ```{r}
-plot_traj(sim_wiener(p5, mu = 0.5, sigma = 1.5), "Wiener homogène")
+plot_traj(sim_wiener(p1, mu = 0.5, sigma = 1.5), "Wiener homogène")
 ```
 
 ### Modèle 3 : inverse gaussien
 
 ```{r}
-plot_traj(sim_ig(p5, mu = 0.5, eta = 2), "Inverse gaussien homogène")
+plot_traj(sim_ig(p1, mu = 0.5, eta = 2), "Inverse gaussien homogène")
 ```
 
 ### Modèle 4 : variance-gamma
 
 ```{r}
-plot_traj(sim_vg(p5, theta = 0.5, sigma = 1.5, nu = 2), "Variance-gamma homogène")
+plot_traj(sim_vg(p1, theta = 0.5, sigma = 1.5, nu = 2), "Variance-gamma homogène")
 ```
 
 ### Modèle 5 : Meixner
 
 ```{r}
-plot_traj(sim_meixner(p5, a = 1, b = 0.3, d = 1.5, m = 0.2), "Meixner homogène")
-```
-
-### Modèle 6 : inverse gamma
-
-```{r}
-plot_traj(sim_igam(p5, theta = 1, alpha = 1, beta = 1), "Inverse gamma")
+plot_traj(sim_meixner(p1, a = 1, b = 0.3, d = 1.5, m = 0.2), "Meixner homogène")
 ```
 
 \newpage
 
-## Cas 6 : inspections croissantes
+## Cas 2 : inspections croissantes
 
-```{r, fig.height = 1.6}
+```{r, fig.height = 2.6}
 set.seed(6)
-p6 <- inspection_times("increasing", n = 20, n_traj = 10, tmax = 100)
-tracer_plan(p6$time[p6$id == 1], "Chaque trajectoire : peu au début, beaucoup à la fin")
+p2 <- inspection_times("increasing", n = 19, n_traj = 10, tmax = 100)
+plot_plan(p2, "Plans des 10 trajectoires : peu au début, beaucoup à la fin")
 ```
 
 ### Modèle 1 : gamma homogène
 
 ```{r}
-plot_traj(sim_gamma(p6, a = 2, b = 3), "Gamma homogène")
+plot_traj(sim_gamma(p2, a = 2, b = 3), "Gamma homogène")
 ```
 
 ### Modèle 2 : Wiener homogène
 
 ```{r}
-plot_traj(sim_wiener(p6, mu = 0.5, sigma = 1.5), "Wiener homogène")
+plot_traj(sim_wiener(p2, mu = 0.5, sigma = 1.5), "Wiener homogène")
 ```
 
 ### Modèle 3 : inverse gaussien
 
 ```{r}
-plot_traj(sim_ig(p6, mu = 0.5, eta = 2), "Inverse gaussien homogène")
+plot_traj(sim_ig(p2, mu = 0.5, eta = 2), "Inverse gaussien homogène")
 ```
 
 ### Modèle 4 : variance-gamma
 
 ```{r}
-plot_traj(sim_vg(p6, theta = 0.5, sigma = 1.5, nu = 2), "Variance-gamma homogène")
+plot_traj(sim_vg(p2, theta = 0.5, sigma = 1.5, nu = 2), "Variance-gamma homogène")
 ```
 
 ### Modèle 5 : Meixner
 
 ```{r}
-plot_traj(sim_meixner(p6, a = 1, b = 0.3, d = 1.5, m = 0.2), "Meixner homogène")
-```
-
-### Modèle 6 : inverse gamma
-
-```{r}
-plot_traj(sim_igam(p6, theta = 1, alpha = 1, beta = 1), "Inverse gamma")
+plot_traj(sim_meixner(p2, a = 1, b = 0.3, d = 1.5, m = 0.2), "Meixner homogène")
 ```
 
 \newpage
 
-## Cas 7 : inspections décroissantes
+## Cas 3 : inspections décroissantes
 
-```{r, fig.height = 1.6}
+```{r, fig.height = 2.6}
 set.seed(7)
-p7 <- inspection_times("decreasing", n = 20, n_traj = 10, tmax = 100)
-tracer_plan(p7$time[p7$id == 1], "Chaque trajectoire : beaucoup au début, peu à la fin")
+p3 <- inspection_times("decreasing", n = 19, n_traj = 10, tmax = 100)
+plot_plan(p3, "Plans des 10 trajectoires : beaucoup au début, peu à la fin")
 ```
 
 ### Modèle 1 : gamma homogène
 
 ```{r}
-plot_traj(sim_gamma(p7, a = 2, b = 3), "Gamma homogène")
+plot_traj(sim_gamma(p3, a = 2, b = 3), "Gamma homogène")
 ```
 
 ### Modèle 2 : Wiener homogène
 
 ```{r}
-plot_traj(sim_wiener(p7, mu = 0.5, sigma = 1.5), "Wiener homogène")
+plot_traj(sim_wiener(p3, mu = 0.5, sigma = 1.5), "Wiener homogène")
 ```
 
 ### Modèle 3 : inverse gaussien
 
 ```{r}
-plot_traj(sim_ig(p7, mu = 0.5, eta = 2), "Inverse gaussien homogène")
+plot_traj(sim_ig(p3, mu = 0.5, eta = 2), "Inverse gaussien homogène")
 ```
 
 ### Modèle 4 : variance-gamma
 
 ```{r}
-plot_traj(sim_vg(p7, theta = 0.5, sigma = 1.5, nu = 2), "Variance-gamma homogène")
+plot_traj(sim_vg(p3, theta = 0.5, sigma = 1.5, nu = 2), "Variance-gamma homogène")
 ```
 
 ### Modèle 5 : Meixner
 
 ```{r}
-plot_traj(sim_meixner(p7, a = 1, b = 0.3, d = 1.5, m = 0.2), "Meixner homogène")
-```
-
-### Modèle 6 : inverse gamma
-
-```{r}
-plot_traj(sim_igam(p7, theta = 1, alpha = 1, beta = 1), "Inverse gamma")
+plot_traj(sim_meixner(p3, a = 1, b = 0.3, d = 1.5, m = 0.2), "Meixner homogène")
 ```
 
 \newpage
 
-## Cas 8 : inspections mixtes
+## Cas 4 : inspections mixtes
 
-```{r, fig.height = 1.6}
+```{r, fig.height = 2.6}
 set.seed(8)
-p8 <- inspection_times("dec-inc", n = 20, n_traj = 10, tmax = 100)
-tracer_plan(p8$time[p8$id == 1], "Chaque trajectoire : beaucoup au début et à la fin")
+p4 <- inspection_times("dec-inc", n = 19, n_traj = 10, tmax = 100)
+plot_plan(p4, "Plans des 10 trajectoires : beaucoup au début et à la fin")
 ```
 
 ### Modèle 1 : gamma homogène
 
 ```{r}
-plot_traj(sim_gamma(p8, a = 2, b = 3), "Gamma homogène")
+plot_traj(sim_gamma(p4, a = 2, b = 3), "Gamma homogène")
 ```
 
 ### Modèle 2 : Wiener homogène
 
 ```{r}
-plot_traj(sim_wiener(p8, mu = 0.5, sigma = 1.5), "Wiener homogène")
+plot_traj(sim_wiener(p4, mu = 0.5, sigma = 1.5), "Wiener homogène")
 ```
 
 ### Modèle 3 : inverse gaussien
 
 ```{r}
-plot_traj(sim_ig(p8, mu = 0.5, eta = 2), "Inverse gaussien homogène")
+plot_traj(sim_ig(p4, mu = 0.5, eta = 2), "Inverse gaussien homogène")
 ```
 
 ### Modèle 4 : variance-gamma
 
 ```{r}
-plot_traj(sim_vg(p8, theta = 0.5, sigma = 1.5, nu = 2), "Variance-gamma homogène")
+plot_traj(sim_vg(p4, theta = 0.5, sigma = 1.5, nu = 2), "Variance-gamma homogène")
 ```
 
 ### Modèle 5 : Meixner
 
 ```{r}
-plot_traj(sim_meixner(p8, a = 1, b = 0.3, d = 1.5, m = 0.2), "Meixner homogène")
-```
-
-### Modèle 6 : inverse gamma
-
-```{r}
-plot_traj(sim_igam(p8, theta = 1, alpha = 1, beta = 1), "Inverse gamma")
+plot_traj(sim_meixner(p4, a = 1, b = 0.3, d = 1.5, m = 0.2), "Meixner homogène")
 ```
 
 \newpage
 
-# Récupérer les données simulées
+# III - Récupérer les données simulées
 
 Le résultat d'une fonction `sim_` s'affiche directement : modèle, paramètres et premières valeurs.
 
 ```{r}
 set.seed(9)
-plan <- inspection_times("increasing", n = 10, n_traj = 3, tmax = 100)
+plan <- inspection_times("increasing", n = 9, n_traj = 3, tmax = 100)
 x <- sim_gamma(plan, a = 2, b = 3)
 x
 ```

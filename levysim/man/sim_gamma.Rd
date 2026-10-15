@@ -100,5 +100,5 @@ in maintenance. \emph{Reliability Engineering & System Safety}, 94(1), 2-21.
 \doi{10.1016/j.ress.2007.03.019}
 }
 \seealso{
-\code{\link[=plot_traj]{plot_traj()}}, \code{\link[=traj_df]{traj_df()}}, \code{\link[=inspection_times]{inspection_times()}}
+\code{\link[=plot_traj]{plot_traj()}}, \code{\link[=traj_df]{traj_df()}}, \code{\link[=inspection_times]{inspection_times()}}, \code{\link[=plot_plan]{plot_plan()}}
 }

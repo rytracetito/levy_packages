@@ -113,5 +113,5 @@ martingales. \emph{Communications in Statistics. Stochastic Models}, 14(1-2),
 335-349.
 }
 \seealso{
-\code{\link[=plot_traj]{plot_traj()}}, \code{\link[=traj_df]{traj_df()}}, \code{\link[=inspection_times]{inspection_times()}}
+\code{\link[=plot_traj]{plot_traj()}}, \code{\link[=traj_df]{traj_df()}}, \code{\link[=inspection_times]{inspection_times()}}, \code{\link[=plot_plan]{plot_plan()}}
 }

@@ -1,0 +1,23 @@
+test_that("confint_mle gives the closed-form standard errors of the Wiener MLE", {
+  set.seed(1)
+  t <- seq(0, 100, by = 1)
+  x <- c(0, cumsum(0.5 * diff(t) + 1.5 * sqrt(diff(t)) * rnorm(100)))
+  r <- confint_mle(x, t, model = "wiener")
+  f <- wiener_mle(x, t)
+  z <- qnorm(0.975)
+  expect_equal(r$upper[1] - r$estimate[1], z * sqrt(f[["sigma2"]] / 100), tolerance = 1e-4)
+  expect_equal(log(r$upper[2] / r$estimate[2]), z * sqrt(2 / 100), tolerance = 1e-4)
+  expect_true(is.na(r$lower[3]))
+})
+
+test_that("confint_mle intervals contain the estimate and widen with the level", {
+  set.seed(2)
+  t <- seq(0, 100, by = 2)
+  x <- c(0, cumsum(rgamma(50, shape = 2 * diff(t), rate = 3)))
+  r95 <- confint_mle(x, t, model = "gamma")
+  r99 <- confint_mle(x, t, model = "gamma", level = 0.99)
+  expect_equal(r95$estimate, unname(gamma_mle(x, t)))
+  expect_true(all(r95$lower < r95$estimate & r95$estimate < r95$upper & r95$lower > 0))
+  expect_true(all(r99$lower < r95$lower & r95$upper < r99$upper))
+  expect_error(confint_mle(x, t, model = "gamma", level = 1.2))
+})

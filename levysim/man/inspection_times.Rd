@@ -66,3 +66,6 @@ inspection_times("increasing", n = 10, digits = 0)
 inspection_times("dec-inc", n = c(10, 20), n_traj = 2, tmax = c(50, 100))
 inspection_times(function(x) x^2, n = 10)
 }
+\seealso{
+\code{\link[=plot_plan]{plot_plan()}} to plot the inspection times
+}

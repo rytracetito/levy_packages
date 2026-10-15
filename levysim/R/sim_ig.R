@@ -49,7 +49,7 @@
 #' degradation data. *Technometrics*, 52(2), 188-197.
 #' \doi{10.1198/TECH.2009.08197}
 #'
-#' @seealso [plot_traj()], [traj_df()], [inspection_times()]
+#' @seealso [plot_traj()], [traj_df()], [inspection_times()], [plot_plan()]
 #'
 #' @examples
 #' # One trajectory inspected every 0.5 time unit up to 10

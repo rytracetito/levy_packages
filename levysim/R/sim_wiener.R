@@ -38,7 +38,7 @@
 #' Whitmore, G. A. (1995). Estimating degradation by a Wiener diffusion process
 #' subject to measurement error. *Lifetime Data Analysis*, 1, 307-319.
 #'
-#' @seealso [plot_traj()], [traj_df()], [inspection_times()]
+#' @seealso [plot_traj()], [traj_df()], [inspection_times()], [plot_plan()]
 #'
 #' @examples
 #' # One trajectory inspected every 0.5 time unit up to 10
