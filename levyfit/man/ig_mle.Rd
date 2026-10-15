@@ -83,16 +83,43 @@ which requires at least four increments (\code{NA} otherwise).
 }
 
 \examples{
-t <- inspection_times("inc-dec", n = 30, tmax = 50)$time
-rig <- function(n, mean, shape) {
-  nu <- rnorm(n)^2
-  y <- mean + mean^2 * nu / (2 * shape) -
-    mean / (2 * shape) * sqrt(4 * mean * shape * nu + mean^2 * nu^2)
-  ifelse(runif(n) <= mean / (mean + y), y, mean^2 / y)
-}
+\dontshow{if (requireNamespace("levysim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+# 1. One trajectory inspected every time unit up to 50 (mu = 0.5, eta = 2)
+t <- seq(0, 50, by = 1)
 set.seed(1)
-x <- c(0, cumsum(rig(30, 0.5 * diff(t), 2 * diff(t)^2)))
-ig_mle(x, t)
+x <- levysim::sim_ig(t, mu = 0.5, eta = 2)
+ig_mle(x)
+
+# The same trajectory given as two vectors: degradation levels, then times
+ig_mle(x[[1]]$X, t)
+
+# 2. One trajectory with irregular inspections, more and more frequent
+t <- inspection_times("increasing", n = 50, tmax = 50)$time
+x <- levysim::sim_ig(t, mu = 0.5, eta = 2)
+ig_mle(x)
+
+# 3. Ten trajectories with the same inspection times
+t <- seq(0, 50, by = 5)
+x <- levysim::sim_ig(t, mu = 0.5, eta = 2, n_traj = 10)
+ig_mle(x)
+
+# 4. Ten trajectories, each with its own inspection times
+plan <- inspection_times("decreasing", n = 5:14, n_traj = 10, tmax = 50)
+x <- levysim::sim_ig(plan, mu = 0.5, eta = 2)
+ig_mle(x)
+
+# 5. Estimates with 95 \% confidence intervals
+confint_mle(x, model = "ig")
+
+# 6. Your own data: a list of data frames, one per trajectory,
+#    with the times in the first column and the levels in the second
+liste <- list(data.frame(t = c(0, 10, 20, 30), X = c(0, 5.2, 9.8, 15.3)),
+              data.frame(t = c(0, 15, 30), X = c(0, 7.4, 14.6)))
+ig_mle(liste)
+
+# The inverse Gaussian process only increases: a decrease stops the estimation
+try(ig_mle(c(0, 2, 1.5, 3), c(0, 1, 2, 3)))
+\dontshow{\}) # examplesIf}
 }
 \references{
 Tweedie, M. C. K. (1957). Statistical properties of inverse Gaussian

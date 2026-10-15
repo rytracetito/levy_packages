@@ -83,10 +83,44 @@ biased downwards. The function also returns its unbiased version
 }
 
 \examples{
-t <- inspection_times("increasing", n = 20, tmax = 50)$time
+\dontshow{if (requireNamespace("levysim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+# 1. One trajectory inspected every time unit up to 50 (mu = 0.5, sigma2 = 2.25)
+t <- seq(0, 50, by = 1)
 set.seed(1)
-x <- c(0, cumsum(0.5 * diff(t) + 1.5 * sqrt(diff(t)) * rnorm(20)))
-wiener_mle(x, t)
+x <- levysim::sim_wiener(t, mu = 0.5, sigma = 1.5)
+wiener_mle(x)
+
+# The same trajectory given as two vectors: degradation levels, then times
+wiener_mle(x[[1]]$X, t)
+
+# 2. One trajectory with irregular inspections, more and more frequent
+t <- inspection_times("increasing", n = 50, tmax = 50)$time
+x <- levysim::sim_wiener(t, mu = 0.5, sigma = 1.5)
+wiener_mle(x)
+
+# 3. Ten trajectories with the same inspection times
+t <- seq(0, 50, by = 5)
+x <- levysim::sim_wiener(t, mu = 0.5, sigma = 1.5, n_traj = 10)
+wiener_mle(x)
+
+# 4. Ten trajectories, each with its own inspection times
+plan <- inspection_times("decreasing", n = 5:14, n_traj = 10, tmax = 50)
+x <- levysim::sim_wiener(plan, mu = 0.5, sigma = 1.5)
+wiener_mle(x)
+
+# 5. Estimates with 95 \% confidence intervals
+confint_mle(x, model = "wiener")
+
+# 6. Your own data: a list of data frames, one per trajectory,
+#    with the times in the first column and the levels in the second
+liste <- list(data.frame(t = c(0, 10, 20, 30), X = c(0, 4.2, 11.5, 13.9)),
+              data.frame(t = c(0, 15, 30), X = c(0, 9.1, 12.8)))
+wiener_mle(liste)
+
+# sigma2 is the MLE and s2 its unbiased version: with few increments,
+# here 3, they differ clearly
+wiener_mle(c(0, 1.2, 0.7, 2.5), c(0, 1, 2, 3))
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=gamma_mle]{gamma_mle()}}, \code{\link[=ig_mle]{ig_mle()}}, \code{\link[=vg_mle]{vg_mle()}}, \code{\link[=meixner_mle]{meixner_mle()}},

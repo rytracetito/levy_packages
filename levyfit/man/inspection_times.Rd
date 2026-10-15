@@ -62,7 +62,30 @@ Any other strictly increasing function on \eqn{[0, 10]} can be given as
 \code{pattern}.
 }
 \examples{
+# Regular inspections: 10 inspections after time 0, up to 100
+inspection_times("regular", n = 10, tmax = 100)
+
+# More and more frequent inspections, times rounded to integers
 inspection_times("increasing", n = 10, digits = 0)
-inspection_times("dec-inc", n = c(10, 20), n_traj = 2, tmax = c(50, 100))
-inspection_times(function(x) x^2, n = 10)
+
+# Fewer and fewer inspections
+inspection_times("decreasing", n = 10, digits = 0)
+
+# Frequent in the middle of the period, rare at the start and at the end
+inspection_times("inc-dec", n = 20, digits = 1)
+
+# Frequent at the start and at the end, rare in the middle
+inspection_times("dec-inc", n = 20, digits = 1)
+
+# Three trajectories with 10, 15 and 20 inspections, up to 50, 100 and 150
+plan <- inspection_times("increasing", n = c(10, 15, 20), n_traj = 3,
+                         tmax = c(50, 100, 150), digits = 1)
+plan
+
+# Times of the second trajectory only
+plan$time[plan$id == 2]
+
+# Any strictly increasing function on [0, 10]: with sqrt, the inspections
+# are rare at the start and more and more frequent
+inspection_times(sqrt, n = 10, digits = 0)
 }

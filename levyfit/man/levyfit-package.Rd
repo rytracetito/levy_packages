@@ -70,12 +70,22 @@ process of shape \eqn{(w / \alpha)^\beta} and scale \eqn{\theta}.
 }
 
 \examples{
-t <- inspection_times("increasing", n = 20, tmax = 100)$time
+\dontshow{if (requireNamespace("levysim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+# 1. Inspection times: 10 trajectories inspected more and more often
+plan <- inspection_times("increasing", n = 20, n_traj = 10, tmax = 100)
+
+# 2. Simulated data, here a gamma process (a = 2, b = 3)
 set.seed(1)
-liste <- lapply(1:10, function(i)
-  data.frame(t = t, X = c(0, cumsum(rgamma(20, shape = 2 * diff(t), rate = 3)))))
-gamma_mle(liste)
-wiener_mle(liste)
+x <- levysim::sim_gamma(plan, a = 2, b = 3)
+
+# 3. Estimation of several models on the same data
+gamma_mle(x)
+wiener_mle(x)
+ig_mle(x)
+
+# 4. Estimates with 95 \% confidence intervals
+confint_mle(x, model = "gamma")
+\dontshow{\}) # examplesIf}
 }
 \author{
 \strong{Maintainer}: Amedée Rytrace Tito \email{rytracetito5@gmail.com}

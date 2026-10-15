@@ -103,14 +103,26 @@ otherwise; it is not used here.
 }
 
 \examples{
+\dontshow{if (requireNamespace("levysim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 \donttest{
-t <- inspection_times("regular", n = 10, tmax = 20)$time
+# 1. One trajectory inspected every 2 time units up to 20
+#    (theta = 1, alpha = 1, beta = 1.5)
+t <- seq(0, 20, by = 2)
 set.seed(1)
-du <- 1e-3
-G <- cumsum(rgamma(1e5, shape = du))
-x <- c(0, (du * findInterval(t[-1], G))^(1 / 1.5))
-igam_mle(x, t)
+x <- levysim::sim_igam(t, theta = 1, alpha = 1, beta = 1.5)
+igam_mle(x)
+
+# The same trajectory given as two vectors: degradation levels, then times
+igam_mle(x[[1]]$X, t)
+
+# 2. Ten trajectories with the same inspection times
+x <- levysim::sim_igam(t, theta = 1, alpha = 1, beta = 1.5, n_traj = 10)
+igam_mle(x)
+
+# 3. Estimates with 95 \% confidence intervals
+confint_mle(x, model = "igam")
 }
+\dontshow{\}) # examplesIf}
 }
 \references{
 Guida, M. and Pulcini, G. (2013). The inverse Gamma process: a family of

@@ -41,21 +41,31 @@
 #' @seealso [gamma_mle()], [wiener_mle()], [ig_mle()], [vg_mle()],
 #'   [meixner_mle()], [igam_mle()]
 #'
-#' @examples
-#' # One trajectory of a gamma process (a = 2, b = 3)
-#' t <- inspection_times("regular", n = 50, tmax = 100)$time
+#' @examplesIf requireNamespace("levysim", quietly = TRUE)
+#' # 1. One trajectory of a gamma process (a = 2, b = 3)
+#' t <- seq(0, 100, by = 2)
 #' set.seed(1)
-#' x <- c(0, cumsum(rgamma(50, shape = 2 * diff(t), rate = 3)))
-#' confint_mle(x, t, model = "gamma")
+#' x <- levysim::sim_gamma(t, a = 2, b = 3)
+#' confint_mle(x, model = "gamma")
 #'
-#' # 99 % intervals
-#' confint_mle(x, t, model = "gamma", level = 0.99)
+#' # The same trajectory given as two vectors: degradation levels, then times
+#' confint_mle(x[[1]]$X, t, model = "gamma")
 #'
-#' # Ten trajectories of a Wiener process (mu = 0.5, sigma2 = 2.25)
-#' t <- inspection_times("increasing", n = 20, tmax = 100)$time
-#' liste <- lapply(1:10, function(i)
-#'   data.frame(t = t, X = c(0, cumsum(0.5 * diff(t) + 1.5 * sqrt(diff(t)) * rnorm(20)))))
-#' confint_mle(liste, model = "wiener")
+#' # 2. 99 % intervals: wider than the 95 % ones
+#' confint_mle(x, model = "gamma", level = 0.99)
+#'
+#' # 3. Ten trajectories of a Wiener process (mu = 0.5, sigma2 = 2.25)
+#' plan <- inspection_times("increasing", n = 20, n_traj = 10, tmax = 100)
+#' x <- levysim::sim_wiener(plan, mu = 0.5, sigma = 1.5)
+#' r <- confint_mle(x, model = "wiener")
+#' r
+#'
+#' # 4. Use the result: does each interval contain the true value?
+#' r <- r[r$parameter %in% c("mu", "sigma2"), ]
+#' r$lower <= c(0.5, 2.25) & c(0.5, 2.25) <= r$upper
+#'
+#' # 5. Width of the intervals
+#' r$upper - r$lower
 #' @export
 confint_mle <- function(x, t = NULL, model, level = 0.95) {
   model <- match.arg(model, c("gamma", "wiener", "ig", "vg", "meixner", "igam"))

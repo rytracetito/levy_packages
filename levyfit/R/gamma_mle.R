@@ -71,11 +71,42 @@
 #'
 #' @seealso [wiener_mle()], [ig_mle()], [inspection_times()]
 #'
-#' @examples
-#' t <- inspection_times("decreasing", n = 30, tmax = 50)$time
+#' @examplesIf requireNamespace("levysim", quietly = TRUE)
+#' # 1. One trajectory inspected every time unit up to 50 (a = 2, b = 3)
+#' t <- seq(0, 50, by = 1)
 #' set.seed(1)
-#' x <- c(0, cumsum(rgamma(30, shape = 2 * diff(t), rate = 3)))
-#' gamma_mle(x, t)
+#' x <- levysim::sim_gamma(t, a = 2, b = 3)
+#' gamma_mle(x)
+#'
+#' # The same trajectory given as two vectors: degradation levels, then times
+#' gamma_mle(x[[1]]$X, t)
+#'
+#' # 2. One trajectory with irregular inspections, more and more frequent
+#' t <- inspection_times("increasing", n = 50, tmax = 50)$time
+#' x <- levysim::sim_gamma(t, a = 2, b = 3)
+#' gamma_mle(x)
+#'
+#' # 3. Ten trajectories with the same inspection times
+#' t <- seq(0, 50, by = 5)
+#' x <- levysim::sim_gamma(t, a = 2, b = 3, n_traj = 10)
+#' gamma_mle(x)
+#'
+#' # 4. Ten trajectories, each with its own inspection times
+#' plan <- inspection_times("decreasing", n = 5:14, n_traj = 10, tmax = 50)
+#' x <- levysim::sim_gamma(plan, a = 2, b = 3)
+#' gamma_mle(x)
+#'
+#' # 5. Estimates with 95 % confidence intervals
+#' confint_mle(x, model = "gamma")
+#'
+#' # 6. Your own data: a list of data frames, one per trajectory,
+#' #    with the times in the first column and the levels in the second
+#' liste <- list(data.frame(t = c(0, 10, 20, 30), X = c(0, 6.1, 13.4, 19.8)),
+#'               data.frame(t = c(0, 15, 30), X = c(0, 9.7, 20.5)))
+#' gamma_mle(liste)
+#'
+#' # The gamma process only increases: a decrease stops the estimation
+#' try(gamma_mle(c(0, 2, 1.5, 3), c(0, 1, 2, 3)))
 #' @export
 gamma_mle <- function(x, t = NULL) {
   d <- increments(x, t)

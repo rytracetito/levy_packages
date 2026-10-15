@@ -103,12 +103,35 @@
 #'
 #' @seealso [wiener_mle()], [meixner_mle()], [inspection_times()]
 #'
-#' @examples
-#' t <- inspection_times("regular", n = 200, tmax = 400)$time
+#' @examplesIf requireNamespace("levysim", quietly = TRUE)
+#' # 1. One trajectory inspected every 2 time units up to 400
+#' #    (theta = 0.5, sigma = 1.5, nu = 2)
+#' t <- seq(0, 400, by = 2)
 #' set.seed(1)
-#' g <- rgamma(200, shape = diff(t) / 2, scale = 2)
-#' x <- c(0, cumsum(0.5 * g + 1.5 * sqrt(g) * rnorm(200)))
-#' vg_mle(x, t)
+#' x <- levysim::sim_vg(t, theta = 0.5, sigma = 1.5, nu = 2)
+#' vg_mle(x)
+#'
+#' # The same trajectory given as two vectors: degradation levels, then times
+#' vg_mle(x[[1]]$X, t)
+#'
+#' # 2. Twenty trajectories with the same inspection times
+#' t <- seq(0, 40, by = 2)
+#' x <- levysim::sim_vg(t, theta = 0.5, sigma = 1.5, nu = 2, n_traj = 20)
+#' vg_mle(x)
+#'
+#' # 3. Twenty trajectories, each with its own inspection times
+#' plan <- inspection_times("dec-inc", n = 15:34, n_traj = 20, tmax = 40)
+#' x <- levysim::sim_vg(plan, theta = 0.5, sigma = 1.5, nu = 2)
+#' vg_mle(x)
+#'
+#' # 4. Estimates with 95 % confidence intervals
+#' confint_mle(x, model = "vg")
+#'
+#' # 5. Increasing data, here from a gamma process: the likelihood is maximal
+#' #    at the gamma limit (sigma = 0) and the function suggests gamma_mle()
+#' y <- levysim::sim_gamma(seq(0, 100, by = 1), a = 2, b = 3)
+#' try(vg_mle(y))
+#' gamma_mle(y)
 #' @export
 vg_mle <- function(x, t = NULL) {
   d <- increments(x, t)

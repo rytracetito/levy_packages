@@ -105,14 +105,33 @@ which case the function stops.
 }
 
 \examples{
-if (requireNamespace("Runuran", quietly = TRUE)) {
-  t <- inspection_times("regular", n = 500, tmax = 1000)$time
-  set.seed(1)
-  dist <- Runuran::udmeixner(alpha = 1, beta = 0.3, delta = 1.5 * 2, mu = 0.2 * 2)
-  gen <- Runuran::pinvd.new(dist)
-  x <- c(0, cumsum(Runuran::ur(gen, 500)))
-  meixner_mle(x, t)
-}
+\dontshow{if (requireNamespace("levysim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+# The Meixner model needs many small increments: over long intervals its
+# increments are almost Gaussian and its parameters are hard to separate.
+
+# 1. One trajectory inspected every time unit up to 500
+#    (a = 1, b = 0.3, d = 1.5, m = 0.2)
+t <- seq(0, 500, by = 1)
+set.seed(1)
+x <- levysim::sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2)
+meixner_mle(x)
+
+# The same trajectory given as two vectors: degradation levels, then times
+meixner_mle(x[[1]]$X, t)
+
+# 2. Twenty trajectories with the same inspection times
+t <- seq(0, 20, by = 1)
+x <- levysim::sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2, n_traj = 20)
+meixner_mle(x)
+
+# 3. Estimates with 95 \% confidence intervals
+confint_mle(x, model = "meixner")
+
+# 4. Few increments over long intervals: the maximum is often at the
+#    boundary (Gaussian or shifted gamma limit) and the function stops
+y <- levysim::sim_meixner(seq(0, 100, by = 10), a = 1, b = 0.3, d = 1.5, m = 0.2)
+try(meixner_mle(y))
+\dontshow{\}) # examplesIf}
 }
 \references{
 Schoutens, W. and Teugels, J. L. (1998). Lévy processes, polynomials and
