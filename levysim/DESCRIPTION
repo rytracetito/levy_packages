@@ -1,0 +1,22 @@
+Package: levysim
+Title: Simulation of Degradation Processes
+Version: 0.0.0.9000
+Authors@R: 
+    person("Amedée Rytrace", "Tito", , "rytracetito5@gmail.com", role = c("aut", "cre"))
+Description: Exact simulation of one or several degradation trajectories
+    of gamma, Wiener, inverse Gaussian, variance-gamma, Meixner and
+    inverse gamma processes, homogeneous or not, at possibly irregular
+    inspection times; plotting of the trajectories and extraction of the
+    simulated data.
+License: GPL-3
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Imports: 
+    ggplot2,
+    Runuran,
+    stats,
+    utils
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
