@@ -48,7 +48,7 @@
 #' * Gamma: \eqn{X_t - X_s \sim \Gamma(a (t - s), b)}, shape \eqn{a(t - s)} and
 #'   **rate** \eqn{b}, so that \eqn{E[X_t] = a t / b}. The scale is \eqn{1 / b}.
 #' * Inverse Gaussian: \eqn{X_t - X_s \sim IG(\mu (t - s), \eta (t - s)^2)}.
-#' * Variance-gamma: \eqn{X_s = \theta \gamma_s + \sigma W(\gamma_s)}, with
+#' * Variance-gamma: \eqn{X_s = \theta \gamma_s + \sigma W_{\gamma_s}}, with
 #'   \eqn{\gamma_s} of mean \eqn{s} and variance \eqn{\nu s}.
 #' * Meixner: \eqn{X_s \sim Meixner(a, b, d s, m s)}.
 #' * Inverse gamma: \eqn{W(t) = \inf\{w : T(w) > t\}}, with \eqn{T} a gamma

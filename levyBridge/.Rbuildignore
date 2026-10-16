@@ -4,3 +4,7 @@
 ^exemple_levyBridge\.pdf$
 ^exemple_levyBridge_cache$
 ^exemple_levyBridge_files$
+^application_levyBridge\.Rmd$
+^application_levyBridge\.pdf$
+^application_levyBridge_cache$
+^application_levyBridge_files$

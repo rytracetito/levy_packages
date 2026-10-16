@@ -46,8 +46,6 @@ vrai_meixner <- c(a = 1, b = 0.3, d = 1.5, m = 0.2)
 
 Les trajectoires sont simulées avec les fonctions `sim_gamma()`, `sim_wiener()`, `sim_ig()`, `sim_vg()` et `sim_meixner()` du package `levysim`, avec les vraies valeurs ci-dessus, et tracées avec `plot_traj()`. Chaque estimation est faite par `confint_mle()` du package `levyfit`, qui donne l'estimateur du maximum de vraisemblance et son intervalle de confiance asymptotique à 95 %.
 
-Le modèle de Meixner a besoin de plus de données : sur de grands intervalles, ses incréments sont presque gaussiens et le maximum de vraisemblance n'existe souvent pas (la vraisemblance est maximale au bord, vers la limite gaussienne ou gamma décalée). Pour ce modèle, la partie I utilise donc 500 inspections jusqu'à 500 et la partie II 20 inspections par trajectoire jusqu'à 20, soit un pas moyen de 1 dans les deux cas.
-
 Nombre de trajectoires de la partie II :
 
 ```{r}

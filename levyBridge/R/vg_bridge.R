@@ -6,7 +6,7 @@
 #'
 #' @section Model:
 #' The variance-gamma process with parameters \eqn{\theta}, \eqn{\sigma > 0}
-#' and \eqn{\nu > 0} is \eqn{X_s = \theta \gamma_s + \sigma W(\gamma_s)}, where
+#' and \eqn{\nu > 0} is \eqn{X_s = \theta \gamma_s + \sigma W_{\gamma_s}}, where
 #' \eqn{\gamma} is a gamma process with \eqn{\gamma_s \sim \Gamma(s / \nu)}
 #' with scale \eqn{\nu} (mean \eqn{s}, variance \eqn{\nu s}) and \eqn{W} an
 #' independent standard Brownian motion. Its trajectories are not monotone.
