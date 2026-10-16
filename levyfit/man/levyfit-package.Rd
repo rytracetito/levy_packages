@@ -90,5 +90,10 @@ confint_mle(x, model = "gamma")
 \author{
 \strong{Maintainer}: Amedée Rytrace Tito \email{rytracetito5@gmail.com}
 
+Authors:
+\itemize{
+  \item Christian Paroissin \email{christian.paroissin@univ-pau.fr}
+}
+
 }
 \keyword{package}

@@ -101,5 +101,10 @@ Applications}, 121(4), 856-884.
 \author{
 \strong{Maintainer}: Amedée Rytrace Tito \email{rytracetito5@gmail.com}
 
+Authors:
+\itemize{
+  \item Christian Paroissin \email{christian.paroissin@univ-pau.fr}
+}
+
 }
 \keyword{package}

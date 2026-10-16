@@ -1,8 +1,10 @@
 Package: levyfit
 Title: Maximum Likelihood Estimation for Levy Degradation Processes
 Version: 0.0.0.9000
-Authors@R: 
-    person("Amedée Rytrace", "Tito", , "rytracetito5@gmail.com", role = c("aut", "cre"))
+Authors@R: c(
+    person("Amedée Rytrace", "Tito", , "rytracetito5@gmail.com", role = c("aut", "cre")),
+    person("Christian", "Paroissin", , "christian.paroissin@univ-pau.fr", role = "aut")
+  )
 Description: Maximum likelihood estimation of the parameters of
     degradation models based on Levy and related processes (Wiener, gamma,
     inverse Gaussian, variance-gamma, Meixner and inverse gamma processes)

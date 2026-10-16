@@ -1,8 +1,10 @@
 Package: levyBridge
 Title: Stochastic Bridges for Levy Degradation Processes
 Version: 0.0.0.9000
-Authors@R: 
-    person("Amedée Rytrace", "Tito", , "rytracetito5@gmail.com", role = c("aut", "cre"))
+Authors@R: c(
+    person("Amedée Rytrace", "Tito", , "rytracetito5@gmail.com", role = c("aut", "cre")),
+    person("Christian", "Paroissin", , "christian.paroissin@univ-pau.fr", role = "aut")
+  )
 Description: Exact simulation of the bridges of Levy degradation processes
     (gamma, Wiener, inverse Gaussian, variance-gamma and Meixner
     processes) and resampling of trajectories observed at irregular

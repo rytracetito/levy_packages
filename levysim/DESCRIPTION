@@ -1,8 +1,10 @@
 Package: levysim
 Title: Simulation of Degradation Processes
 Version: 0.0.0.9000
-Authors@R: 
-    person("Amedée Rytrace", "Tito", , "rytracetito5@gmail.com", role = c("aut", "cre"))
+Authors@R: c(
+    person("Amedée Rytrace", "Tito", , "rytracetito5@gmail.com", role = c("aut", "cre")),
+    person("Christian", "Paroissin", , "christian.paroissin@univ-pau.fr", role = "aut")
+  )
 Description: Exact simulation of one or several degradation trajectories
     of gamma, Wiener, inverse Gaussian, variance-gamma, Meixner and
     inverse gamma processes, homogeneous or not, at possibly irregular
