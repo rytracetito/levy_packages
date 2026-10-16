@@ -1,0 +1,29 @@
+Package: levyBridge
+Title: Stochastic Bridges for Levy Degradation Processes
+Version: 0.0.0.9000
+Authors@R: 
+    person("Amedée Rytrace", "Tito", , "rytracetito5@gmail.com", role = c("aut", "cre"))
+Description: Exact simulation of the bridges of Levy degradation processes
+    (gamma, Wiener, inverse Gaussian, variance-gamma and Meixner
+    processes) and resampling of trajectories observed at irregular
+    inspection times onto a regular time grid, following the interpolation
+    algorithm of Grall-Maes (2012) <doi:10.1177/1748006X12462522>. The
+    reconstructed increments are the basis of goodness-of-fit tests.
+License: GPL-3
+Encoding: UTF-8
+Language: en
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Suggests: 
+    levyfit,
+    levysim,
+    Runuran,
+    statmod,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Imports: 
+    ggplot2,
+    GIGrvg,
+    gsl,
+    stats,
+    utils

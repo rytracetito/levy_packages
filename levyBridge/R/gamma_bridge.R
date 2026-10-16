@@ -1,0 +1,158 @@
+#' Gamma bridge: resampling on a regular grid
+#'
+#' Resamples one or several trajectories of a homogeneous gamma process,
+#' observed at irregular inspection times, onto a regular time grid, by
+#' exact simulation of the gamma bridge between the known values.
+#'
+#' @section Model:
+#' The homogeneous gamma process with shape \eqn{a > 0} and rate \eqn{b > 0}
+#' has \eqn{X_0 = 0}, independent increments and
+#' \eqn{X_t - X_s \sim \Gamma(a (t - s), b)} for \eqn{s < t} (shape
+#' \eqn{a (t - s)}, rate \eqn{b}). Its trajectories are increasing.
+#'
+#' @section Law of the bridge:
+#' Let \eqn{t_A < t < t_B}, \eqn{\tau_1 = t - t_A}, \eqn{\tau_2 = t_B - t} and
+#' \eqn{\Delta = x_B - x_A}. Given \eqn{X_{t_A} = x_A} and
+#' \eqn{X_{t_B} = x_B},
+#' \deqn{X_t = x_A + \Delta\, Y, \qquad Y \sim \mathrm{Beta}(a \tau_1, a \tau_2).}
+#' The law of the bridge does not depend on the rate \eqn{b}: only the shape
+#' \eqn{a} is needed. When \eqn{\Delta = 0} (two equal observed values, which
+#' can happen after rounding), the bridge is constant.
+#'
+#' @section Resampling algorithm (method "Bridge"):
+#' This is the interpolation algorithm of Grall-Maës (2012), used for all the
+#' processes of the package. Let \eqn{0 = t_0 < t_1 < \dots < t_N} be the
+#' inspection times of a trajectory and \eqn{x_0, \dots, x_N} the observed
+#' levels. The regular grid is \eqn{t'_i = i\, \Delta t_{eq}},
+#' \eqn{i = 0, \dots, N}, with \eqn{\Delta t_{eq} = t_N / N}: it has as many
+#' points as observations and the same end points.
+#' 1. \eqn{x'_0 = x_0} and \eqn{x'_N = x_N}.
+#' 2. For \eqn{i = 1, \dots, N - 1}, in increasing order:
+#'    * if \eqn{t'_i} is an inspection time, \eqn{x'_i} is the observed value;
+#'    * otherwise, \eqn{x'_i} is drawn from the bridge between the nearest
+#'      known point on the left (an inspection or the grid point
+#'      \eqn{t'_{i-1}} already drawn, whichever is closer) and the nearest
+#'      inspection on the right.
+#'
+#' By the Markov property of the bridge, the vector
+#' \eqn{(x'_1, \dots, x'_{N-1})} follows exactly the conditional law of
+#' \eqn{(X_{t'_1}, \dots, X_{t'_{N-1}})} given the observations. Hence, if the
+#' data come from the model and the parameters are the true ones, the
+#' reconstructed increments \eqn{x'_i - x'_{i-1}} (see [increments()]) are
+#' independent with the law of \eqn{X_{\Delta t_{eq}}}: they can be tested
+#' with an i.i.d. goodness-of-fit test. A grid point that equals an inspection
+#' time up to rounding errors (relative difference below \eqn{10^{-9}}) is
+#' set to that inspection time.
+#'
+#' @section Method "ExtBridge":
+#' Extension of the method of Grall-Maës that integrates the observations.
+#' It is not available yet: `method = "ExtBridge"` stops with a message.
+#'
+#' @param x Degradation levels of one trajectory; or a list of data frames,
+#'   one per trajectory, whose first column contains the inspection times and
+#'   second column the degradation levels (for instance the result of a
+#'   `levysim` simulation function).
+#' @param t Inspection times of the trajectory, starting at 0 and strictly
+#'   increasing. Not used when `x` is a list.
+#' @param a Shape parameter of the gamma process, \eqn{a > 0}, for instance the
+#'   estimate `gamma_mle(x)[["a"]]` of the package `levyfit`.
+#' @param method `"Bridge"` (default) for the algorithm of Grall-Maës (2012),
+#'   or `"ExtBridge"` for its extension (not available yet).
+#'
+#' @return An object of class `"levybridge"`: a list with one data frame per
+#'   trajectory, with columns `t` (regular grid) and `X` (resampled levels).
+#'   Its attributes are `model`, `parameters`, `method`, `teq` (time step of
+#'   the grid of each trajectory) and `observed` (the observed data, one data
+#'   frame per trajectory). Use [increments()] for the reconstructed
+#'   increments and [plot_bridge()] to compare observed and resampled values.
+#'
+#' @references
+#' Grall-Maës, E. (2012). Use of the Kolmogorov-Smirnov test for gamma
+#' process. *Proceedings of the Institution of Mechanical Engineers, Part O:
+#' Journal of Risk and Reliability*, 226(6), 624-634.
+#' \doi{10.1177/1748006X12462522}
+#'
+#' Avramidis, A. N., L'Ecuyer, P. and Tremblay, P.-A. (2003). Efficient
+#' simulation of gamma and variance-gamma processes. *Proceedings of the 2003
+#' Winter Simulation Conference*, 319-326.
+#'
+#' @seealso [increments()], [plot_bridge()], [wiener_bridge()], [ig_bridge()],
+#'   [vg_bridge()], [meixner_bridge()]
+#'
+#' @examples
+#' # 1. One trajectory observed at 11 irregular times (a = 2, b = 3)
+#' t <- c(0, 1.2, 2, 3.8, 5.5, 7.1, 10.4, 12.9, 15.3, 18.7, 22.5)
+#' set.seed(1)
+#' x <- c(0, cumsum(rgamma(10, shape = 2 * diff(t), rate = 3)))
+#' set.seed(1)
+#' r <- gamma_bridge(x, t, a = 2)
+#' r
+#'
+#' # The resampled trajectory, on the regular grid 0, 2.25, 4.5, ..., 22.5
+#' r[[1]]
+#'
+#' # Time step of the grid: t_N / N = 22.5 / 10
+#' attr(r, "teq")
+#'
+#' # 2. Reconstructed increments, the input of the goodness-of-fit tests
+#' increments(r)
+#'
+#' # 3. Observed and resampled values
+#' plot_bridge(r)
+#'
+#' # 4. Grid points equal to inspection times keep the observed values:
+#' #    here the grid is 0, 2, 4, 6, 8, 10 and 2 and 6 are inspection times
+#' t2 <- c(0, 2, 3, 6, 7, 10)
+#' x2 <- c(0, 1.4, 2.0, 4.1, 4.6, 6.8)
+#' gamma_bridge(x2, t2, a = 2)[[1]]
+#'
+#' # 5. One trajectory given as a data frame (times, then levels)
+#' gamma_bridge(data.frame(t = t2, X = x2), a = 2)
+#'
+#' # 6. Several trajectories, each with its own inspection times:
+#' #    one regular grid and one time step per trajectory
+#' liste <- list(data.frame(t = c(0, 1, 3, 6), X = c(0, 0.8, 2.1, 4.3)),
+#'               data.frame(t = c(0, 2, 4, 5, 9), X = c(0, 1.2, 2.9, 3.1, 6.2)))
+#' r2 <- gamma_bridge(liste, a = 2)
+#' r2
+#' attr(r2, "teq")
+#' increments(r2)
+#' plot_bridge(r2, trajectory = 1:2)
+#'
+#' # 7. The bridge values are random: set.seed() makes them reproducible
+#' set.seed(2); y1 <- gamma_bridge(x, t, a = 2)[[1]]$X
+#' set.seed(2); y2 <- gamma_bridge(x, t, a = 2)[[1]]$X
+#' identical(y1, y2)
+#'
+#' # 8. Equal observed values (after rounding) give a constant bridge,
+#' #    a decrease is impossible for this increasing process
+#' gamma_bridge(c(0, 1, 1, 2), c(0, 1, 2.5, 3), a = 2)[[1]]
+#' try(gamma_bridge(c(0, 2, 1.5, 3), c(0, 1, 2, 3), a = 2))
+#'
+#' # 9. Errors: the first time must be 0, and "ExtBridge" is not available yet
+#' try(gamma_bridge(x, t + 1, a = 2))
+#' try(gamma_bridge(x, t, a = 2, method = "ExtBridge"))
+#' @examplesIf requireNamespace("levysim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)
+#' # 10. Ten trajectories simulated with levysim, inspected more and more often
+#' plan <- levysim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
+#' sims <- levysim::sim_gamma(plan, a = 2, b = 3)
+#'
+#' # Parameters estimated with levyfit
+#' a_hat <- levyfit::gamma_mle(sims)[["a"]]
+#' r <- gamma_bridge(sims, a = a_hat)
+#' r
+#' plot_bridge(r, trajectory = 1:4)
+#'
+#' # Reconstructed increments of all the trajectories
+#' d <- increments(r)
+#' head(d)
+#' # Under the model, the increments follow Gamma(a * teq, b)
+#' ks.test(d$dx, "pgamma", shape = 2 * d$teq[1], rate = 3)
+#' @export
+gamma_bridge <- function(x, t = NULL, a, method = "Bridge") {
+  check_par(a = a)
+  draw <- function(t_inf, x_inf, t, t_sup, x_sup) {
+    x_inf + (x_sup - x_inf) * stats::rbeta(1, a * (t - t_inf), a * (t_sup - t))
+  }
+  bridge_paths(x, t, method, draw, "gamma", c(a = unname(a)), increasing = TRUE)
+}

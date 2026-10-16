@@ -1,0 +1,204 @@
+---
+title: "Exemple d'utilisation du package levyBridge"
+header-includes:
+  - \renewcommand{\contentsname}{Sommaire}
+  - \usepackage{booktabs}
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 2
+    number_sections: false
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 6.5, fig.align = "center")
+library(levyBridge)
+library(levysim)
+library(levyfit)
+library(ggplot2)
+```
+
+# Préparation
+
+Installation des packages depuis GitHub : `levyBridge` pour les ponts, `levysim` pour simuler des trajectoires et `levyfit` pour estimer les paramètres.
+
+```{r, eval = FALSE}
+remotes::install_github("rytracetito/levy_packages", subdir = "levyBridge")
+remotes::install_github("rytracetito/levy_packages", subdir = "levysim")
+remotes::install_github("rytracetito/levy_packages", subdir = "levyfit")
+```
+
+Une trajectoire est observée à des instants irréguliers \(0 = t_0 < \dots < t_N\). Le pont stochastique tire, sur la grille régulière \(t'_i = i\, t_N / N\), des valeurs qui suivent exactement la loi du processus sachant les observations (méthode `"Bridge"` de Grall-Maës, 2012). Sous le modèle, les accroissements reconstruits sont indépendants et de même loi : ce sont eux que l'on teste ensuite.
+
+Paramètres utilisés :
+
+| Processus | Pont | Paramètres du processus | Paramètres du pont |
+|---|---|---|---|
+| Gamma | `gamma_bridge` | `a = 2`, `b = 3` | `a` |
+| Wiener | `wiener_bridge` | `mu = 0.5`, `sigma = 1.5` | `sigma` |
+| Inverse gaussien | `ig_bridge` | `mu = 1`, `eta = 3` | `eta` |
+| Variance-gamma | `vg_bridge` | `theta = 0.5`, `sigma = 1.5`, `nu = 2` | `theta`, `sigma`, `nu` |
+| Meixner | `meixner_bridge` | `a = 1`, `b = 0.3`, `d = 1.5`, `m = 0.2` | `a`, `d`, `m` |
+
+\newpage
+
+# I - Une trajectoire
+
+Une trajectoire observée à 11 instants irréguliers entre 0 et 22.5 ; la grille régulière est 0, 2.25, 4.5, ..., 22.5.
+
+```{r}
+t <- c(0, 1.2, 2, 3.8, 5.5, 7.1, 10.4, 12.9, 15.3, 18.7, 22.5)
+```
+
+## Gamma
+
+```{r}
+set.seed(1)
+x <- sim_gamma(t, a = 2, b = 3)
+r <- gamma_bridge(x, a = 2)
+plot_bridge(r)
+r[[1]]
+```
+
+## Wiener
+
+```{r}
+x <- sim_wiener(t, mu = 0.5, sigma = 1.5)
+r <- wiener_bridge(x, sigma = 1.5)
+plot_bridge(r)
+r[[1]]
+```
+
+## Inverse gaussien
+
+```{r}
+x <- sim_ig(t, mu = 1, eta = 3)
+r <- ig_bridge(x, eta = 3)
+plot_bridge(r)
+r[[1]]
+```
+
+## Variance-gamma
+
+```{r}
+x <- sim_vg(t, theta = 0.5, sigma = 1.5, nu = 2)
+r <- vg_bridge(x, theta = 0.5, sigma = 1.5, nu = 2)
+plot_bridge(r)
+r[[1]]
+```
+
+## Meixner
+
+```{r}
+x <- sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2)
+r <- meixner_bridge(x, a = 1, d = 1.5, m = 0.2)
+plot_bridge(r)
+r[[1]]
+```
+
+\newpage
+
+# II - Plusieurs trajectoires
+
+200 trajectoires, chacune inspectée 20 fois entre 0 et 40, de plus en plus souvent. On compare les accroissements reconstruits par le pont à des accroissements simulés directement sur la grille régulière : ils doivent avoir la même loi.
+
+```{r}
+plan <- inspection_times("increasing", n = 19, n_traj = 200, tmax = 40)
+grille <- seq(0, 40, length.out = 20)
+
+comparer <- function(r, directs, titre) {
+  d <- rbind(data.frame(dx = increments(r)$dx, origine = "Pont (grille régulière)"),
+             data.frame(dx = directs, origine = "Simulation directe"))
+  p <- ks.test(increments(r)$dx, directs)$p.value
+  ggplot(d, aes(x = dx, colour = origine)) +
+    stat_ecdf(linewidth = 0.8) +
+    labs(title = titre,
+         subtitle = paste("Test KS à deux échantillons : p =", round(p, 3)),
+         x = "Accroissement", y = "Fonction de répartition", colour = NULL) +
+    theme_minimal() +
+    theme(legend.position = "bottom")
+}
+directs <- function(x) unlist(lapply(x, function(d) diff(d$X)))
+```
+
+## Gamma
+
+```{r, fig.height = 4.2}
+set.seed(2)
+r <- gamma_bridge(sim_gamma(plan, a = 2, b = 3), a = 2)
+plot_bridge(r, trajectory = 1:4)
+comparer(r, directs(sim_gamma(grille, a = 2, b = 3, n_traj = 200)), "Gamma")
+```
+
+## Wiener
+
+```{r, fig.height = 4.2}
+r <- wiener_bridge(sim_wiener(plan, mu = 0.5, sigma = 1.5), sigma = 1.5)
+plot_bridge(r, trajectory = 1:4)
+comparer(r, directs(sim_wiener(grille, mu = 0.5, sigma = 1.5, n_traj = 200)), "Wiener")
+```
+
+## Inverse gaussien
+
+```{r, fig.height = 4.2}
+r <- ig_bridge(sim_ig(plan, mu = 1, eta = 3), eta = 3)
+plot_bridge(r, trajectory = 1:4)
+comparer(r, directs(sim_ig(grille, mu = 1, eta = 3, n_traj = 200)), "Inverse gaussien")
+```
+
+## Variance-gamma
+
+```{r, fig.height = 4.2}
+x <- sim_vg(plan, theta = 0.5, sigma = 1.5, nu = 2)
+r <- vg_bridge(x, theta = 0.5, sigma = 1.5, nu = 2)
+plot_bridge(r, trajectory = 1:4)
+directs_vg <- directs(sim_vg(grille, theta = 0.5, sigma = 1.5, nu = 2, n_traj = 200))
+comparer(r, directs_vg, "Variance-gamma")
+```
+
+## Meixner
+
+```{r, fig.height = 4.2}
+x <- sim_meixner(plan, a = 1, b = 0.3, d = 1.5, m = 0.2)
+r <- meixner_bridge(x, a = 1, d = 1.5, m = 0.2)
+plot_bridge(r, trajectory = 1:4)
+directs_mx <- directs(sim_meixner(grille, a = 1, b = 0.3, d = 1.5, m = 0.2, n_traj = 200))
+comparer(r, directs_mx, "Meixner")
+```
+
+\newpage
+
+# III - Données réelles : lasers GaAs
+
+Les données `gaaslaser` donnent l'augmentation relative (en %) du courant de fonctionnement de 15 lasers, mesurée toutes les 250 heures jusqu'à 4000 heures. On ne garde que des inspections irrégulières, de moins en moins fréquentes, puis on estime le paramètre de forme du processus gamma avec `levyfit` et on reconstruit les trajectoires sur la grille régulière.
+
+```{r}
+d <- SMRD.data::gaaslaser
+temps <- c(0, 250, 500, 750, 1000, 1500, 2000, 2500, 3000, 4000)
+lasers <- lapply(sort(unique(d$unit)), function(k) {
+  s <- d[d$unit == k & d$hours %in% temps, ]
+  data.frame(t = s$hours, X = s$increase)
+})
+est <- gamma_mle(lasers)
+est
+```
+
+```{r, fig.height = 4.2}
+set.seed(3)
+r <- gamma_bridge(lasers, a = est[["a"]])
+r
+plot_bridge(r, trajectory = 1:4) + labs(x = "Temps (heures)", y = "Dégradation (%)")
+```
+
+Accroissements reconstruits, sur une grille de pas \(4000 / 9 \approx 444\) heures :
+
+```{r}
+acc <- increments(r)
+head(acc)
+ggplot(acc, aes(x = dx)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 25, fill = "grey80", colour = "white") +
+  stat_function(fun = dgamma, args = list(shape = est[["a"]] * acc$teq[1], rate = est[["b"]]),
+                colour = "#2563EB", linewidth = 1) +
+  labs(x = "Accroissement sur 444 heures (%)", y = "Densité") +
+  theme_minimal()
+```
