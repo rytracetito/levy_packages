@@ -28,7 +28,7 @@ positions of the underlying gamma process, then maximized numerically.
 \section{Model and data}{
 
 Let \eqn{T(w)} be a gamma process in the level \eqn{w}, with increments
-\eqn{T(w_2) - T(w_1) \sim Gamma(\eta(w_2) - \eta(w_1))} with scale
+\eqn{T(w_2) - T(w_1) \sim \Gamma(\eta(w_2) - \eta(w_1))} with scale
 \eqn{\theta}, and shape function \eqn{\eta(w) = (w / \alpha)^\beta}. The
 inverse gamma process is \eqn{W(t) = \inf\{w : T(w) > t\}}. It is increasing
 but it is neither a Lévy process nor a Markov process: the likelihood is not
@@ -54,7 +54,7 @@ and \eqn{Var(T(w)) = \theta E[T(w)]}.
 
 \section{Exact likelihood}{
 
-Let \eqn{g_s} be the density of \eqn{Gamma(s, 1)}, \eqn{E_1} the
+Let \eqn{g_s} be the density of \eqn{\Gamma(s, 1)}, \eqn{E_1} the
 exponential integral, and
 \deqn{\kappa(s; r, d) = \int_0^r g_s(y) \frac{e^{-(d - y)}}{d - y} dy, \qquad
   \Pi(s; r, R) = \int_0^r g_s(y) E_1(R - y) dy.}

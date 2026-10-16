@@ -7,7 +7,7 @@
 #' Let \eqn{\eta} be continuous, strictly increasing, with \eqn{\eta(0) = 0},
 #' and \eqn{\theta > 0}. Let \eqn{T(w)} be a gamma process indexed by the
 #' degradation level \eqn{w}, with
-#' \eqn{T(w_2) - T(w_1) \sim Ga(\eta(w_2) - \eta(w_1))} with scale
+#' \eqn{T(w_2) - T(w_1) \sim \Gamma(\eta(w_2) - \eta(w_1))} with scale
 #' \eqn{\theta}: \eqn{T(w)} is the time needed to reach the level \eqn{w}. The
 #' inverse gamma process is
 #' \deqn{W(t) = \inf\{w \ge 0 : T(w) > t\}.}
@@ -28,7 +28,7 @@
 #' \eqn{s = L(r)} above \eqn{r} satisfies \eqn{P(L(r) \le s) = Q(s, r)}; given
 #' \eqn{s}, the position before the jump \eqn{y \in (0, r)} has a density
 #' proportional to \eqn{g_s(y) E_1(r - y)} (\eqn{g_s} the density of
-#' \eqn{Ga(s, 1)}, \eqn{E_1} the exponential integral); given \eqn{y}, the jump
+#' \eqn{\Gamma(s, 1)}, \eqn{E_1} the exponential integral); given \eqn{y}, the jump
 #' \eqn{J > r - y} satisfies \eqn{P(J > j) = E_1(j) / E_1(r - y)}.
 #' 1. Start with level \eqn{a = 0} and position \eqn{pos = 0}.
 #' 2. For each inspection \eqn{j}: if \eqn{pos > z_j}, the previous jump

@@ -7,8 +7,8 @@
 #' Let \eqn{A} be a non-decreasing function with \eqn{A(0) = 0}, \eqn{a > 0} and
 #' \eqn{b > 0}. The gamma process satisfies \eqn{X(0) = 0}, has independent
 #' increments, and for \eqn{0 \le s < t},
-#' \deqn{X(t) - X(s) \sim Ga\big(a (A(t) - A(s)),\ b\big),}
-#' where \eqn{Ga(k, b)} is the gamma distribution with shape \eqn{k} and
+#' \deqn{X(t) - X(s) \sim \Gamma\big(a (A(t) - A(s)),\ b\big),}
+#' where \eqn{\Gamma(k, b)} is the gamma distribution with shape \eqn{k} and
 #' **rate** \eqn{b}, of density \eqn{b^k x^{k-1} e^{-bx} / \Gamma(k)}. Then
 #' \eqn{E[X(t)] = a A(t) / b} and \eqn{Var(X(t)) = a A(t) / b^2}. The process is
 #' increasing and purely made of jumps. With \eqn{A(t) = t} (default), it is
@@ -18,7 +18,7 @@
 #'
 #' @section Exact simulation:
 #' 1. \eqn{\Delta A_i = A(t_i) - A(t_{i-1})}, \eqn{i = 1, \dots, n}.
-#' 2. Draw independently \eqn{\Delta X_i \sim Ga(a \Delta A_i, b)}.
+#' 2. Draw independently \eqn{\Delta X_i \sim \Gamma(a \Delta A_i, b)}.
 #' 3. \eqn{X(t_0) = 0} and \eqn{X(t_i) = \sum_{j \le i} \Delta X_j}.
 #'
 #' @param t Inspection times. The times of each trajectory must start at 0 and

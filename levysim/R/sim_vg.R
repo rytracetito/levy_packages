@@ -7,7 +7,7 @@
 #' Let \eqn{\Lambda} be continuous, strictly increasing, with
 #' \eqn{\Lambda(0) = 0}, \eqn{\theta} real, \eqn{\sigma > 0} and \eqn{\nu > 0}.
 #' Let \eqn{G} be a gamma process with
-#' \eqn{G(t) - G(s) \sim Ga(\Delta\Lambda / \nu, \text{rate } 1 / \nu)}, so that
+#' \eqn{G(t) - G(s) \sim \Gamma(\Delta\Lambda / \nu, \text{rate } 1 / \nu)}, so that
 #' \eqn{E[G(t)] = \Lambda(t)} and \eqn{Var(G(t)) = \nu \Lambda(t)}, and \eqn{B}
 #' an independent standard Brownian motion. The VG process is the Brownian
 #' motion with drift evaluated at the random clock \eqn{G}:
@@ -23,7 +23,7 @@
 #' @section Exact simulation 1: subordination (`method = "subordination"`):
 #' Conditionally on the clock increment \eqn{\Delta G},
 #' \eqn{X(t) - X(s) \sim N(\theta \Delta G, \sigma^2 \Delta G)}:
-#' 1. Draw independently \eqn{\Delta G_i \sim Ga(\Delta\Lambda_i / \nu)} with
+#' 1. Draw independently \eqn{\Delta G_i \sim \Gamma(\Delta\Lambda_i / \nu)} with
 #'    scale \eqn{\nu}.
 #' 2. \eqn{\Delta X_i = \theta \Delta G_i + \sigma \sqrt{\Delta G_i}\, Z_i},
 #'    with \eqn{Z_i} independent \eqn{N(0, 1)}.
@@ -35,21 +35,21 @@
 #' @section Exact simulation 2: difference of two gamma processes (`method = "difference"`):
 #' Let
 #' \deqn{\mu_\pm = \frac{1}{2} \sqrt{\theta^2 + \frac{2 \sigma^2}{\nu}} \pm \frac{\theta}{2} > 0,}
-#' and \eqn{\Gamma_+}, \eqn{\Gamma_-} two independent gamma processes with
+#' and \eqn{G_+}, \eqn{G_-} two independent gamma processes with
 #' shape function \eqn{\Lambda(t) / \nu} and rates \eqn{1 / (\nu \mu_\pm)}.
-#' Then \eqn{X} has the same distribution as \eqn{\Gamma_+ - \Gamma_-}: the
-#' characteristic function of \eqn{\Delta\Gamma_+ - \Delta\Gamma_-} is
+#' Then \eqn{X} has the same distribution as \eqn{G_+ - G_-}: the
+#' characteristic function of \eqn{\Delta G_+ - \Delta G_-} is
 #' \deqn{(1 - i u \nu \mu_+)^{-\Delta\Lambda / \nu} (1 + i u \nu \mu_-)^{-\Delta\Lambda / \nu}
 #'   = (1 - i u \nu (\mu_+ - \mu_-) + u^2 \nu^2 \mu_+ \mu_-)^{-\Delta\Lambda / \nu},}
 #' with \eqn{\mu_+ - \mu_- = \theta} and \eqn{\nu^2 \mu_+ \mu_- = \sigma^2 \nu / 2},
 #' which is the characteristic function
 #' \eqn{(1 - i u \theta \nu + \sigma^2 \nu u^2 / 2)^{-\Delta\Lambda / \nu}} of
 #' the VG increment.
-#' 1. Draw independently \eqn{\Delta\Gamma^+_i \sim Ga(\Delta\Lambda_i / \nu)}
+#' 1. Draw independently \eqn{\Delta G^+_i \sim \Gamma(\Delta\Lambda_i / \nu)}
 #'    with scale \eqn{\nu \mu_+} and
-#'    \eqn{\Delta\Gamma^-_i \sim Ga(\Delta\Lambda_i / \nu)} with scale
+#'    \eqn{\Delta G^-_i \sim \Gamma(\Delta\Lambda_i / \nu)} with scale
 #'    \eqn{\nu \mu_-}.
-#' 2. \eqn{\Delta X_i = \Delta\Gamma^+_i - \Delta\Gamma^-_i}.
+#' 2. \eqn{\Delta X_i = \Delta G^+_i - \Delta G^-_i}.
 #' 3. Cumulative sum.
 #'
 #' This method only uses gamma draws. Both methods are exact and give the same
