@@ -91,7 +91,7 @@ x <- levysim::sim_wiener(t, mu = 0.5, sigma = 1.5)
 wiener_mle(x)
 
 # The same trajectory given as two vectors: degradation levels, then times
-wiener_mle(x[[1]]$X, t)
+wiener_mle(x[, "X1"], t)
 
 # 2. One trajectory with irregular inspections, more and more frequent
 t <- inspection_times("increasing", n = 50, tmax = 50)$time

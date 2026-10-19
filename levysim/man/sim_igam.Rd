@@ -35,12 +35,22 @@ larger \eqn{\theta}, the slower the degradation.}
 (default 1).}
 }
 \value{
-An object of class \code{levysim}: a list with one data frame per
-trajectory, with columns \code{t} (inspection times) and \code{X} (simulated
-degradation levels, with \code{X = 0} at \code{t = 0}). The \eqn{k}-th trajectory is
-\code{x[[k]]}. Printing the object shows the model, the parameters and the
-first rows. Use \code{\link[=plot_traj]{plot_traj()}} to plot the trajectories and \code{\link[=traj_df]{traj_df()}} to
-gather them in a single data frame.
+An object of class \code{levysim}, whose form depends on the inspection
+times:
+\itemize{
+\item \strong{same times for all the trajectories} (\code{t} a vector, or a plan of
+\code{\link[=inspection_times]{inspection_times()}} with the same times for all the trajectories): a
+matrix with columns \code{t} (inspection times), \code{X1}, ..., \code{Xn} (simulated
+degradation levels of the trajectories 1 to \eqn{n}, equal to 0 at
+\code{t = 0}). The \eqn{k}-th trajectory is \code{x[, k + 1]} or \code{x[, "Xk"]};
+\item \strong{different times} (\code{t} a list, or a plan of \code{\link[=inspection_times]{inspection_times()}} with
+different times): a list with one data frame per trajectory, with
+columns \code{t} and \code{X}. The \eqn{k}-th trajectory is \code{x[[k]]}.
+}
+
+Printing the object shows the model, the parameters and the first rows.
+Use \code{\link[=traj_df]{traj_df()}} to gather the data in a single data frame (with the
+increments if needed) and \code{\link[=plot_traj]{plot_traj()}} to plot the trajectories.
 }
 \description{
 Simulates exactly one or several trajectories of the inverse gamma process
@@ -102,12 +112,17 @@ plot_traj(x)
 x <- sim_igam(t, theta = 1, alpha = 1, beta = 1.5, n_traj = 5)
 plot_traj(x)
 
+# Same times for all the trajectories: a matrix with the column t,
+# then one column per trajectory (X1, X2, ...)
+head(x[, 1:4])
+x[, "X2"]
+
 # Irregular inspections, more and more frequent over time
 plan <- inspection_times("increasing", n = 10, n_traj = 3, tmax = 10)
 x <- sim_igam(plan, theta = 1, alpha = 1, beta = 1.5)
 plot_traj(x)
 
-# Different inspection times for each trajectory
+# Different inspection times for each trajectory: a list of data frames
 x <- sim_igam(list(c(0, 1, 3, 6), c(0, 2, 4, 6, 8, 10)), theta = 1, alpha = 1, beta = 1.5)
 x[[2]]
 
@@ -115,8 +130,9 @@ x[[2]]
 x <- sim_igam(t, theta = 1, eta_inv = function(u) log(1 + u), n_traj = 5)
 plot_traj(x, "Inverse gamma process with eta(w) = exp(w) - 1")
 
-# All the simulated data in a single data frame
+# All the simulated data in a single data frame, with the increments
 head(traj_df(x))
+head(traj_df(x, increments = TRUE))
 }
 \references{
 Guida, M. and Pulcini, G. (2013). The inverse Gamma process: a family of

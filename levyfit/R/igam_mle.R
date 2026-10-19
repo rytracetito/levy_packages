@@ -98,7 +98,7 @@
 #' igam_mle(x)
 #'
 #' # The same trajectory given as two vectors: degradation levels, then times
-#' igam_mle(x[[1]]$X, t)
+#' igam_mle(x[, "X1"], t)
 #'
 #' # 2. Ten trajectories with the same inspection times
 #' x <- levysim::sim_igam(t, theta = 1, alpha = 1, beta = 1.5, n_traj = 10)

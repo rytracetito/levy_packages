@@ -117,7 +117,7 @@ x <- levysim::sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2)
 meixner_mle(x)
 
 # The same trajectory given as two vectors: degradation levels, then times
-meixner_mle(x[[1]]$X, t)
+meixner_mle(x[, "X1"], t)
 
 # 2. Twenty trajectories with the same inspection times
 t <- seq(0, 20, by = 1)

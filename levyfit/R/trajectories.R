@@ -1,4 +1,5 @@
 as_trajectories <- function(x, t) {
+  if (is.matrix(x)) x <- lapply(seq_len(ncol(x) - 1) + 1, function(k) data.frame(t = x[, 1], X = x[, k]))
   if (is.data.frame(x)) x <- list(x)
   if (is.list(x)) {
     traj <- lapply(x, function(d) list(t = d[[1]], x = d[[2]]))

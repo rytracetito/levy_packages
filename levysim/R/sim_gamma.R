@@ -38,12 +38,20 @@
 #' @param n_traj Number of trajectories to simulate when `t` is a vector
 #'   (default 1).
 #'
-#' @return An object of class `levysim`: a list with one data frame per
-#'   trajectory, with columns `t` (inspection times) and `X` (simulated
-#'   degradation levels, with `X = 0` at `t = 0`). The \eqn{k}-th trajectory is
-#'   `x[[k]]`. Printing the object shows the model, the parameters and the
-#'   first rows. Use [plot_traj()] to plot the trajectories and [traj_df()] to
-#'   gather them in a single data frame.
+#' @return An object of class `levysim`, whose form depends on the inspection
+#'   times:
+#'   * **same times for all the trajectories** (`t` a vector, or a plan of
+#'     [inspection_times()] with the same times for all the trajectories): a
+#'     matrix with columns `t` (inspection times), `X1`, ..., `Xn` (simulated
+#'     degradation levels of the trajectories 1 to \eqn{n}, equal to 0 at
+#'     `t = 0`). The \eqn{k}-th trajectory is `x[, k + 1]` or `x[, "Xk"]`;
+#'   * **different times** (`t` a list, or a plan of [inspection_times()] with
+#'     different times): a list with one data frame per trajectory, with
+#'     columns `t` and `X`. The \eqn{k}-th trajectory is `x[[k]]`.
+#'
+#'   Printing the object shows the model, the parameters and the first rows.
+#'   Use [traj_df()] to gather the data in a single data frame (with the
+#'   increments if needed) and [plot_traj()] to plot the trajectories.
 #'
 #' @references
 #' van Noortwijk, J. M. (2009). A survey of the application of gamma processes
@@ -64,12 +72,17 @@
 #' x <- sim_gamma(t, a = 2, b = 3, n_traj = 10)
 #' plot_traj(x)
 #'
+#' # Same times for all the trajectories: a matrix with the column t,
+#' # then one column per trajectory (X1, X2, ...)
+#' head(x[, 1:4])
+#' x[, "X2"]
+#'
 #' # Irregular inspections, more and more frequent over time
 #' plan <- inspection_times("increasing", n = 20, n_traj = 5, tmax = 10)
 #' x <- sim_gamma(plan, a = 2, b = 3)
 #' plot_traj(x)
 #'
-#' # Different inspection times for each trajectory
+#' # Different inspection times for each trajectory: a list of data frames
 #' x <- sim_gamma(list(c(0, 1, 3, 6), c(0, 2, 4, 6, 8, 10)), a = 2, b = 3)
 #' x[[2]]
 #'
@@ -77,8 +90,9 @@
 #' x <- sim_gamma(t, a = 2, b = 3, A = function(t) t^1.5, n_traj = 10)
 #' plot_traj(x, "Non-homogeneous gamma process")
 #'
-#' # All the simulated data in a single data frame
+#' # All the simulated data in a single data frame, with the increments
 #' head(traj_df(x))
+#' head(traj_df(x, increments = TRUE))
 #' @export
 sim_gamma <- function(t, a, b, A = function(t) t, n_traj = 1) {
   if (a <= 0 || b <= 0) stop("a and b must be positive")

@@ -74,12 +74,17 @@
 #' x <- sim_igam(t, theta = 1, alpha = 1, beta = 1.5, n_traj = 5)
 #' plot_traj(x)
 #'
+#' # Same times for all the trajectories: a matrix with the column t,
+#' # then one column per trajectory (X1, X2, ...)
+#' head(x[, 1:4])
+#' x[, "X2"]
+#'
 #' # Irregular inspections, more and more frequent over time
 #' plan <- inspection_times("increasing", n = 10, n_traj = 3, tmax = 10)
 #' x <- sim_igam(plan, theta = 1, alpha = 1, beta = 1.5)
 #' plot_traj(x)
 #'
-#' # Different inspection times for each trajectory
+#' # Different inspection times for each trajectory: a list of data frames
 #' x <- sim_igam(list(c(0, 1, 3, 6), c(0, 2, 4, 6, 8, 10)), theta = 1, alpha = 1, beta = 1.5)
 #' x[[2]]
 #'
@@ -87,8 +92,9 @@
 #' x <- sim_igam(t, theta = 1, eta_inv = function(u) log(1 + u), n_traj = 5)
 #' plot_traj(x, "Inverse gamma process with eta(w) = exp(w) - 1")
 #'
-#' # All the simulated data in a single data frame
+#' # All the simulated data in a single data frame, with the increments
 #' head(traj_df(x))
+#' head(traj_df(x, increments = TRUE))
 #' @export
 sim_igam <- function(t, theta, alpha = 1, beta = 1, eta_inv = NULL, n_traj = 1) {
   if (theta <= 0 || alpha <= 0 || beta <= 0) stop("theta, alpha and beta must be positive")

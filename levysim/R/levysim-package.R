@@ -27,7 +27,7 @@
 #' |---|---|
 #' | [plot_traj()] | plot of the simulated trajectories (`ggplot2`) |
 #' | [plot_plan()] | plot of the inspection times, one row per trajectory (`ggplot2`) |
-#' | [traj_df()] | simulated data as a data frame with columns `id`, `t`, `X` |
+#' | [traj_df()] | simulated data as a data frame with columns `id`, `t`, `X`, and optionally the time steps `dt` and increments `dX` |
 #' | [inspection_times()] | inspection times with a regular, increasing, decreasing or alternating number of inspections over time |
 #'
 #' @section Getting started:
@@ -47,12 +47,17 @@
 #'    parameters, for instance `x <- sim_gamma(t, a = 2, b = 3, n_traj = 10)`.
 #'    For a non-homogeneous process, give the function of time, for instance
 #'    `A = function(t) t^1.5`.
-#' 3. **Use the result** `x`:
-#'    * `x` prints the model, the parameters and the first simulated values;
-#'    * `plot_traj(x)` plots the trajectories;
-#'    * `traj_df(x)` gives all the data in one data frame (`id`, `t`, `X`);
-#'    * `x[[k]]` is the \eqn{k}-th trajectory, a data frame with columns `t`
-#'      and `X`.
+#' 3. **Store and use the result** `x`. Its form depends on the times:
+#'    * same times for all the trajectories: a matrix with the column `t`
+#'      and one column per trajectory, `X1`, ..., `Xn`; the \eqn{k}-th
+#'      trajectory is `x[, "Xk"]`;
+#'    * different times: a list with one data frame (`t`, `X`) per
+#'      trajectory; the \eqn{k}-th trajectory is `x[[k]]`.
+#'
+#'    In both cases, `x` prints the model, the parameters and the first
+#'    simulated values, `traj_df(x)` gives all the data in one data frame
+#'    (`id`, `t`, `X`, and `dt`, `dX` with `increments = TRUE`) and
+#'    `plot_traj(x)` plots the trajectories.
 #'
 #' Use `set.seed()` before a simulation to make it reproducible.
 #'
@@ -73,11 +78,12 @@
 #' set.seed(1)
 #' x <- sim_gamma(plan, a = 2, b = 3)
 #'
-#' # 3. Use of the result
+#' # 3. Use of the result: the same times for all the trajectories give a
+#' #    matrix (column t, then X1, ..., X10)
 #' x
+#' x[, "X1"]
+#' head(traj_df(x, increments = TRUE))
 #' plot_traj(x)
-#' head(traj_df(x))
-#' x[[1]]
 #' @keywords package
 "_PACKAGE"
 

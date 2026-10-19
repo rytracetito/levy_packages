@@ -109,16 +109,13 @@ grille <- seq(0, 40, length.out = 20)
 comparer <- function(r, directs, titre) {
   d <- rbind(data.frame(dx = increments(r)$dx, origine = "Pont (grille régulière)"),
              data.frame(dx = directs, origine = "Simulation directe"))
-  p <- ks.test(increments(r)$dx, directs)$p.value
   ggplot(d, aes(x = dx, colour = origine)) +
     stat_ecdf(linewidth = 0.8) +
-    labs(title = titre,
-         subtitle = paste("Test KS à deux échantillons : p =", round(p, 3)),
-         x = "Accroissement", y = "Fonction de répartition", colour = NULL) +
+    labs(title = titre, x = "Accroissement", y = "Fonction de répartition", colour = NULL) +
     theme_minimal() +
     theme(legend.position = "bottom")
 }
-directs <- function(x) unlist(lapply(x, function(d) diff(d$X)))
+directs <- function(x) na.omit(traj_df(x, increments = TRUE)$dX)
 ```
 
 ## Gamma

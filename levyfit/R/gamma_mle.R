@@ -79,7 +79,7 @@
 #' gamma_mle(x)
 #'
 #' # The same trajectory given as two vectors: degradation levels, then times
-#' gamma_mle(x[[1]]$X, t)
+#' gamma_mle(x[, "X1"], t)
 #'
 #' # 2. One trajectory with irregular inspections, more and more frequent
 #' t <- inspection_times("increasing", n = 50, tmax = 50)$time

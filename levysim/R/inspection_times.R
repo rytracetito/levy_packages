@@ -16,13 +16,24 @@
 #' * `"increasing"`: \eqn{f(x) = \ln(x + 1)}, more and more inspections over time;
 #' * `"decreasing"`: \eqn{f(x) = -\ln(x_{max} + 1 - x)}, fewer and fewer
 #'   inspections, mirror image of `"increasing"`;
-#' * `"inc-dec"`: \eqn{f(x) = x + 0.8\, \frac{x_{max}}{2\pi} \sin(2\pi x / x_{max})},
-#'   the number of inspections increases then decreases;
+#' * `"inc-dec"`: \eqn{f(x) = x + s\, \frac{x_{max}}{2\pi} \sin(2\pi x / x_{max})},
+#'   the number of inspections increases then decreases: frequent in the
+#'   middle, rare at the start and at the end;
 #' * `"dec-inc"`: same with a minus sign, the number of inspections decreases
-#'   then increases;
-#' * `"inc-dec-inc"`: \eqn{f(x) = x + 0.8\, \frac{x_{max}}{3\pi} \sin(3\pi x / x_{max})},
+#'   then increases: frequent at the start and at the end;
+#' * `"inc-dec-inc"`: \eqn{f(x) = x + s\, \frac{x_{max}}{3\pi} \sin(3\pi x / x_{max})},
 #'   the number of inspections increases, decreases, then increases;
 #' * `"dec-inc-dec"`: same with a minus sign.
+#'
+#' For the four alternating patterns, \eqn{f'(x) = 1 \pm s\cos(k\pi x / x_{max})}: the gaps
+#' vary between \eqn{1 - s} and \eqn{1 + s} times the mean gap, so that the largest
+#' gap is \eqn{(1 + s) / (1 - s)} times the smallest one, where \eqn{s} is `strength`.
+#' With the default \eqn{s = 0.5}, this ratio is 3 and the gaps change
+#' progressively. With \eqn{s = 0.8}, the ratio is 9: the frequent inspections
+#' gather in a short time, which looks like a break in the plan, especially
+#' with three phases and few inspections. \eqn{s = 0} gives regular inspections.
+#' Three phases need one and a half oscillations of the sine (\eqn{k = 3}), two
+#' phases one oscillation (\eqn{k = 2}).
 #'
 #' Any other strictly increasing function on \eqn{[0, 10]} can be given as
 #' `pattern`.
@@ -36,6 +47,10 @@
 #'   trajectory.
 #' @param digits Number of decimal places of the times, `NULL` for no rounding.
 #'   An error is raised if rounding makes two times equal.
+#' @param strength Contrast of the alternating patterns (`"inc-dec"`,
+#'   `"dec-inc"`, `"inc-dec-inc"`, `"dec-inc-dec"`), between 0 (regular
+#'   inspections) and 1 excluded; default 0.5. Not used by the other
+#'   patterns.
 #'
 #' @return A data frame with columns `id` (trajectory) and `time`, time 0
 #'   included.
@@ -58,6 +73,15 @@
 #' # Frequent at the start and at the end, rare in the middle
 #' inspection_times("dec-inc", n = 20, digits = 1)
 #'
+#' # Three phases: frequent, rare, frequent, rare
+#' inspection_times("dec-inc-dec", n = 20, digits = 1)
+#'
+#' # Stronger contrast between frequent and rare inspections
+#' inspection_times("dec-inc-dec", n = 20, digits = 1, strength = 0.8)
+#'
+#' # Gaps between inspections: from about 2.5 to 7.5 with the default strength
+#' range(diff(inspection_times("dec-inc-dec", n = 20)$time))
+#'
 #' # Three trajectories with 10, 15 and 20 inspections, up to 50, 100 and 150
 #' plan <- inspection_times("increasing", n = c(10, 15, 20), n_traj = 3,
 #'                          tmax = c(50, 100, 150), digits = 1)
@@ -70,14 +94,22 @@
 #' # are rare at the start and more and more frequent
 #' inspection_times(sqrt, n = 10, digits = 0)
 #'
+#' # Mixture of the increasing and decreasing patterns: frequent inspections
+#' # around a point that moves to the right when a increases (0 < a < 1)
+#' a <- 0.8
+#' inspection_times(function(x) a * log(x + 1) - (1 - a) * log(11 - x), n = 20, digits = 1)
+#'
 #' # Plot the inspection times, one row per trajectory
 #' plan <- inspection_times("dec-inc", n = c(10, 20, 30), n_traj = 3, tmax = 100)
 #' plot_plan(plan)
 #' @export
 inspection_times <- function(pattern = "regular", n = 10,
-                             n_traj = 1, tmax = 100, digits = NULL) {
+                             n_traj = 1, tmax = 100, digits = NULL, strength = 0.5) {
 
   xmax <- 10
+  if (!is.numeric(strength) || length(strength) != 1 || strength < 0 || strength >= 1) {
+    stop("strength must be a number in [0, 1)")
+  }
 
   if (is.function(pattern)) {
     f <- pattern
@@ -86,10 +118,10 @@ inspection_times <- function(pattern = "regular", n = 10,
       "regular"     = function(x) x,
       "increasing"  = function(x) log(x + 1),
       "decreasing"  = function(x) -log(xmax + 1 - x),
-      "inc-dec"     = function(x) x + 0.8 * xmax / (2 * pi) * sin(2 * pi * x / xmax),
-      "dec-inc"     = function(x) x - 0.8 * xmax / (2 * pi) * sin(2 * pi * x / xmax),
-      "inc-dec-inc" = function(x) x + 0.8 * xmax / (3 * pi) * sin(3 * pi * x / xmax),
-      "dec-inc-dec" = function(x) x - 0.8 * xmax / (3 * pi) * sin(3 * pi * x / xmax),
+      "inc-dec"     = function(x) x + strength * xmax / (2 * pi) * sin(2 * pi * x / xmax),
+      "dec-inc"     = function(x) x - strength * xmax / (2 * pi) * sin(2 * pi * x / xmax),
+      "inc-dec-inc" = function(x) x + strength * xmax / (3 * pi) * sin(3 * pi * x / xmax),
+      "dec-inc-dec" = function(x) x - strength * xmax / (3 * pi) * sin(3 * pi * x / xmax),
       stop("unknown pattern: ", pattern))
   }
 

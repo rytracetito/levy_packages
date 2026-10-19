@@ -63,12 +63,17 @@
 #' x <- sim_ig(t, mu = 0.5, eta = 2, n_traj = 10)
 #' plot_traj(x)
 #'
+#' # Same times for all the trajectories: a matrix with the column t,
+#' # then one column per trajectory (X1, X2, ...)
+#' head(x[, 1:4])
+#' x[, "X2"]
+#'
 #' # Irregular inspections, less and less frequent over time
 #' plan <- inspection_times("decreasing", n = 20, n_traj = 5, tmax = 10)
 #' x <- sim_ig(plan, mu = 0.5, eta = 2)
 #' plot_traj(x)
 #'
-#' # Different inspection times for each trajectory
+#' # Different inspection times for each trajectory: a list of data frames
 #' x <- sim_ig(list(c(0, 1, 3, 6), c(0, 2, 4, 6, 8, 10)), mu = 0.5, eta = 2)
 #' x[[2]]
 #'
@@ -76,8 +81,9 @@
 #' x <- sim_ig(t, mu = 0.5, eta = 2, Lambda = function(t) t^1.5, n_traj = 10)
 #' plot_traj(x, "Non-homogeneous inverse Gaussian process")
 #'
-#' # All the simulated data in a single data frame
+#' # All the simulated data in a single data frame, with the increments
 #' head(traj_df(x))
+#' head(traj_df(x, increments = TRUE))
 #' @export
 sim_ig <- function(t, mu, eta, Lambda = function(t) t, n_traj = 1) {
   if (mu <= 0 || eta <= 0) stop("mu and eta must be positive")

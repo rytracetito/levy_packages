@@ -52,12 +52,17 @@
 #' x <- sim_wiener(t, mu = 0.5, sigma = 1.5, n_traj = 10)
 #' plot_traj(x)
 #'
+#' # Same times for all the trajectories: a matrix with the column t,
+#' # then one column per trajectory (X1, X2, ...)
+#' head(x[, 1:4])
+#' x[, "X2"]
+#'
 #' # Irregular inspections, frequent at the start and at the end
 #' plan <- inspection_times("dec-inc", n = 20, n_traj = 5, tmax = 10)
 #' x <- sim_wiener(plan, mu = 0.5, sigma = 1.5)
 #' plot_traj(x)
 #'
-#' # Different inspection times for each trajectory
+#' # Different inspection times for each trajectory: a list of data frames
 #' x <- sim_wiener(list(c(0, 1, 3, 6), c(0, 2, 4, 6, 8, 10)), mu = 0.5, sigma = 1.5)
 #' x[[2]]
 #'
@@ -66,8 +71,9 @@
 #'                 tau = function(t) t^1.2, n_traj = 10)
 #' plot_traj(x, "Wiener process with transformed time")
 #'
-#' # All the simulated data in a single data frame
+#' # All the simulated data in a single data frame, with the increments
 #' head(traj_df(x))
+#' head(traj_df(x, increments = TRUE))
 #' @export
 sim_wiener <- function(t, mu, sigma, Lambda = function(t) t, tau = function(t) t, n_traj = 1) {
   if (sigma <= 0) stop("sigma must be positive")

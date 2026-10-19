@@ -4,27 +4,33 @@
 \alias{traj_df}
 \title{Simulated data as a data frame}
 \usage{
-traj_df(x)
+traj_df(x, increments = FALSE)
 }
 \arguments{
 \item{x}{Result of a simulation function: \code{\link[=sim_gamma]{sim_gamma()}}, \code{\link[=sim_wiener]{sim_wiener()}},
 \code{\link[=sim_ig]{sim_ig()}}, \code{\link[=sim_vg]{sim_vg()}}, \code{\link[=sim_meixner]{sim_meixner()}} or \code{\link[=sim_igam]{sim_igam()}}.}
+
+\item{increments}{\code{FALSE} (default) for the levels only; \code{TRUE} to add the
+columns \code{dt} and \code{dX}.}
 }
 \value{
-A data frame with one row per inspection and three columns:
+A data frame with one row per inspection and the columns:
 \itemize{
 \item \code{id}: number of the trajectory (1, 2, ...);
 \item \code{t}: inspection time;
-\item \code{X}: simulated degradation level.
+\item \code{X}: simulated degradation level at time \code{t};
+\item with \code{increments = TRUE}, also \code{dt}, the time elapsed since the previous
+inspection, and \code{dX}, the increment of the level since the previous
+inspection (\code{NA} at the first inspection, \code{t = 0}, of each trajectory).
 }
 
-To work on a single trajectory, use either \code{x[[k]]} on the simulation
-result or \code{subset(traj_df(x), id == k)}.
+To work on a single trajectory, use \code{subset(traj_df(x), id == k)}.
 }
 \description{
 Gathers the trajectories simulated by a \code{sim_} function into a single data
 frame, one row per inspection, ready to be saved, summarized or used by
-other functions.
+other functions. Optionally adds the time steps and the increments between
+two consecutive inspections.
 }
 \examples{
 set.seed(1)
@@ -34,6 +40,13 @@ head(d)
 
 # Degradation level of each trajectory at the last inspection
 d[d$t == 10, ]
+
+# Time steps and increments between two inspections
+head(traj_df(x, increments = TRUE))
+
+# Trajectories with different inspection times
+y <- sim_gamma(list(c(0, 1, 3, 6), c(0, 2, 4, 6, 8)), a = 2, b = 3)
+traj_df(y, increments = TRUE)
 
 # Save the simulated data in a csv file
 f <- tempfile(fileext = ".csv")

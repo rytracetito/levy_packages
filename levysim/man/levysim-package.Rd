@@ -32,7 +32,7 @@ Results and inspection schedules:\tabular{ll}{
    Function \tab Use \cr
    \code{\link[=plot_traj]{plot_traj()}} \tab plot of the simulated trajectories (\code{ggplot2}) \cr
    \code{\link[=plot_plan]{plot_plan()}} \tab plot of the inspection times, one row per trajectory (\code{ggplot2}) \cr
-   \code{\link[=traj_df]{traj_df()}} \tab simulated data as a data frame with columns \code{id}, \code{t}, \code{X} \cr
+   \code{\link[=traj_df]{traj_df()}} \tab simulated data as a data frame with columns \code{id}, \code{t}, \code{X}, and optionally the time steps \code{dt} and increments \code{dX} \cr
    \code{\link[=inspection_times]{inspection_times()}} \tab inspection times with a regular, increasing, decreasing or alternating number of inspections over time \cr
 }
 }
@@ -58,14 +58,19 @@ The times of each trajectory start at 0 and are strictly increasing.
 parameters, for instance \code{x <- sim_gamma(t, a = 2, b = 3, n_traj = 10)}.
 For a non-homogeneous process, give the function of time, for instance
 \code{A = function(t) t^1.5}.
-\item \strong{Use the result} \code{x}:
+\item \strong{Store and use the result} \code{x}. Its form depends on the times:
 \itemize{
-\item \code{x} prints the model, the parameters and the first simulated values;
-\item \code{plot_traj(x)} plots the trajectories;
-\item \code{traj_df(x)} gives all the data in one data frame (\code{id}, \code{t}, \code{X});
-\item \code{x[[k]]} is the \eqn{k}-th trajectory, a data frame with columns \code{t}
-and \code{X}.
+\item same times for all the trajectories: a matrix with the column \code{t}
+and one column per trajectory, \code{X1}, ..., \code{Xn}; the \eqn{k}-th
+trajectory is \code{x[, "Xk"]};
+\item different times: a list with one data frame (\code{t}, \code{X}) per
+trajectory; the \eqn{k}-th trajectory is \code{x[[k]]}.
 }
+
+In both cases, \code{x} prints the model, the parameters and the first
+simulated values, \code{traj_df(x)} gives all the data in one data frame
+(\code{id}, \code{t}, \code{X}, and \code{dt}, \code{dX} with \code{increments = TRUE}) and
+\code{plot_traj(x)} plots the trajectories.
 }
 
 Use \code{set.seed()} before a simulation to make it reproducible.
@@ -90,11 +95,12 @@ plot_plan(plan)
 set.seed(1)
 x <- sim_gamma(plan, a = 2, b = 3)
 
-# 3. Use of the result
+# 3. Use of the result: the same times for all the trajectories give a
+#    matrix (column t, then X1, ..., X10)
 x
+x[, "X1"]
+head(traj_df(x, increments = TRUE))
 plot_traj(x)
-head(traj_df(x))
-x[[1]]
 }
 \author{
 \strong{Maintainer}: Amedée Rytrace Tito \email{rytracetito5@gmail.com}

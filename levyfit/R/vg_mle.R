@@ -112,7 +112,7 @@
 #' vg_mle(x)
 #'
 #' # The same trajectory given as two vectors: degradation levels, then times
-#' vg_mle(x[[1]]$X, t)
+#' vg_mle(x[, "X1"], t)
 #'
 #' # 2. Twenty trajectories with the same inspection times
 #' t <- seq(0, 40, by = 2)

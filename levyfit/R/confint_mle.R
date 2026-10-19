@@ -49,7 +49,7 @@
 #' confint_mle(x, model = "gamma")
 #'
 #' # The same trajectory given as two vectors: degradation levels, then times
-#' confint_mle(x[[1]]$X, t, model = "gamma")
+#' confint_mle(x[, "X1"], t, model = "gamma")
 #'
 #' # 2. 99 % intervals: wider than the 95 % ones
 #' confint_mle(x, model = "gamma", level = 0.99)

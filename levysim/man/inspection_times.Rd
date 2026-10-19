@@ -9,7 +9,8 @@ inspection_times(
   n = 10,
   n_traj = 1,
   tmax = 100,
-  digits = NULL
+  digits = NULL,
+  strength = 0.5
 )
 }
 \arguments{
@@ -26,6 +27,11 @@ trajectory.}
 
 \item{digits}{Number of decimal places of the times, \code{NULL} for no rounding.
 An error is raised if rounding makes two times equal.}
+
+\item{strength}{Contrast of the alternating patterns (\code{"inc-dec"},
+\code{"dec-inc"}, \code{"inc-dec-inc"}, \code{"dec-inc-dec"}), between 0 (regular
+inspections) and 1 excluded; default 0.5. Not used by the other
+patterns.}
 }
 \value{
 A data frame with columns \code{id} (trajectory) and \code{time}, time 0
@@ -49,14 +55,25 @@ steep. The patterns are
 \item \code{"increasing"}: \eqn{f(x) = \ln(x + 1)}, more and more inspections over time;
 \item \code{"decreasing"}: \eqn{f(x) = -\ln(x_{max} + 1 - x)}, fewer and fewer
 inspections, mirror image of \code{"increasing"};
-\item \code{"inc-dec"}: \eqn{f(x) = x + 0.8\, \frac{x_{max}}{2\pi} \sin(2\pi x / x_{max})},
-the number of inspections increases then decreases;
+\item \code{"inc-dec"}: \eqn{f(x) = x + s\, \frac{x_{max}}{2\pi} \sin(2\pi x / x_{max})},
+the number of inspections increases then decreases: frequent in the
+middle, rare at the start and at the end;
 \item \code{"dec-inc"}: same with a minus sign, the number of inspections decreases
-then increases;
-\item \code{"inc-dec-inc"}: \eqn{f(x) = x + 0.8\, \frac{x_{max}}{3\pi} \sin(3\pi x / x_{max})},
+then increases: frequent at the start and at the end;
+\item \code{"inc-dec-inc"}: \eqn{f(x) = x + s\, \frac{x_{max}}{3\pi} \sin(3\pi x / x_{max})},
 the number of inspections increases, decreases, then increases;
 \item \code{"dec-inc-dec"}: same with a minus sign.
 }
+
+For the four alternating patterns, \eqn{f'(x) = 1 \pm s\cos(k\pi x / x_{max})}: the gaps
+vary between \eqn{1 - s} and \eqn{1 + s} times the mean gap, so that the largest
+gap is \eqn{(1 + s) / (1 - s)} times the smallest one, where \eqn{s} is \code{strength}.
+With the default \eqn{s = 0.5}, this ratio is 3 and the gaps change
+progressively. With \eqn{s = 0.8}, the ratio is 9: the frequent inspections
+gather in a short time, which looks like a break in the plan, especially
+with three phases and few inspections. \eqn{s = 0} gives regular inspections.
+Three phases need one and a half oscillations of the sine (\eqn{k = 3}), two
+phases one oscillation (\eqn{k = 2}).
 
 Any other strictly increasing function on \eqn{[0, 10]} can be given as
 \code{pattern}.
@@ -77,6 +94,15 @@ inspection_times("inc-dec", n = 20, digits = 1)
 # Frequent at the start and at the end, rare in the middle
 inspection_times("dec-inc", n = 20, digits = 1)
 
+# Three phases: frequent, rare, frequent, rare
+inspection_times("dec-inc-dec", n = 20, digits = 1)
+
+# Stronger contrast between frequent and rare inspections
+inspection_times("dec-inc-dec", n = 20, digits = 1, strength = 0.8)
+
+# Gaps between inspections: from about 2.5 to 7.5 with the default strength
+range(diff(inspection_times("dec-inc-dec", n = 20)$time))
+
 # Three trajectories with 10, 15 and 20 inspections, up to 50, 100 and 150
 plan <- inspection_times("increasing", n = c(10, 15, 20), n_traj = 3,
                          tmax = c(50, 100, 150), digits = 1)
@@ -88,6 +114,11 @@ plan$time[plan$id == 2]
 # Any strictly increasing function on [0, 10]: with sqrt, the inspections
 # are rare at the start and more and more frequent
 inspection_times(sqrt, n = 10, digits = 0)
+
+# Mixture of the increasing and decreasing patterns: frequent inspections
+# around a point that moves to the right when a increases (0 < a < 1)
+a <- 0.8
+inspection_times(function(x) a * log(x + 1) - (1 - a) * log(11 - x), n = 20, digits = 1)
 
 # Plot the inspection times, one row per trajectory
 plan <- inspection_times("dec-inc", n = c(10, 20, 30), n_traj = 3, tmax = 100)

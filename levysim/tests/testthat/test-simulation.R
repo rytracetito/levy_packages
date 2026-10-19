@@ -1,6 +1,6 @@
 tg <- seq(0, 10, by = 0.5)
 L15 <- function(t) t^1.5
-last_values <- function(x) sapply(x, function(d) d$X[nrow(d)])
+last_values <- function(x) x[nrow(x), -1]
 
 test_that("sim_gamma reproduces the values of the report", {
   set.seed(1)
@@ -40,33 +40,45 @@ test_that("sim_igam follows the marginal distribution P(W(t) <= w) = Q(eta(w), t
   skip_on_cran()
   set.seed(3)
   t <- c(0, 1.2, 3.8)
-  W <- sapply(sim_igam(t, theta = 1, alpha = 1, beta = 1.5, n_traj = 500), function(d) d$X)
+  W <- sim_igam(t, theta = 1, alpha = 1, beta = 1.5, n_traj = 500)[, -1]
   u <- pgamma(t[3], shape = W[3, ]^1.5, lower.tail = FALSE)
   expect_gt(ks.test(u, "punif")$p.value, 0.01)
 })
 
 test_that("the processes have the expected shape", {
   set.seed(4)
-  expect_true(all(diff(sim_gamma(tg, 2, 3)[[1]]$X) > 0))
-  expect_true(all(diff(sim_ig(tg, 0.5, 2)[[1]]$X) > 0))
-  expect_true(all(diff(sim_igam(c(0, 1, 2, 3), 1, 1, 1.5)[[1]]$X) >= 0))
-  expect_true(any(diff(sim_wiener(tg, 0.5, 1.5)[[1]]$X) < 0))
+  expect_true(all(diff(sim_gamma(tg, 2, 3)[, "X1"]) > 0))
+  expect_true(all(diff(sim_ig(tg, 0.5, 2)[, "X1"]) > 0))
+  expect_true(all(diff(sim_igam(c(0, 1, 2, 3), 1, 1, 1.5)[, "X1"]) >= 0))
+  expect_true(any(diff(sim_wiener(tg, 0.5, 1.5)[, "X1"]) < 0))
 })
 
 test_that("several trajectories and inspection plans are handled", {
   set.seed(5)
   x <- sim_gamma(tg, 2, 3, n_traj = 4)
-  expect_length(x, 4)
   expect_s3_class(x, "levysim")
-  expect_named(x[[1]], c("t", "X"))
+  expect_true(is.matrix(x))
+  expect_equal(colnames(x), c("t", "X1", "X2", "X3", "X4"))
+  expect_equal(x[, "t"], tg)
+  expect_equal(unname(x[1, -1]), rep(0, 4))
+  expect_equal(colnames(sim_wiener(tg, 0.5, 1.5)), c("t", "X1"))
+  same <- sim_ig(inspection_times("increasing", n = 10, n_traj = 3, tmax = 50), 0.5, 2)
+  expect_true(is.matrix(same))
+  expect_equal(dim(same), c(11, 4))
   y <- sim_wiener(list(c(0, 1, 2), c(0, 2, 5, 7)), 0.5, 1.5)
+  expect_false(is.matrix(y))
   expect_equal(lengths(lapply(y, `[[`, "t")), c(3, 4))
   z <- sim_ig(inspection_times("increasing", n = 10, n_traj = 3, tmax = c(50, 80, 100)), 0.5, 2)
+  expect_false(is.matrix(z))
   expect_length(z, 3)
   d <- traj_df(z)
   expect_named(d, c("id", "t", "X"))
   expect_equal(nrow(d), 33)
   expect_s3_class(plot_traj(z), "ggplot")
+  expect_s3_class(plot_traj(x), "ggplot")
+  expect_equal(nrow(traj_df(x)), 4 * length(tg))
+  expect_output(print(x), "matrix")
+  expect_output(print(y), "list")
 })
 
 test_that("invalid inputs are refused", {
@@ -76,4 +88,16 @@ test_that("invalid inputs are refused", {
   expect_error(sim_wiener(tg, 0.5, 1.5, tau = function(t) -t), "tau")
   expect_error(sim_ig(tg, 0.5, 2, Lambda = function(t) 0 * t), "Lambda")
   expect_error(sim_meixner(tg, 1, 4, 1.5, 0.2), "pi")
+})
+
+test_that("traj_df gives the time steps and increments", {
+  set.seed(7)
+  x <- sim_gamma(c(0, 1, 3, 6), 2, 3, n_traj = 2)
+  d <- traj_df(x, increments = TRUE)
+  expect_named(d, c("id", "t", "X", "dt", "dX"))
+  expect_true(all(is.na(d$dt[d$t == 0])) && all(is.na(d$dX[d$t == 0])))
+  expect_equal(d$dt[d$id == 1], c(NA, 1, 2, 3))
+  expect_equal(d$dX[d$id == 2][-1], unname(diff(x[, "X2"])))
+  y <- sim_wiener(list(c(0, 1, 2), c(0, 2, 5, 7)), 0.5, 1.5)
+  expect_equal(traj_df(y, increments = TRUE)$dt, c(NA, 1, 1, NA, 2, 3, 2))
 })
