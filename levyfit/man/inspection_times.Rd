@@ -74,6 +74,9 @@ gather in a short time, which looks like a break in the plan, especially
 with three phases and few inspections. \eqn{s = 0} gives regular inspections.
 Three phases need one and a half oscillations of the sine (\eqn{k = 3}), two
 phases one oscillation (\eqn{k = 2}).
+With three phases and few inspections (fewer than 20), choose \code{strength}
+between 0.3 and 0.5: even with 0.5, ten inspections give a jump of about
+1.6 between two consecutive gaps.
 
 Any other strictly increasing function on \eqn{[0, 10]} can be given as
 \code{pattern}.
