@@ -24,17 +24,17 @@ test_that("invalid schedules are refused", {
   expect_error(inspection_times("decreasing", n = 50, digits = 0), "rounding")
 })
 
-test_that("strength sets the contrast of the alternating patterns", {
+test_that("a sets the contrast of the alternating patterns", {
   saut <- function(t) { g <- diff(t); max(g[-1] / g[-length(g)], g[-length(g)] / g[-1]) }
   for (p in c("inc-dec", "dec-inc", "inc-dec-inc", "dec-inc-dec")) {
-    expect_equal(inspection_times(p, n = 20)$time, inspection_times(p, n = 20, strength = 0.5)$time)
-    expect_equal(inspection_times(p, n = 20, strength = 0)$time, seq(0, 100, by = 5))
-    g <- diff(inspection_times(p, n = 200, strength = 0.5)$time)
+    expect_equal(inspection_times(p, n = 20)$time, inspection_times(p, n = 20, a = 0.5)$time)
+    expect_equal(inspection_times(p, n = 20, a = 0)$time, seq(0, 100, by = 5))
+    g <- diff(inspection_times(p, n = 200, a = 0.5)$time)
     expect_equal(max(g) / min(g), 3, tolerance = 0.01)
     expect_lt(saut(inspection_times(p, n = 20)$time), 1.35)
     expect_silent(inspection_times(p, n = 50, digits = 0))
   }
-  expect_equal(inspection_times("increasing", n = 20, strength = 0.9)$time, inspection_times("increasing", n = 20)$time)
+  expect_equal(inspection_times("increasing", n = 20, a = 0.9)$time, inspection_times("increasing", n = 20)$time)
 })
 
 test_that("the alternating patterns have the expected phases", {
@@ -47,6 +47,6 @@ test_that("the alternating patterns have the expected phases", {
   }
 })
 
-test_that("invalid strength values are refused", {
-  for (s in list(-0.1, 1, 2, NA, c(0.2, 0.3), "a")) expect_error(inspection_times("inc-dec", strength = s), "strength")
+test_that("invalid values of a are refused", {
+  for (s in list(-0.1, 1, 2, NA, c(0.2, 0.3), "a")) expect_error(inspection_times("inc-dec", a = s), "a must be")
 })
