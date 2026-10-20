@@ -12,8 +12,6 @@ output:
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 6.5, fig.align = "center")
-library(levyfit)
-library(levysim)
 library(ggplot2)
 ```
 
@@ -26,17 +24,21 @@ remotes::install_github("rytracetito/levy_packages", subdir = "levyfit")
 remotes::install_github("rytracetito/levy_packages", subdir = "levysim")
 ```
 
-Vraies valeurs des paramètres :
+Tout le code de l'étude (vraies valeurs, plans, simulation, estimation, résumé des répétitions) est dans le fichier `test.mle_code.R`, placé dans le même dossier que ce rapport :
 
 ```{r}
-vraies <- list(gamma   = c(a = 1.5, b = 3),
-               wiener  = c(mu = 0.5, sigma2 = 2.25, s2 = 2.25),
-               ig      = c(mu = 0.5, eta = 2, eta_unbiased = 2),
-               vg      = c(theta = 0.5, sigma = 1.5, nu = 2),
-               meixner = c(a = 1, b = 0.3, d = 1.5, m = 0.2))
-noms <- c(gamma = "Gamma", wiener = "Wiener", ig = "Inverse gaussien",
-          vg = "Variance-gamma", meixner = "Meixner")
+source("test.mle_code.R", local = knitr::knit_global())
 ```
+
+Vraies valeurs des paramètres :
+
+| Modèle | Paramètres |
+|---|---|
+| Gamma | `a = 1.5`, `b = 3` |
+| Wiener | `mu = 0.5`, `sigma2 = 2.25` |
+| Inverse gaussien | `mu = 0.5`, `eta = 2` |
+| Variance-gamma | `theta = 0.5`, `sigma = 1.5`, `nu = 2` |
+| Meixner | `a = 1`, `b = 0.3`, `d = 1.5`, `m = 0.2` |
 
 ## Démarche
 
@@ -50,122 +52,24 @@ On résume ensuite les \(R\) estimations de chaque paramètre par :
 * **Moyenne** des estimations ;
 * **Biais** : moyenne moins vraie valeur ;
 * **RMSE** : racine de l'erreur quadratique moyenne, \(\sqrt{\frac{1}{R}\sum_r (\hat\psi_r - \psi)^2}\) ;
-* **RMSE relative** : RMSE divisée par la vraie valeur, en %, pour comparer les paramètres entre eux ;
-* **Couverture** : pourcentage des intervalles de confiance à 95 % qui contiennent la vraie valeur (idéalement 95 %) ;
+* **RMSE rel.** : RMSE divisée par la vraie valeur, en %, pour comparer les paramètres entre eux ;
+* **Couv.** : couverture, pourcentage des intervalles de confiance à 95 % qui contiennent la vraie valeur (idéalement 95 %) ;
 * **Échecs** : pourcentage des répétitions où l'estimateur n'existe pas (les fonctions renvoient alors `NA` avec un avertissement).
 
-Pour Wiener, `sigma2` est l'estimateur du maximum de vraisemblance de \(\sigma^2\), biaisé vers le bas (\(E[\hat\sigma^2] = \frac{m-1}{m}\sigma^2\), avec \(m\) accroissements), et `s2` sa version sans biais ; de même `eta` et `eta_unbiased` pour l'inverse gaussien. Les versions sans biais n'ont pas d'intervalle de confiance.
+Pour Wiener, `sigma2` est l'estimateur du maximum de vraisemblance de \(\sigma^2\). Pour l'inverse gaussien, `eta` est l'estimateur du maximum de vraisemblance de \(\eta\).
 
 ## Plans d'inspection et configurations
-
-```{r}
-plans <- c(regulier = "regular", croissant = "increasing", decroissant = "decreasing",
-           mixte_bouts = "dec-inc", mixte_milieu = "inc-dec")
-libelles <- c(regulier = "Régulier", croissant = "Croissant", decroissant = "Décroissant",
-              mixte_bouts = "Mixte : beaucoup aux bouts", mixte_milieu = "Mixte : beaucoup au milieu")
-```
 
 * **I - Une trajectoire** : 100 inspections (t = 0 compris) entre 0 et 100.
 * **II - Plusieurs trajectoires** : 20 trajectoires, chacune inspectée 10 fois entre 0 et 100.
 
 Le modèle de Meixner a besoin de plus de données : 500 inspections jusqu'à 500 (partie I) et 20 trajectoires de 20 inspections jusqu'à 20 (partie II), soit un pas moyen de 1.
 
+Les cinq plans, ici avec 20 inspections : « Mixte (bouts) » donne beaucoup d'inspections au début et à la fin, « Mixte (milieu) » beaucoup au milieu.
+
 ```{r, fig.height = 1.2, echo = FALSE}
 for (k in names(plans)) {
   print(plot_plan(inspection_times(plans[[k]], n = 19, tmax = 100)$time, libelles[[k]]))
-}
-```
-
-\newpage
-
-## Code de l'étude
-
-```{r}
-R <- 200
-R_meixner <- 100
-
-simuler <- function(modele, plan, p) {
-  switch(modele,
-    gamma   = sim_gamma(plan, p[["a"]], p[["b"]]),
-    wiener  = sim_wiener(plan, p[["mu"]], sqrt(p[["sigma2"]])),
-    ig      = sim_ig(plan, p[["mu"]], p[["eta"]]),
-    vg      = sim_vg(plan, p[["theta"]], p[["sigma"]], p[["nu"]]),
-    meixner = sim_meixner(plan, p[["a"]], p[["b"]], p[["d"]], p[["m"]]))
-}
-
-estimer <- function(modele, x) {
-  f <- switch(modele, gamma = gamma_mle, wiener = wiener_mle, ig = ig_mle, vg = vg_mle, meixner = meixner_mle)
-  suppressWarnings(f(x, ci = TRUE))
-}
-
-plan_de <- function(modele, config, nom_plan) {
-  mx <- modele == "meixner"
-  if (config == "une") {
-    inspection_times(plans[[nom_plan]], n = if (mx) 499 else 99, tmax = if (mx) 500 else 100)$time
-  } else {
-    inspection_times(plans[[nom_plan]], n = if (mx) 19 else 9, n_traj = 20, tmax = if (mx) 20 else 100)
-  }
-}
-
-une_cellule <- function(modele, config, nom_plan) {
-  plan <- plan_de(modele, config, nom_plan)
-  rep <- if (modele == "meixner") R_meixner else R
-  do.call(rbind, lapply(seq_len(rep), function(r) {
-    e <- estimer(modele, simuler(modele, plan, vraies[[modele]]))
-    data.frame(modele, config, plan = nom_plan, r, e)
-  }))
-}
-```
-
-Les 50 situations (5 modèles, 5 plans, 2 configurations) sont calculées en parallèle avec une graine fixée, puis enregistrées dans le fichier `test.mle_resultats.rds`. Si ce fichier existe, il est simplement relu.
-
-```{r}
-fichier <- "test.mle_resultats.rds"
-if (file.exists(fichier)) {
-  res <- readRDS(fichier)
-} else {
-  cellules <- expand.grid(modele = names(vraies), config = c("une", "plusieurs"),
-                          plan = names(plans), stringsAsFactors = FALSE)
-  cl <- parallel::makeCluster(parallel::detectCores() - 1)
-  parallel::clusterSetRNGStream(cl, 2026)
-  parallel::clusterEvalQ(cl, {library(levyfit); library(levysim)})
-  parallel::clusterExport(cl, c("vraies", "plans", "R", "R_meixner", "simuler", "estimer", "plan_de", "une_cellule"))
-  res <- do.call(rbind, parallel::parLapply(cl, split(cellules, seq_len(nrow(cellules))), function(k)
-    une_cellule(k$modele, k$config, k$plan)))
-  parallel::stopCluster(cl)
-  saveRDS(res, fichier)
-}
-```
-
-Résumé des répétitions et présentation des tableaux :
-
-```{r}
-resumer <- function(res) {
-  cles <- unique(res[c("modele", "config", "plan", "parameter")])
-  do.call(rbind, lapply(seq_len(nrow(cles)), function(i) {
-    k <- cles[i, ]
-    d <- res[res$modele == k$modele & res$config == k$config & res$plan == k$plan & res$parameter == k$parameter, ]
-    v <- vraies[[k$modele]][[k$parameter]]
-    ok <- !is.na(d$estimate)
-    e <- d$estimate[ok]
-    couv <- if (all(is.na(d$lower[ok]))) NA else 100 * mean(d$lower[ok] <= v & v <= d$upper[ok], na.rm = TRUE)
-    data.frame(k, vraie = v, moyenne = mean(e), biais = mean(e) - v, rmse = sqrt(mean((e - v)^2)),
-               rmse_rel = 100 * sqrt(mean((e - v)^2)) / abs(v), couverture = couv, echecs = 100 * mean(!ok))
-  }))
-}
-synthese <- resumer(res)
-
-tableau <- function(modele, config) {
-  d <- synthese[synthese$modele == modele & synthese$config == config, ]
-  d <- d[order(match(d$parameter, names(vraies[[modele]])), match(d$plan, names(plans))), ]
-  f <- function(v, k = 3) ifelse(is.na(v), "", formatC(v, digits = k, format = "fg", flag = "#"))
-  t <- data.frame(Paramètre = ifelse(duplicated(d$parameter), "", paste0(d$parameter, " (", d$vraie, ")")),
-                  Plan = libelles[d$plan], Moyenne = f(d$moyenne), Biais = f(d$biais), RMSE = f(d$rmse),
-                  `RMSE rel. (%)` = formatC(d$rmse_rel, digits = 1, format = "f"),
-                  `Couverture (%)` = ifelse(is.na(d$couverture), "", formatC(d$couverture, digits = 0, format = "f")),
-                  `Échecs (%)` = formatC(d$echecs, digits = 0, format = "f"), check.names = FALSE)
-  knitr::kable(t, format = "latex", booktabs = TRUE, row.names = FALSE, align = "llrrrrrr",
-               linesep = c(rep("", length(plans) - 1), "\\addlinespace"))
 }
 ```
 
@@ -245,16 +149,17 @@ tableau("meixner", "plusieurs")
 
 ## RMSE relative selon le plan d'inspection
 
-Plus la RMSE relative est faible, meilleure est l'estimation. Chaque point est un paramètre ; on compare les plans entre eux, pour chaque modèle et chaque configuration.
+Plus la RMSE relative est faible, meilleure est l'estimation. Chaque point est un paramètre ; on compare les plans entre eux, pour chaque modèle et chaque configuration. Chaque panneau a sa propre échelle.
 
-```{r, fig.height = 7.5, echo = FALSE}
-d <- synthese[!synthese$parameter %in% c("s2", "eta_unbiased"), ]
+```{r, fig.height = 7.3, echo = FALSE}
+d <- synthese
 d$plan <- factor(libelles[d$plan], levels = libelles)
 d$config <- factor(ifelse(d$config == "une", "I - Une trajectoire", "II - Plusieurs trajectoires"))
 d$modele <- factor(noms[d$modele], levels = noms)
 ggplot(d, aes(x = rmse_rel, y = plan, colour = parameter)) +
   geom_point(size = 2) +
-  facet_grid(modele ~ config, scales = "free_x") +
+  facet_wrap(vars(modele, config), ncol = 2, scales = "free_x",
+             labeller = function(l) label_value(l, multi_line = FALSE)) +
   labs(x = "RMSE relative (%)", y = NULL, colour = "Paramètre") +
   theme_minimal() +
   theme(legend.position = "bottom")
@@ -277,4 +182,10 @@ ggplot(d2, aes(x = couverture, y = plan, colour = parameter)) +
 
 ## Conclusions
 
-CONCLUSIONS_A_ECRIRE
+**Gamma, Wiener et inverse gaussien.** Les estimateurs sont presque sans biais, il n'y a aucun échec, et la couverture des intervalles reste entre 90 et 98 %, autour des 95 % visés. Les petits biais observés sont ceux attendus : `sigma2` est légèrement trop petit (facteur \((m-1)/m\)) et `eta` légèrement trop grand (facteur \(m/(m-3)\)). Le plan d'inspection a très peu d'effet : la précision dépend surtout de la durée totale observée. Par exemple, la RMSE de `mu` (Wiener) vaut 0.15 avec une trajectoire jusqu'à 100 et 0.034 avec 20 trajectoires jusqu'à 100, comme le prévoit \(\sigma / \sqrt{T}\) avec \(T = 100\) puis \(T = 2000\).
+
+**Variance-gamma.** `theta` et `sigma` sont bien estimés, et mieux avec plusieurs trajectoires. `nu` est le paramètre le moins précis, surtout avec plusieurs trajectoires (RMSE relative de 42 à 50 % contre 16 à 20 %) : les pas d'inspection y valent environ 11, beaucoup plus que \(\nu = 2\), et les accroissements sont alors presque gaussiens, ce qui rend \(\nu\) difficile à identifier. Les échecs ne dépassent pas 1 %.
+
+**Meixner.** `a` et `b` sont correctement estimés (la RMSE relative de `b` est grande seulement parce que sa vraie valeur, 0.3, est petite). `d` et `m` sont mal identifiés : la médiane des estimations de `d` reste proche de 1.5 (entre 1.36 et 1.66), mais quelques estimations très grandes (jusqu'à 236) gonflent la moyenne et la RMSE. Le plan d'inspection compte ici : le plan régulier donne 11 % d'échecs, contre 0 à 6 % pour les autres plans. Avec un pas constant égal à 1, il n'y a pas d'intervalle court où la forme non gaussienne des accroissements est bien visible ; les plans irréguliers en contiennent.
+
+**Situations meilleures que d'autres.** Pour le gamma, le Wiener, l'inverse gaussien et le variance-gamma, aucun plan n'est nettement meilleur ; observer plus longtemps (plusieurs trajectoires) améliore la précision, sauf pour `nu` du variance-gamma, qui préfère des pas courts. Pour le Meixner, les plans irréguliers sont préférables au plan régulier.

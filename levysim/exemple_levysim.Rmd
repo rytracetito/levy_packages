@@ -12,7 +12,6 @@ output:
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.height = 2.8, fig.width = 6, fig.align = "center")
 library(levysim)
-library(ggplot2)
 ```
 
 # Préparation {-}
@@ -583,59 +582,4 @@ set.seed(155)
 x <- sim_meixner(p5, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x[, 1:4])
 plot_traj(x, "Meixner homogène : 10 trajectoires")
-```
-
-\newpage
-
-# III - Récupérer les données simulées
-
-## Mêmes instants pour toutes les trajectoires : une matrice
-
-```{r}
-set.seed(9)
-x <- sim_gamma(seq(0, 100, by = 10), a = 2, b = 3, n_traj = 3)
-x
-```
-
-La \(k\)-ième trajectoire est la colonne `Xk` :
-
-```{r}
-x[, "X2"]
-```
-
-## Instants différents d'une trajectoire à l'autre : une liste
-
-Avec un plan différent pour chaque trajectoire (ici 5, 8 et 10 inspections après t = 0), le résultat est une liste de `data.frame(t, X)`, une par trajectoire :
-
-```{r}
-set.seed(10)
-plans <- inspection_times("increasing", n = c(5, 8, 10), n_traj = 3, tmax = 100)
-y <- sim_gamma(plans, a = 2, b = 3)
-y
-y[[2]]
-```
-
-## Toutes les données dans un seul tableau
-
-`traj_df()` rassemble les trajectoires, quel que soit le format, avec une colonne `id`. L'option `increments = TRUE` ajoute la durée `dt` et l'accroissement `dX` depuis l'inspection précédente (`NA` à t = 0) :
-
-```{r}
-d <- traj_df(y, increments = TRUE)
-head(d, 8)
-```
-
-Ce tableau peut être enregistré, par exemple dans un fichier CSV :
-
-```{r, eval = FALSE}
-write.csv(d, "trajectoires_gamma.csv", row.names = FALSE)
-```
-
-## Graphique personnalisé
-
-Le graphique renvoyé par `plot_traj()` se modifie avec les fonctions de `ggplot2`, par exemple pour ajouter un seuil de défaillance :
-
-```{r}
-plot_traj(y, "Gamma homogène : 3 trajectoires") +
-  geom_hline(yintercept = 60, linetype = "dashed", colour = "red") +
-  labs(x = "Temps (heures)", y = "Dégradation")
 ```
