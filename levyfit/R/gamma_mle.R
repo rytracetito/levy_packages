@@ -41,7 +41,7 @@
 #'    as \eqn{a \to \infty}, unless all the speeds are equal.
 #' 4. Hence \eqn{g} has a unique root \eqn{\hat a}, and
 #'    \eqn{\hat b = \hat a T / S}. If all the speeds are equal (in particular
-#'    if \eqn{m = 1}), the MLE does not exist and the function stops; this has
+#'    if \eqn{m = 1}), the MLE does not exist (`NA` with a warning); this has
 #'    probability zero when \eqn{m \ge 2}.
 #'
 #' The root is computed by [stats::uniroot()] in \eqn{\ln a}, starting from the

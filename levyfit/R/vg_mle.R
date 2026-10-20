@@ -36,8 +36,8 @@
 #' \eqn{\sigma}; as \eqn{\nu \to \infty}, \eqn{\ell \to -\infty}. The supremum
 #' of the likelihood can therefore be reached at the Brownian limit
 #' \eqn{\nu = 0}: the MLE does not always exist (about one case in four with a
-#' single trajectory of ten increments). The function then stops and the
-#' Wiener model, see [wiener_mle()], should be used.
+#' single trajectory of ten increments). The function then returns `NA` with a
+#' warning and the Wiener model, see [wiener_mle()], should be used.
 #'
 #' As \eqn{\sigma \to 0}, \eqn{X_s \to \theta \gamma_s}: if \eqn{\theta > 0},
 #' the VG process tends to the gamma process with shape \eqn{a = 1 / \nu} and
@@ -46,8 +46,8 @@
 #' \eqn{\sup \ell \ge \ell_\Gamma(\hat a, \hat b)}, the maximum of the gamma
 #' log-likelihood. When all the increments are positive and the VG estimate
 #' does not exceed this value, the supremum is reached at the gamma limit
-#' \eqn{\sigma = 0}: the function stops and the gamma model, see
-#' [gamma_mle()], should be used. This typically happens with monotone
+#' \eqn{\sigma = 0}: the function returns `NA` with a warning and the gamma
+#' model, see [gamma_mle()], should be used. This typically happens with monotone
 #' degradation data.
 #'
 #' @section EM algorithm:
@@ -71,7 +71,7 @@
 #' 4. Repeat until the relative change of \eqn{\ell} is below \eqn{10^{-10}}.
 #'
 #' Each iteration increases the likelihood (Dempster, Laird and Rubin, 1977).
-#' The EM limit is then refined by BFGS on
+#' The EM limit is then refined by L-BFGS-B on
 #' \eqn{(\theta, \ln \sigma, \ln \nu)}; if this refinement fails or does not
 #' increase the likelihood (for instance with data on a very small scale), the
 #' EM limit is returned. Starting values: the Wiener MLE for
@@ -206,23 +206,23 @@ vg_loglik <- function(dx, dt, theta, sigma, nu) {
   d <- ifelse(ts > 0, (2 * sigma^2 / nu) / (cc + ts), cc - ts)
   z <- cc * abs(dx) / sigma^2
   sum(log(2) - 0.5 * log(2 * pi) - log(sigma) - lam * log(nu) - lgamma(lam) +
-        (lam - 0.5) * (log(abs(dx)) - log(cc)) + (log_besselK(z, lam - 0.5) + z) - abs(dx) * d / sigma^2)
+        (lam - 0.5) * (log(abs(dx)) - log(cc)) + log_besselKx(z, lam - 0.5) - abs(dx) * d / sigma^2)
 }
 
-log_besselK <- function(z, p) {
+log_besselKx <- function(z, p) {
   n <- max(length(z), length(p))
   z <- rep_len(z, n)
   p <- rep_len(abs(p), n)
   out <- rep(NA_real_, n)
   small <- p <= 1e4
-  out[small] <- log(besselK(z[small], p[small], expon.scaled = TRUE)) - z[small]
+  out[small] <- log(besselK(z[small], p[small], expon.scaled = TRUE))
   debye <- function(z, p) {
     s <- sqrt(1 + (z / p)^2)
-    0.5 * log(pi / (2 * p)) - p * (s + log((z / p) / (1 + s))) - 0.5 * log(s)
+    0.5 * log(pi / (2 * p)) - p * log((z / p) / (1 + s)) - 0.5 * log(s) - p^2 / (z + p * s)
   }
   for (i in which(!is.finite(out) & is.finite(z) & z > 0 & is.finite(p))) {
     out[i] <- if (p[i] > 1e4) debye(z[i], p[i]) else {
-      g <- function(u) -z[i] * cosh(u) + p[i] * u + log1p(exp(-2 * p[i] * u)) - log(2)
+      g <- function(u) -2 * z[i] * sinh(u / 2)^2 + p[i] * u + log1p(exp(-2 * p[i] * u)) - log(2)
       opt <- optimize(g, c(0, asinh(p[i] / z[i]) + 1), maximum = TRUE, tol = 1e-12)
       w <- 12 / sqrt(z[i] * cosh(opt$maximum))
       I <- integrate(function(u) exp(g(u) - opt$objective), max(0, opt$maximum - w), opt$maximum + w,
@@ -236,8 +236,8 @@ log_besselK <- function(z, p) {
 gig_moments <- function(p, chi, psi, h = 1e-5) {
   om <- sqrt(chi * psi)
   eta <- sqrt(chi / psi)
-  lk <- log_besselK(om, p)
-  list(EG = eta * exp(log_besselK(om, p + 1) - lk),
-       EinvG = exp(log_besselK(om, p - 1) - lk) / eta,
-       ElogG = log(eta) + (log_besselK(om, p + h) - log_besselK(om, p - h)) / (2 * h))
+  lk <- log_besselKx(om, p)
+  list(EG = eta * exp(log_besselKx(om, p + 1) - lk),
+       EinvG = exp(log_besselKx(om, p - 1) - lk) / eta,
+       ElogG = log(eta) + (log_besselKx(om, p + h) - log_besselKx(om, p - h)) / (2 * h))
 }

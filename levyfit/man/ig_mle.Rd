@@ -74,7 +74,7 @@ with \eqn{\hat Q = 0} if and only if the speeds
 is maximal at \eqn{\hat\eta = m / \hat Q}.
 \item The MLE exists and is unique if and only if \eqn{\hat Q > 0}, which has
 probability one as soon as \eqn{m \ge 2}. Otherwise the likelihood is
-unbounded and the function stops.
+unbounded (\code{NA} with a warning).
 }
 }
 

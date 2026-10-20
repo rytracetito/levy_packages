@@ -112,7 +112,7 @@ a warning is given if a degenerate solution had a larger likelihood.
 The parameters \eqn{a} and \eqn{d} are strongly correlated and \eqn{d} is
 poorly identified: hundreds of increments are needed for a stable
 estimation, and with few increments there is often no interior maximum, in
-which case the function stops.
+which case the function returns \code{NA} with a warning.
 }
 
 \section{Confidence intervals and estimation failures}{

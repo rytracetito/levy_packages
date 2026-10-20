@@ -73,7 +73,7 @@ is maximal at \eqn{\hat\sigma^2 = \hat Q / m}.
 \item The MLE exists and is unique if and only if \eqn{\hat Q > 0}, that is if
 the speeds \eqn{r_j} are not all equal, which has probability one as soon
 as \eqn{m \ge 2}. Otherwise (in particular if \eqn{m = 1}) the likelihood
-is unbounded and the function stops.
+is unbounded (\code{NA} with a warning).
 }
 
 With one trajectory, \eqn{\hat\mu} only depends on the first and last

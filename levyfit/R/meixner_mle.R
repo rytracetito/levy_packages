@@ -70,7 +70,7 @@
 #' The parameters \eqn{a} and \eqn{d} are strongly correlated and \eqn{d} is
 #' poorly identified: hundreds of increments are needed for a stable
 #' estimation, and with few increments there is often no interior maximum, in
-#' which case the function stops.
+#' which case the function returns `NA` with a warning.
 #'
 #' @inheritSection wiener_mle Confidence intervals and estimation failures
 #'

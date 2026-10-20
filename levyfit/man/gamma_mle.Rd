@@ -76,7 +76,7 @@ Jensen's inequality,
 as \eqn{a \to \infty}, unless all the speeds are equal.
 \item Hence \eqn{g} has a unique root \eqn{\hat a}, and
 \eqn{\hat b = \hat a T / S}. If all the speeds are equal (in particular
-if \eqn{m = 1}), the MLE does not exist and the function stops; this has
+if \eqn{m = 1}), the MLE does not exist (\code{NA} with a warning); this has
 probability zero when \eqn{m \ge 2}.
 }
 

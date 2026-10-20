@@ -45,3 +45,12 @@ test_that("invalid data are refused", {
   expect_error(igam_mle(c(1, 2, 3), c(0, 1, 2)), "start at")
   expect_error(igam_mle(c(0, 2, 1), c(0, 1, 2)), "non-decreasing")
 })
+
+test_that("the VG log-likelihood tends to the gamma one when sigma tends to 0", {
+  dx <- c(0.0023, 0.41, 1.3, 0.07)
+  dt <- c(0.5, 1, 2.5, 0.4)
+  theta <- 1.2
+  nu <- 0.3
+  lg <- sum(dgamma(dx, shape = dt / nu, scale = theta * nu, log = TRUE))
+  for (s in c(1e-6, 1e-12, 1e-50, 1e-100)) expect_equal(vg_loglik(dx, dt, theta, s, nu), lg, tolerance = 1e-8)
+})

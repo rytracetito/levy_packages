@@ -37,7 +37,7 @@
 #'    is maximal at \eqn{\hat\eta = m / \hat Q}.
 #' 4. The MLE exists and is unique if and only if \eqn{\hat Q > 0}, which has
 #'    probability one as soon as \eqn{m \ge 2}. Otherwise the likelihood is
-#'    unbounded and the function stops.
+#'    unbounded (`NA` with a warning).
 #'
 #' @section Bias:
 #' For \eqn{m \ge 2},
