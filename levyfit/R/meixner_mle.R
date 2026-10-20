@@ -72,6 +72,9 @@
 #' estimation, and with few increments there is often no interior maximum, in
 #' which case the function stops.
 #'
+#' @inheritSection wiener_mle Confidence intervals and estimation failures
+#'
+#' @inheritParams wiener_mle
 #' @param x Degradation levels of one trajectory; or a list of data frames,
 #'   one per trajectory, whose first column contains the inspection times and
 #'   second column the degradation levels.
@@ -80,6 +83,11 @@
 #' @param n_start Number of starting points.
 #'
 #' @return A named vector with the estimates `a`, `b`, `d` and `m`.
+#'
+#'   With `ci = TRUE`, a data frame with one row per parameter and the columns
+#'   `parameter`, `estimate`, `lower` and `upper` (bounds of the confidence
+#'   interval). When the estimator does not exist, the estimates (and bounds)
+#'   are `NA`, with a warning.
 #'
 #' @references
 #' Schoutens, W. and Teugels, J. L. (1998). Lévy processes, polynomials and
@@ -111,14 +119,18 @@
 #' meixner_mle(x)
 #'
 #' # 3. Estimates with 95 % confidence intervals
-#' confint_mle(x, model = "meixner")
+#' meixner_mle(x, ci = TRUE)
 #'
 #' # 4. Few increments over long intervals: the maximum is often at the
-#' #    boundary (Gaussian or shifted gamma limit) and the function stops
+#' #    boundary (Gaussian or shifted gamma limit): warning and NA estimates
 #' y <- levysim::sim_meixner(seq(0, 100, by = 10), a = 1, b = 0.3, d = 1.5, m = 0.2)
-#' try(meixner_mle(y))
+#' meixner_mle(y)
 #' @export
-meixner_mle <- function(x, t = NULL, n_start = 5) {
+meixner_mle <- function(x, t = NULL, ci = FALSE, level = 0.95, n_start = 5) {
+  estimate("meixner", x, t, ci, level, n_start = n_start)
+}
+
+meixner_est <- function(x, t = NULL, n_start = 5) {
   d <- increments(x, t)
   dt <- d$dt
   dx <- d$dx
@@ -145,14 +157,14 @@ meixner_mle <- function(x, t = NULL, n_start = 5) {
                    control = list(factr = 1e4, maxit = 2000)),
              error = function(e) NULL))
   fits <- Filter(Negate(is.null), fits)
-  if (length(fits) == 0) stop("the optimization failed from all starting points")
+  if (length(fits) == 0) no_mle("the optimization failed from all starting points")
 
   deg <- vapply(fits, function(f) {
     a <- exp(f$par[1]); d <- exp(f$par[2])
     pi - abs(b_hat(a, d, f$par[3])) < 0.1 || d * max(dt) > 1e3 ||
       any(abs(f$par - lower) < 1e-6) || any(abs(f$par - upper) < 1e-6)
   }, TRUE)
-  if (all(deg)) stop("no interior maximum: all solutions are at the boundary (shifted gamma or Gaussian limit)")
+  if (all(deg)) no_mle("no interior maximum: all solutions are at the boundary (shifted gamma or Gaussian limit)")
   ll <- -vapply(fits, function(f) f$value, 0)
   best <- fits[!deg][[which.max(ll[!deg])]]
   if (any(deg) && max(ll[deg]) > -best$value) {

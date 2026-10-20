@@ -56,6 +56,9 @@
 #' bias vanishes as the number of increments grows. Their ratio
 #' \eqn{\hat a / \hat b = S / T} is unbiased.
 #'
+#' @inheritSection wiener_mle Confidence intervals and estimation failures
+#'
+#' @inheritParams wiener_mle
 #' @param x Degradation levels of one trajectory, with strictly positive increments;
 #'   or a list of data frames, one per trajectory, whose first column contains
 #'   the inspection times and second column the degradation levels.
@@ -63,6 +66,11 @@
 #'   when `x` is a list.
 #'
 #' @return A named vector with `a` \eqn{= \hat a} and `b` \eqn{= \hat b}.
+#'
+#'   With `ci = TRUE`, a data frame with one row per parameter and the columns
+#'   `parameter`, `estimate`, `lower` and `upper` (bounds of the confidence
+#'   interval). When the estimator does not exist, the estimates (and bounds)
+#'   are `NA`, with a warning.
 #'
 #' @references
 #' van Noortwijk, J. M. (2009). A survey of the application of gamma processes
@@ -97,7 +105,7 @@
 #' gamma_mle(x)
 #'
 #' # 5. Estimates with 95 % confidence intervals
-#' confint_mle(x, model = "gamma")
+#' gamma_mle(x, ci = TRUE)
 #'
 #' # 6. Your own data: a list of data frames, one per trajectory,
 #' #    with the times in the first column and the levels in the second
@@ -108,7 +116,11 @@
 #' # The gamma process only increases: a decrease stops the estimation
 #' try(gamma_mle(c(0, 2, 1.5, 3), c(0, 1, 2, 3)))
 #' @export
-gamma_mle <- function(x, t = NULL) {
+gamma_mle <- function(x, t = NULL, ci = FALSE, level = 0.95) {
+  estimate("gamma", x, t, ci, level)
+}
+
+gamma_est <- function(x, t = NULL) {
   d <- increments(x, t)
   gamma_fit(d$dt, d$dx)
 }
@@ -116,7 +128,7 @@ gamma_mle <- function(x, t = NULL) {
 gamma_fit <- function(dt, dx) {
   if (any(dx <= 0)) stop("increments must be strictly positive")
   r <- dx / dt
-  if (all(abs(r - r[1]) <= 1e-12 * r[1])) stop("the MLE does not exist: all speeds dx/dt are equal")
+  if (all(abs(r - r[1]) <= 1e-12 * r[1])) no_mle("the MLE does not exist: all speeds dx/dt are equal")
 
   Tt <- sum(dt)
   S <- sum(dx)

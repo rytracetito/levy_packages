@@ -71,6 +71,9 @@
 #' is \eqn{-\infty} as soon as two observations are equal and is biased
 #' otherwise; it is not used here.
 #'
+#' @inheritSection wiener_mle Confidence intervals and estimation failures
+#'
+#' @inheritParams wiener_mle
 #' @param x Degradation levels of one trajectory, starting at 0 at time 0,
 #'   non-decreasing, with \eqn{x_1 > 0}; or a list of data frames, one per
 #'   trajectory, whose first column contains the inspection times and second
@@ -79,6 +82,11 @@
 #'   at 0. Not used when `x` is a list.
 #'
 #' @return A named vector with the estimates `theta`, `alpha` and `beta`.
+#'
+#'   With `ci = TRUE`, a data frame with one row per parameter and the columns
+#'   `parameter`, `estimate`, `lower` and `upper` (bounds of the confidence
+#'   interval). When the estimator does not exist, the estimates (and bounds)
+#'   are `NA`, with a warning.
 #'
 #' @references
 #' Guida, M. and Pulcini, G. (2013). The inverse Gamma process: a family of
@@ -105,10 +113,14 @@
 #' igam_mle(x)
 #'
 #' # 3. Estimates with 95 % confidence intervals
-#' confint_mle(x, model = "igam")
+#' igam_mle(x, ci = TRUE)
 #' }
 #' @export
-igam_mle <- function(x, t = NULL) {
+igam_mle <- function(x, t = NULL, ci = FALSE, level = 0.95) {
+  estimate("igam", x, t, ci, level)
+}
+
+igam_est <- function(x, t = NULL) {
   traj <- as_trajectories(x, t)
   for (d in traj) {
     if (d$t[1] != 0 || d$x[1] != 0) stop("each trajectory must start at t = 0 with x = 0")

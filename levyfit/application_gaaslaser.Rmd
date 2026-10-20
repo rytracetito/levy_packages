@@ -62,9 +62,9 @@ modeles <- c("Wiener" = "wiener_mle", "Gamma" = "gamma_mle",
 
 estimer_tout <- function(liste) {
   texte <- sapply(modeles, function(f) {
-    r <- try(get(f)(liste), silent = TRUE)
-    if (inherits(r, "try-error")) {
-      paste("Impossible :", conditionMessage(attr(r, "condition")))
+    r <- suppressWarnings(get(f)(liste))
+    if (all(is.na(r))) {
+      paste("Impossible :", attr(r, "message"))
     } else {
       paste(names(r), signif(r, 4), sep = " = ", collapse = ", ")
     }

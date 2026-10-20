@@ -25,11 +25,10 @@ Estimation of the parameters (click on a function name for its help page):\tabul
 }
 
 
-Confidence intervals:\tabular{ll}{
-   Function \tab Use \cr
-   \code{\link[=confint_mle]{confint_mle()}} \tab estimates and asymptotic confidence intervals of the parameters of any of the six models \cr
-}
-
+Every estimation function returns the point estimates and, with
+\code{ci = TRUE}, asymptotic confidence intervals (see \code{\link[=wiener_mle]{wiener_mle()}}). When the
+estimator does not exist for the data, it gives a warning and returns \code{NA}
+estimates instead of stopping.
 
 Inspection schedules:\tabular{ll}{
    Function \tab Use \cr
@@ -84,7 +83,7 @@ wiener_mle(x)
 ig_mle(x)
 
 # 4. Estimates with 95 \% confidence intervals
-confint_mle(x, model = "gamma")
+gamma_mle(x, ci = TRUE)
 \dontshow{\}) # examplesIf}
 }
 \author{

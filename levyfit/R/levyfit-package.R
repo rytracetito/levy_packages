@@ -18,11 +18,10 @@
 #' | [meixner_mle()] | Meixner process | `a`, `b`, `d`, `m` | profile likelihood, several starts |
 #' | [igam_mle()] | inverse gamma process | `theta`, `alpha`, `beta` | exact likelihood by forward filtering |
 #'
-#' Confidence intervals:
-#'
-#' | Function | Use |
-#' |---|---|
-#' | [confint_mle()] | estimates and asymptotic confidence intervals of the parameters of any of the six models |
+#' Every estimation function returns the point estimates and, with
+#' `ci = TRUE`, asymptotic confidence intervals (see [wiener_mle()]). When the
+#' estimator does not exist for the data, it gives a warning and returns `NA`
+#' estimates instead of stopping.
 #'
 #' Inspection schedules:
 #'
@@ -68,7 +67,7 @@
 #' ig_mle(x)
 #'
 #' # 4. Estimates with 95 % confidence intervals
-#' confint_mle(x, model = "gamma")
+#' gamma_mle(x, ci = TRUE)
 #' @keywords package
 "_PACKAGE"
 

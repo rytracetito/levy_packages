@@ -37,8 +37,8 @@ test_that("ig_mle gives the values of the report", {
 })
 
 test_that("invalid data are refused", {
-  expect_error(wiener_mle(c(0, 1), c(0, 1)), "does not exist")
+  expect_warning(wiener_mle(c(0, 1), c(0, 1)), "does not exist")
   expect_error(gamma_mle(c(0, 1, 1, 2), c(0, 1, 2, 3)), "strictly positive")
-  expect_error(gamma_mle(c(0, 1, 2, 3), c(0, 1, 2, 3)), "does not exist")
+  expect_warning(gamma_mle(c(0, 1, 2, 3), c(0, 1, 2, 3)), "does not exist")
   expect_error(ig_mle(c(0, 1, 2), c(0, 1, 1)), "strictly increasing")
 })

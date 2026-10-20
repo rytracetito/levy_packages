@@ -78,6 +78,9 @@
 #' \eqn{(\theta, \sigma)} and \eqn{\nu = T / m}. The algorithm stops at the
 #' Brownian limit when \eqn{\nu < \max_j \Delta t_j / 300}.
 #'
+#' @inheritSection wiener_mle Confidence intervals and estimation failures
+#'
+#' @inheritParams wiener_mle
 #' @param x Degradation levels of one trajectory, with non-zero increments;
 #'   or a list of data frames, one per trajectory, whose first column contains
 #'   the inspection times and second column the degradation levels.
@@ -86,6 +89,11 @@
 #'
 #' @return A named vector with the maximum likelihood estimates `theta`,
 #'   `sigma` and `nu`.
+#'
+#'   With `ci = TRUE`, a data frame with one row per parameter and the columns
+#'   `parameter`, `estimate`, `lower` and `upper` (bounds of the confidence
+#'   interval). When the estimator does not exist, the estimates (and bounds)
+#'   are `NA`, with a warning.
 #'
 #' @references
 #' Madan, D. B., Carr, P. P. and Chang, E. C. (1998). The variance gamma
@@ -125,15 +133,19 @@
 #' vg_mle(x)
 #'
 #' # 4. Estimates with 95 % confidence intervals
-#' confint_mle(x, model = "vg")
+#' vg_mle(x, ci = TRUE)
 #'
 #' # 5. Increasing data, here from a gamma process: the likelihood is maximal
-#' #    at the gamma limit (sigma = 0) and the function suggests gamma_mle()
+#' #    at the gamma limit (sigma = 0): warning suggesting gamma_mle(), NA estimates
 #' y <- levysim::sim_gamma(seq(0, 100, by = 1), a = 2, b = 3)
-#' try(vg_mle(y))
+#' vg_mle(y)
 #' gamma_mle(y)
 #' @export
-vg_mle <- function(x, t = NULL) {
+vg_mle <- function(x, t = NULL, ci = FALSE, level = 0.95) {
+  estimate("vg", x, t, ci, level)
+}
+
+vg_est <- function(x, t = NULL) {
   d <- increments(x, t)
   dt <- d$dt
   dx <- d$dx
@@ -150,14 +162,14 @@ vg_mle <- function(x, t = NULL) {
 
   for (it in 1:5000) {
     g <- gig_moments(dt / nu - 0.5, dx^2 / sigma^2, theta^2 / sigma^2 + 2 / nu)
-    if (!all(is.finite(unlist(g))) || nu < nu_min) stop(brownian)
+    if (!all(is.finite(unlist(g))) || nu < nu_min) no_mle(brownian)
     theta <- sum(dx) / sum(g$EG)
     sigma <- sqrt(mean(dx^2 * g$EinvG - 2 * theta * dx + theta^2 * g$EG))
     q <- function(la) sum(dt * g$ElogG - g$EG + dt * la + dt - dt * digamma(exp(la) * dt))
-    if (q(log(1 / nu_min)) > 0) stop(brownian)
+    if (q(log(1 / nu_min)) > 0) no_mle(brownian)
     nu <- exp(-uniroot(q, interval = c(-log(1e6 * max(dt)), log(1 / nu_min)), tol = 1e-12)$root)
     ll_new <- vg_loglik(dx, dt, theta, sigma, nu)
-    if (!is.finite(ll_new)) stop(brownian)
+    if (!is.finite(ll_new)) no_mle(brownian)
     if (ll_new - ll < -1e-8 * abs(ll)) warning("the log-likelihood decreased: numerical problem")
     conv <- abs(ll_new - ll) <= 1e-10 * (abs(ll) + 1e-10)
     ll <- ll_new
@@ -181,7 +193,7 @@ vg_mle <- function(x, t = NULL) {
     g <- gamma_fit(dt, dx)
     ll_gamma <- sum(dgamma(dx, shape = g[["a"]] * dt, rate = g[["b"]], log = TRUE))
     if (-nll(p) <= ll_gamma + 1e-8 * abs(ll_gamma)) {
-      stop("sigma tends to 0: the likelihood is maximal at the gamma limit, use gamma_mle()")
+      no_mle("sigma tends to 0: the likelihood is maximal at the gamma limit, use gamma_mle()")
     }
   }
   c(theta = p[1], sigma = exp(p[2]), nu = exp(p[3]))

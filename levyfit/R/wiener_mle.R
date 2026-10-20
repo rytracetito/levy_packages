@@ -52,15 +52,52 @@
 #' biased downwards. The function also returns its unbiased version
 #' \deqn{s^2 = \frac{\hat Q}{m - 1} = \frac{m}{m - 1} \hat\sigma^2.}
 #'
+#' @section Confidence intervals and estimation failures:
+#' With `ci = TRUE`, the function also returns asymptotic confidence intervals.
+#' Let \eqn{\hat\psi} be the MLE and \eqn{\ell} the log-likelihood. The observed
+#' Fisher information \eqn{J = -\partial^2 \ell / \partial \psi \partial \psi^\top} is
+#' computed at \eqn{\hat\psi} by numerical differentiation ([stats::optimHess()]),
+#' and the standard errors are the square roots of the diagonal of
+#' \eqn{J^{-1}}. With \eqn{z} the quantile of order \eqn{(1 + level) / 2} of the
+#' standard normal distribution, the interval of a parameter \eqn{\psi_k} is
+#' * \eqn{\hat\psi_k \pm z\, se_k} for a real parameter (`mu` of the Wiener
+#'   process, `theta` of the variance-gamma process, `b` and `m` of the Meixner
+#'   process);
+#' * \eqn{\hat\psi_k \exp(\pm z\, se_k / \hat\psi_k)} for a positive parameter: the
+#'   interval \eqn{\ln \hat\psi_k \pm z\, se_k / \hat\psi_k} for \eqn{\ln \psi_k}, transformed
+#'   back, which always stays positive.
+#'
+#' These intervals are asymptotic: their coverage is close to `level` when the
+#' number of increments (or of trajectories, for the inverse gamma process) is
+#' large. The unbiased estimates `s2` (Wiener) and `eta_unbiased` (inverse
+#' Gaussian) are given without interval. When \eqn{J} is not positive definite
+#' (estimate close to a boundary of the parameter space), the bounds are `NA`.
+#'
+#' When the maximum likelihood estimator does not exist for the data (for
+#' instance all the speeds \eqn{\Delta x_j / \Delta t_j} equal, or a maximum at a
+#' boundary of the parameter space), the function does not stop: it gives a
+#' warning with the reason and returns `NA` estimates, with the reason in the
+#' attribute `"message"`. Invalid data (times not increasing, decreasing levels
+#' for an increasing process, too few observations) still give an error.
+#'
 #' @param x Degradation levels of one trajectory; or a list of data frames,
 #'   one per trajectory, whose first column contains the inspection times and
 #'   second column the degradation levels.
 #' @param t Inspection times of the trajectory, strictly increasing. Not used
 #'   when `x` is a list.
+#' @param ci `FALSE` (default) for the point estimates only; `TRUE` to add
+#'   asymptotic confidence intervals (see the section below).
+#' @param level Confidence level of the intervals, between 0 and 1 (default
+#'   0.95). Used only when `ci = TRUE`.
 #'
 #' @return A named vector with the maximum likelihood estimates
 #'   `mu` \eqn{= \hat\mu} and `sigma2` \eqn{= \hat\sigma^2}, and the unbiased
 #'   estimate `s2` \eqn{= s^2} of \eqn{\sigma^2}.
+#'
+#'   With `ci = TRUE`, a data frame with one row per parameter and the columns
+#'   `parameter`, `estimate`, `lower` and `upper` (bounds of the confidence
+#'   interval). When the estimator does not exist, the estimates (and bounds)
+#'   are `NA`, with a warning.
 #'
 #' @seealso [gamma_mle()], [ig_mle()], [vg_mle()], [meixner_mle()],
 #'   [igam_mle()], [inspection_times()]
@@ -91,7 +128,7 @@
 #' wiener_mle(x)
 #'
 #' # 5. Estimates with 95 % confidence intervals
-#' confint_mle(x, model = "wiener")
+#' wiener_mle(x, ci = TRUE)
 #'
 #' # 6. Your own data: a list of data frames, one per trajectory,
 #' #    with the times in the first column and the levels in the second
@@ -103,7 +140,11 @@
 #' # here 3, they differ clearly
 #' wiener_mle(c(0, 1.2, 0.7, 2.5), c(0, 1, 2, 3))
 #' @export
-wiener_mle <- function(x, t = NULL) {
+wiener_mle <- function(x, t = NULL, ci = FALSE, level = 0.95) {
+  estimate("wiener", x, t, ci, level)
+}
+
+wiener_est <- function(x, t = NULL) {
   d <- increments(x, t)
   dt <- d$dt
   dx <- d$dx
@@ -111,7 +152,7 @@ wiener_mle <- function(x, t = NULL) {
   m <- length(dx)
   mu <- sum(dx) / sum(dt)
   Q <- sum((dx - mu * dt)^2 / dt)
-  if (m < 2 || Q <= 1e-12 * sum(dx^2 / dt)) stop("the MLE does not exist: all speeds dx/dt are equal")
+  if (m < 2 || Q <= 1e-12 * sum(dx^2 / dt)) no_mle("the MLE does not exist: all speeds dx/dt are equal")
 
   c(mu = mu, sigma2 = Q / m, s2 = Q / (m - 1))
 }

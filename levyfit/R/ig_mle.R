@@ -52,6 +52,9 @@
 #' \deqn{\tilde\eta = \frac{m - 3}{\hat Q} = \frac{m - 3}{m} \hat\eta,}
 #' which requires at least four increments (`NA` otherwise).
 #'
+#' @inheritSection wiener_mle Confidence intervals and estimation failures
+#'
+#' @inheritParams wiener_mle
 #' @param x Degradation levels of one trajectory, with strictly positive increments;
 #'   or a list of data frames, one per trajectory, whose first column contains
 #'   the inspection times and second column the degradation levels.
@@ -61,6 +64,11 @@
 #' @return A named vector with the maximum likelihood estimates
 #'   `mu` \eqn{= \hat\mu} and `eta` \eqn{= \hat\eta}, and the unbiased
 #'   estimate `eta_unbiased` \eqn{= \tilde\eta} of \eqn{\eta}.
+#'
+#'   With `ci = TRUE`, a data frame with one row per parameter and the columns
+#'   `parameter`, `estimate`, `lower` and `upper` (bounds of the confidence
+#'   interval). When the estimator does not exist, the estimates (and bounds)
+#'   are `NA`, with a warning.
 #'
 #' @references
 #' Tweedie, M. C. K. (1957). Statistical properties of inverse Gaussian
@@ -103,7 +111,7 @@
 #' ig_mle(x)
 #'
 #' # 5. Estimates with 95 % confidence intervals
-#' confint_mle(x, model = "ig")
+#' ig_mle(x, ci = TRUE)
 #'
 #' # 6. Your own data: a list of data frames, one per trajectory,
 #' #    with the times in the first column and the levels in the second
@@ -114,7 +122,11 @@
 #' # The inverse Gaussian process only increases: a decrease stops the estimation
 #' try(ig_mle(c(0, 2, 1.5, 3), c(0, 1, 2, 3)))
 #' @export
-ig_mle <- function(x, t = NULL) {
+ig_mle <- function(x, t = NULL, ci = FALSE, level = 0.95) {
+  estimate("ig", x, t, ci, level)
+}
+
+ig_est <- function(x, t = NULL) {
   d <- increments(x, t)
   dt <- d$dt
   dx <- d$dx
@@ -124,7 +136,7 @@ ig_mle <- function(x, t = NULL) {
   Tt <- sum(dt)
   S <- sum(dx)
   Q <- sum(dt^2 / dx) - Tt^2 / S
-  if (m < 2 || Q <= 1e-12 * sum(dt^2 / dx)) stop("the MLE does not exist: all speeds dx/dt are equal")
+  if (m < 2 || Q <= 1e-12 * sum(dt^2 / dx)) no_mle("the MLE does not exist: all speeds dx/dt are equal")
 
   c(mu = S / Tt, eta = m / Q, eta_unbiased = if (m > 3) (m - 3) / Q else NA)
 }

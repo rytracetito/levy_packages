@@ -4,7 +4,7 @@
 \alias{ig_mle}
 \title{Maximum likelihood estimation for the inverse Gaussian process}
 \usage{
-ig_mle(x, t = NULL)
+ig_mle(x, t = NULL, ci = FALSE, level = 0.95)
 }
 \arguments{
 \item{x}{Degradation levels of one trajectory, with strictly positive increments;
@@ -13,11 +13,22 @@ the inspection times and second column the degradation levels.}
 
 \item{t}{Inspection times of the trajectory, strictly increasing. Not used
 when \code{x} is a list.}
+
+\item{ci}{\code{FALSE} (default) for the point estimates only; \code{TRUE} to add
+asymptotic confidence intervals (see the section below).}
+
+\item{level}{Confidence level of the intervals, between 0 and 1 (default
+0.95). Used only when \code{ci = TRUE}.}
 }
 \value{
 A named vector with the maximum likelihood estimates
 \code{mu} \eqn{= \hat\mu} and \code{eta} \eqn{= \hat\eta}, and the unbiased
 estimate \code{eta_unbiased} \eqn{= \tilde\eta} of \eqn{\eta}.
+
+With \code{ci = TRUE}, a data frame with one row per parameter and the columns
+\code{parameter}, \code{estimate}, \code{lower} and \code{upper} (bounds of the confidence
+interval). When the estimator does not exist, the estimates (and bounds)
+are \code{NA}, with a warning.
 }
 \description{
 Computes the maximum likelihood estimator (MLE) of the parameters \eqn{\mu}
@@ -82,6 +93,38 @@ biased upwards. The function also returns its unbiased version
 which requires at least four increments (\code{NA} otherwise).
 }
 
+\section{Confidence intervals and estimation failures}{
+
+With \code{ci = TRUE}, the function also returns asymptotic confidence intervals.
+Let \eqn{\hat\psi} be the MLE and \eqn{\ell} the log-likelihood. The observed
+Fisher information \eqn{J = -\partial^2 \ell / \partial \psi \partial \psi^\top} is
+computed at \eqn{\hat\psi} by numerical differentiation (\code{\link[stats:optim]{stats::optimHess()}}),
+and the standard errors are the square roots of the diagonal of
+\eqn{J^{-1}}. With \eqn{z} the quantile of order \eqn{(1 + level) / 2} of the
+standard normal distribution, the interval of a parameter \eqn{\psi_k} is
+\itemize{
+\item \eqn{\hat\psi_k \pm z\, se_k} for a real parameter (\code{mu} of the Wiener
+process, \code{theta} of the variance-gamma process, \code{b} and \code{m} of the Meixner
+process);
+\item \eqn{\hat\psi_k \exp(\pm z\, se_k / \hat\psi_k)} for a positive parameter: the
+interval \eqn{\ln \hat\psi_k \pm z\, se_k / \hat\psi_k} for \eqn{\ln \psi_k}, transformed
+back, which always stays positive.
+}
+
+These intervals are asymptotic: their coverage is close to \code{level} when the
+number of increments (or of trajectories, for the inverse gamma process) is
+large. The unbiased estimates \code{s2} (Wiener) and \code{eta_unbiased} (inverse
+Gaussian) are given without interval. When \eqn{J} is not positive definite
+(estimate close to a boundary of the parameter space), the bounds are \code{NA}.
+
+When the maximum likelihood estimator does not exist for the data (for
+instance all the speeds \eqn{\Delta x_j / \Delta t_j} equal, or a maximum at a
+boundary of the parameter space), the function does not stop: it gives a
+warning with the reason and returns \code{NA} estimates, with the reason in the
+attribute \code{"message"}. Invalid data (times not increasing, decreasing levels
+for an increasing process, too few observations) still give an error.
+}
+
 \examples{
 \dontshow{if (requireNamespace("levysim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 1. One trajectory inspected every time unit up to 50 (mu = 0.5, eta = 2)
@@ -109,7 +152,7 @@ x <- levysim::sim_ig(plan, mu = 0.5, eta = 2)
 ig_mle(x)
 
 # 5. Estimates with 95 \% confidence intervals
-confint_mle(x, model = "ig")
+ig_mle(x, ci = TRUE)
 
 # 6. Your own data: a list of data frames, one per trajectory,
 #    with the times in the first column and the levels in the second
