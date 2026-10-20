@@ -9,3 +9,4 @@
 ^application_gaaslaser_cache$
 ^application_gaaslaser_files$
 ^test\.mle_resultats\.rds$
+^Rplots\.pdf$
