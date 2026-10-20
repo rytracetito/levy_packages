@@ -49,3 +49,13 @@ test_that("an estimator that does not exist gives a warning and NA, not an error
   expect_true(all(is.na(r)))
   expect_error(gamma_mle(c(0, 2, 1.5, 3), c(0, 1, 2, 3)), "strictly positive")
 })
+
+test_that("positive parameters have intervals on the log scale, real ones symmetric intervals", {
+  set.seed(4)
+  t <- seq(0, 100, by = 1)
+  x <- c(0, cumsum(rgamma(100, shape = 1.5 * diff(t), rate = 3)))
+  r <- gamma_mle(x, t, ci = TRUE)
+  expect_equal(r$lower * r$upper, r$estimate^2, tolerance = 1e-8)
+  w <- wiener_mle(x, t, ci = TRUE)
+  expect_equal(w$upper[1] - w$estimate[1], w$estimate[1] - w$lower[1], tolerance = 1e-8)
+})

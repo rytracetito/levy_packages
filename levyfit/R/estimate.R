@@ -27,7 +27,7 @@ estimate <- function(model, x, t, ci, level, ...) {
 
 confidence_intervals <- function(model, x, t, fit, level) {
   par <- switch(model, wiener = fit[c("mu", "sigma2")], ig = fit[c("mu", "eta")], fit)
-  real <- names(par) %in% c("mu", "theta", "b", "m") & model != "ig"
+  real <- names(par) %in% switch(model, wiener = "mu", vg = "theta", meixner = c("b", "m"), character(0))
 
   ll <- loglik_fun(x, t, model)
   H <- optimHess(par, function(p) -ll(p), control = list(parscale = pmax(abs(par), 1e-8)))
