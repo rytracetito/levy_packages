@@ -187,19 +187,19 @@ ggplot(d2, aes(x = couverture, y = plan, colour = parameter)) +
 ## Conclusions
 
 \begin{center}
-\begin{tabular}{>{\raggedright\arraybackslash}p{2.1cm}>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}p{4.2cm}>{\raggedright\arraybackslash}p{4.2cm}}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.6cm}>{\raggedright\arraybackslash}p{6.6cm}>{\raggedright\arraybackslash}p{6.2cm}}
 \toprule
-Modèle & Qualité de l'estimation & Plan d'inspection & Une ou plusieurs trajectoires \\
+Modèle & Plan d'inspection & Une ou plusieurs trajectoires \\
 \midrule
-Gamma & Presque sans biais, aucun échec, couverture de 91 à 98~\% & Aucun plan meilleur & Plusieurs : biais un peu plus petits \\
+Gamma & Aucun plan meilleur & Plusieurs : biais un peu plus petits \\
 \addlinespace
-Wiener & Presque sans biais ; \texttt{sigma2} un peu trop petit, facteur \mbox{$(m-1)/m$} & Aucun plan meilleur & Les deux conviennent \\
+Wiener & Aucun plan meilleur & Les deux conviennent \\
 \addlinespace
-Inverse gaussien & Presque sans biais ; \texttt{eta} un peu trop grand, facteur \mbox{$m/(m-3)$} & Aucun plan meilleur & Plusieurs : biais de \texttt{eta} plus petit \\
+Inverse gaussien & Aucun plan meilleur & Plusieurs : biais de \texttt{eta} plus petit \\
 \addlinespace
-Variance-gamma & \texttt{theta} et \texttt{sigma} presque sans biais ; \texttt{nu} un peu sous-estimé avec une trajectoire ; au plus 1~\% d'échecs & Aucun plan meilleur & Les deux conviennent \\
+Variance-gamma & Aucun plan meilleur & Les deux conviennent \\
 \addlinespace
-Meixner & \texttt{a} et \texttt{b} presque sans biais ; \texttt{d} surestimé en moyenne à cause de quelques valeurs extrêmes (médiane proche de 1.5) ; couverture de 92 à 99~\% & Compte : le plan régulier est le moins bon (11~\% d'échecs, plus grand biais de \texttt{d}), le plan croissant le meilleur & Une longue trajectoire : moins d'échecs \\
+Meixner & Compte : le plan régulier est le moins bon (11~\% d'échecs, plus grand biais de \texttt{d}), le plan croissant le meilleur & Une longue trajectoire : moins d'échecs \\
 \bottomrule
 \end{tabular}
 \end{center}
