@@ -38,19 +38,79 @@ Inspection schedules:\tabular{ll}{
 
 \section{Data}{
 
-Every estimation function accepts the data in two forms:
+Every estimation function accepts the data in three forms:
 \itemize{
 \item one trajectory: \code{f(x, t)}, with \code{x} the degradation levels and \code{t} the
 inspection times;
-\item several trajectories: \code{f(liste)}, with \code{liste} a list of data frames, one
-per trajectory, whose first column contains the inspection times and
-second column the degradation levels.
+\item several trajectories with the same inspection times: \code{f(x)}, with \code{x} the
+matrix returned by the \code{levysim} simulation functions (columns \code{t}, \code{X1},
+\code{X2}, ...);
+\item several trajectories, each with its own inspection times: \code{f(liste)},
+with \code{liste} a list of data frames, one per trajectory, whose first column
+contains the inspection times and second column the degradation levels.
 }
 
 The trajectories are assumed independent and with the same law. For the
 Lévy processes, the increments are computed within each trajectory and then
 pooled; for the inverse gamma process, which is not a Lévy process, the
 log-likelihoods of the trajectories are added.
+}
+
+\section{Computation of the estimators}{
+
+With \eqn{(\Delta t_j, \Delta x_j)}, \eqn{j = 1, \dots, m}, the durations and
+increments between two consecutive inspections, pooled over the
+trajectories, the log-likelihood of a Lévy process is
+\eqn{\ell(\psi) = \sum_j \ln f_{\Delta t_j}(\Delta x_j; \psi)}.
+\itemize{
+\item \strong{Closed form}: Wiener and inverse Gaussian. The MLE is explicit, with
+\eqn{\hat\mu = S / T}, \eqn{S} the total degradation and \eqn{T} the total
+observed time.
+\item \strong{Root of one equation}: gamma. \eqn{\hat b = \hat a T / S} is explicit
+and \eqn{\hat a} is the unique root of a decreasing function, found by
+\code{\link[stats:uniroot]{stats::uniroot()}} from the method of moments estimator; the result does
+not depend on this starting point.
+\item \strong{Numerical maximization}: variance-gamma and Meixner.
+\itemize{
+\item Variance-gamma: EM algorithm, the gamma time change being the hidden
+variable (each step is explicit or a unique root), started from the
+Wiener MLE, then L-BFGS-B (\code{\link[stats:optim]{stats::optim()}}) with a numerical gradient.
+\item Meixner: L-BFGS-B on the likelihood profiled in \eqn{b} (\eqn{\hat b} is
+explicit for given \eqn{a}, \eqn{d}, \eqn{m}), with an explicit gradient
+and several starting points (\code{n_start}) built from the empirical mean
+and variance; the best interior maximum is kept.
+}
+}
+
+When the supremum of the likelihood is reached at the boundary of the
+parameter space (for instance the Brownian limit of the variance-gamma
+process), the MLE does not exist: the function gives a warning and returns
+\code{NA}. The help page of each function details its derivation.
+}
+
+\section{Confidence intervals}{
+
+With \code{ci = TRUE}, the intervals are Wald intervals. The observed Fisher
+information \eqn{J = -\nabla^2 \ell(\hat\psi)} is computed numerically by
+\code{\link[stats:optim]{stats::optimHess()}} for every model, and the standard error of
+\eqn{\hat\psi_k} is \eqn{\widehat{se}_k = \sqrt{(J^{-1})_{kk}}}. With
+\eqn{z} the quantile of order \eqn{(1 + level) / 2} of the standard normal
+distribution:
+\itemize{
+\item real parameter (\code{mu} of the Wiener process, \code{theta} of the variance-gamma
+process, \code{b} and \code{m} of the Meixner process):
+\eqn{\hat\psi_k \pm z\, \widehat{se}_k};
+\item positive parameter (all the others): the interval
+\eqn{\ln \hat\psi_k \pm z\, \widehat{se}_k / \hat\psi_k} for
+\eqn{\ln \psi_k} (delta method), transformed back:
+\eqn{[\hat\psi_k e^{-z \widehat{se}_k / \hat\psi_k},\ \hat\psi_k e^{z \widehat{se}_k / \hat\psi_k}]},
+which always stays positive.
+}
+
+For the Wiener, inverse Gaussian and gamma processes, the numerical
+information agrees with its closed form; for instance, for the Wiener
+process, \eqn{\widehat{se}(\hat\mu) = \hat\sigma / \sqrt{T}} and
+\eqn{\widehat{se}(\hat\sigma^2) = \hat\sigma^2 \sqrt{2 / m}}.
 }
 
 \section{Parametrizations}{
