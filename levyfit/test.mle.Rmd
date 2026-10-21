@@ -55,16 +55,12 @@ On résume ensuite les \(R\) estimations de chaque paramètre. Pour un paramètr
 * \([L_r, U_r]\) l'intervalle de confiance à 95 % de cette répétition ;
 * \(S\) l'ensemble des répétitions où l'estimateur existe, et \(|S|\) leur nombre.
 
-Les répétitions en échec (\(r \notin S\)) ne servent qu'au taux d'échecs. Les six colonnes des tableaux sont :
+Les répétitions en échec (\(r \notin S\)) ne servent qu'au taux d'échecs. Les quatre indicateurs des tableaux sont :
 
 * **Moyenne** des estimations :
 $$\bar\psi = \frac{1}{|S|} \sum_{r \in S} \hat\psi_r ;$$
 * **Biais** :
 $$\mathrm{Biais} = \bar\psi - \psi ;$$
-* **RMSE**, racine de l'erreur quadratique moyenne :
-$$\mathrm{RMSE} = \sqrt{\frac{1}{|S|} \sum_{r \in S} \big(\hat\psi_r - \psi\big)^2} ;$$
-* **RMSE rel. %**, la RMSE rapportée à la vraie valeur, pour comparer les paramètres entre eux :
-$$\mathrm{RMSE}_{\mathrm{rel}} = 100 \times \frac{\mathrm{RMSE}}{|\psi|} ;$$
 * **Couv. %**, la couverture, pourcentage des intervalles qui contiennent la vraie valeur (idéalement 95 %) :
 $$\mathrm{Couv.} = \frac{100}{|S|} \sum_{r \in S} \mathbf{1}\{L_r \le \psi \le U_r\} ;$$
 * **Échecs %**, pourcentage des répétitions où l'estimateur n'existe pas (les fonctions renvoient alors `NA` avec un avertissement) :
@@ -167,29 +163,15 @@ tableau("meixner", "plusieurs")
 
 # III - Synthèse
 
-## RMSE relative selon le plan d'inspection
-
-Plus la RMSE relative est faible, meilleure est l'estimation. Chaque point est un paramètre ; on compare les plans entre eux, pour chaque modèle et chaque configuration. Chaque panneau a sa propre échelle.
-
-```{r, fig.height = 7.3, echo = FALSE}
-d <- synthese
-d$plan <- factor(libelles[d$plan], levels = libelles)
-d$config <- factor(ifelse(d$config == "une", "I - Une trajectoire", "II - Plusieurs trajectoires"))
-d$modele <- factor(noms[d$modele], levels = noms)
-ggplot(d, aes(x = rmse_rel, y = plan, colour = parameter)) +
-  geom_point(size = 2) +
-  facet_wrap(vars(modele, config), ncol = 2, scales = "free_x",
-             labeller = function(l) label_value(l, multi_line = FALSE)) +
-  labs(x = "RMSE relative (%)", y = NULL, colour = "Paramètre") +
-  theme_minimal() +
-  theme(legend.position = "bottom")
-```
-
 ## Couverture des intervalles de confiance
 
 La ligne pointillée marque le niveau visé, 95 %.
 
 ```{r, fig.height = 7.5, echo = FALSE}
+d <- synthese
+d$plan <- factor(libelles[d$plan], levels = libelles)
+d$config <- factor(ifelse(d$config == "une", "I - Une trajectoire", "II - Plusieurs trajectoires"))
+d$modele <- factor(noms[d$modele], levels = noms)
 d2 <- d[!is.na(d$couverture), ]
 ggplot(d2, aes(x = couverture, y = plan, colour = parameter)) +
   geom_vline(xintercept = 95, linetype = "dashed") +
@@ -209,15 +191,15 @@ ggplot(d2, aes(x = couverture, y = plan, colour = parameter)) +
 \toprule
 Modèle & Qualité de l'estimation & Plan d'inspection & Une ou plusieurs trajectoires \\
 \midrule
-Gamma & Presque sans biais, aucun échec, couverture de 91 à 98~\% & Aucun plan meilleur : la RMSE relative varie de 1 à 3 points & Plusieurs, car l'observation est plus longue \\
+Gamma & Presque sans biais, aucun échec, couverture de 91 à 98~\% & Aucun plan meilleur & Plusieurs : biais un peu plus petits \\
 \addlinespace
-Wiener & Presque sans biais ; \texttt{sigma2} un peu trop petit, facteur \mbox{$(m-1)/m$} & Aucun plan meilleur & Plusieurs : la RMSE de \texttt{mu} est divisée par 4 \\
+Wiener & Presque sans biais ; \texttt{sigma2} un peu trop petit, facteur \mbox{$(m-1)/m$} & Aucun plan meilleur & Les deux conviennent \\
 \addlinespace
-Inverse gaussien & Presque sans biais ; \texttt{eta} un peu trop grand, facteur \mbox{$m/(m-3)$} & Aucun plan meilleur & Plusieurs \\
+Inverse gaussien & Presque sans biais ; \texttt{eta} un peu trop grand, facteur \mbox{$m/(m-3)$} & Aucun plan meilleur & Plusieurs : biais de \texttt{eta} plus petit \\
 \addlinespace
-Variance-gamma & \texttt{theta} et \texttt{sigma} bien estimés ; \texttt{nu} moins précis ; au plus 1~\% d'échecs & Peu d'effet ; le plan régulier est un peu moins bon pour \texttt{nu} & Plusieurs pour \texttt{theta} et \texttt{sigma} ; une seule, avec des pas courts, pour \texttt{nu} \\
+Variance-gamma & \texttt{theta} et \texttt{sigma} presque sans biais ; \texttt{nu} un peu sous-estimé avec une trajectoire ; au plus 1~\% d'échecs & Aucun plan meilleur & Les deux conviennent \\
 \addlinespace
-Meixner & \texttt{a} et \texttt{b} corrects ; \texttt{d} et \texttt{m} mal identifiés : médiane de \texttt{d} proche de 1.5, mais quelques valeurs extrêmes & Compte : le plan régulier est le moins bon (11~\% d'échecs), le plan croissant le meilleur & Une longue trajectoire, un peu meilleure \\
+Meixner & \texttt{a} et \texttt{b} presque sans biais ; \texttt{d} surestimé en moyenne à cause de quelques valeurs extrêmes (médiane proche de 1.5) ; couverture de 92 à 99~\% & Compte : le plan régulier est le moins bon (11~\% d'échecs, plus grand biais de \texttt{d}), le plan croissant le meilleur & Une longue trajectoire : moins d'échecs \\
 \bottomrule
 \end{tabular}
 \end{center}
