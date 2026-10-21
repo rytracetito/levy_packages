@@ -164,6 +164,12 @@ Journal of Risk and Reliability}, 226(6), 624-634.
 \doi{10.1177/1748006X12462522}
 }
 \seealso{
-\code{\link[=increments]{increments()}}, \code{\link[=plot_bridge]{plot_bridge()}}, \code{\link[=gamma_bridge]{gamma_bridge()}}, \code{\link[=ig_bridge]{ig_bridge()}},
-\code{\link[=vg_bridge]{vg_bridge()}}, \code{\link[=meixner_bridge]{meixner_bridge()}}
+\itemize{
+\item \code{\link[=increments]{increments()}}: the reconstructed increments;
+\item \code{\link[=plot_bridge]{plot_bridge()}}: observed and resampled values;
+\item \code{\link[=gamma_bridge]{gamma_bridge()}}: bridge of the gamma process;
+\item \code{\link[=ig_bridge]{ig_bridge()}}: bridge of the inverse Gaussian process;
+\item \code{\link[=vg_bridge]{vg_bridge()}}: bridge of the variance-gamma process;
+\item \code{\link[=meixner_bridge]{meixner_bridge()}}: bridge of the Meixner process.
+}
 }

@@ -14,13 +14,13 @@
 #' (Hoyle, Hughston and Macrina, 2011). Each `_bridge` function draws exactly
 #' from this law, for one process:
 #'
-#' | Function | Process | Parameters needed | Simulation of the bridge |
+#' | Function | Process | Parameters | Simulation of the bridge |
 #' |---|---|---|---|
 #' | [gamma_bridge()] | gamma | shape `a` | beta variable |
-#' | [wiener_bridge()] | Wiener with drift | `sigma` | Gaussian variable |
-#' | [ig_bridge()] | inverse Gaussian | `eta` | mixture of an IG variable and its inverse |
-#' | [vg_bridge()] | variance-gamma | `theta`, `sigma`, `nu` | GIG, beta and Gaussian variables |
-#' | [meixner_bridge()] | Meixner | `a`, `d`, `m` | acceptance-rejection with a Cauchy envelope |
+#' | [wiener_bridge()] | Wiener | `sigma` | Gaussian variable |
+#' | [ig_bridge()] | inverse Gaussian | `eta` | IG or scaled inverse IG |
+#' | [vg_bridge()] | variance-gamma | `theta`, `sigma`, `nu` | GIG, beta, Gaussian |
+#' | [meixner_bridge()] | Meixner | `a`, `d`, `m` | rejection, Cauchy envelope |
 #'
 #' The law of a bridge never depends on all the parameters of the process: the
 #' gamma bridge does not depend on the rate `b`, the Brownian bridge does not
@@ -30,8 +30,8 @@
 #'
 #' @section Resampling methods:
 #' Every `_bridge` function has an argument `method`:
-#' * `"Bridge"` (default): interpolation algorithm of Grall-Maës (2012),
-#'   described in [gamma_bridge()]. A trajectory observed at
+#' * `"Bridge"` (default): interpolation algorithm of Grall-Maës (2012); see
+#'   also the help page of [gamma_bridge()]. A trajectory observed at
 #'   \eqn{0 = t_0 < t_1 < \dots < t_N} is resampled on the regular grid
 #'   \eqn{t'_k = k\, t_N / N}, \eqn{k = 0, \dots, N}: as many points as
 #'   observations, with the time step \eqn{\Delta t_{eq} = t_N / N}. The grid
@@ -82,7 +82,7 @@
 #' 3. **Simulation of the bridge**: done by the `_bridge` function, with the
 #'    estimated parameters;
 #' 4. **Pseudo-sample on a regular grid**: the result of the `_bridge`
-#'    function, with `method = "Bridge"`;
+#'    function, with the method "Bridge";
 #' 5. **Choose a test** for an i.i.d. sample of the law of
 #'    \eqn{X_{\Delta t_{eq}}}, for instance Kolmogorov-Smirnov, Cramér-von
 #'    Mises or Anderson-Darling;

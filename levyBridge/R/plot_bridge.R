@@ -5,8 +5,8 @@
 #' `_bridge` function, with `ggplot2`. The plot shows how the bridge fills the
 #' gaps between the inspections.
 #'
-#' @param x Result of a bridge function: [gamma_bridge()], [wiener_bridge()],
-#'   [ig_bridge()], [vg_bridge()] or [meixner_bridge()].
+#' @param x Result of a bridge function of the package, for instance
+#'   [gamma_bridge()].
 #' @param trajectory Numbers of the trajectories to plot, for instance `1` or
 #'   `1:3` (default: the first one). With several trajectories, one panel is
 #'   drawn per trajectory.

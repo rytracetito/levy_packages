@@ -28,10 +28,10 @@ trajectory.}
 \item{digits}{Number of decimal places of the times, \code{NULL} for no rounding.
 An error is raised if rounding makes two times equal.}
 
-\item{a}{Amplitude of the sine in the alternating patterns (\code{"inc-dec"},
-\code{"dec-inc"}, \code{"inc-dec-inc"}, \code{"dec-inc-dec"}): it sets the contrast
-between frequent and rare inspections, from 0 (regular inspections) to 1
-excluded; default 0.5. Not used by the other patterns.}
+\item{a}{Amplitude of the sine in the four alternating patterns: it sets
+the contrast between frequent and rare inspections, from 0 (regular
+inspections) to 1 excluded; default 0.5. Not used by the other
+patterns.}
 }
 \value{
 A data frame with columns \code{id} (trajectory) and \code{time}, time 0

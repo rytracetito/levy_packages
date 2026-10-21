@@ -92,8 +92,8 @@ bridge_paths <- function(x, t, method, draw, model, parameters, increasing = FAL
 #' over a time step `teq` (Grall-Maës, 2012): they are the input of the
 #' goodness-of-fit tests.
 #'
-#' @param x Result of a bridge function: [gamma_bridge()], [wiener_bridge()],
-#'   [ig_bridge()], [vg_bridge()] or [meixner_bridge()].
+#' @param x Result of a bridge function of the package, for instance
+#'   [gamma_bridge()].
 #'
 #' @return A data frame with one row per increment and three columns:
 #'   * `id`: number of the trajectory (1, 2, ...);

@@ -7,8 +7,8 @@
 increments(x)
 }
 \arguments{
-\item{x}{Result of a bridge function: \code{\link[=gamma_bridge]{gamma_bridge()}}, \code{\link[=wiener_bridge]{wiener_bridge()}},
-\code{\link[=ig_bridge]{ig_bridge()}}, \code{\link[=vg_bridge]{vg_bridge()}} or \code{\link[=meixner_bridge]{meixner_bridge()}}.}
+\item{x}{Result of a bridge function of the package, for instance
+\code{\link[=gamma_bridge]{gamma_bridge()}}.}
 }
 \value{
 A data frame with one row per increment and three columns:

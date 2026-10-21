@@ -9,25 +9,24 @@
 #' @section Functions of the package:
 #' Estimation of the parameters (click on a function name for its help page):
 #'
-#' | Function | Model | Parameters | Method |
+#' | Function | Process | Parameters | Computation |
 #' |---|---|---|---|
-#' | [wiener_mle()] | Wiener process with drift | `mu`, `sigma2` (and unbiased `s2`) | closed form |
-#' | [gamma_mle()] | homogeneous gamma process | shape `a`, rate `b` | root of one equation |
-#' | [ig_mle()] | inverse Gaussian process | `mu`, `eta` (and unbiased `eta_unbiased`) | closed form |
-#' | [vg_mle()] | variance-gamma process | `theta`, `sigma`, `nu` | EM algorithm then quasi-Newton |
-#' | [meixner_mle()] | Meixner process | `a`, `b`, `d`, `m` | profile likelihood, several starts |
-#' | [igam_mle()] | inverse gamma process | `theta`, `alpha`, `beta` | exact likelihood by forward filtering |
+#' | [wiener_mle()] | Wiener with drift | `mu`, `sigma2`, `s2` | closed form |
+#' | [gamma_mle()] | gamma | shape `a`, rate `b` | root of one equation |
+#' | [ig_mle()] | inverse Gaussian | `mu`, `eta`, `eta_unbiased` | closed form |
+#' | [vg_mle()] | variance-gamma | `theta`, `sigma`, `nu` | EM, then L-BFGS-B |
+#' | [meixner_mle()] | Meixner | `a`, `b`, `d`, `m` | profile likelihood |
+#' | [igam_mle()] | inverse gamma | `theta`, `alpha`, `beta` | forward filtering |
 #'
+#' `s2` and `eta_unbiased` are the unbiased versions of `sigma2` and `eta`.
 #' Every estimation function returns the point estimates and, with
 #' `ci = TRUE`, asymptotic confidence intervals (see [wiener_mle()]). When the
 #' estimator does not exist for the data, it gives a warning and returns `NA`
 #' estimates instead of stopping.
 #'
-#' Inspection schedules:
-#'
-#' | Function | Use |
-#' |---|---|
-#' | [inspection_times()] | inspection times on \eqn{[0, t_{max}]} for one or several trajectories, with a regular, increasing, decreasing or alternating number of inspections over time |
+#' Inspection schedules: [inspection_times()] gives inspection times on
+#' \eqn{[0, t_{max}]} for one or several trajectories, with a regular,
+#' increasing, decreasing or alternating number of inspections over time.
 #'
 #' @section Data:
 #' Every estimation function accepts the data in three forms:

@@ -40,8 +40,8 @@ as_path_list <- function(x) {
 #' other functions. Optionally adds the time steps and the increments between
 #' two consecutive inspections.
 #'
-#' @param x Result of a simulation function: [sim_gamma()], [sim_wiener()],
-#'   [sim_ig()], [sim_vg()], [sim_meixner()] or [sim_igam()].
+#' @param x Result of a simulation function of the package, for instance
+#'   [sim_gamma()].
 #' @param increments `FALSE` (default) for the levels only; `TRUE` to add the
 #'   columns `dt` and `dX`.
 #'
@@ -94,8 +94,8 @@ traj_df <- function(x, increments = FALSE) {
 #' Draws the trajectories simulated by a `sim_` function with `ggplot2`: one
 #' grey line per trajectory, with a point at each inspection.
 #'
-#' @param x Result of a simulation function: [sim_gamma()], [sim_wiener()],
-#'   [sim_ig()], [sim_vg()], [sim_meixner()] or [sim_igam()].
+#' @param x Result of a simulation function of the package, for instance
+#'   [sim_gamma()].
 #' @param title Title of the plot, a character string; by default the name of
 #'   the process, for instance `"gamma process"`.
 #'

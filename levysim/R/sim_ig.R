@@ -6,8 +6,8 @@
 #' @section Model:
 #' \eqn{IG(m, \lambda)} denotes the inverse Gaussian distribution with mean
 #' \eqn{m} and shape \eqn{\lambda}, of density
-#' \eqn{\sqrt{\lambda / (2 \pi x^3)} \exp(-\lambda (x - m)^2 / (2 m^2 x))},
-#' \eqn{x > 0}. Let \eqn{\Lambda} be continuous, strictly increasing, with
+#' \deqn{\sqrt{\frac{\lambda}{2 \pi x^3}} \exp\Big(-\frac{\lambda (x - m)^2}{2 m^2 x}\Big), \qquad x > 0.}
+#' Let \eqn{\Lambda} be continuous, strictly increasing, with
 #' \eqn{\Lambda(0) = 0}, \eqn{\mu > 0} and \eqn{\eta > 0}. The IG process has
 #' \eqn{X(0) = 0}, independent increments and
 #' \deqn{X(t) - X(s) \sim IG(\mu \Delta\Lambda, \eta \Delta\Lambda^2).}
@@ -31,8 +31,9 @@
 #'
 #' @inheritParams sim_gamma
 #' @param mu Mean degradation per unit of \eqn{\Lambda}, \eqn{\mu > 0}.
-#' @param eta Shape parameter, \eqn{\eta > 0}: the larger \eqn{\eta}, the less
-#'   variable the increments (\eqn{Var(X(t)) = \mu^3 \Lambda(t) / \eta}).
+#' @param eta Shape parameter, \eqn{\eta > 0}. The variance of \eqn{X(t)} is
+#'   \eqn{\mu^3 \Lambda(t) / \eta}: the larger \eqn{\eta}, the less variable
+#'   the increments.
 #' @param Lambda Function of time: an R function of `t`, continuous and
 #'   strictly increasing with \eqn{\Lambda(0) = 0}, for instance
 #'   `function(t) t^1.5`. The default `function(t) t` gives the homogeneous
@@ -43,7 +44,8 @@
 #' @references
 #' Michael, J. R., Schucany, W. R. and Haas, R. W. (1976). Generating random
 #' variates using transformations with multiple roots. *The American
-#' Statistician*, 30(2), 88-90. \doi{10.1080/00031305.1976.10479147}
+#' Statistician*, 30(2), 88-90.\cr
+#' \doi{10.1080/00031305.1976.10479147}
 #'
 #' Wang, X. and Xu, D. (2010). An inverse Gaussian process model for
 #' degradation data. *Technometrics*, 52(2), 188-197.

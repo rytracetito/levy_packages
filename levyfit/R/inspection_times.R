@@ -50,10 +50,10 @@
 #'   trajectory.
 #' @param digits Number of decimal places of the times, `NULL` for no rounding.
 #'   An error is raised if rounding makes two times equal.
-#' @param a Amplitude of the sine in the alternating patterns (`"inc-dec"`,
-#'   `"dec-inc"`, `"inc-dec-inc"`, `"dec-inc-dec"`): it sets the contrast
-#'   between frequent and rare inspections, from 0 (regular inspections) to 1
-#'   excluded; default 0.5. Not used by the other patterns.
+#' @param a Amplitude of the sine in the four alternating patterns: it sets
+#'   the contrast between frequent and rare inspections, from 0 (regular
+#'   inspections) to 1 excluded; default 0.5. Not used by the other
+#'   patterns.
 #'
 #' @return A data frame with columns `id` (trajectory) and `time`, time 0
 #'   included.

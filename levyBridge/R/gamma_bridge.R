@@ -54,8 +54,8 @@
 #'   `levysim` simulation function).
 #' @param t Inspection times of the trajectory, starting at 0 and strictly
 #'   increasing. Not used when `x` is a list.
-#' @param a Shape parameter of the gamma process, \eqn{a > 0}, for instance the
-#'   estimate `gamma_mle(x)[["a"]]` of the package `levyfit`.
+#' @param a Shape parameter of the gamma process, \eqn{a > 0}, for instance
+#'   estimated with the function `gamma_mle()` of the package `levyfit`.
 #' @param method `"Bridge"` (default) for the algorithm of Grall-Maës (2012),
 #'   or `"ExtBridge"` for its extension (not available yet).
 #'
@@ -76,8 +76,13 @@
 #' simulation of gamma and variance-gamma processes. *Proceedings of the 2003
 #' Winter Simulation Conference*, 319-326.
 #'
-#' @seealso [increments()], [plot_bridge()], [wiener_bridge()], [ig_bridge()],
-#'   [vg_bridge()], [meixner_bridge()]
+#' @seealso
+#' * [increments()]: the reconstructed increments;
+#' * [plot_bridge()]: observed and resampled values;
+#' * [wiener_bridge()]: bridge of the Wiener process;
+#' * [ig_bridge()]: bridge of the inverse Gaussian process;
+#' * [vg_bridge()]: bridge of the variance-gamma process;
+#' * [meixner_bridge()]: bridge of the Meixner process.
 #'
 #' @examples
 #' # 1. One trajectory observed at 11 irregular times (a = 2, b = 3)

@@ -187,7 +187,8 @@ d <- increments(r)
 head(d)
 # Under the model, the increments have mean (m + a d tan(b/2)) teq
 # and variance a^2 d teq / (2 cos(b/2)^2)
-c(mean(d$dx), (0.2 + 1.5 * tan(0.15)) * d$teq[1], var(d$dx), 1.5 * d$teq[1] / (2 * cos(0.15)^2))
+c(mean(d$dx), (0.2 + 1.5 * tan(0.15)) * d$teq[1])
+c(var(d$dx), 1.5 * d$teq[1] / (2 * cos(0.15)^2))
 \dontshow{\}) # examplesIf}
 }
 \references{
@@ -205,6 +206,12 @@ Devroye, L. (1986). \emph{Non-Uniform Random Variate Generation}. Springer.
 Tito, A. R. and Paroissin, C. (in preparation).
 }
 \seealso{
-\code{\link[=increments]{increments()}}, \code{\link[=plot_bridge]{plot_bridge()}}, \code{\link[=gamma_bridge]{gamma_bridge()}},
-\code{\link[=wiener_bridge]{wiener_bridge()}}, \code{\link[=ig_bridge]{ig_bridge()}}, \code{\link[=vg_bridge]{vg_bridge()}}
+\itemize{
+\item \code{\link[=increments]{increments()}}: the reconstructed increments;
+\item \code{\link[=plot_bridge]{plot_bridge()}}: observed and resampled values;
+\item \code{\link[=gamma_bridge]{gamma_bridge()}}: bridge of the gamma process;
+\item \code{\link[=wiener_bridge]{wiener_bridge()}}: bridge of the Wiener process;
+\item \code{\link[=ig_bridge]{ig_bridge()}}: bridge of the inverse Gaussian process;
+\item \code{\link[=vg_bridge]{vg_bridge()}}: bridge of the variance-gamma process.
+}
 }

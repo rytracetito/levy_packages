@@ -15,14 +15,15 @@ trajectories share these times, and their number is \code{n_traj};
 \item a list of vectors, one per trajectory, for instance
 \code{list(c(0, 1, 3), c(0, 2, 4, 6))}: each trajectory has its own times
 (\code{n_traj} is then ignored);
-\item the data frame returned by \code{\link[=inspection_times]{inspection_times()}}, for instance
-\code{inspection_times("increasing", n = 20, n_traj = 5, tmax = 10)}.
+\item the data frame returned by \code{\link[=inspection_times]{inspection_times()}}, which gives one
+plan per trajectory.
 }}
 
 \item{mu}{Mean degradation per unit of \eqn{\Lambda}, \eqn{\mu > 0}.}
 
-\item{eta}{Shape parameter, \eqn{\eta > 0}: the larger \eqn{\eta}, the less
-variable the increments (\eqn{Var(X(t)) = \mu^3 \Lambda(t) / \eta}).}
+\item{eta}{Shape parameter, \eqn{\eta > 0}. The variance of \eqn{X(t)} is
+\eqn{\mu^3 \Lambda(t) / \eta}: the larger \eqn{\eta}, the less variable
+the increments.}
 
 \item{Lambda}{Function of time: an R function of \code{t}, continuous and
 strictly increasing with \eqn{\Lambda(0) = 0}, for instance
@@ -58,8 +59,8 @@ process, homogeneous or not, at given inspection times.
 
 \eqn{IG(m, \lambda)} denotes the inverse Gaussian distribution with mean
 \eqn{m} and shape \eqn{\lambda}, of density
-\eqn{\sqrt{\lambda / (2 \pi x^3)} \exp(-\lambda (x - m)^2 / (2 m^2 x))},
-\eqn{x > 0}. Let \eqn{\Lambda} be continuous, strictly increasing, with
+\deqn{\sqrt{\frac{\lambda}{2 \pi x^3}} \exp\Big(-\frac{\lambda (x - m)^2}{2 m^2 x}\Big), \qquad x > 0.}
+Let \eqn{\Lambda} be continuous, strictly increasing, with
 \eqn{\Lambda(0) = 0}, \eqn{\mu > 0} and \eqn{\eta > 0}. The IG process has
 \eqn{X(0) = 0}, independent increments and
 \deqn{X(t) - X(s) \sim IG(\mu \Delta\Lambda, \eta \Delta\Lambda^2).}
@@ -123,7 +124,8 @@ head(traj_df(x, increments = TRUE))
 \references{
 Michael, J. R., Schucany, W. R. and Haas, R. W. (1976). Generating random
 variates using transformations with multiple roots. \emph{The American
-Statistician}, 30(2), 88-90. \doi{10.1080/00031305.1976.10479147}
+Statistician}, 30(2), 88-90.\cr
+\doi{10.1080/00031305.1976.10479147}
 
 Wang, X. and Xu, D. (2010). An inverse Gaussian process model for
 degradation data. \emph{Technometrics}, 52(2), 188-197.

@@ -8,27 +8,35 @@
 #' @section Functions of the package:
 #' Simulation (click on a function name for its help page):
 #'
-#' | Function | Process | Parameters | Functions of time | Method |
-#' |---|---|---|---|---|
-#' | [sim_gamma()] | gamma | shape `a`, rate `b` | `A` | `rgamma` |
-#' | [sim_wiener()] | Wiener with drift | `mu`, `sigma` | `Lambda`, `tau` | `rnorm` |
-#' | [sim_ig()] | inverse Gaussian | `mu`, `eta` | `Lambda` | Michael, Schucany and Haas |
-#' | [sim_vg()] | variance-gamma | `theta`, `sigma`, `nu` | `Lambda` | subordination, or difference of two gamma processes (`method`) |
-#' | [sim_meixner()] | Meixner | `a`, `b`, `d`, `m` | `Lambda` | numerical inversion (`Runuran`) |
-#' | [sim_igam()] | inverse gamma | `theta`, `alpha`, `beta` | `eta_inv` | exact passage algorithm |
+#' | Function | Process | Parameters | Functions of time |
+#' |---|---|---|---|
+#' | [sim_gamma()] | gamma | shape `a`, rate `b` | `A` |
+#' | [sim_wiener()] | Wiener with drift | `mu`, `sigma` | `Lambda`, `tau` |
+#' | [sim_ig()] | inverse Gaussian | `mu`, `eta` | `Lambda` |
+#' | [sim_vg()] | variance-gamma | `theta`, `sigma`, `nu` | `Lambda` |
+#' | [sim_meixner()] | Meixner | `a`, `b`, `d`, `m` | `Lambda` |
+#' | [sim_igam()] | inverse gamma | `theta`, `alpha`, `beta` | `eta_inv` |
 #'
 #' The functions of time are the identity by default: the processes are then
 #' homogeneous, that is Lévy processes (except the inverse gamma process, which
 #' is never a Lévy process).
 #'
-#' Results and inspection schedules:
+#' Simulation methods:
+#' * gamma: [stats::rgamma()]; Wiener: [stats::rnorm()];
+#' * inverse Gaussian: method of Michael, Schucany and Haas;
+#' * variance-gamma: subordination, or difference of two gamma processes
+#'   (argument `method`);
+#' * Meixner: numerical inversion of the distribution function (`Runuran`);
+#' * inverse gamma: exact passage algorithm.
 #'
-#' | Function | Use |
-#' |---|---|
-#' | [plot_traj()] | plot of the simulated trajectories (`ggplot2`) |
-#' | [plot_plan()] | plot of the inspection times, one row per trajectory (`ggplot2`) |
-#' | [traj_df()] | simulated data as a data frame with columns `id`, `t`, `X`, and optionally the time steps `dt` and increments `dX` |
-#' | [inspection_times()] | inspection times with a regular, increasing, decreasing or alternating number of inspections over time |
+#' Results and inspection schedules:
+#' * [plot_traj()]: plot of the simulated trajectories (`ggplot2`);
+#' * [plot_plan()]: plot of the inspection times, one row per trajectory
+#'   (`ggplot2`);
+#' * [traj_df()]: simulated data as a data frame with columns `id`, `t`, `X`,
+#'   and optionally the time steps `dt` and increments `dX`;
+#' * [inspection_times()]: inspection times with a regular, increasing,
+#'   decreasing or alternating number of inspections over time.
 #'
 #' @section Getting started:
 #' A simulation always follows the same three steps.
@@ -38,13 +46,12 @@
 #'      share these times, and their number is given by `n_traj`;
 #'    * a list of vectors, one per trajectory, for instance
 #'      `list(c(0, 1, 3), c(0, 2, 4, 6))`;
-#'    * the result of [inspection_times()], for instance
-#'      `inspection_times("increasing", n = 20, n_traj = 5, tmax = 10)` for
-#'      five trajectories inspected more and more often.
+#'    * the result of [inspection_times()], for instance with the pattern
+#'      `"increasing"` for trajectories inspected more and more often.
 #'
 #'    The times of each trajectory start at 0 and are strictly increasing.
 #' 2. **Simulate** with the function of the chosen process and its
-#'    parameters, for instance `x <- sim_gamma(t, a = 2, b = 3, n_traj = 10)`.
+#'    parameters, for instance [sim_gamma()] for a gamma process.
 #'    For a non-homogeneous process, give the function of time, for instance
 #'    `A = function(t) t^1.5`.
 #' 3. **Store and use the result** `x`. Its form depends on the times:

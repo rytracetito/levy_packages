@@ -28,8 +28,8 @@
 #'   * a list of vectors, one per trajectory, for instance
 #'     `list(c(0, 1, 3), c(0, 2, 4, 6))`: each trajectory has its own times
 #'     (`n_traj` is then ignored);
-#'   * the data frame returned by [inspection_times()], for instance
-#'     `inspection_times("increasing", n = 20, n_traj = 5, tmax = 10)`.
+#'   * the data frame returned by [inspection_times()], which gives one
+#'     plan per trajectory.
 #' @param a Shape parameter, \eqn{a > 0}.
 #' @param b Rate parameter, \eqn{b > 0} (the scale is \eqn{1 / b}).
 #' @param A Shape function of time: an R function of `t`, non-decreasing with

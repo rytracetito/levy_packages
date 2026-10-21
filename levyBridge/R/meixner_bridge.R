@@ -71,8 +71,13 @@
 #'
 #' Tito, A. R. and Paroissin, C. (in preparation).
 #'
-#' @seealso [increments()], [plot_bridge()], [gamma_bridge()],
-#'   [wiener_bridge()], [ig_bridge()], [vg_bridge()]
+#' @seealso
+#' * [increments()]: the reconstructed increments;
+#' * [plot_bridge()]: observed and resampled values;
+#' * [gamma_bridge()]: bridge of the gamma process;
+#' * [wiener_bridge()]: bridge of the Wiener process;
+#' * [ig_bridge()]: bridge of the inverse Gaussian process;
+#' * [vg_bridge()]: bridge of the variance-gamma process.
 #'
 #' @examples
 #' # 1. One trajectory observed at 11 irregular times (a = 1, b = 0.3, d = 1.5, m = 0.2)
@@ -136,7 +141,8 @@
 #' head(d)
 #' # Under the model, the increments have mean (m + a d tan(b/2)) teq
 #' # and variance a^2 d teq / (2 cos(b/2)^2)
-#' c(mean(d$dx), (0.2 + 1.5 * tan(0.15)) * d$teq[1], var(d$dx), 1.5 * d$teq[1] / (2 * cos(0.15)^2))
+#' c(mean(d$dx), (0.2 + 1.5 * tan(0.15)) * d$teq[1])
+#' c(var(d$dx), 1.5 * d$teq[1] / (2 * cos(0.15)^2))
 #' @export
 meixner_bridge <- function(x, t = NULL, a, d, m, method = "Bridge") {
   check_par(a = a, d = d)

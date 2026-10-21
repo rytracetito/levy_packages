@@ -184,13 +184,20 @@ Journal of Risk and Reliability}, 226(6), 624-634.
 
 Michael, J. R., Schucany, W. R. and Haas, R. W. (1976). Generating random
 variates using transformations with multiple roots. \emph{The American
-Statistician}, 30(2), 88-90. \doi{10.1080/00031305.1976.10479147}
+Statistician}, 30(2), 88-90.\cr
+\doi{10.1080/00031305.1976.10479147}
 
 Ribeiro, C. and Webber, N. (2003). A Monte Carlo method for the normal
 inverse Gaussian option valuation model using an inverse Gaussian bridge.
 \emph{Computing in Economics and Finance 2003}, 5.
 }
 \seealso{
-\code{\link[=increments]{increments()}}, \code{\link[=plot_bridge]{plot_bridge()}}, \code{\link[=gamma_bridge]{gamma_bridge()}},
-\code{\link[=wiener_bridge]{wiener_bridge()}}, \code{\link[=vg_bridge]{vg_bridge()}}, \code{\link[=meixner_bridge]{meixner_bridge()}}
+\itemize{
+\item \code{\link[=increments]{increments()}}: the reconstructed increments;
+\item \code{\link[=plot_bridge]{plot_bridge()}}: observed and resampled values;
+\item \code{\link[=gamma_bridge]{gamma_bridge()}}: bridge of the gamma process;
+\item \code{\link[=wiener_bridge]{wiener_bridge()}}: bridge of the Wiener process;
+\item \code{\link[=vg_bridge]{vg_bridge()}}: bridge of the variance-gamma process;
+\item \code{\link[=meixner_bridge]{meixner_bridge()}}: bridge of the Meixner process.
+}
 }

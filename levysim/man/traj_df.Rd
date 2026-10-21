@@ -7,8 +7,8 @@
 traj_df(x, increments = FALSE)
 }
 \arguments{
-\item{x}{Result of a simulation function: \code{\link[=sim_gamma]{sim_gamma()}}, \code{\link[=sim_wiener]{sim_wiener()}},
-\code{\link[=sim_ig]{sim_ig()}}, \code{\link[=sim_vg]{sim_vg()}}, \code{\link[=sim_meixner]{sim_meixner()}} or \code{\link[=sim_igam]{sim_igam()}}.}
+\item{x}{Result of a simulation function of the package, for instance
+\code{\link[=sim_gamma]{sim_gamma()}}.}
 
 \item{increments}{\code{FALSE} (default) for the levels only; \code{TRUE} to add the
 columns \code{dt} and \code{dX}.}

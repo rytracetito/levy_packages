@@ -10,8 +10,7 @@
 #'   * a numeric vector, for one trajectory, for instance `seq(0, 10, by = 0.5)`;
 #'   * a list of numeric vectors, one per trajectory, for instance
 #'     `list(c(0, 1, 3), c(0, 2, 4, 6))`;
-#'   * the result of [inspection_times()], for instance
-#'     `inspection_times("increasing", n = 20, n_traj = 5, tmax = 10)`.
+#'   * the result of [inspection_times()], one plan per trajectory.
 #'
 #'   The times of each trajectory start at 0 and are strictly increasing.
 #' @param title Title of the plot, a character string; by default

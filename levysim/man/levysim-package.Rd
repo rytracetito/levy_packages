@@ -13,14 +13,14 @@ simulated trajectories can be plotted and extracted as a data frame.
 }
 \section{Functions of the package}{
 
-Simulation (click on a function name for its help page):\tabular{lllll}{
-   Function \tab Process \tab Parameters \tab Functions of time \tab Method \cr
-   \code{\link[=sim_gamma]{sim_gamma()}} \tab gamma \tab shape \code{a}, rate \code{b} \tab \code{A} \tab \code{rgamma} \cr
-   \code{\link[=sim_wiener]{sim_wiener()}} \tab Wiener with drift \tab \code{mu}, \code{sigma} \tab \code{Lambda}, \code{tau} \tab \code{rnorm} \cr
-   \code{\link[=sim_ig]{sim_ig()}} \tab inverse Gaussian \tab \code{mu}, \code{eta} \tab \code{Lambda} \tab Michael, Schucany and Haas \cr
-   \code{\link[=sim_vg]{sim_vg()}} \tab variance-gamma \tab \code{theta}, \code{sigma}, \code{nu} \tab \code{Lambda} \tab subordination, or difference of two gamma processes (\code{method}) \cr
-   \code{\link[=sim_meixner]{sim_meixner()}} \tab Meixner \tab \code{a}, \code{b}, \code{d}, \code{m} \tab \code{Lambda} \tab numerical inversion (\code{Runuran}) \cr
-   \code{\link[=sim_igam]{sim_igam()}} \tab inverse gamma \tab \code{theta}, \code{alpha}, \code{beta} \tab \code{eta_inv} \tab exact passage algorithm \cr
+Simulation (click on a function name for its help page):\tabular{llll}{
+   Function \tab Process \tab Parameters \tab Functions of time \cr
+   \code{\link[=sim_gamma]{sim_gamma()}} \tab gamma \tab shape \code{a}, rate \code{b} \tab \code{A} \cr
+   \code{\link[=sim_wiener]{sim_wiener()}} \tab Wiener with drift \tab \code{mu}, \code{sigma} \tab \code{Lambda}, \code{tau} \cr
+   \code{\link[=sim_ig]{sim_ig()}} \tab inverse Gaussian \tab \code{mu}, \code{eta} \tab \code{Lambda} \cr
+   \code{\link[=sim_vg]{sim_vg()}} \tab variance-gamma \tab \code{theta}, \code{sigma}, \code{nu} \tab \code{Lambda} \cr
+   \code{\link[=sim_meixner]{sim_meixner()}} \tab Meixner \tab \code{a}, \code{b}, \code{d}, \code{m} \tab \code{Lambda} \cr
+   \code{\link[=sim_igam]{sim_igam()}} \tab inverse gamma \tab \code{theta}, \code{alpha}, \code{beta} \tab \code{eta_inv} \cr
 }
 
 
@@ -28,12 +28,25 @@ The functions of time are the identity by default: the processes are then
 homogeneous, that is Lévy processes (except the inverse gamma process, which
 is never a Lévy process).
 
-Results and inspection schedules:\tabular{ll}{
-   Function \tab Use \cr
-   \code{\link[=plot_traj]{plot_traj()}} \tab plot of the simulated trajectories (\code{ggplot2}) \cr
-   \code{\link[=plot_plan]{plot_plan()}} \tab plot of the inspection times, one row per trajectory (\code{ggplot2}) \cr
-   \code{\link[=traj_df]{traj_df()}} \tab simulated data as a data frame with columns \code{id}, \code{t}, \code{X}, and optionally the time steps \code{dt} and increments \code{dX} \cr
-   \code{\link[=inspection_times]{inspection_times()}} \tab inspection times with a regular, increasing, decreasing or alternating number of inspections over time \cr
+Simulation methods:
+\itemize{
+\item gamma: \code{\link[stats:GammaDist]{stats::rgamma()}}; Wiener: \code{\link[stats:Normal]{stats::rnorm()}};
+\item inverse Gaussian: method of Michael, Schucany and Haas;
+\item variance-gamma: subordination, or difference of two gamma processes
+(argument \code{method});
+\item Meixner: numerical inversion of the distribution function (\code{Runuran});
+\item inverse gamma: exact passage algorithm.
+}
+
+Results and inspection schedules:
+\itemize{
+\item \code{\link[=plot_traj]{plot_traj()}}: plot of the simulated trajectories (\code{ggplot2});
+\item \code{\link[=plot_plan]{plot_plan()}}: plot of the inspection times, one row per trajectory
+(\code{ggplot2});
+\item \code{\link[=traj_df]{traj_df()}}: simulated data as a data frame with columns \code{id}, \code{t}, \code{X},
+and optionally the time steps \code{dt} and increments \code{dX};
+\item \code{\link[=inspection_times]{inspection_times()}}: inspection times with a regular, increasing,
+decreasing or alternating number of inspections over time.
 }
 }
 
@@ -48,14 +61,13 @@ A simulation always follows the same three steps.
 share these times, and their number is given by \code{n_traj};
 \item a list of vectors, one per trajectory, for instance
 \code{list(c(0, 1, 3), c(0, 2, 4, 6))};
-\item the result of \code{\link[=inspection_times]{inspection_times()}}, for instance
-\code{inspection_times("increasing", n = 20, n_traj = 5, tmax = 10)} for
-five trajectories inspected more and more often.
+\item the result of \code{\link[=inspection_times]{inspection_times()}}, for instance with the pattern
+\code{"increasing"} for trajectories inspected more and more often.
 }
 
 The times of each trajectory start at 0 and are strictly increasing.
 \item \strong{Simulate} with the function of the chosen process and its
-parameters, for instance \code{x <- sim_gamma(t, a = 2, b = 3, n_traj = 10)}.
+parameters, for instance \code{\link[=sim_gamma]{sim_gamma()}} for a gamma process.
 For a non-homogeneous process, give the function of time, for instance
 \code{A = function(t) t^1.5}.
 \item \strong{Store and use the result} \code{x}. Its form depends on the times:

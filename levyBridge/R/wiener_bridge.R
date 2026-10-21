@@ -35,8 +35,13 @@
 #' Journal of Risk and Reliability*, 226(6), 624-634.
 #' \doi{10.1177/1748006X12462522}
 #'
-#' @seealso [increments()], [plot_bridge()], [gamma_bridge()], [ig_bridge()],
-#'   [vg_bridge()], [meixner_bridge()]
+#' @seealso
+#' * [increments()]: the reconstructed increments;
+#' * [plot_bridge()]: observed and resampled values;
+#' * [gamma_bridge()]: bridge of the gamma process;
+#' * [ig_bridge()]: bridge of the inverse Gaussian process;
+#' * [vg_bridge()]: bridge of the variance-gamma process;
+#' * [meixner_bridge()]: bridge of the Meixner process.
 #'
 #' @examples
 #' # 1. One trajectory observed at 11 irregular times (mu = 0.5, sigma = 1.5)

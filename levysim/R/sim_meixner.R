@@ -19,9 +19,9 @@
 #' (default), it is the homogeneous Meixner process, a Lévy process.
 #'
 #' @section Exact simulation:
-#' There is no Meixner generator in `stats`. Each increment is drawn from
-#' \eqn{Meixner(a, b, d \Delta\Lambda_i, m \Delta\Lambda_i)} by numerical
-#' inversion of its distribution function (method PINV of the package
+#' There is no Meixner generator in `stats`. Each increment, of law
+#' \eqn{Meixner(a, b, d \Delta\Lambda_i, m \Delta\Lambda_i)}, is drawn by
+#' numerical inversion of its distribution function (method PINV of the package
 #' `Runuran`, from the exact density, error in \eqn{u} of order
 #' \eqn{10^{-10}}), then the increments are cumulated. One generator is built
 #' for each distinct length \eqn{\Delta\Lambda_i} and reused for all the

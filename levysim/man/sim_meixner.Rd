@@ -15,8 +15,8 @@ trajectories share these times, and their number is \code{n_traj};
 \item a list of vectors, one per trajectory, for instance
 \code{list(c(0, 1, 3), c(0, 2, 4, 6))}: each trajectory has its own times
 (\code{n_traj} is then ignored);
-\item the data frame returned by \code{\link[=inspection_times]{inspection_times()}}, for instance
-\code{inspection_times("increasing", n = 20, n_traj = 5, tmax = 10)}.
+\item the data frame returned by \code{\link[=inspection_times]{inspection_times()}}, which gives one
+plan per trajectory.
 }}
 
 \item{a}{Scale parameter, \eqn{a > 0}.}
@@ -77,9 +77,9 @@ asymmetry and \eqn{a} is a scale parameter. With \eqn{\Lambda(t) = t}
 
 \section{Exact simulation}{
 
-There is no Meixner generator in \code{stats}. Each increment is drawn from
-\eqn{Meixner(a, b, d \Delta\Lambda_i, m \Delta\Lambda_i)} by numerical
-inversion of its distribution function (method PINV of the package
+There is no Meixner generator in \code{stats}. Each increment, of law
+\eqn{Meixner(a, b, d \Delta\Lambda_i, m \Delta\Lambda_i)}, is drawn by
+numerical inversion of its distribution function (method PINV of the package
 \code{Runuran}, from the exact density, error in \eqn{u} of order
 \eqn{10^{-10}}), then the increments are cumulated. One generator is built
 for each distinct length \eqn{\Delta\Lambda_i} and reused for all the

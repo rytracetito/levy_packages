@@ -7,8 +7,8 @@
 plot_traj(x, title = NULL)
 }
 \arguments{
-\item{x}{Result of a simulation function: \code{\link[=sim_gamma]{sim_gamma()}}, \code{\link[=sim_wiener]{sim_wiener()}},
-\code{\link[=sim_ig]{sim_ig()}}, \code{\link[=sim_vg]{sim_vg()}}, \code{\link[=sim_meixner]{sim_meixner()}} or \code{\link[=sim_igam]{sim_igam()}}.}
+\item{x}{Result of a simulation function of the package, for instance
+\code{\link[=sim_gamma]{sim_gamma()}}.}
 
 \item{title}{Title of the plot, a character string; by default the name of
 the process, for instance \code{"gamma process"}.}

@@ -54,8 +54,13 @@
 #' Gaussian random variates. *Statistics and Computing*, 24, 547-557.
 #' \doi{10.1007/s11222-013-9387-3}
 #'
-#' @seealso [increments()], [plot_bridge()], [gamma_bridge()],
-#'   [wiener_bridge()], [ig_bridge()], [meixner_bridge()]
+#' @seealso
+#' * [increments()]: the reconstructed increments;
+#' * [plot_bridge()]: observed and resampled values;
+#' * [gamma_bridge()]: bridge of the gamma process;
+#' * [wiener_bridge()]: bridge of the Wiener process;
+#' * [ig_bridge()]: bridge of the inverse Gaussian process;
+#' * [meixner_bridge()]: bridge of the Meixner process.
 #'
 #' @examples
 #' # 1. One trajectory observed at 11 irregular times (theta = 0.5, sigma = 1.5, nu = 2)

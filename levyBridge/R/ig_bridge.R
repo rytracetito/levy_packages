@@ -51,14 +51,20 @@
 #'
 #' Michael, J. R., Schucany, W. R. and Haas, R. W. (1976). Generating random
 #' variates using transformations with multiple roots. *The American
-#' Statistician*, 30(2), 88-90. \doi{10.1080/00031305.1976.10479147}
+#' Statistician*, 30(2), 88-90.\cr
+#' \doi{10.1080/00031305.1976.10479147}
 #'
 #' Ribeiro, C. and Webber, N. (2003). A Monte Carlo method for the normal
 #' inverse Gaussian option valuation model using an inverse Gaussian bridge.
 #' *Computing in Economics and Finance 2003*, 5.
 #'
-#' @seealso [increments()], [plot_bridge()], [gamma_bridge()],
-#'   [wiener_bridge()], [vg_bridge()], [meixner_bridge()]
+#' @seealso
+#' * [increments()]: the reconstructed increments;
+#' * [plot_bridge()]: observed and resampled values;
+#' * [gamma_bridge()]: bridge of the gamma process;
+#' * [wiener_bridge()]: bridge of the Wiener process;
+#' * [vg_bridge()]: bridge of the variance-gamma process;
+#' * [meixner_bridge()]: bridge of the Meixner process.
 #'
 #' @examples
 #' # 1. One trajectory observed at 11 irregular times (mu = 1, eta = 3)

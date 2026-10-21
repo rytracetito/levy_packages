@@ -15,8 +15,8 @@ trajectories share these times, and their number is \code{n_traj};
 \item a list of vectors, one per trajectory, for instance
 \code{list(c(0, 1, 3), c(0, 2, 4, 6))}: each trajectory has its own times
 (\code{n_traj} is then ignored);
-\item the data frame returned by \code{\link[=inspection_times]{inspection_times()}}, for instance
-\code{inspection_times("increasing", n = 20, n_traj = 5, tmax = 10)}.
+\item the data frame returned by \code{\link[=inspection_times]{inspection_times()}}, which gives one
+plan per trajectory.
 }}
 
 \item{a}{Shape parameter, \eqn{a > 0}.}

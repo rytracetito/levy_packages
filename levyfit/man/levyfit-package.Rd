@@ -15,25 +15,25 @@ the main mathematical steps of its derivation.
 \section{Functions of the package}{
 
 Estimation of the parameters (click on a function name for its help page):\tabular{llll}{
-   Function \tab Model \tab Parameters \tab Method \cr
-   \code{\link[=wiener_mle]{wiener_mle()}} \tab Wiener process with drift \tab \code{mu}, \code{sigma2} (and unbiased \code{s2}) \tab closed form \cr
-   \code{\link[=gamma_mle]{gamma_mle()}} \tab homogeneous gamma process \tab shape \code{a}, rate \code{b} \tab root of one equation \cr
-   \code{\link[=ig_mle]{ig_mle()}} \tab inverse Gaussian process \tab \code{mu}, \code{eta} (and unbiased \code{eta_unbiased}) \tab closed form \cr
-   \code{\link[=vg_mle]{vg_mle()}} \tab variance-gamma process \tab \code{theta}, \code{sigma}, \code{nu} \tab EM algorithm then quasi-Newton \cr
-   \code{\link[=meixner_mle]{meixner_mle()}} \tab Meixner process \tab \code{a}, \code{b}, \code{d}, \code{m} \tab profile likelihood, several starts \cr
-   \code{\link[=igam_mle]{igam_mle()}} \tab inverse gamma process \tab \code{theta}, \code{alpha}, \code{beta} \tab exact likelihood by forward filtering \cr
+   Function \tab Process \tab Parameters \tab Computation \cr
+   \code{\link[=wiener_mle]{wiener_mle()}} \tab Wiener with drift \tab \code{mu}, \code{sigma2}, \code{s2} \tab closed form \cr
+   \code{\link[=gamma_mle]{gamma_mle()}} \tab gamma \tab shape \code{a}, rate \code{b} \tab root of one equation \cr
+   \code{\link[=ig_mle]{ig_mle()}} \tab inverse Gaussian \tab \code{mu}, \code{eta}, \code{eta_unbiased} \tab closed form \cr
+   \code{\link[=vg_mle]{vg_mle()}} \tab variance-gamma \tab \code{theta}, \code{sigma}, \code{nu} \tab EM, then L-BFGS-B \cr
+   \code{\link[=meixner_mle]{meixner_mle()}} \tab Meixner \tab \code{a}, \code{b}, \code{d}, \code{m} \tab profile likelihood \cr
+   \code{\link[=igam_mle]{igam_mle()}} \tab inverse gamma \tab \code{theta}, \code{alpha}, \code{beta} \tab forward filtering \cr
 }
 
 
+\code{s2} and \code{eta_unbiased} are the unbiased versions of \code{sigma2} and \code{eta}.
 Every estimation function returns the point estimates and, with
 \code{ci = TRUE}, asymptotic confidence intervals (see \code{\link[=wiener_mle]{wiener_mle()}}). When the
 estimator does not exist for the data, it gives a warning and returns \code{NA}
 estimates instead of stopping.
 
-Inspection schedules:\tabular{ll}{
-   Function \tab Use \cr
-   \code{\link[=inspection_times]{inspection_times()}} \tab inspection times on \eqn{[0, t_{max}]} for one or several trajectories, with a regular, increasing, decreasing or alternating number of inspections over time \cr
-}
+Inspection schedules: \code{\link[=inspection_times]{inspection_times()}} gives inspection times on
+\eqn{[0, t_{max}]} for one or several trajectories, with a regular,
+increasing, decreasing or alternating number of inspections over time.
 }
 
 \section{Data}{

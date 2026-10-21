@@ -20,12 +20,12 @@ Let \eqn{X} be a Lévy process such that \eqn{X_s} has the density
 \deqn{f_{t | t_A, t_B}(x) = \frac{f_{t - t_A}(x - x_A)\, f_{t_B - t}(x_B - x)}{f_{t_B - t_A}(x_B - x_A)}}
 (Hoyle, Hughston and Macrina, 2011). Each \verb{_bridge} function draws exactly
 from this law, for one process:\tabular{llll}{
-   Function \tab Process \tab Parameters needed \tab Simulation of the bridge \cr
+   Function \tab Process \tab Parameters \tab Simulation of the bridge \cr
    \code{\link[=gamma_bridge]{gamma_bridge()}} \tab gamma \tab shape \code{a} \tab beta variable \cr
-   \code{\link[=wiener_bridge]{wiener_bridge()}} \tab Wiener with drift \tab \code{sigma} \tab Gaussian variable \cr
-   \code{\link[=ig_bridge]{ig_bridge()}} \tab inverse Gaussian \tab \code{eta} \tab mixture of an IG variable and its inverse \cr
-   \code{\link[=vg_bridge]{vg_bridge()}} \tab variance-gamma \tab \code{theta}, \code{sigma}, \code{nu} \tab GIG, beta and Gaussian variables \cr
-   \code{\link[=meixner_bridge]{meixner_bridge()}} \tab Meixner \tab \code{a}, \code{d}, \code{m} \tab acceptance-rejection with a Cauchy envelope \cr
+   \code{\link[=wiener_bridge]{wiener_bridge()}} \tab Wiener \tab \code{sigma} \tab Gaussian variable \cr
+   \code{\link[=ig_bridge]{ig_bridge()}} \tab inverse Gaussian \tab \code{eta} \tab IG or scaled inverse IG \cr
+   \code{\link[=vg_bridge]{vg_bridge()}} \tab variance-gamma \tab \code{theta}, \code{sigma}, \code{nu} \tab GIG, beta, Gaussian \cr
+   \code{\link[=meixner_bridge]{meixner_bridge()}} \tab Meixner \tab \code{a}, \code{d}, \code{m} \tab rejection, Cauchy envelope \cr
 }
 
 
@@ -40,8 +40,8 @@ name for the law of its bridge and the details of the simulation.
 
 Every \verb{_bridge} function has an argument \code{method}:
 \itemize{
-\item \code{"Bridge"} (default): interpolation algorithm of Grall-Maës (2012),
-described in \code{\link[=gamma_bridge]{gamma_bridge()}}. A trajectory observed at
+\item \code{"Bridge"} (default): interpolation algorithm of Grall-Maës (2012); see
+also the help page of \code{\link[=gamma_bridge]{gamma_bridge()}}. A trajectory observed at
 \eqn{0 = t_0 < t_1 < \dots < t_N} is resampled on the regular grid
 \eqn{t'_k = k\, t_N / N}, \eqn{k = 0, \dots, N}: as many points as
 observations, with the time step \eqn{\Delta t_{eq} = t_N / N}. The grid
@@ -104,7 +104,7 @@ function;
 \item \strong{Simulation of the bridge}: done by the \verb{_bridge} function, with the
 estimated parameters;
 \item \strong{Pseudo-sample on a regular grid}: the result of the \verb{_bridge}
-function, with \code{method = "Bridge"};
+function, with the method "Bridge";
 \item \strong{Choose a test} for an i.i.d. sample of the law of
 \eqn{X_{\Delta t_{eq}}}, for instance Kolmogorov-Smirnov, Cramér-von
 Mises or Anderson-Darling;

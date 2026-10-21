@@ -7,8 +7,8 @@
 plot_bridge(x, trajectory = 1, title = NULL)
 }
 \arguments{
-\item{x}{Result of a bridge function: \code{\link[=gamma_bridge]{gamma_bridge()}}, \code{\link[=wiener_bridge]{wiener_bridge()}},
-\code{\link[=ig_bridge]{ig_bridge()}}, \code{\link[=vg_bridge]{vg_bridge()}} or \code{\link[=meixner_bridge]{meixner_bridge()}}.}
+\item{x}{Result of a bridge function of the package, for instance
+\code{\link[=gamma_bridge]{gamma_bridge()}}.}
 
 \item{trajectory}{Numbers of the trajectories to plot, for instance \code{1} or
 \code{1:3} (default: the first one). With several trajectories, one panel is

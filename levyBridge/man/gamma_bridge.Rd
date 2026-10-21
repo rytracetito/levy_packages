@@ -15,8 +15,8 @@ second column the degradation levels (for instance the result of a
 \item{t}{Inspection times of the trajectory, starting at 0 and strictly
 increasing. Not used when \code{x} is a list.}
 
-\item{a}{Shape parameter of the gamma process, \eqn{a > 0}, for instance the
-estimate \code{gamma_mle(x)[["a"]]} of the package \code{levyfit}.}
+\item{a}{Shape parameter of the gamma process, \eqn{a > 0}, for instance
+estimated with the function \code{gamma_mle()} of the package \code{levyfit}.}
 
 \item{method}{\code{"Bridge"} (default) for the algorithm of Grall-Maës (2012),
 or \code{"ExtBridge"} for its extension (not available yet).}
@@ -172,6 +172,12 @@ simulation of gamma and variance-gamma processes. \emph{Proceedings of the 2003
 Winter Simulation Conference}, 319-326.
 }
 \seealso{
-\code{\link[=increments]{increments()}}, \code{\link[=plot_bridge]{plot_bridge()}}, \code{\link[=wiener_bridge]{wiener_bridge()}}, \code{\link[=ig_bridge]{ig_bridge()}},
-\code{\link[=vg_bridge]{vg_bridge()}}, \code{\link[=meixner_bridge]{meixner_bridge()}}
+\itemize{
+\item \code{\link[=increments]{increments()}}: the reconstructed increments;
+\item \code{\link[=plot_bridge]{plot_bridge()}}: observed and resampled values;
+\item \code{\link[=wiener_bridge]{wiener_bridge()}}: bridge of the Wiener process;
+\item \code{\link[=ig_bridge]{ig_bridge()}}: bridge of the inverse Gaussian process;
+\item \code{\link[=vg_bridge]{vg_bridge()}}: bridge of the variance-gamma process;
+\item \code{\link[=meixner_bridge]{meixner_bridge()}}: bridge of the Meixner process.
+}
 }
