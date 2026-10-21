@@ -144,6 +144,18 @@ r <- meixner_bridge(x, a = 1, d = 1.5, m = 0.2)
 plot_bridge(r, trajectory = 1:4)
 ```
 
+### Avec les paramètres estimés
+
+En pratique, les vraies valeurs des paramètres sont inconnues : on les estime d'abord sur les trajectoires observées avec `levyfit`, puis on construit le pont avec ces estimations. C'est la démarche d'un test d'adéquation. Le paramètre `b` est estimé mais n'est pas utilisé par le pont.
+
+```{r, fig.height = 4.2}
+est <- meixner_mle(x)
+est
+r_est <- meixner_bridge(x, a = est[["a"]], d = est[["d"]], m = est[["m"]])
+r_est
+plot_bridge(r_est, trajectory = 1:4)
+```
+
 \newpage
 
 # III - Données réelles : lasers GaAs

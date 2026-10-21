@@ -129,7 +129,12 @@ print.levybridge <- function(x, ...) {
   cat(length(x), "trajectory(ies) resampled on a regular grid by the", attr(x, "model"), "bridge",
       paste0("(method \"", attr(x, "method"), "\")\n"))
   cat("parameters:", paste(names(par), signif(par, 4), sep = " = ", collapse = ", "), "\n")
-  cat("time step teq:", paste(signif(unique(attr(x, "teq")), 4), collapse = ", "), "\n\n")
+  teq <- signif(unique(attr(x, "teq")), 4)
+  if (length(teq) <= 4) {
+    cat("time step teq:", paste(teq, collapse = ", "), "\n\n")
+  } else {
+    cat("time step teq: from", min(teq), "to", max(teq), "(one per trajectory, see attr(x, \"teq\"))\n\n")
+  }
   d <- do.call(rbind, lapply(seq_along(x), function(i) data.frame(id = i, x[[i]])))
   print(utils::head(d))
   invisible(x)

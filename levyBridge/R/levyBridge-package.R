@@ -6,55 +6,87 @@
 #' reconstructed increments are independent and identically distributed: they
 #' are the input of the goodness-of-fit tests for Lévy degradation processes.
 #'
-#' @section Functions of the package:
-#' Resampling (click on a function name for its help page):
+#' @section Bridge of a Lévy process:
+#' Let \eqn{X} be a Lévy process such that \eqn{X_s} has the density
+#' \eqn{f_s}, and \eqn{t_A < t < t_B}. Given \eqn{X_{t_A} = x_A} and
+#' \eqn{X_{t_B} = x_B}, \eqn{X_t} has the density
+#' \deqn{f_{t | t_A, t_B}(x) = \frac{f_{t - t_A}(x - x_A)\, f_{t_B - t}(x_B - x)}{f_{t_B - t_A}(x_B - x_A)}}
+#' (Hoyle, Hughston and Macrina, 2011). Each `_bridge` function draws exactly
+#' from this law, for one process:
 #'
-#' | Function | Process | Parameters needed | Law of the bridge |
+#' | Function | Process | Parameters needed | Simulation of the bridge |
 #' |---|---|---|---|
-#' | [gamma_bridge()] | gamma | shape `a` | beta |
-#' | [wiener_bridge()] | Wiener with drift | `sigma` | Gaussian |
+#' | [gamma_bridge()] | gamma | shape `a` | beta variable |
+#' | [wiener_bridge()] | Wiener with drift | `sigma` | Gaussian variable |
 #' | [ig_bridge()] | inverse Gaussian | `eta` | mixture of an IG variable and its inverse |
 #' | [vg_bridge()] | variance-gamma | `theta`, `sigma`, `nu` | GIG, beta and Gaussian variables |
-#' | [meixner_bridge()] | Meixner | `a`, `d`, `m` | acceptance-rejection |
+#' | [meixner_bridge()] | Meixner | `a`, `d`, `m` | acceptance-rejection with a Cauchy envelope |
 #'
-#' The law of a bridge never depends on all the parameters of the process: for
-#' instance the gamma bridge does not depend on the rate `b`, and the Brownian
-#' bridge does not depend on the drift `mu`.
+#' The law of a bridge never depends on all the parameters of the process: the
+#' gamma bridge does not depend on the rate `b`, the Brownian bridge does not
+#' depend on the drift `mu`, the inverse Gaussian bridge does not depend on
+#' `mu`, and the Meixner bridge does not depend on `b`. Click on a function
+#' name for the law of its bridge and the details of the simulation.
 #'
-#' Results:
-#'
-#' | Function | Use |
-#' |---|---|
-#' | [increments()] | reconstructed increments, one row per increment, with the time step `teq` |
-#' | [plot_bridge()] | observed values and resampled values on the regular grid (`ggplot2`) |
-#'
-#' @section Methods:
+#' @section Resampling methods:
 #' Every `_bridge` function has an argument `method`:
 #' * `"Bridge"` (default): interpolation algorithm of Grall-Maës (2012),
-#'   described in [gamma_bridge()]. The regular grid has as many points as
-#'   observations, with time step \eqn{\Delta t_{eq} = t_N / N};
-#' * `"ExtBridge"`: extension of this method that integrates the
-#'   observations. Not available yet.
+#'   described in [gamma_bridge()]. A trajectory observed at
+#'   \eqn{0 = t_0 < t_1 < \dots < t_N} is resampled on the regular grid
+#'   \eqn{t'_k = k\, t_N / N}, \eqn{k = 0, \dots, N}: as many points as
+#'   observations, with the time step \eqn{\Delta t_{eq} = t_N / N}. The grid
+#'   is covered from left to right; each grid point is drawn from the bridge
+#'   between the last known value before it (an observation or the previous
+#'   grid point, already drawn) and the next observation. A grid point equal
+#'   to an inspection time keeps the observed value;
+#' * `"ExtBridge"`: extension of this method whose grid contains all the
+#'   inspection times. Not available yet.
 #'
-#' @section Getting started:
-#' 1. **Prepare the data**: either one trajectory, given by its levels `x`
-#'    and its inspection times `t` (starting at 0), or several trajectories,
-#'    given as a list of data frames whose first column contains the times and
-#'    second column the levels (for instance the result of a `levysim`
-#'    simulation function).
-#' 2. **Resample** with the bridge of the chosen model and its parameters, for
-#'    instance `res <- gamma_bridge(x, t, a = 2)`. The parameters can be
-#'    estimated with the package `levyfit`.
-#' 3. **Use the result** `res`:
-#'    * `res` prints the model, the parameters, the time step and the first
-#'      resampled values;
-#'    * `res[[k]]` is the \eqn{k}-th trajectory on the regular grid, a data
-#'      frame with columns `t` and `X`;
-#'    * `increments(res)` gives the reconstructed increments, to be tested;
-#'    * `plot_bridge(res)` compares the observed and resampled values.
+#' @section Data:
+#' All the `_bridge` functions accept the same formats:
+#' * **one trajectory**: a vector of levels `x` and a vector of inspection
+#'   times `t`, starting at 0, or a data frame whose first column contains the
+#'   times and second column the levels;
+#' * **several trajectories with the same inspection times**: the matrix
+#'   returned by the `levysim` simulation functions, with columns `t`, `X1`,
+#'   `X2`, ...;
+#' * **several trajectories, each with its own inspection times**: a list of
+#'   data frames, one per trajectory (first column the times, second column
+#'   the levels), for instance the list returned by `levysim` with one plan
+#'   per trajectory.
 #'
-#' Use `set.seed()` before a resampling to make it reproducible: the bridge
-#' values are random.
+#' Each trajectory gets its own regular grid and its own time step.
+#'
+#' @section Results:
+#' A `_bridge` function returns an object of class `"levybridge"`:
+#' * `res` prints the model, the parameters, the time steps and the first
+#'   resampled values;
+#' * `res[[k]]` is the \eqn{k}-th trajectory on its regular grid, a data
+#'   frame with columns `t` and `X`;
+#' * `attr(res, "teq")` gives the time step of the grid of each trajectory;
+#' * [increments()] gives the reconstructed increments, one row per increment
+#'   with the columns `id` (trajectory), `teq` and `dx`: they are the values
+#'   to be tested;
+#' * [plot_bridge()] compares the observed and resampled values (`ggplot2`).
+#'
+#' The bridge values are random: use `set.seed()` before a resampling to make
+#' it reproducible.
+#'
+#' @section Goodness-of-fit test, step by step:
+#' The package covers steps 2 to 4 of the methodology of goodness-of-fit tests
+#' for a parametric family of Lévy processes:
+#' 1. **Estimate** the parameters from the observed trajectories, for instance
+#'    with the package `levyfit` (`gamma_mle()`, `meixner_mle()`, ...);
+#' 2. **Law of the bridge**: it is given in the help page of each `_bridge`
+#'    function;
+#' 3. **Simulation of the bridge**: done by the `_bridge` function, with the
+#'    estimated parameters;
+#' 4. **Pseudo-sample on a regular grid**: the result of the `_bridge`
+#'    function, with `method = "Bridge"`;
+#' 5. **Choose a test** for an i.i.d. sample of the law of
+#'    \eqn{X_{\Delta t_{eq}}}, for instance Kolmogorov-Smirnov, Cramér-von
+#'    Mises or Anderson-Darling;
+#' 6. **Apply the test** to the reconstructed increments `increments(res)$dx`.
 #'
 #' @references
 #' Grall-Maës, E. (2012). Use of the Kolmogorov-Smirnov test for gamma
@@ -66,19 +98,50 @@
 #' the modelling of financial information. *Stochastic Processes and their
 #' Applications*, 121(4), 856-884.
 #'
+#' Tito, A. R. and Paroissin, C. (in preparation).
+#'
 #' @examples
 #' # 1. One gamma trajectory observed at irregular times
 #' t <- c(0, 1.2, 2, 3.8, 5.5, 7.1, 10.4, 12.9, 15.3, 18.7, 22.5)
 #' set.seed(1)
 #' x <- c(0, cumsum(rgamma(10, shape = 2 * diff(t), rate = 3)))
 #'
-#' # 2. Resampling on the regular grid 0, 2.25, 4.5, ..., 22.5
+#' # Resampling on the regular grid 0, 2.25, 4.5, ..., 22.5
 #' r <- gamma_bridge(x, t, a = 2)
-#'
-#' # 3. Use of the result
 #' r
 #' r[[1]]
+#' attr(r, "teq")
 #' increments(r)
 #' plot_bridge(r)
+#'
+#' # 2. The same trajectory with the other processes (parameters of the bridge only)
+#' wiener_bridge(x, t, sigma = 1.5)[[1]]
+#' ig_bridge(x, t, eta = 3)[[1]]
+#' vg_bridge(x, t, theta = 0.5, sigma = 1.5, nu = 2)[[1]]
+#' meixner_bridge(x, t, a = 1, d = 1.5, m = 0.2)[[1]]
+#'
+#' # 3. Several trajectories, each with its own inspection times (a list)
+#' liste <- list(data.frame(t = c(0, 1, 3, 6), X = c(0, 0.4, 2.3, 2.9)),
+#'               data.frame(t = c(0, 2, 4, 5, 9), X = c(0, 1.6, 2.8, 3.1, 4.2)))
+#' r2 <- gamma_bridge(liste, a = 2)
+#' attr(r2, "teq")
+#' increments(r2)
+#' @examplesIf requireNamespace("levysim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)
+#' # 4. Complete use: simulation (levysim), estimation (levyfit), bridge
+#' plan <- levysim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
+#' sims <- levysim::sim_gamma(plan, a = 2, b = 3)
+#'
+#' # Step 1: estimation of the parameters
+#' est <- levyfit::gamma_mle(sims)
+#' est
+#'
+#' # Steps 3 and 4: resampling with the estimated shape
+#' r3 <- gamma_bridge(sims, a = est[["a"]])
+#' plot_bridge(r3, trajectory = 1:4)
+#'
+#' # Step 6: the reconstructed increments, to be tested against the law
+#' # Gamma(a teq, b) with the estimated parameters
+#' d <- increments(r3)
+#' head(d)
 #' @keywords package
 "_PACKAGE"
