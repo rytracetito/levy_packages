@@ -23,15 +23,29 @@
 #' The law of the bridge does not depend on \eqn{b}: only \eqn{a}, \eqn{d} and
 #' \eqn{m} are needed.
 #'
-#' \eqn{Y} is drawn exactly by acceptance-rejection. The envelope uses that
-#' \eqn{h_\alpha(y)} decreases in \eqn{|y|}: on \eqn{[lo, hi]}, with
-#' \eqn{lo = \min(0, z) - \ell}, \eqn{hi \ge \max(0, z) + \ell} and
-#' \eqn{\ell = 3 + 2 \sqrt{\alpha_1 + \alpha_2}}, it is constant on cells of
-#' width 0.1, refined geometrically around the peaks at 0 and \eqn{z}; on the
-#' two tails, it is a Cauchy density, since for \eqn{|y| \ge |y_0|},
-#' \eqn{h_\alpha(y) \le h_\alpha(y_0) (\alpha^2 + y_0^2) / (\alpha^2 + y^2)}.
-#' The cells only change the speed, not the exactness. The function
-#' \eqn{\log h_\alpha} is computed with [gsl::lngamma_complex()].
+#' @section Simulation of the bridge:
+#' \eqn{Y} is drawn exactly by acceptance-rejection with a Cauchy envelope
+#' (algorithm 6 of Tito and Paroissin). For \eqn{\alpha > 0} and \eqn{y} real,
+#' \eqn{h_\alpha(y) \le \Gamma(\alpha)^2} and
+#' \eqn{h_\alpha(y) \le \Gamma(\alpha)^2 \alpha^2 / (\alpha^2 + y^2)}. With
+#' \eqn{(y_0, s) = (0, \alpha_1)} if \eqn{\alpha_1 \le \alpha_2} and
+#' \eqn{(y_0, s) = (z, \alpha_2)} otherwise, this gives, for all \eqn{y},
+#' \deqn{h_{\alpha_1}(y)\, h_{\alpha_2}(z - y) \le \Gamma(\alpha_1)^2 \Gamma(\alpha_2)^2 \frac{s^2}{s^2 + (y - y_0)^2},}
+#' a multiple of the Cauchy density of centre \eqn{y_0} and scale \eqn{s}.
+#' The algorithm repeats, with \eqn{U} and \eqn{V} independent uniform
+#' variables on \eqn{(0, 1)}:
+#' 1. \eqn{Y = y_0 + s \tan(\pi (V - 1/2))}, a draw of the Cauchy law;
+#' 2. accept \eqn{Y} if
+#'    \deqn{U\, \Gamma(\alpha_1)^2 \Gamma(\alpha_2)^2 \frac{s^2}{s^2 + (Y - y_0)^2} \le h_{\alpha_1}(Y)\, h_{\alpha_2}(z - Y),}
+#'    otherwise draw again.
+#'
+#' The number of draws follows a geometric law with parameter
+#' \deqn{P_{acc} = \frac{2 B(2 \alpha_1, 2 \alpha_2)\, h_{\alpha_1 + \alpha_2}(z)}{s\, \Gamma(\alpha_1)^2 \Gamma(\alpha_2)^2}.}
+#' \eqn{P_{acc}} decreases quickly when \eqn{|z|} increases (for
+#' \eqn{\alpha_1 = \alpha_2 = 1}: 1/3 if \eqn{z = 0}, 0.04 if \eqn{z = 2},
+#' \eqn{5 \cdot 10^{-4}} if \eqn{z = 4}): an increment far from its mean
+#' \eqn{m (t_B - t_A)} can need many draws. The function \eqn{\log h_\alpha}
+#' is computed with [gsl::lngamma_complex()].
 #'
 #' @inheritSection gamma_bridge Resampling algorithm (method "Bridge")
 #' @inheritSection gamma_bridge Method "ExtBridge"
@@ -54,6 +68,8 @@
 #' 335-349.
 #'
 #' Devroye, L. (1986). *Non-Uniform Random Variate Generation*. Springer.
+#'
+#' Tito, A. R. and Paroissin, C. (in preparation).
 #'
 #' @seealso [increments()], [plot_bridge()], [gamma_bridge()],
 #'   [wiener_bridge()], [ig_bridge()], [vg_bridge()]
@@ -138,43 +154,17 @@ lh <- function(alpha, y) {
 }
 
 rmeixner_bridge_y <- function(alpha1, alpha2, z) {
-  ell <- 3 + 2 * sqrt(alpha1 + alpha2)
-  w0 <- 0.1
-  lo <- min(0, z) - ell
-  hi <- lo + w0 * ceiling((abs(z) + 2 * ell) / w0)
-  refine <- function(centre, alpha) {
-    if (alpha < w0) centre + c(0, outer(c(-1, 1), alpha * 2^(0:floor(log2(w0 / alpha))))) else centre
+  if (alpha1 <= alpha2) {
+    y0 <- 0
+    s <- alpha1
+  } else {
+    y0 <- z
+    s <- alpha2
   }
-  e <- c(seq(lo, hi, by = w0), refine(0, alpha1), refine(z, alpha2))
-  e <- sort(unique(c(lo, e[e > lo & e < hi], hi)))
-  K <- length(e) - 1
-  w <- diff(e)
-
-  d1 <- pmax(0, e[-(K + 1)], -e[-1])
-  d2 <- pmax(0, e[-(K + 1)] - z, z - e[-1])
-  lM <- lh(alpha1, d1) + lh(alpha2, d2)
-
-  lCL <- lh(alpha1, lo) + lh(alpha2, z - lo) + log(alpha1^2 + lo^2)
-  thL <- atan(alpha1 / abs(lo))
-  lCR <- lh(alpha2, hi - z) + lh(alpha1, hi) + log(alpha2^2 + (hi - z)^2)
-  thR <- atan(alpha2 / (hi - z))
-
-  lmass <- c(lCL + log(thL / alpha1), lM + log(w), lCR + log(thR / alpha2))
-  cum <- cumsum(exp(lmass - max(lmass)))
-
+  lC <- 2 * lgamma(alpha1) + 2 * lgamma(alpha2)
   repeat {
-    k <- findInterval(stats::runif(1) * cum[K + 2], cum) + 1
+    y <- y0 + s * tan(pi * (stats::runif(1) - 0.5))
     u <- stats::runif(1)
-    if (k == 1) {
-      y <- -alpha1 / tan(u * thL)
-      le <- lCL - log(alpha1^2 + y^2)
-    } else if (k == K + 2) {
-      y <- z + alpha2 / tan(u * thR)
-      le <- lCR - log(alpha2^2 + (y - z)^2)
-    } else {
-      y <- e[k - 1] + w[k - 1] * u
-      le <- lM[k - 1]
-    }
-    if (log(stats::runif(1)) <= lh(alpha1, y) + lh(alpha2, z - y) - le) return(y)
+    if (log(u) + lC + 2 * log(s) - log(s^2 + (y - y0)^2) <= lh(alpha1, y) + lh(alpha2, z - y)) return(y)
   }
 }

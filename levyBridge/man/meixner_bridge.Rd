@@ -58,16 +58,34 @@ Given \eqn{X_{t_A} = x_A} and \eqn{X_{t_B} = x_B},
 \deqn{q(y) = \frac{h_{\alpha_1}(y)\, h_{\alpha_2}(z - y)}{2 \pi B(2 \alpha_1, 2 \alpha_2)\, h_{\alpha_1 + \alpha_2}(z)}.}
 The law of the bridge does not depend on \eqn{b}: only \eqn{a}, \eqn{d} and
 \eqn{m} are needed.
+}
 
-\eqn{Y} is drawn exactly by acceptance-rejection. The envelope uses that
-\eqn{h_\alpha(y)} decreases in \eqn{|y|}: on \eqn{[lo, hi]}, with
-\eqn{lo = \min(0, z) - \ell}, \eqn{hi \ge \max(0, z) + \ell} and
-\eqn{\ell = 3 + 2 \sqrt{\alpha_1 + \alpha_2}}, it is constant on cells of
-width 0.1, refined geometrically around the peaks at 0 and \eqn{z}; on the
-two tails, it is a Cauchy density, since for \eqn{|y| \ge |y_0|},
-\eqn{h_\alpha(y) \le h_\alpha(y_0) (\alpha^2 + y_0^2) / (\alpha^2 + y^2)}.
-The cells only change the speed, not the exactness. The function
-\eqn{\log h_\alpha} is computed with \code{\link[gsl:Gamma]{gsl::lngamma_complex()}}.
+\section{Simulation of the bridge}{
+
+\eqn{Y} is drawn exactly by acceptance-rejection with a Cauchy envelope
+(algorithm 6 of Tito and Paroissin). For \eqn{\alpha > 0} and \eqn{y} real,
+\eqn{h_\alpha(y) \le \Gamma(\alpha)^2} and
+\eqn{h_\alpha(y) \le \Gamma(\alpha)^2 \alpha^2 / (\alpha^2 + y^2)}. With
+\eqn{(y_0, s) = (0, \alpha_1)} if \eqn{\alpha_1 \le \alpha_2} and
+\eqn{(y_0, s) = (z, \alpha_2)} otherwise, this gives, for all \eqn{y},
+\deqn{h_{\alpha_1}(y)\, h_{\alpha_2}(z - y) \le \Gamma(\alpha_1)^2 \Gamma(\alpha_2)^2 \frac{s^2}{s^2 + (y - y_0)^2},}
+a multiple of the Cauchy density of centre \eqn{y_0} and scale \eqn{s}.
+The algorithm repeats, with \eqn{U} and \eqn{V} independent uniform
+variables on \eqn{(0, 1)}:
+\enumerate{
+\item \eqn{Y = y_0 + s \tan(\pi (V - 1/2))}, a draw of the Cauchy law;
+\item accept \eqn{Y} if
+\deqn{U\, \Gamma(\alpha_1)^2 \Gamma(\alpha_2)^2 \frac{s^2}{s^2 + (Y - y_0)^2} \le h_{\alpha_1}(Y)\, h_{\alpha_2}(z - Y),}
+otherwise draw again.
+}
+
+The number of draws follows a geometric law with parameter
+\deqn{P_{acc} = \frac{2 B(2 \alpha_1, 2 \alpha_2)\, h_{\alpha_1 + \alpha_2}(z)}{s\, \Gamma(\alpha_1)^2 \Gamma(\alpha_2)^2}.}
+\eqn{P_{acc}} decreases quickly when \eqn{|z|} increases (for
+\eqn{\alpha_1 = \alpha_2 = 1}: 1/3 if \eqn{z = 0}, 0.04 if \eqn{z = 2},
+\eqn{5 \cdot 10^{-4}} if \eqn{z = 4}): an increment far from its mean
+\eqn{m (t_B - t_A)} can need many draws. The function \eqn{\log h_\alpha}
+is computed with \code{\link[gsl:Gamma]{gsl::lngamma_complex()}}.
 }
 
 \section{Resampling algorithm (method "Bridge")}{
@@ -183,6 +201,8 @@ martingales. \emph{Communications in Statistics. Stochastic Models}, 14(1-2),
 335-349.
 
 Devroye, L. (1986). \emph{Non-Uniform Random Variate Generation}. Springer.
+
+Tito, A. R. and Paroissin, C. (in preparation).
 }
 \seealso{
 \code{\link[=increments]{increments()}}, \code{\link[=plot_bridge]{plot_bridge()}}, \code{\link[=gamma_bridge]{gamma_bridge()}},

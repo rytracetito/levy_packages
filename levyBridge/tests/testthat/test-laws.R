@@ -45,7 +45,7 @@ test_that("variance-gamma bridge: increments follow the law of X_teq", {
 
 test_that("Meixner bridge: exact sampler and increments", {
   set.seed(5)
-  for (cfg in list(c(0.5, 1, -2), c(0.01, 0.02, 0.3))) {
+  for (cfg in list(c(0.5, 1, -2), c(0.01, 0.02, 0.3), c(1.5, 0.4, 1.8))) {
     a1 <- cfg[1]; a2 <- cfg[2]; z <- cfg[3]
     lZ <- log(2 * pi) + lbeta(2 * a1, 2 * a2) + lh(a1 + a2, z)
     dq <- function(u) exp(lh(a1, u) + lh(a2, z - u) - lZ)
