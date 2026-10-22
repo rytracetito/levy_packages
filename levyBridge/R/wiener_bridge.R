@@ -24,8 +24,9 @@
 #' @inheritSection gamma_bridge Method "MultiBridge"
 #'
 #' @inheritParams gamma_bridge
-#' @param mu Drift of the Wiener process, real; used only with
-#'   `method = "MultiBridge"` and `option = 2`, to extend the trajectories.
+#' @param mu Drift of the Wiener process, real;
+#'   used only by the option 2 of the method "MultiBridge", to extend the
+#'   trajectories.
 #' @param sigma Volatility \eqn{\sigma > 0} (standard deviation per square
 #'   root of time unit). The package `levyfit` returns the variance:
 #'   use `sqrt(wiener_mle(x)[["sigma2"]])`.

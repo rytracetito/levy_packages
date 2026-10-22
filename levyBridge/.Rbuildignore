@@ -8,3 +8,7 @@
 ^application_levyBridge\.pdf$
 ^application_levyBridge_cache$
 ^application_levyBridge_files$
+^exemple_ExtBridge\.Rmd$
+^exemple_ExtBridge\.pdf$
+^exemple_ExtBridge_cache$
+^exemple_ExtBridge_files$

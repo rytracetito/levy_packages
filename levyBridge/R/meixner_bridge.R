@@ -65,8 +65,9 @@
 #'
 #' @inheritParams gamma_bridge
 #' @param a Scale parameter, \eqn{a > 0}.
-#' @param b Skewness parameter, \eqn{-\pi < b < \pi}; used only with
-#'   `method = "MultiBridge"` and `option = 2`, to extend the trajectories.
+#' @param b Skewness parameter, \eqn{-\pi < b < \pi};
+#'   used only by the option 2 of the method "MultiBridge", to extend the
+#'   trajectories.
 #' @param d Shape parameter per unit of time, \eqn{d > 0}.
 #' @param m Location parameter per unit of time, real.
 #'

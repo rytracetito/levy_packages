@@ -52,8 +52,9 @@ all the trajectories up to the last inspection time over all the
 trajectories, extending the shorter ones by increments of the process (see
 the section Method "MultiBridge").}
 
-\item{mu}{Drift of the Wiener process, real; used only with
-\code{method = "MultiBridge"} and \code{option = 2}, to extend the trajectories.}
+\item{mu}{Drift of the Wiener process, real;
+used only by the option 2 of the method "MultiBridge", to extend the
+trajectories.}
 }
 \value{
 An object of class \code{"levybridge"}: a list with one data frame per

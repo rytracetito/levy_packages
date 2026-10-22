@@ -39,8 +39,9 @@
 #' @inheritSection gamma_bridge Method "MultiBridge"
 #'
 #' @inheritParams gamma_bridge
-#' @param mu Mean degradation per unit of time, \eqn{\mu > 0}; used only with
-#'   `method = "MultiBridge"` and `option = 2`, to extend the trajectories.
+#' @param mu Mean degradation per unit of time, \eqn{\mu > 0};
+#'   used only by the option 2 of the method "MultiBridge", to extend the
+#'   trajectories.
 #' @param eta Shape parameter \eqn{\eta > 0}, for instance the estimate
 #'   `ig_mle(x)[["eta"]]` of the package `levyfit`.
 #'

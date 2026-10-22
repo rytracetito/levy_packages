@@ -51,8 +51,9 @@ all the trajectories up to the last inspection time over all the
 trajectories, extending the shorter ones by increments of the process (see
 the section Method "MultiBridge").}
 
-\item{b}{Rate parameter of the gamma process, \eqn{b > 0}; used only with
-\code{method = "MultiBridge"} and \code{option = 2}, to extend the trajectories.}
+\item{b}{Rate parameter of the gamma process, \eqn{b > 0};
+used only by the option 2 of the method "MultiBridge", to extend the
+trajectories.}
 }
 \value{
 An object of class \code{"levybridge"}: a list with one data frame per
@@ -298,7 +299,9 @@ min(increments(gamma_bridge(x, t, a = 0.05, method = "ExtBridge"))$dx)
 # Method "MultiBridge": four trajectories with their own times, one common grid
 liste_t <- list(c(0, 3, 8), c(0, 2, 5, 9, 12), c(0, 4, 7, 11, 15, 18, 22, 27, 33, 39, 45),
                 c(0, 2, 3, 5, 8, 9, 14, 15, 17, 20, 22, 25, 27, 30, 33, 46, 58))
-liste4 <- lapply(liste_t, function(tk) data.frame(t = tk, X = c(0, cumsum(rgamma(length(tk) - 1, 2 * diff(tk), 3)))))
+liste4 <- lapply(liste_t, function(tk) {
+  data.frame(t = tk, X = c(0, cumsum(rgamma(length(tk) - 1, 2 * diff(tk), 3))))
+})
 
 # Option 1: each trajectory up to its last inspection;
 # step h = (8 + 12 + 45 + 58) / (2 + 4 + 10 + 16) = 3.84 for all
