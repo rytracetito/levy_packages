@@ -44,6 +44,16 @@
 #' time up to rounding errors (relative difference below \eqn{10^{-9}}) is
 #' set to that inspection time.
 #'
+#' **Precision.** Each draw splits the increment \eqn{\Delta} of the current
+#' interval into a left part (up to the grid point) and a right part (up to
+#' the next inspection), both computed directly: here \eqn{\Delta\, Y} and
+#' \eqn{\Delta (1 - Y)}, with \eqn{Y = G_1 / (G_1 + G_2)},
+#' \eqn{G_1 \sim \Gamma(a \tau_1)}, \eqn{G_2 \sim \Gamma(a \tau_2)} drawn on
+#' the log scale. The reconstructed increments ([increments()]) are these
+#' parts, not differences of levels: a very small increment keeps all its
+#' significant digits instead of being rounded to 0, even for very small
+#' shapes \eqn{a \tau}.
+#'
 #' @section Method "ExtBridge":
 #' Extension of the method of Grall-Maës whose regular grid contains all the
 #' inspection times (Tito and Paroissin). The inspection times are multiples of
@@ -69,7 +79,9 @@
 #' a warning; two times equal after rounding give an error. A warning is also
 #' given when the grid has more than \eqn{10^5} steps, since the resampling
 #' then takes time. The grid and the time step are computed for each
-#' trajectory.
+#' trajectory; with `common_step = TRUE`, \eqn{d} and \eqn{h} are computed
+#' from the inspection times of all the trajectories, so that all the grids
+#' have the same step.
 #'
 #' @param x Degradation levels of one trajectory; or a list of data frames,
 #'   one per trajectory, whose first column contains the inspection times and
@@ -86,6 +98,13 @@
 #' @param digits Used only with `method = "ExtBridge"`: number of decimal
 #'   places of the inspection times, which sets the time step of the grid.
 #'   `NULL` (default) finds it automatically.
+#' @param common_step Used only with `method = "ExtBridge"` and several
+#'   trajectories: `FALSE` (default) gives each trajectory its own time step
+#'   \eqn{h}; `TRUE` gives all the trajectories the same time step, the
+#'   largest one such that every inspection time of every trajectory is a grid
+#'   point. With a common step, the reconstructed increments of all the
+#'   trajectories have the same law under the model and can be tested
+#'   together.
 #'
 #' @return An object of class `"levybridge"`: a list with one data frame per
 #'   trajectory, with columns `t` (regular grid) and `X` (resampled levels).
@@ -183,6 +202,15 @@
 #' # Regular times: the grid is the inspection times, the data are unchanged
 #' gamma_bridge(c(0, 1.2, 2.9, 3.5), c(0, 2, 4, 6), a = 2, method = "ExtBridge")[[1]]
 #'
+#' # Several trajectories with a common step: gcd of all the gaps, here 0.25
+#' liste2 <- list(data.frame(t = c(0, 1, 3, 6), X = c(0, 0.8, 2.1, 4.3)),
+#'                data.frame(t = c(0, 0.5, 1.25, 2), X = c(0, 0.4, 1.1, 1.6)))
+#' attr(gamma_bridge(liste2, a = 2, method = "ExtBridge"), "teq")
+#' attr(gamma_bridge(liste2, a = 2, method = "ExtBridge", common_step = TRUE), "teq")
+#'
+#' # Very small shapes: the reconstructed increments are tiny but never 0
+#' min(increments(gamma_bridge(x, t, a = 0.05, method = "ExtBridge"))$dx)
+#'
 #' # 10. Error: the first time must be 0
 #' try(gamma_bridge(x, t + 1, a = 2))
 #' @examplesIf requireNamespace("levysim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)
@@ -202,10 +230,9 @@
 #' # Under the model, the increments follow Gamma(a * teq, b)
 #' ks.test(d$dx, "pgamma", shape = 2 * d$teq[1], rate = 3)
 #' @export
-gamma_bridge <- function(x, t = NULL, a, method = "Bridge", digits = NULL) {
+gamma_bridge <- function(x, t = NULL, a, method = "Bridge", digits = NULL, common_step = FALSE) {
   check_par(a = a)
-  draw <- function(t_inf, x_inf, t, t_sup, x_sup) {
-    x_inf + (x_sup - x_inf) * stats::rbeta(1, a * (t - t_inf), a * (t_sup - t))
-  }
-  bridge_paths(x, t, method, draw, "gamma", c(a = unname(a)), increasing = TRUE, digits = digits)
+  draw <- function(t_inf, delta, t, t_sup) delta * rbeta_pair(a * (t - t_inf), a * (t_sup - t))
+  bridge_paths(x, t, method, draw, "gamma", c(a = unname(a)), increasing = TRUE, digits = digits,
+               common_step = common_step)
 }

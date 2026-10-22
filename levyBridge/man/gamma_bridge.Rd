@@ -4,7 +4,14 @@
 \alias{gamma_bridge}
 \title{Gamma bridge: resampling on a regular grid}
 \usage{
-gamma_bridge(x, t = NULL, a, method = "Bridge", digits = NULL)
+gamma_bridge(
+  x,
+  t = NULL,
+  a,
+  method = "Bridge",
+  digits = NULL,
+  common_step = FALSE
+)
 }
 \arguments{
 \item{x}{Degradation levels of one trajectory; or a list of data frames,
@@ -26,6 +33,14 @@ Method "ExtBridge").}
 \item{digits}{Used only with \code{method = "ExtBridge"}: number of decimal
 places of the inspection times, which sets the time step of the grid.
 \code{NULL} (default) finds it automatically.}
+
+\item{common_step}{Used only with \code{method = "ExtBridge"} and several
+trajectories: \code{FALSE} (default) gives each trajectory its own time step
+\eqn{h}; \code{TRUE} gives all the trajectories the same time step, the
+largest one such that every inspection time of every trajectory is a grid
+point. With a common step, the reconstructed increments of all the
+trajectories have the same law under the model and can be tested
+together.}
 }
 \value{
 An object of class \code{"levybridge"}: a list with one data frame per

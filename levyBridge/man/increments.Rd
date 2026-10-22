@@ -18,6 +18,12 @@ A data frame with one row per increment and three columns:
 for the method "Bridge" and \eqn{h} for the method "ExtBridge";
 \item \code{dx}: reconstructed increment \eqn{x'_i - x'_{i-1}}.
 }
+
+The increments are computed directly by the bridges, not as differences of
+the resampled levels: a very small increment keeps its relative precision
+instead of being rounded to 0 (the levels have about 16 significant
+digits, so an increment smaller than about \eqn{10^{-16}} times the level
+would be lost by a difference).
 }
 \description{
 Extracts the increments of the trajectories resampled on the regular grid

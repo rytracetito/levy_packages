@@ -1,0 +1,44 @@
+Package: levygof
+Title: Goodness-of-Fit Tests for Levy Degradation Processes
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Amedée Rytrace", "Tito", , "rytracetito5@gmail.com", role = c("aut", "cre")),
+    person("Christian", "Paroissin", , "christian.paroissin@univ-pau.fr", role = "aut")
+  )
+Description: Goodness-of-fit tests for parametric Levy degradation processes
+    (gamma, Wiener, inverse Gaussian, variance-gamma and Meixner
+    processes) from one or several trajectories. With regular inspections
+    the observed increments are tested; with irregular inspections the
+    parameters are estimated by maximum likelihood (package 'levyfit'), the
+    trajectories are resampled on a regular grid by stochastic bridges
+    (package 'levyBridge', Grall-Maes (2012) <doi:10.1177/1748006X12462522>)
+    and the reconstructed increments are tested with tests for independent
+    and identically distributed samples.
+License: GPL-3
+URL: https://github.com/rytracetito/levy_packages/tree/main/levygof, https://github.com/rytracetito/levy_packages
+BugReports: https://github.com/rytracetito/levy_packages/issues
+Encoding: UTF-8
+Language: en
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Imports:
+    fBasics,
+    gofgamma,
+    gofIG,
+    goft,
+    gsl,
+    levyBridge,
+    levyfit,
+    nortest,
+    Runuran,
+    stats,
+    tseries
+Suggests:
+    levysim,
+    statmod,
+    testthat (>= 3.0.0)
+Remotes:
+    github::rytracetito/levy_packages/levyfit,
+    github::rytracetito/levy_packages/levyBridge,
+    github::rytracetito/levy_packages/levysim
+Config/testthat/edition: 3

@@ -142,11 +142,10 @@
 #' # (mean mu * teq, variance mu^3 * teq / eta)
 #' c(mean(d$dx), 1 * d$teq[1], var(d$dx), d$teq[1] / 3)
 #' @export
-ig_bridge <- function(x, t = NULL, eta, method = "Bridge", digits = NULL) {
+ig_bridge <- function(x, t = NULL, eta, method = "Bridge", digits = NULL, common_step = FALSE) {
   check_par(eta = eta)
-  draw <- function(t_inf, x_inf, t, t_sup, x_sup) {
-    delta <- x_sup - x_inf
-    if (delta == 0) return(x_inf)
+  draw <- function(t_inf, delta, t, t_sup) {
+    if (delta == 0) return(c(0, 0))
     tau1 <- t - t_inf
     tau2 <- t_sup - t
     m <- tau1 / tau2
@@ -155,7 +154,8 @@ ig_bridge <- function(x, t = NULL, eta, method = "Bridge", digits = NULL) {
     w2 <- m + m^2 * q / (2 * lam) + m / (2 * lam) * sqrt(4 * m * lam * q + m^2 * q^2)
     w1 <- m^2 / w2
     w <- if (stats::runif(1) <= tau1 * (1 + w1) / ((tau1 + tau2) * (m + w1))) w1 else w2
-    x_inf + delta * w / (1 + w)
+    delta * c(w / (1 + w), 1 / (1 + w))
   }
-  bridge_paths(x, t, method, draw, "inverse Gaussian", c(eta = unname(eta)), increasing = TRUE, digits = digits)
+  bridge_paths(x, t, method, draw, "inverse Gaussian", c(eta = unname(eta)), increasing = TRUE, digits = digits,
+               common_step = common_step)
 }

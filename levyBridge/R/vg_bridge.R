@@ -133,16 +133,17 @@
 #' # variance (sigma^2 + nu * theta^2) * teq
 #' c(mean(d$dx), 0.5 * d$teq[1], var(d$dx), (1.5^2 + 2 * 0.5^2) * d$teq[1])
 #' @export
-vg_bridge <- function(x, t = NULL, theta, sigma, nu, method = "Bridge", digits = NULL) {
+vg_bridge <- function(x, t = NULL, theta, sigma, nu, method = "Bridge", digits = NULL, common_step = FALSE) {
   check_par(theta = theta, positive = FALSE)
   check_par(sigma = sigma, nu = nu)
   psi <- (theta^2 + 2 * sigma^2 / nu) / sigma^4
-  draw <- function(t_inf, x_inf, t, t_sup, x_sup) {
-    delta <- x_sup - x_inf
+  draw <- function(t_inf, delta, t, t_sup) {
     p <- (t_sup - t_inf) / nu - 0.5
     s <- if (delta == 0 && p <= 0) 0 else GIGrvg::rgig(1, lambda = p, chi = delta^2, psi = psi)
-    y <- stats::rbeta(1, (t - t_inf) / nu, (t_sup - t) / nu)
-    x_inf + y * delta + sqrt(s * y * (1 - y)) * stats::rnorm(1)
+    y <- rbeta_pair((t - t_inf) / nu, (t_sup - t) / nu)
+    e <- sqrt(s * y[1] * y[2]) * stats::rnorm(1)
+    c(y[1] * delta + e, y[2] * delta - e)
   }
-  bridge_paths(x, t, method, draw, "variance-gamma", c(theta = unname(theta), sigma = unname(sigma), nu = unname(nu)), digits = digits)
+  bridge_paths(x, t, method, draw, "variance-gamma", c(theta = unname(theta), sigma = unname(sigma), nu = unname(nu)),
+               digits = digits, common_step = common_step)
 }

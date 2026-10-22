@@ -56,58 +56,98 @@ places <- function(d) paste(d, if (d == 1) "decimal place" else "decimal places"
 
 on_grid <- function(t, d) all(abs(t * 10^d - round(t * 10^d)) <= 1e-6)
 
-ext_grid <- function(t, digits = NULL) {
+ext_digits <- function(t, digits) {
   if (is.null(digits)) {
     d <- which(vapply(0:6, function(k) on_grid(t, k), TRUE))
-    if (length(d) > 0) {
-      digits <- d[1] - 1
-    } else {
-      digits <- 2
-      warning("the inspection times are not multiples of 10^-6: they are rounded to 2 decimal places ",
-              "(choose the number of decimal places with digits)", call. = FALSE)
-    }
-  } else {
-    if (!is.numeric(digits) || length(digits) != 1 || digits < 0 || digits != round(digits)) {
-      stop("digits must be a non-negative integer")
-    }
-    if (!on_grid(t, digits)) {
-      warning("the inspection times are rounded to ", places(digits), call. = FALSE)
-    }
+    if (length(d) > 0) return(d[1] - 1)
+    warning("the inspection times are not multiples of 10^-6: they are rounded to 2 decimal places ",
+            "(choose the number of decimal places with digits)", call. = FALSE)
+    return(2)
   }
-  ti <- round(t * 10^digits)
-  if (any(diff(ti) <= 0)) stop("two inspection times are equal after rounding to ", places(digits),
-                               ": increase digits")
-  h <- Reduce(gcd, diff(ti))
-  n <- ti[length(ti)] / h
-  if (n > 1e5) warning("the grid has ", n, " time steps: the resampling can be slow", call. = FALSE)
-  list(t = ti / 10^digits, grid = (0:n) * h / 10^digits, h = h / 10^digits)
+  if (!is.numeric(digits) || length(digits) != 1 || is.na(digits) || digits < 0 || digits != round(digits)) {
+    stop("digits must be a non-negative integer")
+  }
+  if (!on_grid(t, digits)) warning("the inspection times are rounded to ", places(digits), call. = FALSE)
+  digits
 }
 
+# Grilles ExtBridge de plusieurs trajectoires ; common = TRUE : même pas h pour toutes
+ext_grids <- function(ts, digits = NULL, common = FALSE) {
+  if (!common) return(lapply(ts, function(t) ext_grids(list(t), digits, TRUE)[[1]]))
+  digits <- ext_digits(unlist(ts), digits)
+  ti <- lapply(ts, function(t) round(t * 10^digits))
+  if (any(vapply(ti, function(v) any(diff(v) <= 0), TRUE))) {
+    stop("two inspection times are equal after rounding to ", places(digits), ": increase digits")
+  }
+  h <- Reduce(gcd, unlist(lapply(ti, diff)))
+  lapply(ti, function(v) {
+    n <- v[length(v)] / h
+    if (n > 1e5) warning("the grid has ", n, " time steps: the resampling can be slow", call. = FALSE)
+    list(t = v / 10^digits, grid = (0:n) * h / 10^digits, h = h / 10^digits)
+  })
+}
+
+ext_grid <- function(t, digits = NULL) ext_grids(list(t), digits, TRUE)[[1]]
+
+# Rééchantillonnage sur la grille g. draw(t_inf, delta, t, t_sup) tire le pont entre t_inf et t_sup
+# (accroissement total delta) au temps t et renvoie c(gauche, droite) : les accroissements sur
+# [t_inf, t] et [t, t_sup]. Les accroissements de la grille sont calculés directement, sans
+# différence de niveaux : ils gardent toute leur précision relative, même très petits.
 resample <- function(t, x, draw, g = regular_grid(t)) {
   n <- length(g) - 1
+  N <- length(t)
   y <- numeric(n + 1)
+  dx <- numeric(n)
   y[1] <- x[1]
-  y[n + 1] <- x[length(x)]
-  for (i in seq_len(n - 1) + 1) {
-    k <- findInterval(g[i], t)
-    if (t[k] == g[i]) {
-      y[i] <- x[k]
-    } else {
-      if (t[k] > g[i - 1]) {
+  k <- 1
+  t_inf <- t[1]
+  x_inf <- x[1]
+  rest <- x[2] - x[1]
+  for (i in seq_len(n)) {
+    carry <- 0
+    # inspections strictement entre deux points de grille (méthode Bridge)
+    while (t[k + 1] < g[i + 1]) {
+      carry <- carry + rest
+      k <- k + 1
+      t_inf <- t[k]
+      x_inf <- x[k]
+      rest <- x[k + 1] - x[k]
+    }
+    if (t[k + 1] == g[i + 1]) {
+      dx[i] <- carry + rest
+      y[i + 1] <- x[k + 1]
+      k <- k + 1
+      if (k < N) {
         t_inf <- t[k]
         x_inf <- x[k]
-      } else {
-        t_inf <- g[i - 1]
-        x_inf <- y[i - 1]
+        rest <- x[k + 1] - x[k]
       }
-      y[i] <- draw(t_inf, x_inf, g[i], t[k + 1], x[k + 1])
+    } else {
+      d <- draw(t_inf, rest, g[i + 1], t[k + 1])
+      dx[i] <- carry + d[1]
+      # niveau calculé depuis l'extrémité la plus proche : il reste entre les deux observations
+      y[i + 1] <- if (abs(d[1]) <= abs(d[2])) x_inf + d[1] else x[k + 1] - d[2]
+      t_inf <- g[i + 1]
+      x_inf <- y[i + 1]
+      rest <- d[2]
     }
   }
-  data.frame(t = g, X = y)
+  list(path = data.frame(t = g, X = y), dx = dx)
 }
 
-bridge_paths <- function(x, t, method, draw, model, parameters, increasing = FALSE, digits = NULL) {
+# log d'une variable Gamma(s, 1), sans dépassement de capacité pour s petit : G_s = G_{s+1} U^{1/s}
+log_rgamma <- function(s) log(stats::rgamma(1, s + 1)) + log(stats::runif(1)) / s
+
+# Y ~ Beta(p, q) et 1 - Y, chacun avec toute sa précision relative
+rbeta_pair <- function(p, q) {
+  l <- log_rgamma(p) - log_rgamma(q)
+  c(1 / (1 + exp(-l)), 1 / (1 + exp(l)))
+}
+
+bridge_paths <- function(x, t, method, draw, model, parameters, increasing = FALSE, digits = NULL,
+                         common_step = FALSE) {
   method <- check_method(method)
+  if (!is.logical(common_step) || length(common_step) != 1 || is.na(common_step)) stop("common_step must be TRUE or FALSE")
   traj <- as_trajectories(x, t)
   if (increasing) {
     for (k in seq_along(traj)) {
@@ -115,17 +155,17 @@ bridge_paths <- function(x, t, method, draw, model, parameters, increasing = FAL
     }
   }
   if (method == "Bridge") {
-    paths <- lapply(traj, function(d) resample(d$t, d$x, draw))
+    res <- lapply(traj, function(d) resample(d$t, d$x, draw))
     teq <- vapply(traj, function(d) d$t[length(d$t)] / (length(d$t) - 1), 0)
   } else {
-    grids <- lapply(traj, function(d) ext_grid(d$t, digits))
+    grids <- ext_grids(lapply(traj, `[[`, "t"), digits, common_step)
     for (k in seq_along(traj)) traj[[k]]$t <- grids[[k]]$t
-    paths <- lapply(seq_along(traj), function(k) resample(traj[[k]]$t, traj[[k]]$x, draw, grids[[k]]$grid))
+    res <- lapply(seq_along(traj), function(k) resample(traj[[k]]$t, traj[[k]]$x, draw, grids[[k]]$grid))
     teq <- vapply(grids, function(g) g$h, 0)
   }
   observed <- lapply(traj, function(d) data.frame(t = d$t, X = d$x))
-  structure(paths, class = "levybridge", model = model, parameters = parameters, method = method,
-            teq = teq, observed = observed)
+  structure(lapply(res, `[[`, "path"), class = "levybridge", model = model, parameters = parameters, method = method,
+            teq = teq, observed = observed, dx = lapply(res, `[[`, "dx"))
 }
 
 #' Reconstructed increments
@@ -144,6 +184,12 @@ bridge_paths <- function(x, t, method, draw, model, parameters, increasing = FAL
 #'   * `teq`: time step of the regular grid of this trajectory, \eqn{t_N / N}
 #'     for the method "Bridge" and \eqn{h} for the method "ExtBridge";
 #'   * `dx`: reconstructed increment \eqn{x'_i - x'_{i-1}}.
+#'
+#' The increments are computed directly by the bridges, not as differences of
+#' the resampled levels: a very small increment keeps its relative precision
+#' instead of being rounded to 0 (the levels have about 16 significant
+#' digits, so an increment smaller than about \eqn{10^{-16}} times the level
+#' would be lost by a difference).
 #'
 #' @seealso [gamma_bridge()], [wiener_bridge()], [ig_bridge()], [vg_bridge()],
 #'   [meixner_bridge()]
@@ -164,8 +210,9 @@ bridge_paths <- function(x, t, method, draw, model, parameters, increasing = FAL
 increments <- function(x) {
   if (!inherits(x, "levybridge")) stop("x must be the result of a _bridge function")
   teq <- attr(x, "teq")
+  dx <- attr(x, "dx")
   do.call(rbind, lapply(seq_along(x), function(i)
-    data.frame(id = i, teq = teq[i], dx = diff(x[[i]]$X))))
+    data.frame(id = i, teq = teq[i], dx = if (is.null(dx)) diff(x[[i]]$X) else dx[[i]])))
 }
 
 #' @export

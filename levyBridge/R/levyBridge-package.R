@@ -63,7 +63,10 @@
 #'   the levels), for instance the list returned by `levysim` with one plan
 #'   per trajectory.
 #'
-#' Each trajectory gets its own regular grid and its own time step.
+#' Each trajectory gets its own regular grid and its own time step. With the
+#' method "ExtBridge" and `common_step = TRUE`, all the trajectories get the
+#' same time step: their reconstructed increments then have the same law and
+#' can be tested together.
 #'
 #' @section Results:
 #' A `_bridge` function returns an object of class `"levybridge"`:

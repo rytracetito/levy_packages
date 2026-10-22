@@ -114,12 +114,12 @@
 #' # Under the model, the increments follow N(mu * teq, sigma^2 * teq)
 #' ks.test(d$dx, "pnorm", mean = 0.5 * d$teq[1], sd = 1.5 * sqrt(d$teq[1]))
 #' @export
-wiener_bridge <- function(x, t = NULL, sigma, method = "Bridge", digits = NULL) {
+wiener_bridge <- function(x, t = NULL, sigma, method = "Bridge", digits = NULL, common_step = FALSE) {
   check_par(sigma = sigma)
-  draw <- function(t_inf, x_inf, t, t_sup, x_sup) {
-    m <- x_inf + (x_sup - x_inf) * (t - t_inf) / (t_sup - t_inf)
-    v <- sigma^2 * (t - t_inf) * (t_sup - t) / (t_sup - t_inf)
-    stats::rnorm(1, m, sqrt(v))
+  draw <- function(t_inf, delta, t, t_sup) {
+    tau <- t_sup - t_inf
+    e <- stats::rnorm(1, 0, sigma * sqrt((t - t_inf) * (t_sup - t) / tau))
+    c(delta * (t - t_inf) / tau + e, delta * (t_sup - t) / tau - e)
   }
-  bridge_paths(x, t, method, draw, "Wiener", c(sigma = unname(sigma)), digits = digits)
+  bridge_paths(x, t, method, draw, "Wiener", c(sigma = unname(sigma)), digits = digits, common_step = common_step)
 }

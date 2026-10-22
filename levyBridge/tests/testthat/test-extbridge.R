@@ -102,3 +102,47 @@ test_that("ExtBridge: the increments on the grid follow the law of X_h", {
                      function(x, t) ig_bridge(x, t, eta = 3, method = "ExtBridge"), c(1, 13, 30))
   for (j in 1:3) expect_gt(ks.test(d[j, ], statmod::pinvgauss, mean = 0.5 * h2, shape = 3 * h2^2)$p.value, 0.001)
 })
+
+test_that("ExtBridge: no zero increment with very small shapes", {
+  set.seed(6)
+  t <- c(0, cumsum(round(runif(30, 0.5, 3.5), 1)))
+  for (k in 1:10) {
+    x <- c(0, cumsum(rgamma(30, 2 * diff(t), 3)))
+    expect_true(all(increments(gamma_bridge(x, t, a = 2, method = "ExtBridge"))$dx > 0))
+    g <- rgamma(30, diff(t) / 2, scale = 2)
+    v <- c(0, cumsum(0.5 * g + 1.5 * sqrt(g) * rnorm(30)))
+    expect_true(all(increments(vg_bridge(v, t, theta = 0.5, sigma = 1.5, nu = 2, method = "ExtBridge"))$dx != 0))
+  }
+})
+
+test_that("ExtBridge: increments sum to the observed increments and levels stay between observations", {
+  set.seed(7)
+  t <- c(0, 0.6, 1, 1.9)
+  x <- c(0, 0.5, 0.7, 1.6)
+  for (k in 1:20) {
+    r <- gamma_bridge(x, t, a = 0.5, method = "ExtBridge")
+    d <- increments(r)$dx
+    expect_equal(c(sum(d[1:6]), sum(d[7:10]), sum(d[11:19])), diff(x))
+    expect_true(all(diff(r[[1]]$X) >= 0))
+  }
+})
+
+test_that("ExtBridge: common_step gives the same step to all the trajectories", {
+  liste <- list(data.frame(t = c(0, 1, 3, 6), X = c(0, 0.8, 2.1, 4.3)),
+                data.frame(t = c(0, 0.5, 1.25, 2), X = c(0, 0.4, 1.1, 1.6)))
+  r <- gamma_bridge(liste, a = 2, method = "ExtBridge", common_step = TRUE)
+  expect_equal(attr(r, "teq"), c(0.25, 0.25))
+  expect_equal(sapply(r, nrow), c(25, 9))
+  expect_true(all(c(0, 1, 3, 6) %in% r[[1]]$t))
+  expect_error(gamma_bridge(liste, a = 2, method = "ExtBridge", common_step = NA), "common_step")
+})
+
+test_that("Meixner bridge: fast in the cases where the Cauchy envelope is poor", {
+  set.seed(8)
+  expect_lt(system.time(replicate(200, rmeixner_bridge_y(9.191, 6.360, 11.166)))[[3]], 5)
+  lZ <- log(2 * pi) + lbeta(2 * 9.191, 2 * 6.360) + lh(9.191 + 6.360, 11.166)
+  F <- function(q) vapply(q, function(qq) integrate(function(u) exp(lh(9.191, u) + lh(6.360, 11.166 - u) - lZ),
+                                                     -Inf, qq, subdivisions = 2000)$value, 0)
+  y <- replicate(1000, rmeixner_bridge_y(9.191, 6.360, 11.166))
+  expect_gt(ks.test(y, F)$p.value, 0.001)
+})
