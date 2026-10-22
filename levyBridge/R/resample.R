@@ -174,11 +174,10 @@ bridge_paths <- function(x, t, method, draw, model, parameters, increasing = FAL
   method <- check_method(method)
   if (!is.logical(common_step) || length(common_step) != 1 || is.na(common_step)) stop("common_step must be TRUE or FALSE")
   if (!identical(option, 1) && !identical(option, 2) && !identical(option, 1L) && !identical(option, 2L)) {
-    stop("option must be 1 or 2")
+    stop("option must be 1 or 2", call. = FALSE)
   }
   if (method == "MultiBridge" && option == 2 && is.null(sim)) {
-    stop("with method = \"MultiBridge\" and option = 2, give all the parameters of the process ",
-         "(they are needed to extend the trajectories beyond their last observation)")
+    stop("option = 2 needs all the parameters of the process, to extend the trajectories", call. = FALSE)
   }
   traj <- as_trajectories(x, t)
   if (increasing) {
@@ -228,6 +227,15 @@ bridge_paths <- function(x, t, method, draw, model, parameters, increasing = FAL
 #' digits, so an increment smaller than about \eqn{10^{-16}} times the level
 #' would be lost by a difference).
 #'
+#' @references
+#' Grall-Maës, E. (2012). Use of the Kolmogorov-Smirnov test for gamma
+#' process. *Proceedings of the Institution of Mechanical Engineers, Part O:
+#' Journal of Risk and Reliability*, 226(6), 624-634.
+#' \doi{10.1177/1748006X12462522}
+#'
+#' Tito, A. R. and Paroissin, C. (in preparation). (methods "ExtBridge" and
+#' "MultiBridge")
+#'
 #' @seealso [gamma_bridge()], [wiener_bridge()], [ig_bridge()], [vg_bridge()],
 #'   [meixner_bridge()]
 #'
@@ -243,6 +251,15 @@ bridge_paths <- function(x, t, method, draw, model, parameters, increasing = FAL
 #' liste <- list(data.frame(t = c(0, 1, 3, 6), X = c(0, 0.8, 2.1, 4.3)),
 #'               data.frame(t = c(0, 2, 4, 5, 9), X = c(0, 1.2, 2.9, 3.1, 6.2)))
 #' increments(gamma_bridge(liste, a = 2))
+#'
+#' # Method "MultiBridge": one common grid, so all the increments have the same
+#' # law and form one sample
+#' d <- increments(gamma_bridge(liste, a = 2, method = "MultiBridge"))
+#' d
+#' unique(d$teq)
+#'
+#' # The increments are computed directly: very small ones are not rounded to 0
+#' min(increments(gamma_bridge(x, t, a = 0.5, method = "ExtBridge"))$dx)
 #' @export
 increments <- function(x) {
   if (!inherits(x, "levybridge")) stop("x must be the result of a _bridge function")

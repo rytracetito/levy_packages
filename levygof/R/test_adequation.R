@@ -20,9 +20,12 @@
 #' @return A data frame with one row per test and the columns:
 #'   * `test`: name of the test;
 #'   * `statistic`: value of the test statistic;
-#'   * `p.value`: p-value (`NA` for the tests of `gofgamma`, which give a
-#'     critical value instead);
-#'   * `critical.value`: bootstrap critical value (tests of `gofgamma` only);
+#'   * `p.value`: p-value; the test rejects H0 when `p.value <= alpha`;
+#'   * `critical.value`: for the tests whose p-value is computed by
+#'     parametric bootstrap, the quantile of order `1 - alpha` of the
+#'     bootstrap statistics (H0 is rejected when the statistic exceeds it);
+#'     `NA` when it is not available (tests with an exact or asymptotic
+#'     p-value, and tests of `gofIG`, which give only the p-value);
 #'   * `decision`: `"reject H0"`, `"do not reject H0"`, or `"not computed"`
 #'     when the test failed;
 #'   * `message`: reason of a failure or of a certain rejection, `""`
@@ -41,6 +44,8 @@
 #'
 #' The tests are described in [tests_disponibles()]. The bootstrap tests are
 #' random: use [set.seed()] to reproduce a result.
+#'
+#' @inherit tests_disponibles references
 #'
 #' @seealso [gof.levy()] for a trajectory or several trajectories,
 #'   [tests_disponibles()] for the list of the tests.
@@ -71,6 +76,11 @@
 #' g <- rgamma(60, shape = 1 / 0.5, scale = 0.5)
 #' dx_vg <- 0.5 * g + 1.5 * sqrt(g) * rnorm(60)
 #' test_adequation(dx_vg, "VG", test = "AD", B = 50)
+#'
+#' # 7. Meixner model (a = 1, b = 1, d = 0.5, m = 0.2)
+#' set.seed(1)
+#' gen <- Runuran::pinvd.new(Runuran::udmeixner(alpha = 1, beta = 1, delta = 0.5, mu = 0.2))
+#' test_adequation(Runuran::ur(gen, 100), "Meixner", test = c("KS", "AD"), B = 30)
 #' }
 #' @export
 test_adequation <- function(dx, model, test = NULL, alpha = 0.05, B = 200) {
@@ -96,13 +106,13 @@ result_row <- function(test, stat, p, cv, reject, message) {
 
 call_test <- function(dx, model, test, alpha, B) {
   switch(paste(model, test),
-    "HGP HME1"             = gofgamma::test.HME1(dx, a = 1, boot = B, alpha = alpha),
-    "HGP BE"               = gofgamma::test.BE(dx, a = 1, boot = B, alpha = alpha),
-    "HGP VGE"              = gof_gamma_vge(dx, B),
-    "HGP KS"               = gofgamma::test.KS(dx, boot = B, alpha = alpha),
-    "HGP CvM"              = gofgamma::test.CM(dx, boot = B, alpha = alpha),
-    "HGP AD"               = gofgamma::test.AD(dx, boot = B, alpha = alpha),
-    "HGP Watson"           = gofgamma::test.WA(dx, boot = B, alpha = alpha),
+    "HGP HME1"             = gof_gamma_boot(dx, gofgamma::HME1, B, alpha, tuning = 1),
+    "HGP BE"               = gof_gamma_boot(dx, gofgamma::BE, B, alpha, tuning = 1),
+    "HGP VGE"              = gof_gamma_vge(dx, B, alpha),
+    "HGP KS"               = gof_gamma_boot(dx, gofgamma::KS, B, alpha),
+    "HGP CvM"              = gof_gamma_boot(dx, gofgamma::CM, B, alpha),
+    "HGP AD"               = gof_gamma_boot(dx, gofgamma::AD, B, alpha),
+    "HGP Watson"           = gof_gamma_boot(dx, gofgamma::WA, B, alpha),
     "HWP AD"               = nortest::ad.test(dx),
     "HWP CvM"              = suppressWarnings(nortest::cvm.test(dx)),
     "HWP SW"               = stats::shapiro.test(dx),
@@ -118,7 +128,7 @@ call_test <- function(dx, model, test, alpha, B) {
     "InvGaus AD"           = gofIG::test.AD(dx, B = B),
     "InvGaus VGE_ratio"    = goft::ig_test(dx, method = "ratio"),
     "InvGaus VGE_gamma"    = goft::ig_test(dx, method = "transf")[[2]],
-    gof_pit(dx, model, test, B)
+    gof_pit(dx, model, test, B, alpha)
   )
 }
 

@@ -100,6 +100,14 @@
 #'   interval). When the estimator does not exist, the estimates (and bounds)
 #'   are `NA`, with a warning.
 #'
+#' @references
+#' Whitmore, G. A. (1995). Estimating degradation by a Wiener diffusion process
+#' subject to measurement error. *Lifetime Data Analysis*, 1, 307-319.
+#'
+#' Ye, Z.-S. and Xie, M. (2015). Stochastic modelling and analysis of
+#' degradation for highly reliable products. *Applied Stochastic Models in
+#' Business and Industry*, 31(1), 16-32. \doi{10.1002/asmb.2063}
+#'
 #' @seealso [gamma_mle()], [ig_mle()], [vg_mle()], [meixner_mle()],
 #'   [igam_mle()], [inspection_times()]
 #'

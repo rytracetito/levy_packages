@@ -127,7 +127,8 @@ the next inspection), both computed directly: here \eqn{\Delta\, Y} and
 the log scale. The reconstructed increments (\code{\link[=increments]{increments()}}) are these
 parts, not differences of levels: a very small increment keeps all its
 significant digits instead of being rounded to 0, even for very small
-shapes \eqn{a \tau}.
+shapes \eqn{a \tau}; only an increment below the smallest positive number
+(about \eqn{10^{-308}}), which needs extremely small shapes, is 0.
 }
 
 \section{Method "ExtBridge"}{

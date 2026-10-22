@@ -14,9 +14,11 @@ test_that("test_adequation returns one row per test", {
   expect_equal(r$test, tests_disponibles("HWP"))
   expect_true(all(r$decision %in% c("reject H0", "do not reject H0")))
   expect_true(all(r$p.value > 0 & r$p.value <= 1))
-  r <- test_adequation(rgamma(40, 2), "HGP", test = c("KS", "VGE"), B = 30)
-  expect_true(is.na(r$p.value[1]) && !is.na(r$critical.value[1]))
-  expect_true(!is.na(r$p.value[2]))
+  r <- test_adequation(rgamma(40, 2), "HGP", test = c("KS", "VGE", "HME1"), B = 30)
+  expect_true(all(!is.na(r$p.value) & !is.na(r$critical.value)))
+  expect_equal(r$decision == "reject H0", r$p.value <= 0.05)
+  r <- test_adequation(rnorm(40), "HWP", test = "SW")
+  expect_true(is.na(r$critical.value))
 })
 
 test_that("a negative increment under an increasing model is a certain rejection", {

@@ -40,9 +40,9 @@ test_that("MultiBridge: common step and grids of the two options", {
 test_that("MultiBridge: errors and warnings", {
   set.seed(3)
   liste <- sim_liste(2, 3)
-  expect_error(gamma_bridge(liste, a = 2, method = "MultiBridge", option = 2), "all the parameters")
+  expect_error(gamma_bridge(liste, a = 2, method = "MultiBridge", option = 2), "all the parameters of the process")
   expect_error(gamma_bridge(liste, a = 2, method = "MultiBridge", option = 3), "option must be 1 or 2")
-  expect_error(wiener_bridge(liste, sigma = 1, method = "MultiBridge", option = 2), "all the parameters")
+  expect_error(wiener_bridge(liste, sigma = 1, method = "MultiBridge", option = 2), "all the parameters of the process")
   court <- list(data.frame(t = c(0, 0.5), X = c(0, 0.2)), data.frame(t = c(0, 10, 20), X = c(0, 4, 9)))
   expect_warning(r <- gamma_bridge(court, a = 2, method = "MultiBridge"), "shorter than the time step")
   expect_equal(nrow(r[[1]]), 1)

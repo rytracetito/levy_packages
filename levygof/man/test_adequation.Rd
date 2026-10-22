@@ -27,9 +27,12 @@ A data frame with one row per test and the columns:
 \itemize{
 \item \code{test}: name of the test;
 \item \code{statistic}: value of the test statistic;
-\item \code{p.value}: p-value (\code{NA} for the tests of \code{gofgamma}, which give a
-critical value instead);
-\item \code{critical.value}: bootstrap critical value (tests of \code{gofgamma} only);
+\item \code{p.value}: p-value; the test rejects H0 when \code{p.value <= alpha};
+\item \code{critical.value}: for the tests whose p-value is computed by
+parametric bootstrap, the quantile of order \code{1 - alpha} of the
+bootstrap statistics (H0 is rejected when the statistic exceeds it);
+\code{NA} when it is not available (tests with an exact or asymptotic
+p-value, and tests of \code{gofIG}, which give only the p-value);
 \item \code{decision}: \code{"reject H0"}, \code{"do not reject H0"}, or \code{"not computed"}
 when the test failed;
 \item \code{message}: reason of a failure or of a certain rejection, \code{""}
@@ -83,7 +86,89 @@ test_adequation(dx_ig, "invgaus", test = c("KS", "AD", "VGE_ratio"), B = 100)
 g <- rgamma(60, shape = 1 / 0.5, scale = 0.5)
 dx_vg <- 0.5 * g + 1.5 * sqrt(g) * rnorm(60)
 test_adequation(dx_vg, "VG", test = "AD", B = 50)
+
+# 7. Meixner model (a = 1, b = 1, d = 0.5, m = 0.2)
+set.seed(1)
+gen <- Runuran::pinvd.new(Runuran::udmeixner(alpha = 1, beta = 1, delta = 0.5, mu = 0.2))
+test_adequation(Runuran::ur(gen, 100), "Meixner", test = c("KS", "AD"), B = 30)
 }
+}
+\references{
+\strong{Gamma distribution}
+
+Henze, N., Meintanis, S. G. and Ebner, B. (2012). Goodness-of-fit tests
+for the Gamma distribution based on the empirical Laplace transform.
+\emph{Communications in Statistics - Theory and Methods}, 41(9), 1543-1556.
+\doi{10.1080/03610926.2010.542851} (tests HME1, KS, CvM, AD and Watson of
+\code{gofgamma})
+
+Betsch, S. and Ebner, B. (2019). A new characterization of the Gamma
+distribution and associated goodness of fit tests. \emph{Metrika}, 82(7),
+779-806. \doi{10.1007/s00184-019-00708-7} (test BE)
+
+Villasenor, J. A. and Gonzalez-Estrada, E. (2015). A variance ratio test of
+fit for Gamma distributions. \emph{Statistics and Probability Letters}, 96,
+281-286. \doi{10.1016/j.spl.2014.10.001} (test VGE)
+
+\strong{Normal distribution (Wiener process)}
+
+Shapiro, S. S. and Wilk, M. B. (1965). An analysis of variance test for
+normality (complete samples). \emph{Biometrika}, 52(3-4), 591-611.
+\doi{10.1093/biomet/52.3-4.591} (test SW)
+
+Royston, P. (1995). Remark AS R94: A remark on Algorithm AS 181: The W test
+for normality. \emph{Applied Statistics}, 44, 547-551. \doi{10.2307/2986146}
+(computation of the test SW in \code{stats::shapiro.test})
+
+Lilliefors, H. W. (1967). On the Kolmogorov-Smirnov test for normality with
+mean and variance unknown. \emph{Journal of the American Statistical
+Association}, 62(318), 399-402. \doi{10.1080/01621459.1967.10482916}
+(test Lilliefors)
+
+Dallal, G. E. and Wilkinson, L. (1986). An analytic approximation to the
+distribution of Lilliefors' test for normality. \emph{The American
+Statistician}, 40, 294-296. (p-value of the test Lilliefors)
+
+Stephens, M. A. (1986). Tests based on EDF statistics. In D'Agostino, R. B.
+and Stephens, M. A. (eds.), \emph{Goodness-of-Fit Techniques}, Marcel Dekker,
+New York. (tests AD and CvM with estimated parameters, and the EDF
+statistics of the VG and Meixner tests)
+
+Jarque, C. M. and Bera, A. K. (1987). A test for normality of observations
+and regression residuals. \emph{International Statistical Review}, 55(2),
+163-172. \doi{10.2307/1403192} (test JB)
+
+D'Agostino, R. B. and Pearson, E. S. (1973). Tests for departure from
+normality. Empirical results for the distributions of \eqn{b_2} and
+\eqn{\sqrt{b_1}}. \emph{Biometrika}, 60(3), 613-622.
+\doi{10.1093/biomet/60.3.613} (test DAgostinoPearson)
+
+\strong{Inverse Gaussian distribution}
+
+Allison, J. S., Betsch, S., Ebner, B. and Visagie, I. J. H. (2022). On
+testing the adequacy of the inverse Gaussian distribution. \emph{Mathematics},
+10(3), 350. \url{https://www.mdpi.com/2227-7390/10/3/350} (tests ABEV1,
+ABEV2, KS, CvM and AD of \code{gofIG})
+
+Henze, N. and Klar, B. (2002). Goodness-of-fit tests for the inverse
+Gaussian distribution based on the empirical Laplace transform. \emph{Annals of
+the Institute of Statistical Mathematics}, 54(2), 425-444.
+\doi{10.1023/A:1022442506681} (tests HK1 and HK2)
+
+Villasenor, J. A. and Gonzalez-Estrada, E. (2015). Tests of fit for
+inverse Gaussian distributions. \emph{Statistics and Probability Letters}, 105,
+189-194. \doi{10.1016/j.spl.2015.06.017} (tests VGE_ratio and VGE_gamma)
+
+\strong{EDF statistics and parametric bootstrap (VG and Meixner)}
+
+Anderson, T. W. and Darling, D. A. (1954). A test of goodness of fit.
+\emph{Journal of the American Statistical Association}, 49, 765-769.
+
+Watson, G. S. (1961). Goodness-of-fit tests on a circle. \emph{Biometrika},
+48(1-2), 109-114.
+
+Stute, W., Gonzalez Manteiga, W. and Presedo Quindimil, M. (1993).
+Bootstrap based goodness-of-fit-tests. \emph{Metrika}, 40, 243-256.
 }
 \seealso{
 \code{\link[=gof.levy]{gof.levy()}} for a trajectory or several trajectories,

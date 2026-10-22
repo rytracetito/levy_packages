@@ -166,6 +166,14 @@ wiener_mle(liste)
 wiener_mle(c(0, 1.2, 0.7, 2.5), c(0, 1, 2, 3))
 \dontshow{\}) # examplesIf}
 }
+\references{
+Whitmore, G. A. (1995). Estimating degradation by a Wiener diffusion process
+subject to measurement error. \emph{Lifetime Data Analysis}, 1, 307-319.
+
+Ye, Z.-S. and Xie, M. (2015). Stochastic modelling and analysis of
+degradation for highly reliable products. \emph{Applied Stochastic Models in
+Business and Industry}, 31(1), 16-32. \doi{10.1002/asmb.2063}
+}
 \seealso{
 \code{\link[=gamma_mle]{gamma_mle()}}, \code{\link[=ig_mle]{ig_mle()}}, \code{\link[=vg_mle]{vg_mle()}}, \code{\link[=meixner_mle]{meixner_mle()}},
 \code{\link[=igam_mle]{igam_mle()}}, \code{\link[=inspection_times]{inspection_times()}}

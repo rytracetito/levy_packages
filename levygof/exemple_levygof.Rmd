@@ -37,10 +37,16 @@ H_0 : \text{les trajectoires sont des trajectoires indépendantes du processus }
 Les accroissements d'un processus de Lévy sur un même pas de temps sont i.i.d. La fonction `gof.levy()` procède ainsi :
 
 * **inspections régulières** : les accroissements observés sont i.i.d. sous \(H_0\), ils sont testés directement ;
-* **inspections irrégulières** : les paramètres sont estimés par maximum de vraisemblance (`levyfit`), chaque trajectoire est rééchantillonnée sur une grille régulière par le pont du processus (`levyBridge`, méthode `"Bridge"` ou `"ExtBridge"`), et les accroissements reconstruits, i.i.d. sous \(H_0\), sont testés ;
+* **inspections irrégulières** : les paramètres sont estimés par maximum de vraisemblance (`levyfit`), chaque trajectoire est rééchantillonnée sur une grille régulière par le pont du processus (`levyBridge`, méthode `"Bridge"`, `"ExtBridge"` ou `"MultiBridge"`), et les accroissements reconstruits, i.i.d. sous \(H_0\), sont testés ;
 * **gamma et inverse gaussien** : un accroissement observé négatif ou nul est impossible sous \(H_0\), qui est alors rejetée sans calcul.
 
-Avec `"ExtBridge"`, la grille contient tous les instants d'inspection, et son pas \(h\) est commun à toutes les trajectoires : les accroissements de toutes les trajectoires sont testés ensemble.
+Les trois méthodes de rééchantillonnage :
+
+* `"Bridge"` (Grall-Maës, 2012) : une grille par trajectoire, de pas \(t_N / N\) ; avec plusieurs trajectoires, les pas diffèrent et chaque trajectoire est testée seule ;
+* `"ExtBridge"` : grille qui contient tous les instants d'inspection, de pas \(h\) commun à toutes les trajectoires ;
+* `"MultiBridge"` : grille commune à toutes les trajectoires, de pas \(h = \sum_i t_{i,max} / \sum_i m_i\) (durée totale divisée par le nombre total d'accroissements), avec l'option 1 (chaque trajectoire jusqu'à sa dernière inspection, recommandée) ou l'option 2 (toutes jusqu'au dernier instant global).
+
+Avec `"ExtBridge"` et `"MultiBridge"`, les accroissements de toutes les trajectoires ont la même loi : ils sont aussi testés ensemble (groupe `all`).
 
 Les modèles : `"HGP"` (gamma), `"HWP"` (Wiener), `"InvGaus"` (inverse gaussien), `"VG"` (variance-gamma), `"Meixner"`. Les tests de chaque modèle :
 
@@ -75,10 +81,10 @@ Le résultat contient aussi les paramètres estimés, les pseudo-accroissements 
 ```{r}
 res$parameters
 head(res$increments)
-res$results[, c("test", "statistic", "critical.value", "decision")]
+res$results[, c("test", "statistic", "p.value", "critical.value", "decision")]
 ```
 
-Les tests de `gofgamma` (HME1, BE, KS, CvM, AD, Watson) donnent une valeur critique bootstrap et non une p-valeur.
+Pour les tests calculés par bootstrap paramétrique, le tableau donne la p-valeur et la valeur critique au niveau \(\alpha\) (quantile d'ordre \(1 - \alpha\) des statistiques bootstrap) : \(H_0\) est rejetée quand la p-valeur est inférieure à \(\alpha\), c'est-à-dire quand la statistique dépasse la valeur critique. Quand elle n'est pas disponible (tests à p-valeur exacte ou asymptotique comme ceux de normalité, tests de `gofIG` qui ne donnent que la p-valeur), la valeur critique vaut `NA`.
 
 La même trajectoire avec la méthode `"ExtBridge"` : la grille, de pas 0.1, contient toutes les inspections.
 
@@ -92,7 +98,8 @@ r_ext <- gof.levy(x, "HGP", test = "AD", method = "ExtBridge", B = 100)
 ggplot() +
   geom_line(data = r_ext$bridge[[1]], aes(t, X), colour = "steelblue") +
   geom_point(data = data.frame(t = x[, 1], X = x[, 2]), aes(t, X), colour = "red") +
-  labs(title = "Trajectoire observée (rouge) et rééchantillonnée par ExtBridge", x = "Temps", y = "Dégradation") +
+  labs(title = "Trajectoire observée (rouge) et rééchantillonnée par ExtBridge",
+       x = "Temps", y = "Dégradation") +
   theme_minimal()
 ```
 
@@ -125,10 +132,14 @@ gof.levy(xv, "VG", test = c("KS", "AD"), method = "ExtBridge", B = 50)
 
 ## Meixner
 
+Avec peu d'accroissements, l'estimateur du maximum de vraisemblance du processus de Meixner peut ne pas exister (maximum sur le bord, vers une loi gamma décalée ou gaussienne). Sur les données d'origine, `gof.levy()` s'arrête alors avec un message ; sur les pseudo-accroissements, le test est marqué `not computed`. Avec 60 inspections, cela arrive encore souvent : le modèle de Meixner demande beaucoup de données.
+
 ```{r}
-set.seed(5)
-xm <- sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2)
-gof.levy(xm, "Meixner", test = "AD", B = 50)
+set.seed(1)
+t60 <- c(0, cumsum(round(runif(60, 0.5, 3.5), 1)))
+set.seed(7)
+xm <- sim_meixner(t60, a = 1, b = 1, d = 0.5, m = 0.2)
+gof.levy(xm, "Meixner", test = "AD", B = 30)
 ```
 
 ## Un modèle faux
@@ -151,10 +162,12 @@ Cinq trajectoires gamma, chacune avec ses propres instants d'inspection (liste d
 ```{r}
 set.seed(7)
 plan <- lapply(1:5, function(k) c(0, cumsum(round(runif(20, 0.5, 3.5), 1))))
-xs <- lapply(plan, function(tk) data.frame(t = tk, X = c(0, cumsum(rgamma(20, 2 * diff(tk), 3)))))
+xs <- lapply(plan, function(tk) {
+  data.frame(t = tk, X = c(0, cumsum(rgamma(20, 2 * diff(tk), 3))))
+})
 ```
 
-Avec `"Bridge"`, chaque trajectoire a son pas \(t_N / N\) : les pseudo-accroissements de deux trajectoires n'ont pas la même loi, et chaque trajectoire est testée seule.
+Avec `"Bridge"`, chaque trajectoire a son pas \(t_N / N\) : les pseudo-accroissements de deux trajectoires n'ont pas la même loi, et chaque trajectoire est testée seule. Avec plusieurs tests au niveau 5 %, un rejet isolé peut arriver par hasard même sous \(H_0\).
 
 ```{r}
 set.seed(8)
@@ -168,6 +181,24 @@ Avec `"ExtBridge"`, toutes les grilles ont le même pas : les pseudo-accroisseme
 set.seed(8)
 r_e <- gof.levy(xs, "HGP", test = c("VGE", "AD"), method = "ExtBridge", B = 100)
 r_e
+```
+
+Avec `"MultiBridge"`, toutes les trajectoires sont placées sur une grille commune de pas \(h = \sum_i t_{i,max} / \sum_i m_i\) : tests par trajectoire et test sur l'ensemble.
+
+```{r}
+set.seed(8)
+r_m <- gof.levy(xs, "HGP", test = c("VGE", "AD"), method = "MultiBridge", B = 100)
+r_m
+table(r_m$increments$id)
+```
+
+L'option 2 prolonge les trajectoires les plus courtes jusqu'au dernier instant global, avec les paramètres estimés : toutes ont alors le même nombre d'accroissements, mais les valeurs prolongées ne viennent pas des données.
+
+```{r}
+set.seed(8)
+r_m2 <- gof.levy(xs, "HGP", test = c("VGE", "AD"), method = "MultiBridge",
+                 option = 2, B = 100)
+table(r_m2$increments$id)
 ```
 
 Les trajectoires simulées par `levysim` sur un même plan (matrice) ou sur des plans différents (liste) s'utilisent directement :
@@ -222,3 +253,19 @@ test_adequation(c(1, 1, 1, 1, 1), "HWP", test = c("SW", "JB"))
 try(gof.levy(data.frame(t = c(0, 2, 1, 3, 4), X = 1:5), "HGP"))
 try(gof.levy(x, "Poisson"))
 ```
+
+\newpage
+
+# IV - Références des tests
+
+Les références de chaque test sont données dans l'aide :
+
+```{r, eval = FALSE}
+?tests_disponibles
+```
+
+* gamma : Henze, Meintanis et Ebner (2012) ; Betsch et Ebner (2019) ; Villaseñor et González-Estrada (2015) ;
+* normale (Wiener) : Shapiro et Wilk (1965) ; Lilliefors (1967) ; Stephens (1986) ; Jarque et Bera (1987) ; D'Agostino et Pearson (1973) ;
+* inverse gaussienne : Allison, Betsch, Ebner et Visagie (2022) ; Henze et Klar (2002) ; Villaseñor et González-Estrada (2015) ;
+* variance-gamma et Meixner : statistiques EDF (Stephens, 1986) et bootstrap paramétrique (Stute, González Manteiga et Presedo Quindimil, 1993) ;
+* méthode du pont : Grall-Maës (2012).

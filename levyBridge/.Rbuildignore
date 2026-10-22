@@ -12,3 +12,7 @@
 ^exemple_ExtBridge\.pdf$
 ^exemple_ExtBridge_cache$
 ^exemple_ExtBridge_files$
+^exemple_MultiBridge\.Rmd$
+^exemple_MultiBridge\.pdf$
+^exemple_MultiBridge_cache$
+^exemple_MultiBridge_files$

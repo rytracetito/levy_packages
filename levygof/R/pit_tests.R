@@ -85,8 +85,34 @@ boot_pvalue <- function(T_obs, T_boot) {
   (1 + sum(T_boot[ok] >= T_obs)) / (1 + sum(ok))
 }
 
+# Résultat d'un test par bootstrap : statistique, p-valeur et valeur critique (quantile 1 - alpha)
+boot_result <- function(T_obs, T_boot, alpha) {
+  list(statistic = T_obs, p.value = boot_pvalue(T_obs, T_boot),
+       cv = unname(stats::quantile(T_boot, 1 - alpha, na.rm = TRUE)))
+}
+
+# Tests de gofgamma (HME1, BE, KS, CvM, AD, Watson) : même statistique et même bootstrap paramétrique que
+# gofgamma (forme estimée par gofgamma::gamma_est, échantillons Gamma(k, 1) réestimés), mais on garde
+# toutes les statistiques simulées pour obtenir aussi la p-valeur
+gof_gamma_boot <- function(dx, stat, B, alpha, tuning = NULL) {
+  f <- function(y, k) if (is.null(tuning)) stat(y, k) else stat(y, k, tuning)
+  par <- gofgamma::gamma_est(dx)
+  T_obs <- f(dx / par[2], par[1])
+  T_boot <- vapply(seq_len(B), function(i) {
+    y <- stats::rgamma(length(dx), par[1], 1)
+    k <- gofgamma::gamma_est(y)[1]
+    tryCatch(f(y / (mean(y) / k), k), error = function(e) NA_real_)
+  }, 0)
+  r <- boot_result(T_obs, T_boot, alpha)
+  # valeur critique avec la formule d'interpolation de gofgamma::crit.values
+  Tn <- sort(T_boot)
+  j <- floor((1 - alpha) * length(Tn))
+  if (j >= 1 && j < length(Tn)) r$cv <- Tn[j] + (1 - alpha) * (Tn[j + 1] - Tn[j])
+  r
+}
+
 # Test `test` (KS, CvM, AD ou Watson) de la famille `model` (VG ou Meixner)
-gof_pit <- function(dx, model, test, B) {
+gof_pit <- function(dx, model, test, B, alpha) {
   fam <- families[[model]]
   stat <- pit_stats[[test]]
   par <- fam$fit(dx)
@@ -95,11 +121,11 @@ gof_pit <- function(dx, model, test, B) {
     y <- fam$sim(length(dx), par)
     tryCatch(stat(fam$pit(y, fam$fit(y))), error = function(e) NA_real_)
   }, 0)
-  list(statistic = T_obs, p.value = boot_pvalue(T_obs, T_boot))
+  boot_result(T_obs, T_boot, alpha)
 }
 
 # Test VGE de la loi gamma : statistique de goft::gamma_test, p-valeur par bootstrap paramétrique
-gof_gamma_vge <- function(dx, B) {
+gof_gamma_vge <- function(dx, B, alpha) {
   fit <- goft::gamma_fit(dx)
   shape <- fit["shape", 1]
   scale <- fit["scale", 1]
@@ -107,7 +133,7 @@ gof_gamma_vge <- function(dx, B) {
   T_obs <- stat(dx)
   T_boot <- vapply(seq_len(B), function(i) tryCatch(stat(stats::rgamma(length(dx), shape = shape, scale = scale)),
                                                    error = function(e) NA_real_), 0)
-  list(statistic = T_obs, p.value = boot_pvalue(T_obs, T_boot))
+  boot_result(T_obs, T_boot, alpha)
 }
 
 # Test omnibus de D'Agostino-Pearson (K^2)

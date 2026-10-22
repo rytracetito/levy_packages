@@ -102,6 +102,34 @@
 #' * Inverse gamma: \eqn{W(t) = \inf\{w : T(w) > t\}}, with \eqn{T} a gamma
 #'   process of shape \eqn{(w / \alpha)^\beta} and scale \eqn{\theta}.
 #'
+#' @references
+#' **Gamma process**: van Noortwijk, J. M. (2009). A survey of the application
+#' of gamma processes in maintenance. *Reliability Engineering & System
+#' Safety*, 94(1), 2-21. \doi{10.1016/j.ress.2007.03.019}
+#'
+#' **Wiener process**: Whitmore, G. A. (1995). Estimating degradation by a
+#' Wiener diffusion process subject to measurement error. *Lifetime Data
+#' Analysis*, 1, 307-319.
+#'
+#' **Inverse Gaussian process**: Wang, X. and Xu, D. (2010). An inverse
+#' Gaussian process model for degradation data. *Technometrics*, 52(2),
+#' 188-197. \doi{10.1198/TECH.2009.08197}
+#'
+#' **Variance-gamma process**: Madan, D. B., Carr, P. P. and Chang, E. C.
+#' (1998). The variance gamma process and option pricing. *European Finance
+#' Review*, 2(1), 79-105. \doi{10.1023/A:1009703431535}
+#'
+#' **Meixner process**: Schoutens, W. and Teugels, J. L. (1998). Lévy
+#' processes, polynomials and martingales. *Communications in Statistics.
+#' Stochastic Models*, 14(1-2), 335-349.
+#'
+#' **Inverse gamma process**: Guida, M. and Pulcini, G. (2013). The inverse
+#' Gamma process: a family of continuous stochastic models for describing
+#' state-dependent deterioration phenomena. *Reliability Engineering & System
+#' Safety*, 120, 72-79. \doi{10.1016/j.ress.2013.03.013}
+#'
+#' The references of each method are given in the help page of each function.
+#'
 #' @examplesIf requireNamespace("levysim", quietly = TRUE)
 #' # 1. Inspection times: 10 trajectories inspected more and more often
 #' plan <- inspection_times("increasing", n = 20, n_traj = 10, tmax = 100)

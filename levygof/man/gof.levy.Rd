@@ -188,6 +188,11 @@ gof.levy(liste, "HWP", test = c("SW", "AD"), method = "MultiBridge", option = 2)
 m <- cbind(t = t2, sapply(1:4, function(k) c(0, cumsum(rgamma(30, 10 * diff(t2), 5)))))
 gof.levy(m, "HGP", test = "AD", B = 100)
 
+# 7b. Several trajectories inspected every 2 time units (regular, same step):
+#     observed increments, one test per trajectory and one on all of them
+m2 <- cbind(t = t, sapply(1:3, function(k) c(0, cumsum(rgamma(30, 2 * 2, 3)))))
+gof.levy(m2, "HGP", test = "VGE", B = 50)
+
 \donttest{
 # 8. Inverse Gaussian and variance-gamma models (slower)
 ig <- c(0, cumsum(statmod::rinvgauss(30, mean = diff(t2), shape = 3 * diff(t2)^2)))
@@ -196,6 +201,18 @@ gof.levy(data.frame(t2, ig), "InvGaus", test = c("KS", "AD", "HK2"), B = 100)
 g <- rgamma(30, shape = diff(t2) / 0.2, scale = 0.2)
 vg <- c(0, cumsum(0.5 * g + 1.5 * sqrt(g) * rnorm(30)))
 gof.levy(data.frame(t2, vg), "VG", test = "AD", B = 50)
+
+# 9. Meixner model (a = 1, b = 1, d = 0.5, m = 0.2), regular and irregular
+#    inspections; with few increments the maximum likelihood estimator of
+#    the Meixner process may not exist, and the test then stops with a message
+rmx <- function(dt) vapply(dt, function(s) Runuran::ur(Runuran::pinvd.new(
+  Runuran::udmeixner(alpha = 1, beta = 1, delta = 0.5 * s, mu = 0.2 * s)), 1), 0)
+set.seed(1)
+t_reg <- 0:100
+gof.levy(data.frame(t_reg, c(0, cumsum(rmx(rep(1, 100))))), "Meixner", test = "AD", B = 30)
+set.seed(1)
+t3 <- c(0, cumsum(round(runif(60, 0.5, 3.5), 1)))
+gof.levy(data.frame(t3, c(0, cumsum(rmx(diff(t3))))), "Meixner", test = "AD", B = 30)
 }
 }
 \references{
@@ -203,6 +220,14 @@ Grall-Maës, E. (2012). Use of the Kolmogorov-Smirnov test for gamma
 process. \emph{Proceedings of the Institution of Mechanical Engineers, Part O:
 Journal of Risk and Reliability}, 226(6), 624-634.
 \doi{10.1177/1748006X12462522}
+
+Stute, W., Gonzalez Manteiga, W. and Presedo Quindimil, M. (1993).
+Bootstrap based goodness-of-fit-tests. \emph{Metrika}, 40, 243-256.
+
+Tito, A. R. and Paroissin, C. (in preparation). (methods "ExtBridge" and
+"MultiBridge")
+
+The references of each test are given in \code{\link[=tests_disponibles]{tests_disponibles()}}.
 }
 \seealso{
 \code{\link[=test_adequation]{test_adequation()}} for an i.i.d. sample of increments,

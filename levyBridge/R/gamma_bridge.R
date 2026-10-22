@@ -52,7 +52,8 @@
 #' the log scale. The reconstructed increments ([increments()]) are these
 #' parts, not differences of levels: a very small increment keeps all its
 #' significant digits instead of being rounded to 0, even for very small
-#' shapes \eqn{a \tau}.
+#' shapes \eqn{a \tau}; only an increment below the smallest positive number
+#' (about \eqn{10^{-308}}), which needs extremely small shapes, is 0.
 #'
 #' @section Method "ExtBridge":
 #' Extension of the method of Grall-Maës whose regular grid contains all the
@@ -272,8 +273,8 @@
 #' attr(gamma_bridge(liste2, a = 2, method = "ExtBridge"), "teq")
 #' attr(gamma_bridge(liste2, a = 2, method = "ExtBridge", common_step = TRUE), "teq")
 #'
-#' # Very small shapes: the reconstructed increments are tiny but never 0
-#' min(increments(gamma_bridge(x, t, a = 0.05, method = "ExtBridge"))$dx)
+#' # Small shapes: the reconstructed increments can be tiny, but they are not rounded to 0
+#' min(increments(gamma_bridge(x, t, a = 0.5, method = "ExtBridge"))$dx)
 #'
 #' # Method "MultiBridge": four trajectories with their own times, one common grid
 #' liste_t <- list(c(0, 3, 8), c(0, 2, 5, 9, 12), c(0, 4, 7, 11, 15, 18, 22, 27, 33, 39, 45),

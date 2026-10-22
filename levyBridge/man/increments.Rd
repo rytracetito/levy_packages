@@ -44,6 +44,24 @@ increments(r)
 liste <- list(data.frame(t = c(0, 1, 3, 6), X = c(0, 0.8, 2.1, 4.3)),
               data.frame(t = c(0, 2, 4, 5, 9), X = c(0, 1.2, 2.9, 3.1, 6.2)))
 increments(gamma_bridge(liste, a = 2))
+
+# Method "MultiBridge": one common grid, so all the increments have the same
+# law and form one sample
+d <- increments(gamma_bridge(liste, a = 2, method = "MultiBridge"))
+d
+unique(d$teq)
+
+# The increments are computed directly: very small ones are not rounded to 0
+min(increments(gamma_bridge(x, t, a = 0.5, method = "ExtBridge"))$dx)
+}
+\references{
+Grall-Maës, E. (2012). Use of the Kolmogorov-Smirnov test for gamma
+process. \emph{Proceedings of the Institution of Mechanical Engineers, Part O:
+Journal of Risk and Reliability}, 226(6), 624-634.
+\doi{10.1177/1748006X12462522}
+
+Tito, A. R. and Paroissin, C. (in preparation). (methods "ExtBridge" and
+"MultiBridge")
 }
 \seealso{
 \code{\link[=gamma_bridge]{gamma_bridge()}}, \code{\link[=wiener_bridge]{wiener_bridge()}}, \code{\link[=ig_bridge]{ig_bridge()}}, \code{\link[=vg_bridge]{vg_bridge()}},

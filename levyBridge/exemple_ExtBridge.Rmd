@@ -241,3 +241,44 @@ Enfin, une grille de plus de \(10^5\) pas donne un avertissement, car le rééch
 r <- gamma_bridge(c(0, 0.4, 150), c(0, 1.234, 400), a = 2, method = "ExtBridge")
 nrow(r[[1]])
 ```
+
+\newpage
+
+# IV - Plusieurs trajectoires : pas commun (`common_step`)
+
+Sans autre précision, chaque trajectoire reçoit son propre pas \(h\) (le pgcd de ses propres écarts). Deux trajectoires de pas différents donnent des accroissements de lois différentes (\(X_{h_1}\) et \(X_{h_2}\)) : chacune est un échantillon i.i.d., mais on ne peut pas les réunir.
+
+```{r}
+liste <- list(data.frame(t = c(0, 1, 3, 6), X = c(0, 0.8, 2.1, 4.3)),
+              data.frame(t = c(0, 0.5, 1.25, 2), X = c(0, 0.4, 1.1, 1.6)))
+r_propre <- gamma_bridge(liste, a = 2, method = "ExtBridge")
+attr(r_propre, "teq")
+sapply(r_propre, nrow) - 1
+```
+
+Avec `common_step = TRUE`, \(h\) est le pgcd de tous les écarts de toutes les trajectoires, ici 0.25 : toutes les inspections restent sur leur grille, et tous les accroissements reconstruits ont la loi de \(X_{0.25}\). Ils forment un seul échantillon i.i.d. pour toutes les trajectoires.
+
+```{r}
+r_commun <- gamma_bridge(liste, a = 2, method = "ExtBridge", common_step = TRUE)
+attr(r_commun, "teq")
+sapply(r_commun, nrow) - 1
+all(c(0, 1, 3, 6) %in% r_commun[[1]]$t)
+head(increments(r_commun))
+```
+
+Avec les 20 trajectoires de la partie II (instants à une décimale), le pas commun vaut 0.1, comme le pas propre de chaque trajectoire :
+
+```{r}
+set.seed(2)
+r_all <- gamma_bridge(sim_gamma(plan, a = 2, b = 3), a = 2, method = "ExtBridge", common_step = TRUE)
+unique(attr(r_all, "teq"))
+```
+
+## Accroissements très petits
+
+Les accroissements reconstruits sont calculés directement par le pont, et non par différence de niveaux : un accroissement très petit garde toute sa précision et n'est pas arrondi à 0, même pour une petite forme \(a h\) (ici \(a h = 0.05\)). Seul un accroissement inférieur au plus petit nombre représentable (environ \(10^{-308}\)), ce qui demande des formes extrêmement petites, vaut 0.
+
+```{r}
+x_small <- sim_gamma(t, a = 0.5, b = 3)
+min(increments(gamma_bridge(x_small, a = 0.5, method = "ExtBridge"))$dx)
+```
