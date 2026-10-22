@@ -4,7 +4,7 @@
 \alias{ig_bridge}
 \title{Inverse Gaussian bridge: resampling on a regular grid}
 \usage{
-ig_bridge(x, t = NULL, eta, method = "Bridge")
+ig_bridge(x, t = NULL, eta, method = "Bridge", digits = NULL)
 }
 \arguments{
 \item{x}{Degradation levels of one trajectory; or a list of data frames,
@@ -19,14 +19,21 @@ increasing. Not used when \code{x} is a list.}
 \code{ig_mle(x)[["eta"]]} of the package \code{levyfit}.}
 
 \item{method}{\code{"Bridge"} (default) for the algorithm of Grall-Maës (2012),
-or \code{"ExtBridge"} for its extension (not available yet).}
+with as many grid points as observations, or \code{"ExtBridge"} for its
+extension, whose grid contains all the inspection times (see the section
+Method "ExtBridge").}
+
+\item{digits}{Used only with \code{method = "ExtBridge"}: number of decimal
+places of the inspection times, which sets the time step of the grid.
+\code{NULL} (default) finds it automatically.}
 }
 \value{
 An object of class \code{"levybridge"}: a list with one data frame per
 trajectory, with columns \code{t} (regular grid) and \code{X} (resampled levels).
 Its attributes are \code{model}, \code{parameters}, \code{method}, \code{teq} (time step of
 the grid of each trajectory) and \code{observed} (the observed data, one data
-frame per trajectory). Use \code{\link[=increments]{increments()}} for the reconstructed
+frame per trajectory; with the method "ExtBridge", the times are the
+rounded ones when a rounding was needed). Use \code{\link[=increments]{increments()}} for the reconstructed
 increments and \code{\link[=plot_bridge]{plot_bridge()}} to compare observed and resampled values.
 }
 \description{
@@ -101,8 +108,31 @@ set to that inspection time.
 
 \section{Method "ExtBridge"}{
 
-Extension of the method of Grall-Maës that integrates the observations.
-It is not available yet: \code{method = "ExtBridge"} stops with a message.
+Extension of the method of Grall-Maës whose regular grid contains all the
+inspection times (Tito and Paroissin). The inspection times are multiples of
+\eqn{10^{-d}}, where \eqn{d} is the number of decimal places (argument
+\code{digits}), and the time step is the largest one such that every inspection
+time is a grid point:
+\deqn{h = 10^{-d}\, \mathrm{gcd}\big(10^d t_1, \dots, 10^d t_N\big), \qquad
+  t'_k = k\, h, \quad k = 0, \dots, t_N / h.}
+The grid is then covered as in the method "Bridge": every inspection time
+keeps its observed value, and the other grid points are drawn from the
+bridge between the last known value on the left and the next inspection.
+The reconstructed increments are independent with the law of \eqn{X_h},
+and the pseudo-sample contains all the observations. The grid has
+\eqn{t_N / h \ge N} steps, with equality if and only if the inspection
+times are regular; then the method returns the observations themselves.
+
+With \code{digits = NULL} (default), \eqn{d} is the smallest number of decimal
+places, between 0 and 6, such that all the inspection times are multiples
+of \eqn{10^{-d}}. If there is none (for instance times drawn with
+\code{runif()}), the times are rounded to 2 decimal places, with a warning; give
+\code{digits} to choose another rounding. When \code{digits} is given and some times
+have more decimal places, they are rounded to \code{digits} decimal places, with
+a warning; two times equal after rounding give an error. A warning is also
+given when the grid has more than \eqn{10^5} steps, since the resampling
+then takes time. The grid and the time step are computed for each
+trajectory.
 }
 
 \examples{
@@ -154,9 +184,15 @@ identical(y1, y2)
 ig_bridge(c(0, 1, 1, 2), c(0, 1, 2.5, 3), eta = 3)[[1]]
 try(ig_bridge(c(0, 2, 1.5, 3), c(0, 1, 2, 3), eta = 3))
 
-# 9. Errors: the first time must be 0, and "ExtBridge" is not available yet
+# 9. Method "ExtBridge": the times have 1 decimal place, the grid
+#    0, 0.1, ..., 22.5 contains all of them
+r3 <- ig_bridge(x, t, eta = 3, method = "ExtBridge")
+attr(r3, "teq")
+all(t \%in\% r3[[1]]$t)
+plot_bridge(r3)
+
+# Error: the first time must be 0
 try(ig_bridge(x, t + 1, eta = 3))
-try(ig_bridge(x, t, eta = 3, method = "ExtBridge"))
 \dontshow{if (requireNamespace("levysim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 10. Ten trajectories simulated with levysim, inspected more and more often
 plan <- levysim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)

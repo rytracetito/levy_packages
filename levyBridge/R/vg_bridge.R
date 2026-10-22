@@ -106,9 +106,15 @@
 #' set.seed(2); y2 <- vg_bridge(x, t, theta = 0.5, sigma = 1.5, nu = 2)[[1]]$X
 #' identical(y1, y2)
 #'
-#' # 8. Errors: the first time must be 0, and "ExtBridge" is not available yet
+#' # 8. Method "ExtBridge": the times have 1 decimal place, the grid
+#' #    0, 0.1, ..., 22.5 contains all of them
+#' r3 <- vg_bridge(x, t, theta = 0.5, sigma = 1.5, nu = 2, method = "ExtBridge")
+#' attr(r3, "teq")
+#' all(t %in% r3[[1]]$t)
+#' plot_bridge(r3)
+#'
+#' # Error: the first time must be 0
 #' try(vg_bridge(x, t + 1, theta = 0.5, sigma = 1.5, nu = 2))
-#' try(vg_bridge(x, t, theta = 0.5, sigma = 1.5, nu = 2, method = "ExtBridge"))
 #' @examplesIf requireNamespace("levysim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)
 #' # 9. Ten trajectories simulated with levysim, inspected more and more often
 #' plan <- levysim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
@@ -127,7 +133,7 @@
 #' # variance (sigma^2 + nu * theta^2) * teq
 #' c(mean(d$dx), 0.5 * d$teq[1], var(d$dx), (1.5^2 + 2 * 0.5^2) * d$teq[1])
 #' @export
-vg_bridge <- function(x, t = NULL, theta, sigma, nu, method = "Bridge") {
+vg_bridge <- function(x, t = NULL, theta, sigma, nu, method = "Bridge", digits = NULL) {
   check_par(theta = theta, positive = FALSE)
   check_par(sigma = sigma, nu = nu)
   psi <- (theta^2 + 2 * sigma^2 / nu) / sigma^4
@@ -138,5 +144,5 @@ vg_bridge <- function(x, t = NULL, theta, sigma, nu, method = "Bridge") {
     y <- stats::rbeta(1, (t - t_inf) / nu, (t_sup - t) / nu)
     x_inf + y * delta + sqrt(s * y * (1 - y)) * stats::rnorm(1)
   }
-  bridge_paths(x, t, method, draw, "variance-gamma", c(theta = unname(theta), sigma = unname(sigma), nu = unname(nu)))
+  bridge_paths(x, t, method, draw, "variance-gamma", c(theta = unname(theta), sigma = unname(sigma), nu = unname(nu)), digits = digits)
 }

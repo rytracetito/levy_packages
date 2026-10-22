@@ -1,0 +1,243 @@
+---
+title: "Méthode ExtBridge du package levyBridge"
+header-includes:
+  - \renewcommand{\contentsname}{Sommaire}
+  - \usepackage{booktabs}
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 2
+    number_sections: false
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 6.5, fig.align = "center")
+library(levyBridge)
+library(levysim)
+```
+
+# Préparation
+
+Installation des packages depuis GitHub : `levyBridge` pour les ponts et `levysim` pour simuler des trajectoires.
+
+```{r, eval = FALSE}
+remotes::install_github("rytracetito/levy_packages", subdir = "levyBridge")
+remotes::install_github("rytracetito/levy_packages", subdir = "levysim")
+```
+
+## Principe
+
+Une trajectoire est observée aux instants \(0 = t_0 < t_1 < \dots < t_N\). Les deux méthodes de `levyBridge` tirent, sur une grille régulière, des valeurs qui suivent exactement la loi du processus sachant les observations ; elles ne diffèrent que par la grille.
+
+* **Méthode `"Bridge"`** (Grall-Maës, 2012) : grille \(t'_k = k\, t_N / N\), avec autant de points que d'observations. Les instants d'inspection ne sont en général pas sur la grille.
+* **Méthode `"ExtBridge"`** : les instants sont des multiples de \(10^{-d}\), où \(d\) est le nombre de décimales, et le pas est le plus grand tel que tous les instants d'inspection soient sur la grille :
+\[
+h = 10^{-d}\, \mathrm{pgcd}\big(10^d t_1, \dots, 10^d t_N\big), \qquad t'_k = k\, h, \quad k = 0, \dots, t_N / h.
+\]
+Le pseudo-échantillon contient donc toutes les observations. La grille a \(t_N / h \ge N\) pas, avec égalité si et seulement si les inspections sont régulières : la méthode renvoie alors les observations elles-mêmes.
+
+Dans les deux cas, la grille est parcourue de gauche à droite : un point de grille égal à un instant d'inspection garde la valeur observée, les autres sont tirés dans le pont entre la dernière valeur connue à gauche et l'inspection suivante. Sous le modèle, les accroissements reconstruits sont indépendants, de la loi de \(X_h\).
+
+Le nombre de décimales \(d\) est trouvé automatiquement (argument `digits = NULL`, partie III).
+
+Paramètres utilisés :
+
+| Processus | Pont | Paramètres du processus | Paramètres du pont |
+|---|---|---|---|
+| Gamma | `gamma_bridge` | `a = 2`, `b = 3` | `a` |
+| Wiener | `wiener_bridge` | `mu = 0.5`, `sigma = 1.5` | `sigma` |
+| Inverse gaussien | `ig_bridge` | `mu = 1`, `eta = 3` | `eta` |
+| Variance-gamma | `vg_bridge` | `theta = 0.5`, `sigma = 1.5`, `nu = 2` | `theta`, `sigma`, `nu` |
+| Meixner | `meixner_bridge` | `a = 1`, `b = 0.3`, `d = 1.5`, `m = 0.2` | `a`, `d`, `m` |
+
+\newpage
+
+# I - Une trajectoire
+
+Une trajectoire observée à 11 instants irréguliers entre 0 et 22.5, donnés avec une décimale. Les écarts entre inspections, en dixièmes, ont pour pgcd 1 : le pas de la grille `"ExtBridge"` est \(h = 0.1\), soit 225 pas, contre 10 pas de 2.25 pour la méthode `"Bridge"`.
+
+```{r}
+t <- c(0, 1.2, 2, 3.8, 5.5, 7.1, 10.4, 12.9, 15.3, 18.7, 22.5)
+```
+
+Pour chaque processus, on simule la trajectoire, on applique la méthode `"ExtBridge"`, puis on vérifie que les valeurs observées sont retrouvées exactement sur la grille.
+
+## Gamma
+
+```{r}
+set.seed(1)
+x <- sim_gamma(t, a = 2, b = 3)
+r <- gamma_bridge(x, a = 2, method = "ExtBridge")
+r
+attr(r, "teq")
+nrow(r[[1]])
+all.equal(r[[1]]$X[match(t, r[[1]]$t)], x[, "X1"])
+plot_bridge(r)
+```
+
+## Wiener
+
+```{r}
+x <- sim_wiener(t, mu = 0.5, sigma = 1.5)
+r <- wiener_bridge(x, sigma = 1.5, method = "ExtBridge")
+attr(r, "teq")
+all.equal(r[[1]]$X[match(t, r[[1]]$t)], x[, "X1"])
+plot_bridge(r)
+```
+
+## Inverse gaussien
+
+```{r}
+x <- sim_ig(t, mu = 1, eta = 3)
+r <- ig_bridge(x, eta = 3, method = "ExtBridge")
+attr(r, "teq")
+all.equal(r[[1]]$X[match(t, r[[1]]$t)], x[, "X1"])
+plot_bridge(r)
+```
+
+## Variance-gamma
+
+```{r}
+x <- sim_vg(t, theta = 0.5, sigma = 1.5, nu = 2)
+r <- vg_bridge(x, theta = 0.5, sigma = 1.5, nu = 2, method = "ExtBridge")
+attr(r, "teq")
+all.equal(r[[1]]$X[match(t, r[[1]]$t)], x[, "X1"])
+plot_bridge(r)
+```
+
+## Meixner
+
+```{r}
+x <- sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2)
+r <- meixner_bridge(x, a = 1, d = 1.5, m = 0.2, method = "ExtBridge")
+attr(r, "teq")
+all.equal(r[[1]]$X[match(t, r[[1]]$t)], x[, "X1"])
+plot_bridge(r)
+```
+
+## Comparaison des deux méthodes
+
+Sur la trajectoire gamma, les deux méthodes donnent des grilles différentes : 10 pas de 2.25 pour `"Bridge"`, grille qui ne passe ici que par les inspections 0 et 22.5 ; 225 pas de 0.1 pour `"ExtBridge"`, grille qui passe par toutes les inspections.
+
+```{r}
+set.seed(1)
+x <- sim_gamma(t, a = 2, b = 3)
+r_b <- gamma_bridge(x, a = 2, method = "Bridge")
+r_e <- gamma_bridge(x, a = 2, method = "ExtBridge")
+data.frame(methode = c("Bridge", "ExtBridge"),
+           pas = c(attr(r_b, "teq"), attr(r_e, "teq")),
+           points = c(nrow(r_b[[1]]), nrow(r_e[[1]])),
+           inspections_sur_la_grille = c(sum(t %in% r_b[[1]]$t), sum(t %in% r_e[[1]]$t)))
+```
+
+Avec des inspections régulières, les deux méthodes renvoient les observations elles-mêmes :
+
+```{r}
+t_reg <- seq(0, 20, by = 2)
+x_reg <- sim_gamma(t_reg, a = 2, b = 3)
+r_reg <- gamma_bridge(x_reg, a = 2, method = "ExtBridge")
+all.equal(r_reg[[1]]$X, x_reg[, "X1"])
+all.equal(gamma_bridge(x_reg, a = 2, method = "Bridge")[[1]]$X, x_reg[, "X1"])
+attr(r_reg, "teq")
+```
+
+\newpage
+
+# II - Plusieurs trajectoires
+
+20 trajectoires inspectées entre 0 et 40, de plus en plus souvent, chacune avec ses propres instants (de 11 à 30 instants), arrondis à une décimale. La méthode `"ExtBridge"` construit une grille et un pas pour chaque trajectoire.
+
+```{r}
+plan <- inspection_times("increasing", n = 10:29, n_traj = 20, tmax = 40, digits = 1)
+```
+
+## Gamma
+
+```{r, fig.height = 4.2}
+set.seed(2)
+x <- sim_gamma(plan, a = 2, b = 3)
+r <- gamma_bridge(x, a = 2, method = "ExtBridge")
+r
+summary(attr(r, "teq"))
+head(increments(r))
+plot_bridge(r, trajectory = 1:4)
+```
+
+## Wiener
+
+```{r, fig.height = 4.2}
+r <- wiener_bridge(sim_wiener(plan, mu = 0.5, sigma = 1.5), sigma = 1.5, method = "ExtBridge")
+summary(attr(r, "teq"))
+plot_bridge(r, trajectory = 1:4)
+```
+
+## Inverse gaussien
+
+```{r, fig.height = 4.2}
+r <- ig_bridge(sim_ig(plan, mu = 1, eta = 3), eta = 3, method = "ExtBridge")
+summary(attr(r, "teq"))
+plot_bridge(r, trajectory = 1:4)
+```
+
+## Variance-gamma
+
+```{r, fig.height = 4.2}
+x <- sim_vg(plan, theta = 0.5, sigma = 1.5, nu = 2)
+r <- vg_bridge(x, theta = 0.5, sigma = 1.5, nu = 2, method = "ExtBridge")
+summary(attr(r, "teq"))
+plot_bridge(r, trajectory = 1:4)
+```
+
+## Meixner
+
+```{r, fig.height = 4.2}
+x <- sim_meixner(plan, a = 1, b = 0.3, d = 1.5, m = 0.2)
+r <- meixner_bridge(x, a = 1, d = 1.5, m = 0.2, method = "ExtBridge")
+summary(attr(r, "teq"))
+plot_bridge(r, trajectory = 1:4)
+```
+
+\newpage
+
+# III - Nombre de décimales et arrondi
+
+Avec `digits = NULL` (valeur par défaut), le nombre de décimales \(d\) est le plus petit, entre 0 et 6, tel que tous les instants soient des multiples de \(10^{-d}\). Ici les instants ont deux décimales et le pgcd des écarts, en centièmes, vaut 5 : le pas est 0.05.
+
+```{r}
+t2 <- c(0, 0.35, 1.2, 1.85, 2.5)
+x2 <- c(0, 0.3, 1.1, 1.4, 2.2)
+attr(gamma_bridge(x2, t2, a = 2, method = "ExtBridge"), "teq")
+```
+
+L'argument `digits` impose le nombre de décimales : les instants sont alors arrondis, avec un avertissement, et les instants arrondis sont ceux de la grille.
+
+```{r, warning = TRUE}
+r <- gamma_bridge(x2, t2, a = 2, method = "ExtBridge", digits = 1)
+attr(r, "teq")
+attr(r, "observed")[[1]]
+```
+
+Des instants tirés au hasard ne sont des multiples d'aucune puissance \(10^{-d}\) avec \(d \le 6\) : ils sont arrondis à deux décimales, avec un avertissement.
+
+```{r, warning = TRUE}
+set.seed(3)
+t3 <- c(0, sort(runif(6, 0, 10)))
+x3 <- sim_wiener(t3, mu = 0.5, sigma = 1.5)
+r <- wiener_bridge(x3, sigma = 1.5, method = "ExtBridge")
+round(t3, 4)
+attr(r, "observed")[[1]]$t
+attr(r, "teq")
+```
+
+Deux instants confondus après l'arrondi donnent une erreur : il faut alors augmenter `digits`.
+
+```{r}
+try(gamma_bridge(c(0, 0.5, 0.9), c(0, 1.01, 1.04), a = 2, method = "ExtBridge", digits = 1))
+```
+
+Enfin, une grille de plus de \(10^5\) pas donne un avertissement, car le rééchantillonnage devient long : par exemple des instants à trois décimales jusqu'à 400.
+
+```{r, warning = TRUE}
+r <- gamma_bridge(c(0, 0.4, 150), c(0, 1.234, 400), a = 2, method = "ExtBridge")
+nrow(r[[1]])
+```

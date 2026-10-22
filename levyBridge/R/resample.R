@@ -29,9 +29,7 @@ check_par <- function(..., positive = TRUE) {
 }
 
 check_method <- function(method) {
-  method <- match.arg(method, c("Bridge", "ExtBridge"))
-  if (method == "ExtBridge") stop("method \"ExtBridge\" is not available yet: use method = \"Bridge\"")
-  method
+  match.arg(method, c("Bridge", "ExtBridge"))
 }
 
 regular_grid <- function(t) {
@@ -45,12 +43,51 @@ regular_grid <- function(t) {
   g
 }
 
-resample <- function(t, x, draw) {
-  g <- regular_grid(t)
+gcd <- function(a, b) {
+  while (b > 0) {
+    r <- a %% b
+    a <- b
+    b <- r
+  }
+  a
+}
+
+places <- function(d) paste(d, if (d == 1) "decimal place" else "decimal places")
+
+on_grid <- function(t, d) all(abs(t * 10^d - round(t * 10^d)) <= 1e-6)
+
+ext_grid <- function(t, digits = NULL) {
+  if (is.null(digits)) {
+    d <- which(vapply(0:6, function(k) on_grid(t, k), TRUE))
+    if (length(d) > 0) {
+      digits <- d[1] - 1
+    } else {
+      digits <- 2
+      warning("the inspection times are not multiples of 10^-6: they are rounded to 2 decimal places ",
+              "(choose the number of decimal places with digits)", call. = FALSE)
+    }
+  } else {
+    if (!is.numeric(digits) || length(digits) != 1 || digits < 0 || digits != round(digits)) {
+      stop("digits must be a non-negative integer")
+    }
+    if (!on_grid(t, digits)) {
+      warning("the inspection times are rounded to ", places(digits), call. = FALSE)
+    }
+  }
+  ti <- round(t * 10^digits)
+  if (any(diff(ti) <= 0)) stop("two inspection times are equal after rounding to ", places(digits),
+                               ": increase digits")
+  h <- Reduce(gcd, diff(ti))
+  n <- ti[length(ti)] / h
+  if (n > 1e5) warning("the grid has ", n, " time steps: the resampling can be slow", call. = FALSE)
+  list(t = ti / 10^digits, grid = (0:n) * h / 10^digits, h = h / 10^digits)
+}
+
+resample <- function(t, x, draw, g = regular_grid(t)) {
   n <- length(g) - 1
   y <- numeric(n + 1)
   y[1] <- x[1]
-  y[n + 1] <- x[n + 1]
+  y[n + 1] <- x[length(x)]
   for (i in seq_len(n - 1) + 1) {
     k <- findInterval(g[i], t)
     if (t[k] == g[i]) {
@@ -69,7 +106,7 @@ resample <- function(t, x, draw) {
   data.frame(t = g, X = y)
 }
 
-bridge_paths <- function(x, t, method, draw, model, parameters, increasing = FALSE) {
+bridge_paths <- function(x, t, method, draw, model, parameters, increasing = FALSE, digits = NULL) {
   method <- check_method(method)
   traj <- as_trajectories(x, t)
   if (increasing) {
@@ -77,8 +114,15 @@ bridge_paths <- function(x, t, method, draw, model, parameters, increasing = FAL
       if (any(diff(traj[[k]]$x) < 0)) stop("trajectory ", k, ": the ", model, " process is increasing, the levels must not decrease")
     }
   }
-  paths <- lapply(traj, function(d) resample(d$t, d$x, draw))
-  teq <- vapply(traj, function(d) d$t[length(d$t)] / (length(d$t) - 1), 0)
+  if (method == "Bridge") {
+    paths <- lapply(traj, function(d) resample(d$t, d$x, draw))
+    teq <- vapply(traj, function(d) d$t[length(d$t)] / (length(d$t) - 1), 0)
+  } else {
+    grids <- lapply(traj, function(d) ext_grid(d$t, digits))
+    for (k in seq_along(traj)) traj[[k]]$t <- grids[[k]]$t
+    paths <- lapply(seq_along(traj), function(k) resample(traj[[k]]$t, traj[[k]]$x, draw, grids[[k]]$grid))
+    teq <- vapply(grids, function(g) g$h, 0)
+  }
   observed <- lapply(traj, function(d) data.frame(t = d$t, X = d$x))
   structure(paths, class = "levybridge", model = model, parameters = parameters, method = method,
             teq = teq, observed = observed)
@@ -97,7 +141,8 @@ bridge_paths <- function(x, t, method, draw, model, parameters, increasing = FAL
 #'
 #' @return A data frame with one row per increment and three columns:
 #'   * `id`: number of the trajectory (1, 2, ...);
-#'   * `teq`: time step of the regular grid of this trajectory, \eqn{t_N / N};
+#'   * `teq`: time step of the regular grid of this trajectory, \eqn{t_N / N}
+#'     for the method "Bridge" and \eqn{h} for the method "ExtBridge";
 #'   * `dx`: reconstructed increment \eqn{x'_i - x'_{i-1}}.
 #'
 #' @seealso [gamma_bridge()], [wiener_bridge()], [ig_bridge()], [vg_bridge()],

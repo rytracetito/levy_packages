@@ -57,7 +57,6 @@ test_that("invalid data, parameters and methods are refused with a clear message
   expect_error(gamma_bridge(x_obs, t_obs, a = -1), "positive")
   expect_error(vg_bridge(x_obs, t_obs, theta = "a", sigma = 1, nu = 1), "single finite number")
   expect_silent(vg_bridge(x_obs, t_obs, theta = -1, sigma = 1, nu = 1))
-  expect_error(gamma_bridge(x_obs, t_obs, a = 2, method = "ExtBridge"), "not available yet")
   expect_error(gamma_bridge(x_obs, t_obs, a = 2, method = "other"))
 })
 

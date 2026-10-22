@@ -114,6 +114,15 @@ x[, "X1"]
 head(traj_df(x, increments = TRUE))
 plot_traj(x)
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/rytracetito/levy_packages/tree/main/levysim}
+  \item \url{https://github.com/rytracetito/levy_packages}
+  \item Report bugs at \url{https://github.com/rytracetito/levy_packages/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Amedée Rytrace Tito \email{rytracetito5@gmail.com}
 

@@ -115,9 +115,15 @@
 #' ig_bridge(c(0, 1, 1, 2), c(0, 1, 2.5, 3), eta = 3)[[1]]
 #' try(ig_bridge(c(0, 2, 1.5, 3), c(0, 1, 2, 3), eta = 3))
 #'
-#' # 9. Errors: the first time must be 0, and "ExtBridge" is not available yet
+#' # 9. Method "ExtBridge": the times have 1 decimal place, the grid
+#' #    0, 0.1, ..., 22.5 contains all of them
+#' r3 <- ig_bridge(x, t, eta = 3, method = "ExtBridge")
+#' attr(r3, "teq")
+#' all(t %in% r3[[1]]$t)
+#' plot_bridge(r3)
+#'
+#' # Error: the first time must be 0
 #' try(ig_bridge(x, t + 1, eta = 3))
-#' try(ig_bridge(x, t, eta = 3, method = "ExtBridge"))
 #' @examplesIf requireNamespace("levysim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)
 #' # 10. Ten trajectories simulated with levysim, inspected more and more often
 #' plan <- levysim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
@@ -136,7 +142,7 @@
 #' # (mean mu * teq, variance mu^3 * teq / eta)
 #' c(mean(d$dx), 1 * d$teq[1], var(d$dx), d$teq[1] / 3)
 #' @export
-ig_bridge <- function(x, t = NULL, eta, method = "Bridge") {
+ig_bridge <- function(x, t = NULL, eta, method = "Bridge", digits = NULL) {
   check_par(eta = eta)
   draw <- function(t_inf, x_inf, t, t_sup, x_sup) {
     delta <- x_sup - x_inf
@@ -151,5 +157,5 @@ ig_bridge <- function(x, t = NULL, eta, method = "Bridge") {
     w <- if (stats::runif(1) <= tau1 * (1 + w1) / ((tau1 + tau2) * (m + w1))) w1 else w2
     x_inf + delta * w / (1 + w)
   }
-  bridge_paths(x, t, method, draw, "inverse Gaussian", c(eta = unname(eta)), increasing = TRUE)
+  bridge_paths(x, t, method, draw, "inverse Gaussian", c(eta = unname(eta)), increasing = TRUE, digits = digits)
 }

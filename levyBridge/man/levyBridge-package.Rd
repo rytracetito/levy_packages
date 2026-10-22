@@ -50,8 +50,16 @@ between the last known value before it (an observation or the previous
 grid point, already drawn) and the next observation. A grid point equal
 to an inspection time keeps the observed value;
 \item \code{"ExtBridge"}: extension of this method whose grid contains all the
-inspection times. Not available yet.
+inspection times. With \eqn{d} the number of decimal places of the times
+(argument \code{digits}, found automatically by default), the time step is
+\eqn{h = 10^{-d}\, \mathrm{gcd}(10^d t_1, \dots, 10^d t_N)}, the largest
+one such that every inspection time is a grid point. The grid is covered
+as for \code{"Bridge"}, so the pseudo-sample contains all the observations.
+The grid has \eqn{t_N / h \ge N} steps, with equality for regular times.
 }
+
+Both methods use the same bridges and the same algorithm: only the grid
+differs.
 }
 
 \section{Data}{
@@ -104,7 +112,7 @@ function;
 \item \strong{Simulation of the bridge}: done by the \verb{_bridge} function, with the
 estimated parameters;
 \item \strong{Pseudo-sample on a regular grid}: the result of the \verb{_bridge}
-function, with the method "Bridge";
+function, with the method "Bridge" or "ExtBridge";
 \item \strong{Choose a test} for an i.i.d. sample of the law of
 \eqn{X_{\Delta t_{eq}}}, for instance Kolmogorov-Smirnov, Cramér-von
 Mises or Anderson-Darling;
@@ -168,6 +176,15 @@ the modelling of financial information. \emph{Stochastic Processes and their
 Applications}, 121(4), 856-884.
 
 Tito, A. R. and Paroissin, C. (in preparation).
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/rytracetito/levy_packages/tree/main/levyBridge}
+  \item \url{https://github.com/rytracetito/levy_packages}
+  \item Report bugs at \url{https://github.com/rytracetito/levy_packages/issues}
+}
+
 }
 \author{
 \strong{Maintainer}: Amedée Rytrace Tito \email{rytracetito5@gmail.com}

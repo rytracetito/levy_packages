@@ -146,6 +146,15 @@ ig_mle(x)
 gamma_mle(x, ci = TRUE)
 \dontshow{\}) # examplesIf}
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/rytracetito/levy_packages/tree/main/levyfit}
+  \item \url{https://github.com/rytracetito/levy_packages}
+  \item Report bugs at \url{https://github.com/rytracetito/levy_packages/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Amedée Rytrace Tito \email{rytracetito5@gmail.com}
 

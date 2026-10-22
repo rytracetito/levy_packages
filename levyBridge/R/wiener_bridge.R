@@ -88,9 +88,15 @@
 #' set.seed(2); y2 <- wiener_bridge(x, t, sigma = 1.5)[[1]]$X
 #' identical(y1, y2)
 #'
-#' # 8. Errors: the first time must be 0, and "ExtBridge" is not available yet
+#' # 8. Method "ExtBridge": the times have 1 decimal place, the grid
+#' #    0, 0.1, ..., 22.5 contains all of them
+#' r3 <- wiener_bridge(x, t, sigma = 1.5, method = "ExtBridge")
+#' attr(r3, "teq")
+#' all(t %in% r3[[1]]$t)
+#' plot_bridge(r3)
+#'
+#' # Error: the first time must be 0
 #' try(wiener_bridge(x, t + 1, sigma = 1.5))
-#' try(wiener_bridge(x, t, sigma = 1.5, method = "ExtBridge"))
 #' @examplesIf requireNamespace("levysim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)
 #' # 9. Ten trajectories simulated with levysim, inspected more and more often
 #' plan <- levysim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
@@ -108,12 +114,12 @@
 #' # Under the model, the increments follow N(mu * teq, sigma^2 * teq)
 #' ks.test(d$dx, "pnorm", mean = 0.5 * d$teq[1], sd = 1.5 * sqrt(d$teq[1]))
 #' @export
-wiener_bridge <- function(x, t = NULL, sigma, method = "Bridge") {
+wiener_bridge <- function(x, t = NULL, sigma, method = "Bridge", digits = NULL) {
   check_par(sigma = sigma)
   draw <- function(t_inf, x_inf, t, t_sup, x_sup) {
     m <- x_inf + (x_sup - x_inf) * (t - t_inf) / (t_sup - t_inf)
     v <- sigma^2 * (t - t_inf) * (t_sup - t) / (t_sup - t_inf)
     stats::rnorm(1, m, sqrt(v))
   }
-  bridge_paths(x, t, method, draw, "Wiener", c(sigma = unname(sigma)))
+  bridge_paths(x, t, method, draw, "Wiener", c(sigma = unname(sigma)), digits = digits)
 }

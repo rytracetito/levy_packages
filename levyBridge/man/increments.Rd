@@ -14,7 +14,8 @@ increments(x)
 A data frame with one row per increment and three columns:
 \itemize{
 \item \code{id}: number of the trajectory (1, 2, ...);
-\item \code{teq}: time step of the regular grid of this trajectory, \eqn{t_N / N};
+\item \code{teq}: time step of the regular grid of this trajectory, \eqn{t_N / N}
+for the method "Bridge" and \eqn{h} for the method "ExtBridge";
 \item \code{dx}: reconstructed increment \eqn{x'_i - x'_{i-1}}.
 }
 }

@@ -123,9 +123,15 @@
 #' set.seed(2); y2 <- meixner_bridge(x, t, a = 1, d = 1.5, m = 0.2)[[1]]$X
 #' identical(y1, y2)
 #'
-#' # 8. Errors: the first time must be 0, and "ExtBridge" is not available yet
+#' # 8. Method "ExtBridge": the times have 1 decimal place, the grid
+#' #    0, 0.1, ..., 22.5 contains all of them
+#' r3 <- meixner_bridge(x, t, a = 1, d = 1.5, m = 0.2, method = "ExtBridge")
+#' attr(r3, "teq")
+#' all(t %in% r3[[1]]$t)
+#' plot_bridge(r3)
+#'
+#' # Error: the first time must be 0
 #' try(meixner_bridge(x, t + 1, a = 1, d = 1.5, m = 0.2))
-#' try(meixner_bridge(x, t, a = 1, d = 1.5, m = 0.2, method = "ExtBridge"))
 #' @examplesIf requireNamespace("levysim", quietly = TRUE)
 #' # 9. Ten trajectories simulated with levysim, inspected more and more often
 #' plan <- levysim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
@@ -144,14 +150,14 @@
 #' c(mean(d$dx), (0.2 + 1.5 * tan(0.15)) * d$teq[1])
 #' c(var(d$dx), 1.5 * d$teq[1] / (2 * cos(0.15)^2))
 #' @export
-meixner_bridge <- function(x, t = NULL, a, d, m, method = "Bridge") {
+meixner_bridge <- function(x, t = NULL, a, d, m, method = "Bridge", digits = NULL) {
   check_par(a = a, d = d)
   check_par(m = m, positive = FALSE)
   draw <- function(t_inf, x_inf, t, t_sup, x_sup) {
     z <- ((x_sup - x_inf) - m * (t_sup - t_inf)) / a
     x_inf + m * (t - t_inf) + a * rmeixner_bridge_y(d * (t - t_inf), d * (t_sup - t), z)
   }
-  bridge_paths(x, t, method, draw, "Meixner", c(a = unname(a), d = unname(d), m = unname(m)))
+  bridge_paths(x, t, method, draw, "Meixner", c(a = unname(a), d = unname(d), m = unname(m)), digits = digits)
 }
 
 lh <- function(alpha, y) {

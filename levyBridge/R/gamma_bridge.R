@@ -45,8 +45,31 @@
 #' set to that inspection time.
 #'
 #' @section Method "ExtBridge":
-#' Extension of the method of Grall-Maës that integrates the observations.
-#' It is not available yet: `method = "ExtBridge"` stops with a message.
+#' Extension of the method of Grall-Maës whose regular grid contains all the
+#' inspection times (Tito and Paroissin). The inspection times are multiples of
+#' \eqn{10^{-d}}, where \eqn{d} is the number of decimal places (argument
+#' `digits`), and the time step is the largest one such that every inspection
+#' time is a grid point:
+#' \deqn{h = 10^{-d}\, \mathrm{gcd}\big(10^d t_1, \dots, 10^d t_N\big), \qquad
+#'   t'_k = k\, h, \quad k = 0, \dots, t_N / h.}
+#' The grid is then covered as in the method "Bridge": every inspection time
+#' keeps its observed value, and the other grid points are drawn from the
+#' bridge between the last known value on the left and the next inspection.
+#' The reconstructed increments are independent with the law of \eqn{X_h},
+#' and the pseudo-sample contains all the observations. The grid has
+#' \eqn{t_N / h \ge N} steps, with equality if and only if the inspection
+#' times are regular; then the method returns the observations themselves.
+#'
+#' With `digits = NULL` (default), \eqn{d} is the smallest number of decimal
+#' places, between 0 and 6, such that all the inspection times are multiples
+#' of \eqn{10^{-d}}. If there is none (for instance times drawn with
+#' `runif()`), the times are rounded to 2 decimal places, with a warning; give
+#' `digits` to choose another rounding. When `digits` is given and some times
+#' have more decimal places, they are rounded to `digits` decimal places, with
+#' a warning; two times equal after rounding give an error. A warning is also
+#' given when the grid has more than \eqn{10^5} steps, since the resampling
+#' then takes time. The grid and the time step are computed for each
+#' trajectory.
 #'
 #' @param x Degradation levels of one trajectory; or a list of data frames,
 #'   one per trajectory, whose first column contains the inspection times and
@@ -57,13 +80,19 @@
 #' @param a Shape parameter of the gamma process, \eqn{a > 0}, for instance
 #'   estimated with the function `gamma_mle()` of the package `levyfit`.
 #' @param method `"Bridge"` (default) for the algorithm of Grall-Maës (2012),
-#'   or `"ExtBridge"` for its extension (not available yet).
+#'   with as many grid points as observations, or `"ExtBridge"` for its
+#'   extension, whose grid contains all the inspection times (see the section
+#'   Method "ExtBridge").
+#' @param digits Used only with `method = "ExtBridge"`: number of decimal
+#'   places of the inspection times, which sets the time step of the grid.
+#'   `NULL` (default) finds it automatically.
 #'
 #' @return An object of class `"levybridge"`: a list with one data frame per
 #'   trajectory, with columns `t` (regular grid) and `X` (resampled levels).
 #'   Its attributes are `model`, `parameters`, `method`, `teq` (time step of
 #'   the grid of each trajectory) and `observed` (the observed data, one data
-#'   frame per trajectory). Use [increments()] for the reconstructed
+#'   frame per trajectory; with the method "ExtBridge", the times are the
+#'   rounded ones when a rounding was needed). Use [increments()] for the reconstructed
 #'   increments and [plot_bridge()] to compare observed and resampled values.
 #'
 #' @references
@@ -134,11 +163,30 @@
 #' gamma_bridge(c(0, 1, 1, 2), c(0, 1, 2.5, 3), a = 2)[[1]]
 #' try(gamma_bridge(c(0, 2, 1.5, 3), c(0, 1, 2, 3), a = 2))
 #'
-#' # 9. Errors: the first time must be 0, and "ExtBridge" is not available yet
+#' # 9. Method "ExtBridge": the times have 1 decimal place, the gcd of the
+#' #    gaps is 0.1, and the grid 0, 0.1, ..., 22.5 contains all of them
+#' r3 <- gamma_bridge(x, t, a = 2, method = "ExtBridge")
+#' r3
+#' attr(r3, "teq")
+#' nrow(r3[[1]])
+#' all(t %in% r3[[1]]$t)
+#' plot_bridge(r3)
+#'
+#' # Times with 2 decimal places give a grid of step 0.01, here 0.05
+#' t4 <- c(0, 0.35, 1.2, 1.85, 2.5)
+#' x4 <- c(0, 0.3, 1.1, 1.4, 2.2)
+#' attr(gamma_bridge(x4, t4, a = 2, method = "ExtBridge"), "teq")
+#'
+#' # digits = 1 rounds the times to 1 decimal place, with a warning
+#' attr(gamma_bridge(x4, t4, a = 2, method = "ExtBridge", digits = 1), "teq")
+#'
+#' # Regular times: the grid is the inspection times, the data are unchanged
+#' gamma_bridge(c(0, 1.2, 2.9, 3.5), c(0, 2, 4, 6), a = 2, method = "ExtBridge")[[1]]
+#'
+#' # 10. Error: the first time must be 0
 #' try(gamma_bridge(x, t + 1, a = 2))
-#' try(gamma_bridge(x, t, a = 2, method = "ExtBridge"))
 #' @examplesIf requireNamespace("levysim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)
-#' # 10. Ten trajectories simulated with levysim, inspected more and more often
+#' # 11. Ten trajectories simulated with levysim, inspected more and more often
 #' plan <- levysim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
 #' sims <- levysim::sim_gamma(plan, a = 2, b = 3)
 #'
@@ -154,10 +202,10 @@
 #' # Under the model, the increments follow Gamma(a * teq, b)
 #' ks.test(d$dx, "pgamma", shape = 2 * d$teq[1], rate = 3)
 #' @export
-gamma_bridge <- function(x, t = NULL, a, method = "Bridge") {
+gamma_bridge <- function(x, t = NULL, a, method = "Bridge", digits = NULL) {
   check_par(a = a)
   draw <- function(t_inf, x_inf, t, t_sup, x_sup) {
     x_inf + (x_sup - x_inf) * stats::rbeta(1, a * (t - t_inf), a * (t_sup - t))
   }
-  bridge_paths(x, t, method, draw, "gamma", c(a = unname(a)), increasing = TRUE)
+  bridge_paths(x, t, method, draw, "gamma", c(a = unname(a)), increasing = TRUE, digits = digits)
 }

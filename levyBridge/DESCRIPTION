@@ -12,6 +12,8 @@ Description: Exact simulation of the bridges of Levy degradation processes
     algorithm of Grall-Maes (2012) <doi:10.1177/1748006X12462522>. The
     reconstructed increments are the basis of goodness-of-fit tests.
 License: GPL-3
+URL: https://github.com/rytracetito/levy_packages/tree/main/levyBridge, https://github.com/rytracetito/levy_packages
+BugReports: https://github.com/rytracetito/levy_packages/issues
 Encoding: UTF-8
 Language: en
 Roxygen: list(markdown = TRUE)
