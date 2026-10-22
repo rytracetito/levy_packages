@@ -50,7 +50,9 @@ statistics are kept, which gives both the p-value and the critical value.
 mean and variance.
 \itemize{
 \item \code{"AD"}, \code{"CvM"}, \code{"Lilliefors"}: Anderson-Darling, Cramer-von Mises and
-Lilliefors (Kolmogorov-Smirnov) tests (\code{nortest});
+Lilliefors tests (\code{nortest}). The Lilliefors test is the
+Kolmogorov-Smirnov test with estimated mean and variance: \code{"KS"} is also
+accepted for it, and the result is labelled \code{"Lilliefors"};
 \item \code{"SW"}: Shapiro-Wilk (\code{stats::shapiro.test});
 \item \code{"JB"}: Jarque-Bera (\code{tseries::jarque.bera.test});
 \item \code{"DAgostinoPearson"}: D'Agostino-Pearson omnibus test \eqn{K^2},

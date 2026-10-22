@@ -38,6 +38,9 @@ when the test failed;
 \item \code{message}: reason of a failure or of a certain rejection, \code{""}
 otherwise.
 }
+
+The column \code{message} is not printed when it is empty for all the tests;
+it stays in the data frame.
 }
 \description{
 Applies goodness-of-fit tests to a sample of increments of a Lévy process
@@ -72,6 +75,9 @@ test_adequation(dx, "HGP", test = c("KS", "AD"), alpha = 0.1, B = 100)
 
 # 3. Normal increments: tests of the Wiener model
 test_adequation(rnorm(50, mean = 1, sd = 2), "HWP")
+
+# "KS" is accepted for the Wiener model: it is the Lilliefors test
+test_adequation(rnorm(50, mean = 1, sd = 2), "HWP", test = c("KS", "AD"))
 
 # 4. The same normal increments are negative: the gamma model is rejected for sure
 test_adequation(rnorm(50), "HGP", test = c("KS", "AD"))

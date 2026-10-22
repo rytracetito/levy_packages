@@ -45,7 +45,9 @@ catalogue <- list(
 #' \eqn{N(\mu \Delta, \sigma^2 \Delta)}: tests of normality with estimated
 #' mean and variance.
 #' * `"AD"`, `"CvM"`, `"Lilliefors"`: Anderson-Darling, Cramer-von Mises and
-#'   Lilliefors (Kolmogorov-Smirnov) tests (`nortest`);
+#'   Lilliefors tests (`nortest`). The Lilliefors test is the
+#'   Kolmogorov-Smirnov test with estimated mean and variance: `"KS"` is also
+#'   accepted for it, and the result is labelled `"Lilliefors"`;
 #' * `"SW"`: Shapiro-Wilk (`stats::shapiro.test`);
 #' * `"JB"`: Jarque-Bera (`tseries::jarque.bera.test`);
 #' * `"DAgostinoPearson"`: D'Agostino-Pearson omnibus test \eqn{K^2},
@@ -175,10 +177,19 @@ model_name <- function(model) {
   names(catalogue)[k]
 }
 
+# Autres noms acceptés : pour la loi normale, le test de Kolmogorov-Smirnov à moyenne et variance estimées
+# est le test de Lilliefors
+aliases <- list(HWP = c(KS = "Lilliefors"))
+
 test_names <- function(test, model) {
   dispo <- catalogue[[model]]
   if (is.null(test)) return(dispo)
   if (!is.character(test) || length(test) == 0 || anyNA(test)) stop("test must be a vector of test names", call. = FALSE)
+  al <- aliases[[model]]
+  if (!is.null(al)) {
+    i <- match(tolower(test), tolower(names(al)))
+    test[!is.na(i)] <- al[i[!is.na(i)]]
+  }
   k <- match(tolower(test), tolower(dispo))
   if (anyNA(k)) {
     stop("unknown test for the model ", model, ": ", paste(test[is.na(k)], collapse = ", "),

@@ -122,3 +122,23 @@ test_that("MultiBridge gives one common grid and a test on all the trajectories"
   expect_equal(length(unique(table(r2$increments$id))), 1)
   expect_error(gof.levy(liste, "HGP", method = "MultiBridge", option = 3), "option must be 1 or 2")
 })
+
+test_that("KS is accepted for the Wiener model as the Lilliefors test", {
+  set.seed(9)
+  x <- rnorm(40)
+  r1 <- test_adequation(x, "HWP", test = c("KS", "AD"))
+  r2 <- test_adequation(x, "HWP", test = c("Lilliefors", "AD"))
+  expect_equal(r1, r2)
+  expect_equal(r1$test, c("Lilliefors", "AD"))
+  expect_equal(test_adequation(x, "HWP", test = c("ks", "Lilliefors"))$test, "Lilliefors")
+  expect_error(test_adequation(x, "HWP", test = "Watson"), "unknown test")
+})
+
+test_that("the empty message column is not printed but stays in the data frame", {
+  set.seed(10)
+  r <- test_adequation(rnorm(40), "HWP", test = c("SW", "AD"))
+  expect_true("message" %in% names(r))
+  expect_false(any(grepl("message", capture.output(print(r)))))
+  r2 <- test_adequation(c(1, 1, 1, 1, 1), "HWP", test = "SW")
+  expect_true(any(grepl("message", capture.output(print(r2)))))
+})

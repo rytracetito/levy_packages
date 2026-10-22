@@ -31,6 +31,9 @@
 #'   * `message`: reason of a failure or of a certain rejection, `""`
 #'     otherwise.
 #'
+#'   The column `message` is not printed when it is empty for all the tests;
+#'   it stays in the data frame.
+#'
 #' @details
 #' The null hypothesis is: the increments are i.i.d. with a law of the
 #' family of the model (parameters unknown). Under the gamma and inverse
@@ -63,6 +66,9 @@
 #' # 3. Normal increments: tests of the Wiener model
 #' test_adequation(rnorm(50, mean = 1, sd = 2), "HWP")
 #'
+#' # "KS" is accepted for the Wiener model: it is the Lilliefors test
+#' test_adequation(rnorm(50, mean = 1, sd = 2), "HWP", test = c("KS", "AD"))
+#'
 #' # 4. The same normal increments are negative: the gamma model is rejected for sure
 #' test_adequation(rnorm(50), "HGP", test = c("KS", "AD"))
 #'
@@ -93,9 +99,22 @@ test_adequation <- function(dx, model, test = NULL, alpha = 0.05, B = 200) {
 
   if (model %in% c("HGP", "InvGaus") && any(dx <= 0)) {
     msg <- paste0(sum(dx <= 0), " negative or zero increment(s): impossible under H0 (increasing process)")
-    return(do.call(rbind, lapply(test, function(nom) result_row(nom, NA_real_, 0, NA_real_, TRUE, msg))))
+    return(tests_table(do.call(rbind, lapply(test, function(nom) result_row(nom, NA_real_, 0, NA_real_, TRUE, msg)))))
   }
-  do.call(rbind, lapply(test, function(nom) one_test(dx, model, nom, alpha, B)))
+  tests_table(do.call(rbind, lapply(test, function(nom) one_test(dx, model, nom, alpha, B))))
+}
+
+tests_table <- function(d) {
+  rownames(d) <- NULL
+  structure(d, class = c("levygof_tests", "data.frame"))
+}
+
+#' @export
+print.levygof_tests <- function(x, ...) {
+  d <- as.data.frame(unclass(x), stringsAsFactors = FALSE)
+  if (all(d$message == "")) d$message <- NULL
+  print(d, ...)
+  invisible(x)
 }
 
 result_row <- function(test, stat, p, cv, reject, message) {
