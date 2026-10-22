@@ -183,7 +183,18 @@ r_e <- gof.levy(xs, "HGP", test = c("VGE", "AD"), method = "ExtBridge", B = 100)
 r_e
 ```
 
-Avec `"MultiBridge"`, toutes les trajectoires sont placées sur une grille commune de pas \(h = \sum_i t_{i,max} / \sum_i m_i\) : tests par trajectoire et test sur l'ensemble.
+Avec `"MultiBridge"`, toutes les trajectoires sont placées sur une grille commune \(t'_k = k h\), de pas
+
+\[
+h = \frac{t_{1,max} + \dots + t_{n,max}}{m_1 + \dots + m_n},
+\]
+
+la durée totale observée divisée par le nombre total d'accroissements (pour une seule trajectoire, \(h = t_N / N\) : c'est la méthode `"Bridge"`). La grille ne contient pas forcément les instants d'inspection. Elle est parcourue de gauche à droite : un point de grille égal à une inspection garde la valeur observée, les autres sont tirés dans le pont du processus entre la dernière valeur connue à gauche et l'inspection suivante, avec les paramètres estimés par `levyfit`.
+
+* **Option 1** (par défaut, recommandée) : chaque trajectoire \(i\) est rééchantillonnée sur les points \(k h \le t_{i,max}\) ; le petit bout entre le dernier point de grille et \(t_{i,max}\) n'est pas utilisé.
+* **Option 2** : toutes les trajectoires vont jusqu'au dernier instant global \(\max_i t_{i,max}\). Jusqu'à \(t_{i,max}\), comme l'option 1 ; au-delà, il n'y a plus d'observation ni de pont : chaque valeur est la précédente plus un accroissement du processus tiré avec **tous** les paramètres estimés (ici \(a\) et \(b\)), en partant de la dernière observation. Ces valeurs ne viennent pas des données et font baisser la puissance.
+
+Tous les pseudo-accroissements ont la loi de \(X_h\) sous \(H_0\) : tests par trajectoire et test sur l'ensemble (groupe `all`).
 
 ```{r}
 set.seed(8)

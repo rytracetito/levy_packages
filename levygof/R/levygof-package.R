@@ -20,7 +20,9 @@
 #'    step common to all the trajectories) or `"MultiBridge"` (one grid of
 #'    Grall-Maës type common to all the trajectories). With several
 #'    trajectories, `"ExtBridge"` and `"MultiBridge"` give one i.i.d. sample
-#'    for all the trajectories together.
+#'    for all the trajectories together. The grid, the step and the drawing of
+#'    the bridge of each method are detailed in the section Resampling methods
+#'    of [gof.levy()].
 #' 5. **Choose a test** for an i.i.d. sample of the law of the increments,
 #'    see [tests_disponibles()].
 #' 6. **Apply the test** to the reconstructed increments.

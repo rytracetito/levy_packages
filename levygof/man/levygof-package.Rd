@@ -27,7 +27,9 @@ trajectory), \code{"ExtBridge"} (grid containing all the inspection times,
 step common to all the trajectories) or \code{"MultiBridge"} (one grid of
 Grall-Maës type common to all the trajectories). With several
 trajectories, \code{"ExtBridge"} and \code{"MultiBridge"} give one i.i.d. sample
-for all the trajectories together.
+for all the trajectories together. The grid, the step and the drawing of
+the bridge of each method are detailed in the section Resampling methods
+of \code{\link[=gof.levy]{gof.levy()}}.
 \item \strong{Choose a test} for an i.i.d. sample of the law of the increments,
 see \code{\link[=tests_disponibles]{tests_disponibles()}}.
 \item \strong{Apply the test} to the reconstructed increments.

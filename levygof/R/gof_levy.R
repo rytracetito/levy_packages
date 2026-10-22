@@ -39,7 +39,7 @@
 #'   all the trajectories up to the last inspection time over all of them, the
 #'   shorter ones being extended by increments of the process drawn with the
 #'   estimated parameters (these values do not come from the data and lower
-#'   the power; option 1 is recommended).
+#'   the power; option 1 is recommended). See the section Resampling methods.
 #' @param alpha Level of the tests, strictly between 0 and 1.
 #' @param B Number of bootstrap replications of the tests that use a
 #'   parametric bootstrap.
@@ -83,6 +83,71 @@
 #'
 #' The tests are tests for i.i.d. samples with estimated parameters, see
 #' [test_adequation()] and [tests_disponibles()].
+#'
+#' @section Resampling methods:
+#' With irregular inspections, each trajectory is resampled on a regular grid
+#' by the package `levyBridge`, with the parameters estimated by `levyfit`. The
+#' three methods differ only by the grid. In all of them, the grid is covered
+#' from left to right: a grid point equal to an inspection time keeps the
+#' observed value, and any other grid point is drawn from the bridge of the
+#' process between the last known value on its left (an inspection, or the
+#' previous grid point, already drawn) and the next inspection. By the Markov
+#' property, the resampled values have the law of the process given the
+#' observations: under H0 and with the true parameters, the reconstructed
+#' increments are i.i.d. with the law of \eqn{X_h}, \eqn{h} being the step of
+#' the grid.
+#'
+#' **`"Bridge"`** (Grall-Maës, 2012). Each trajectory \eqn{i} has its own grid
+#' \eqn{t'_k = k\, t_{i,max} / m_i}, \eqn{k = 0, \dots, m_i}, where
+#' \eqn{t_{i,max}} is its last inspection time and \eqn{m_i} its number of
+#' increments: as many points as observations. The steps of two trajectories
+#' are generally different, so their reconstructed increments have different
+#' laws: the trajectories are tested one by one.
+#'
+#' **`"ExtBridge"`**. The inspection times are multiples of \eqn{10^{-d}}
+#' (\eqn{d} decimal places) and the step is
+#' \eqn{h = 10^{-d} \mathrm{gcd}(10^d g)}, the gcd being taken over all the
+#' gaps \eqn{g} between consecutive inspections of all the trajectories: the
+#' largest step such that every inspection time of every trajectory is a
+#' grid point. All the observations are kept on the grid, and all the
+#' trajectories have the same step: one test on all of them (group `"all"`)
+#' in addition to the tests per trajectory. The grid can have many more
+#' points than observations.
+#'
+#' **`"MultiBridge"`**. One grid of Grall-Maës type common to all the
+#' trajectories, of step
+#' \deqn{h = \frac{t_{1,max} + \dots + t_{n,max}}{m_1 + \dots + m_n},}
+#' the total observed duration divided by the total number of increments; the
+#' number of reconstructed increments is then about the number of observed
+#' increments. For one trajectory, \eqn{h = t_N / N}: "MultiBridge" is the
+#' method "Bridge". The grid \eqn{t'_k = k h} does not necessarily contain
+#' the inspection times. All the trajectories have the same step: one test on
+#' all of them (group `"all"`) in addition to the tests per trajectory.
+#' * **`option = 1`** (default, recommended): trajectory \eqn{i} is resampled
+#'   on the grid points \eqn{k h \le t_{i,max}}, each one drawn from the bridge
+#'   as described above. The end of the trajectory, between its last grid
+#'   point and \eqn{t_{i,max}}, is not used. A trajectory shorter than \eqn{h}
+#'   gives no reconstructed increment (with a warning).
+#' * **`option = 2`**: all the trajectories are resampled up to the last
+#'   inspection time over all of them, \eqn{\max_i t_{i,max}}, so that they all
+#'   have the same number of grid points. Up to \eqn{t_{i,max}}, as in the
+#'   option 1; beyond, there is no observation left and no bridge: each new grid value
+#'   is the previous one plus an increment of the process drawn with **all**
+#'   the parameters estimated by `levyfit` (for instance the rate \eqn{b} of
+#'   the gamma process in addition to the shape \eqn{a}), the first one
+#'   starting from the last observation \eqn{x_{i,N}}. Under H0 with the true
+#'   parameters the pooled sample is still i.i.d., but the extended values do
+#'   not come from the data: they follow the fitted null model by construction
+#'   and dilute the information of the observations, which lowers the power,
+#'   all the more as the trajectories have different durations. Use it only for
+#'   trajectories of similar durations.
+#'
+#' **Which method?** One trajectory: `"Bridge"`, or `"ExtBridge"` to keep all
+#' the observations on the grid. Several trajectories with one test on all of
+#' them: `"MultiBridge"` (about as many points as observations) or
+#' `"ExtBridge"` (grid containing all the inspection times, often many more
+#' points). See also [levyBridge::gamma_bridge()] for the details of each
+#' bridge.
 #'
 #' @section Several trajectories:
 #' Each trajectory is tested alone (group `1`, `2`, ...). When all the
