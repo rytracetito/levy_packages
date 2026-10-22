@@ -142,3 +142,10 @@ test_that("the empty message column is not printed but stays in the data frame",
   r2 <- test_adequation(c(1, 1, 1, 1, 1), "HWP", test = "SW")
   expect_true(any(grepl("message", capture.output(print(r2)))))
 })
+
+test_that("the VG density stays finite for large orders 1/nu (near the Brownian limit)", {
+  for (nu in c(0.01, 0.0357, 1)) {
+    d <- safe_density(function(x) dvg_log(x, 0.3, 1.5, nu))
+    expect_equal(integrate(d, -Inf, 0)$value + integrate(d, 0, Inf)$value, 1, tolerance = 1e-6)
+  }
+})

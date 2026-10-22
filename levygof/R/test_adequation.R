@@ -79,9 +79,9 @@
 #' \donttest{
 #' # 6. Variance-gamma model (slower: estimation and numerical integration
 #' #    in each bootstrap replication)
-#' g <- rgamma(60, shape = 1 / 0.5, scale = 0.5)
-#' dx_vg <- 0.5 * g + 1.5 * sqrt(g) * rnorm(60)
-#' test_adequation(dx_vg, "VG", test = "AD", B = 50)
+#' g <- rgamma(100, shape = 1, scale = 1)
+#' dx_vg <- 0.5 * g + 1.5 * sqrt(g) * rnorm(100)
+#' test_adequation(dx_vg, "VG", test = "AD", B = 30)
 #'
 #' # 7. Meixner model (a = 1, b = 1, d = 0.5, m = 0.2)
 #' set.seed(1)

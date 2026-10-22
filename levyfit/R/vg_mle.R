@@ -68,15 +68,26 @@
 #'    \deqn{q(a) = \sum_j \big[\Delta t_j l_j - e^+_j + \Delta t_j \ln a + \Delta t_j - \Delta t_j \psi(a \Delta t_j)\big]}
 #'    (\eqn{\psi} the digamma function) is strictly decreasing, from
 #'    \eqn{+\infty} to a negative limit: its unique root gives \eqn{\nu}.
-#' 4. Repeat until the relative change of \eqn{\ell} is below \eqn{10^{-10}}.
+#' 4. Repeat (at least 10 iterations) until the EM slows down, that is until
+#'    an iteration increases \eqn{\ell} by less than \eqn{10^{-6} (|\ell| + 1)}.
 #'
-#' Each iteration increases the likelihood (Dempster, Laird and Rubin, 1977).
-#' The EM limit is then refined by L-BFGS-B on
-#' \eqn{(\theta, \ln \sigma, \ln \nu)}; if this refinement fails or does not
-#' increase the likelihood (for instance with data on a very small scale), the
-#' EM limit is returned. Starting values: the Wiener MLE for
+#' Each iteration increases the likelihood (Dempster, Laird and Rubin, 1977),
+#' but the EM converges slowly when \eqn{\nu} is small (near the Brownian
+#' limit), where it could need thousands of iterations. The maximization is
+#' therefore finished by L-BFGS-B on \eqn{(\theta, \ln \sigma, \ln \nu)},
+#' started at the last EM iterate, with a tight convergence tolerance: the
+#' likelihood and the MLE are the same, much faster. If this refinement fails
+#' or does not increase the likelihood (for instance with data on a very small
+#' scale), the EM iterate is returned. Starting values: the Wiener MLE for
 #' \eqn{(\theta, \sigma)} and \eqn{\nu = T / m}. The algorithm stops at the
-#' Brownian limit when \eqn{\nu < \max_j \Delta t_j / 300}.
+#' Brownian limit when \eqn{\nu < \max_j \Delta t_j / 300}, during the EM or
+#' at the end of L-BFGS-B.
+#'
+#' The Bessel functions \eqn{K_p(z)} of the likelihood and of the GIG moments
+#' are computed on the log scale; when `besselK()` overflows (large order
+#' \eqn{p}, that is small \eqn{\nu}, and small \eqn{z}), \eqn{\ln K_p(z)} is
+#' computed exactly by the upward recurrence on the order
+#' \eqn{K_{p+1}(z) = K_{p-1}(z) + (2p/z) K_p(z)}.
 #'
 #' @inheritSection wiener_mle Confidence intervals and estimation failures
 #'
@@ -172,9 +183,10 @@ vg_est <- function(x, t = NULL) {
     ll_new <- vg_loglik(dx, dt, theta, sigma, nu)
     if (!is.finite(ll_new)) no_mle(brownian)
     if (ll_new - ll < -1e-8 * abs(ll)) warning("the log-likelihood decreased: numerical problem")
-    conv <- abs(ll_new - ll) <= 1e-10 * (abs(ll) + 1e-10)
+    # l'EM s'arrête dès qu'il ralentit : L-BFGS-B termine la maximisation, bien plus vite près de nu = 0
+    slow <- it >= 10 && ll_new - ll <= 1e-6 * (abs(ll) + 1)
     ll <- ll_new
-    if (conv) break
+    if (slow) break
   }
 
   nll <- function(p) {
@@ -189,6 +201,7 @@ vg_est <- function(x, t = NULL) {
                         control = list(factr = 1, maxit = 1000)),
                   error = function(e) NULL)
   p <- if (!is.null(opt) && opt$value <= nll(p_em)) opt$par else p_em
+  if (p[3] <= lower[3] + 1e-6) no_mle(brownian)
 
   if (all(dx > 0)) {
     g <- gamma_fit(dt, dx)
@@ -210,6 +223,21 @@ vg_loglik <- function(dx, dt, theta, sigma, nu) {
         (lam - 0.5) * (log(abs(dx)) - log(cc)) + log_besselKx(z, lam - 0.5) - abs(dx) * d / sigma^2)
 }
 
+# log(K_p(z) exp(z)) par récurrence ascendante sur l'ordre, en logarithmes :
+# K_{v+1}(z) = K_{v-1}(z) + (2 v / z) K_v(z), à partir de l'ordre fractionnaire v0 = p - floor(p)
+log_besselKx_rec <- function(z, p) {
+  n0 <- floor(p)
+  v0 <- p - n0
+  l <- log(besselK(z, v0, expon.scaled = TRUE))
+  r <- besselK(z, v0 + 1, expon.scaled = TRUE) / besselK(z, v0, expon.scaled = TRUE)
+  for (k in seq_len(max(n0))) {
+    i <- n0 >= k
+    l[i] <- l[i] + log(r[i])
+    r <- 1 / r + 2 * (v0 + k) / z
+  }
+  l
+}
+
 log_besselKx <- function(z, p) {
   n <- max(length(z), length(p))
   z <- rep_len(z, n)
@@ -221,6 +249,9 @@ log_besselKx <- function(z, p) {
     s <- sqrt(1 + (z / p)^2)
     0.5 * log(pi / (2 * p)) - p * log((z / p) / (1 + s)) - 0.5 * log(s) - p^2 / (z + p * s)
   }
+  # débordement de besselK (grand ordre, petit z) : récurrence exacte sur l'ordre
+  bad <- which(!is.finite(out) & is.finite(z) & z > 0 & p <= 1e4)
+  if (length(bad) > 0) out[bad] <- log_besselKx_rec(z[bad], p[bad])
   for (i in which(!is.finite(out) & is.finite(z) & z > 0 & is.finite(p))) {
     out[i] <- if (p[i] > 1e4) debye(z[i], p[i]) else {
       g <- function(u) -2 * z[i] * sinh(u / 2)^2 + p[i] * u + log1p(exp(-2 * p[i] * u)) - log(2)

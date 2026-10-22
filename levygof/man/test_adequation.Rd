@@ -89,9 +89,9 @@ test_adequation(dx_ig, "invgaus", test = c("KS", "AD", "VGE_ratio"), B = 100)
 \donttest{
 # 6. Variance-gamma model (slower: estimation and numerical integration
 #    in each bootstrap replication)
-g <- rgamma(60, shape = 1 / 0.5, scale = 0.5)
-dx_vg <- 0.5 * g + 1.5 * sqrt(g) * rnorm(60)
-test_adequation(dx_vg, "VG", test = "AD", B = 50)
+g <- rgamma(100, shape = 1, scale = 1)
+dx_vg <- 0.5 * g + 1.5 * sqrt(g) * rnorm(100)
+test_adequation(dx_vg, "VG", test = "AD", B = 30)
 
 # 7. Meixner model (a = 1, b = 1, d = 0.5, m = 0.2)
 set.seed(1)
@@ -153,7 +153,7 @@ normality. Empirical results for the distributions of \eqn{b_2} and
 
 Allison, J. S., Betsch, S., Ebner, B. and Visagie, I. J. H. (2022). On
 testing the adequacy of the inverse Gaussian distribution. \emph{Mathematics},
-10(3), 350. \url{https://www.mdpi.com/2227-7390/10/3/350} (tests ABEV1,
+10(3), 350. \doi{10.3390/math10030350} (tests ABEV1,
 ABEV2, KS, CvM and AD of \code{gofIG})
 
 Henze, N. and Klar, B. (2002). Goodness-of-fit tests for the inverse

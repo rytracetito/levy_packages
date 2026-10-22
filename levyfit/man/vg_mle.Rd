@@ -107,16 +107,27 @@ parameters.
 \deqn{q(a) = \sum_j \big[\Delta t_j l_j - e^+_j + \Delta t_j \ln a + \Delta t_j - \Delta t_j \psi(a \Delta t_j)\big]}
 (\eqn{\psi} the digamma function) is strictly decreasing, from
 \eqn{+\infty} to a negative limit: its unique root gives \eqn{\nu}.
-\item Repeat until the relative change of \eqn{\ell} is below \eqn{10^{-10}}.
+\item Repeat (at least 10 iterations) until the EM slows down, that is until
+an iteration increases \eqn{\ell} by less than \eqn{10^{-6} (|\ell| + 1)}.
 }
 
-Each iteration increases the likelihood (Dempster, Laird and Rubin, 1977).
-The EM limit is then refined by L-BFGS-B on
-\eqn{(\theta, \ln \sigma, \ln \nu)}; if this refinement fails or does not
-increase the likelihood (for instance with data on a very small scale), the
-EM limit is returned. Starting values: the Wiener MLE for
+Each iteration increases the likelihood (Dempster, Laird and Rubin, 1977),
+but the EM converges slowly when \eqn{\nu} is small (near the Brownian
+limit), where it could need thousands of iterations. The maximization is
+therefore finished by L-BFGS-B on \eqn{(\theta, \ln \sigma, \ln \nu)},
+started at the last EM iterate, with a tight convergence tolerance: the
+likelihood and the MLE are the same, much faster. If this refinement fails
+or does not increase the likelihood (for instance with data on a very small
+scale), the EM iterate is returned. Starting values: the Wiener MLE for
 \eqn{(\theta, \sigma)} and \eqn{\nu = T / m}. The algorithm stops at the
-Brownian limit when \eqn{\nu < \max_j \Delta t_j / 300}.
+Brownian limit when \eqn{\nu < \max_j \Delta t_j / 300}, during the EM or
+at the end of L-BFGS-B.
+
+The Bessel functions \eqn{K_p(z)} of the likelihood and of the GIG moments
+are computed on the log scale; when \code{besselK()} overflows (large order
+\eqn{p}, that is small \eqn{\nu}, and small \eqn{z}), \eqn{\ln K_p(z)} is
+computed exactly by the upward recurrence on the order
+\eqn{K_{p+1}(z) = K_{p-1}(z) + (2p/z) K_p(z)}.
 }
 
 \section{Confidence intervals and estimation failures}{

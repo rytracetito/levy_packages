@@ -246,9 +246,10 @@
 #' ig <- c(0, cumsum(statmod::rinvgauss(30, mean = diff(t2), shape = 3 * diff(t2)^2)))
 #' gof.levy(data.frame(t2, ig), "InvGaus", test = c("KS", "AD", "HK2"), B = 100)
 #'
-#' g <- rgamma(30, shape = diff(t2) / 0.2, scale = 0.2)
-#' vg <- c(0, cumsum(0.5 * g + 1.5 * sqrt(g) * rnorm(30)))
-#' gof.levy(data.frame(t2, vg), "VG", test = "AD", B = 50)
+#' t5 <- c(0, cumsum(round(runif(60, 0.5, 3.5), 1)))
+#' g <- rgamma(60, shape = diff(t5), scale = 1)
+#' vg <- c(0, cumsum(0.5 * g + 1.5 * sqrt(g) * rnorm(60)))
+#' gof.levy(data.frame(t5, vg), "VG", test = "AD", B = 50)
 #'
 #' # 9. Meixner model (a = 1, b = 1, d = 0.5, m = 0.2), regular and irregular
 #' #    inspections; with few increments the maximum likelihood estimator of

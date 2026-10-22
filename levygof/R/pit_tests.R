@@ -37,13 +37,66 @@ pit_numeric <- function(y, dens, split = NULL) {
   list(F = F / (F + S), S = S / (F + S))
 }
 
+# log(K_p(z) exp(z)) par récurrence ascendante sur l'ordre, en logarithmes :
+# K_{v+1}(z) = K_{v-1}(z) + (2 v / z) K_v(z), à partir de l'ordre fractionnaire v0 = p - floor(p)
+log_besselKx_rec <- function(z, p) {
+  n0 <- floor(p)
+  v0 <- p - n0
+  l <- log(besselK(z, v0, expon.scaled = TRUE))
+  r <- besselK(z, v0 + 1, expon.scaled = TRUE) / besselK(z, v0, expon.scaled = TRUE)
+  for (k in seq_len(max(n0))) {
+    i <- n0 >= k
+    l[i] <- l[i] + log(r[i])
+    r <- 1 / r + 2 * (v0 + k) / z
+  }
+  l
+}
+
+# log(K_p(z) exp(z)) sans dépassement de capacité (même fonction que dans levyfit) : besselK si possible,
+# sinon développement de Debye (grand ordre) ou intégrale de la représentation K_p(z) = int exp(-z cosh u) cosh(pu) du
+log_besselKx <- function(z, p) {
+  n <- max(length(z), length(p))
+  z <- rep_len(z, n)
+  p <- rep_len(abs(p), n)
+  out <- rep(NA_real_, n)
+  small <- p <= 1e4
+  out[small] <- log(besselK(z[small], p[small], expon.scaled = TRUE))
+  debye <- function(z, p) {
+    s <- sqrt(1 + (z / p)^2)
+    0.5 * log(pi / (2 * p)) - p * log((z / p) / (1 + s)) - 0.5 * log(s) - p^2 / (z + p * s)
+  }
+  # débordement de besselK (grand ordre, petit z) : récurrence exacte sur l'ordre
+  bad <- which(!is.finite(out) & is.finite(z) & z > 0 & p <= 1e4)
+  if (length(bad) > 0) out[bad] <- log_besselKx_rec(z[bad], p[bad])
+  for (i in which(!is.finite(out) & is.finite(z) & z > 0 & is.finite(p))) {
+    out[i] <- if (p[i] > 1e4) debye(z[i], p[i]) else {
+      g <- function(u) -2 * z[i] * sinh(u / 2)^2 + p[i] * u + log1p(exp(-2 * p[i] * u)) - log(2)
+      opt <- stats::optimize(g, c(0, asinh(p[i] / z[i]) + 1), maximum = TRUE, tol = 1e-12)
+      w <- 12 / sqrt(z[i] * cosh(opt$maximum))
+      I <- stats::integrate(function(u) exp(g(u) - opt$objective), max(0, opt$maximum - w), opt$maximum + w,
+                            rel.tol = 1e-12, subdivisions = 1000, stop.on.error = FALSE)$value
+      opt$objective + log(I)
+    }
+  }
+  out
+}
+
 dvg_log <- function(x, theta, sigma, nu) {
   lam <- 1 / nu
   cc <- sqrt(theta^2 + 2 * sigma^2 / nu)
   ax <- pmax(abs(x), 1e-300)
   z <- cc * ax / sigma^2
   log(2) + theta * x / sigma^2 - 0.5 * log(2 * pi) - log(sigma) - lam * log(nu) - lgamma(lam) +
-    (lam - 0.5) * (log(ax) - log(cc)) + log(besselK(z, abs(lam - 0.5), expon.scaled = TRUE)) - z
+    (lam - 0.5) * (log(ax) - log(cc)) + log_besselKx(z, lam - 0.5) - z
+}
+
+# Densité dont les valeurs non finies (sous-dépassement extrême) sont mises à 0, pour l'intégration numérique
+safe_density <- function(logdens) {
+  function(x) {
+    v <- exp(logdens(x))
+    v[!is.finite(v)] <- 0
+    v
+  }
 }
 
 dmeixner_log <- function(x, a, b, d, m) {
@@ -61,7 +114,7 @@ families <- list(
       if (anyNA(p)) stop(attr(p, "message"), call. = FALSE)
       p
     },
-    pit = function(y, p) pit_numeric(y, function(x) exp(dvg_log(x, p[["theta"]], p[["sigma"]], p[["nu"]])), split = 0),
+    pit = function(y, p) pit_numeric(y, safe_density(function(x) dvg_log(x, p[["theta"]], p[["sigma"]], p[["nu"]])), split = 0),
     sim = function(n, p) {
       g <- stats::rgamma(n, 1 / p[["nu"]], scale = p[["nu"]])
       p[["theta"]] * g + p[["sigma"]] * sqrt(g) * stats::rnorm(n)
@@ -72,7 +125,7 @@ families <- list(
       if (anyNA(p)) stop(attr(p, "message"), call. = FALSE)
       p
     },
-    pit = function(y, p) pit_numeric(y, function(x) exp(dmeixner_log(x, p[["a"]], p[["b"]], p[["d"]], p[["m"]]))),
+    pit = function(y, p) pit_numeric(y, safe_density(function(x) dmeixner_log(x, p[["a"]], p[["b"]], p[["d"]], p[["m"]]))),
     sim = function(n, p) {
       gen <- Runuran::pinvd.new(Runuran::udmeixner(alpha = p[["a"]], beta = p[["b"]], delta = p[["d"]], mu = p[["m"]]))
       Runuran::ur(gen, n)
