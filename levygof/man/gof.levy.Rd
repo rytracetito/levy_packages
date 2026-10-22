@@ -4,7 +4,15 @@
 \alias{gof.levy}
 \title{Goodness-of-fit test of a Lévy degradation process}
 \usage{
-gof.levy(data, model, test = NULL, method = "Bridge", alpha = 0.05, B = 200)
+gof.levy(
+  data,
+  model,
+  test = NULL,
+  method = "Bridge",
+  option = 1,
+  alpha = 0.05,
+  B = 200
+)
 }
 \arguments{
 \item{data}{The observed trajectories, in one of the formats of the
@@ -31,10 +39,23 @@ or \code{"Meixner"} (Meixner process). Upper or lower case does not matter.}
 tests of the model, see \code{\link[=tests_disponibles]{tests_disponibles()}}.}
 
 \item{method}{Resampling method of the bridges, used with irregular
-inspections only: \code{"Bridge"} (default, Grall-Maës, 2012: regular grid
-with as many points as observations) or \code{"ExtBridge"} (regular grid
-containing all the inspection times, with a time step common to all the
-trajectories), see \code{\link[levyBridge:gamma_bridge]{levyBridge::gamma_bridge()}}.}
+inspections only (see \code{\link[levyBridge:gamma_bridge]{levyBridge::gamma_bridge()}}):
+\itemize{
+\item \code{"Bridge"} (default, Grall-Maës, 2012): one regular grid per
+trajectory, with as many points as observations;
+\item \code{"ExtBridge"}: regular grid containing all the inspection times, with a
+time step common to all the trajectories;
+\item \code{"MultiBridge"}: one regular grid common to all the trajectories, of
+step (total observed duration) / (total number of increments), with
+about as many points as observations.
+}}
+
+\item{option}{Used only with \code{method = "MultiBridge"}: \code{1} (default) to
+resample each trajectory up to its own last inspection, \code{2} to resample
+all the trajectories up to the last inspection time over all of them, the
+shorter ones being extended by increments of the process drawn with the
+estimated parameters (these values do not come from the data and lower
+the power; option 1 is recommended).}
 
 \item{alpha}{Level of the tests, strictly between 0 and 1.}
 
@@ -99,12 +120,14 @@ The tests are tests for i.i.d. samples with estimated parameters, see
 
 Each trajectory is tested alone (group \code{1}, \code{2}, ...). When all the
 trajectories have the same time step, their increments have the same law
-under H0: they are also tested together (group \code{"all"}). This is always
-the case with the method \code{"ExtBridge"}, whose grids have a step common to
-all the trajectories (the largest step such that every inspection time of
-every trajectory is a grid point). With the method \code{"Bridge"} the step
+under H0: they form one i.i.d. sample and are also tested together (group
+\code{"all"}). This is always the case with the methods \code{"ExtBridge"} (step
+common to all the trajectories, the largest one such that every inspection
+time of every trajectory is a grid point) and \code{"MultiBridge"} (one grid
+common to all the trajectories). With the method \code{"Bridge"} the step
 \eqn{t_N / N} of each trajectory is generally different, and the
-increments of different trajectories are then not tested together.
+increments of different trajectories are then not tested together: use
+\code{"MultiBridge"} or \code{"ExtBridge"} for one test on all the trajectories.
 }
 
 \section{Randomness}{
@@ -155,6 +178,10 @@ gof.levy(liste, "HWP", test = c("SW", "AD"))
 
 # 6b. The same trajectories with "ExtBridge": common step, so also one test on all
 gof.levy(liste, "HWP", test = c("SW", "AD"), method = "ExtBridge")
+
+# 6c. "MultiBridge": one common grid of Grall-Maes type, also one test on all
+gof.levy(liste, "HWP", test = c("SW", "AD"), method = "MultiBridge")
+gof.levy(liste, "HWP", test = c("SW", "AD"), method = "MultiBridge", option = 2)
 
 # 7. Several trajectories with the same irregular inspection times (matrix):
 #    the grids have the same step, so the increments are also tested together

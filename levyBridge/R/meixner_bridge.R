@@ -61,9 +61,12 @@
 #'
 #' @inheritSection gamma_bridge Resampling algorithm (method "Bridge")
 #' @inheritSection gamma_bridge Method "ExtBridge"
+#' @inheritSection gamma_bridge Method "MultiBridge"
 #'
 #' @inheritParams gamma_bridge
 #' @param a Scale parameter, \eqn{a > 0}.
+#' @param b Skewness parameter, \eqn{-\pi < b < \pi}; used only with
+#'   `method = "MultiBridge"` and `option = 2`, to extend the trajectories.
 #' @param d Shape parameter per unit of time, \eqn{d > 0}.
 #' @param m Location parameter per unit of time, real.
 #'
@@ -145,6 +148,15 @@
 #' # Error: the first time must be 0
 #' try(meixner_bridge(x, t + 1, a = 1, d = 1.5, m = 0.2))
 #' @examplesIf requireNamespace("levysim", quietly = TRUE)
+#' # Method "MultiBridge": several trajectories with their own times on one common grid,
+#' # so that all the reconstructed increments have the same law
+#' liste4 <- list(data.frame(t = c(0, 3, 8), X = c(0, 1.5, 4.2)),
+#'                data.frame(t = c(0, 2, 5, 9, 12), X = c(0, 0.9, 2.8, 4.1, 6.5)),
+#'                data.frame(t = c(0, 4, 7, 11, 15), X = c(0, 2.2, 3.1, 5.6, 7.4)))
+#' r4 <- meixner_bridge(liste4, a = 1, d = 1.5, m = 0.2, method = "MultiBridge")
+#' attr(r4, "teq")
+#' sapply(r4, nrow)
+#'
 #' # 9. Ten trajectories simulated with levysim, inspected more and more often
 #' plan <- levysim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
 #' sims <- levysim::sim_meixner(plan, a = 1, b = 0.3, d = 1.5, m = 0.2)
@@ -162,16 +174,30 @@
 #' c(mean(d$dx), (0.2 + 1.5 * tan(0.15)) * d$teq[1])
 #' c(var(d$dx), 1.5 * d$teq[1] / (2 * cos(0.15)^2))
 #' @export
-meixner_bridge <- function(x, t = NULL, a, d, m, method = "Bridge", digits = NULL, common_step = FALSE) {
+meixner_bridge <- function(x, t = NULL, a, d, m, method = "Bridge", digits = NULL, common_step = FALSE, option = 1,
+                           b = NULL) {
   check_par(a = a, d = d)
   check_par(m = m, positive = FALSE)
+  sim <- NULL
+  if (!is.null(b)) {
+    check_par(b = b, positive = FALSE)
+    if (abs(b) >= pi) stop("b must be in (-pi, pi)")
+    gen <- new.env()
+    sim <- function(s) {
+      key <- format(s, digits = 15)
+      if (is.null(gen[[key]])) {
+        gen[[key]] <- Runuran::pinvd.new(Runuran::udmeixner(alpha = a, beta = b, delta = d * s, mu = m * s))
+      }
+      Runuran::ur(gen[[key]], 1)
+    }
+  }
   draw <- function(t_inf, delta, t, t_sup) {
     z <- (delta - m * (t_sup - t_inf)) / a
     y <- rmeixner_bridge_y(d * (t - t_inf), d * (t_sup - t), z)
     c(m * (t - t_inf) + a * y, m * (t_sup - t) + a * (z - y))
   }
   bridge_paths(x, t, method, draw, "Meixner", c(a = unname(a), d = unname(d), m = unname(m)), digits = digits,
-               common_step = common_step)
+               common_step = common_step, option = option, sim = sim)
 }
 
 lh <- function(alpha, y) {

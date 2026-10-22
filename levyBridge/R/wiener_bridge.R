@@ -21,8 +21,11 @@
 #'
 #' @inheritSection gamma_bridge Resampling algorithm (method "Bridge")
 #' @inheritSection gamma_bridge Method "ExtBridge"
+#' @inheritSection gamma_bridge Method "MultiBridge"
 #'
 #' @inheritParams gamma_bridge
+#' @param mu Drift of the Wiener process, real; used only with
+#'   `method = "MultiBridge"` and `option = 2`, to extend the trajectories.
 #' @param sigma Volatility \eqn{\sigma > 0} (standard deviation per square
 #'   root of time unit). The package `levyfit` returns the variance:
 #'   use `sqrt(wiener_mle(x)[["sigma2"]])`.
@@ -89,6 +92,15 @@
 #' identical(y1, y2)
 #'
 #' # 8. Method "ExtBridge": the times have 1 decimal place, the grid
+#' # Method "MultiBridge": several trajectories with their own times on one common grid,
+#' # so that all the reconstructed increments have the same law
+#' liste4 <- list(data.frame(t = c(0, 3, 8), X = c(0, 1.5, 4.2)),
+#'                data.frame(t = c(0, 2, 5, 9, 12), X = c(0, 0.9, 2.8, 4.1, 6.5)),
+#'                data.frame(t = c(0, 4, 7, 11, 15), X = c(0, 2.2, 3.1, 5.6, 7.4)))
+#' r4 <- wiener_bridge(liste4, sigma = 1.5, method = "MultiBridge")
+#' attr(r4, "teq")
+#' sapply(r4, nrow)
+#'
 #' #    0, 0.1, ..., 22.5 contains all of them
 #' r3 <- wiener_bridge(x, t, sigma = 1.5, method = "ExtBridge")
 #' attr(r3, "teq")
@@ -114,12 +126,19 @@
 #' # Under the model, the increments follow N(mu * teq, sigma^2 * teq)
 #' ks.test(d$dx, "pnorm", mean = 0.5 * d$teq[1], sd = 1.5 * sqrt(d$teq[1]))
 #' @export
-wiener_bridge <- function(x, t = NULL, sigma, method = "Bridge", digits = NULL, common_step = FALSE) {
+wiener_bridge <- function(x, t = NULL, sigma, method = "Bridge", digits = NULL, common_step = FALSE, option = 1,
+                          mu = NULL) {
   check_par(sigma = sigma)
+  sim <- NULL
+  if (!is.null(mu)) {
+    check_par(mu = mu, positive = FALSE)
+    sim <- function(s) stats::rnorm(1, mu * s, sigma * sqrt(s))
+  }
   draw <- function(t_inf, delta, t, t_sup) {
     tau <- t_sup - t_inf
     e <- stats::rnorm(1, 0, sigma * sqrt((t - t_inf) * (t_sup - t) / tau))
     c(delta * (t - t_inf) / tau + e, delta * (t_sup - t) / tau - e)
   }
-  bridge_paths(x, t, method, draw, "Wiener", c(sigma = unname(sigma)), digits = digits, common_step = common_step)
+  bridge_paths(x, t, method, draw, "Wiener", c(sigma = unname(sigma)), digits = digits, common_step = common_step,
+               option = option, sim = sim)
 }

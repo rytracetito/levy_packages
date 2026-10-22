@@ -46,3 +46,18 @@ test_that("invalid lists of trajectories are refused", {
   expect_error(wiener_mle(list(data.frame(t = c(0, 2, 1), X = c(0, 1, 2)))), "strictly increasing")
   expect_error(igam_mle(list(data.frame(t = c(1, 2), X = c(0, 1)))), "start at")
 })
+
+test_that("increments_data gives the increments directly, without loss of precision", {
+  set.seed(9)
+  dx <- rgamma(300, shape = 0.02, rate = 3)
+  expect_true(min(dx) < 1e-30)
+  x <- c(1000, 1000 + cumsum(dx))
+  expect_true(any(diff(x) == 0))
+  e <- gamma_mle(increments_data(dx, dt = 0.1))
+  expect_true(all(is.finite(e)))
+  expect_equal(wiener_mle(increments_data(c(1, 2, 0.5, 3), c(1, 2, 1, 2))),
+               wiener_mle(c(0, 1, 3, 3.5, 6.5), c(0, 1, 3, 4, 6)))
+  expect_error(increments_data(c(1, NA)), "dx")
+  expect_error(increments_data(1:3, dt = c(1, 2)), "dt")
+  expect_error(igam_mle(increments_data(1:3)), "levels")
+})

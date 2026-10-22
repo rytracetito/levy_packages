@@ -104,3 +104,19 @@ test_that("ExtBridge uses a common step and tests all the trajectories together"
   r2 <- gof.levy(liste, "HGP", test = "VGE", B = 20)
   expect_equal(r2$results$group, c("1", "2", "3"))
 })
+
+test_that("MultiBridge gives one common grid and a test on all the trajectories", {
+  set.seed(7)
+  liste <- lapply(c(10, 15, 25), function(n) {
+    tk <- c(0, cumsum(round(runif(n, 0.5, 3.5), 1)))
+    data.frame(t = tk, X = c(0, cumsum(rgamma(n, 2 * diff(tk), 3))))
+  })
+  h <- sum(sapply(liste, function(d) max(d$t))) / (10 + 15 + 25)
+  r <- gof.levy(liste, "HGP", test = "VGE", method = "MultiBridge", B = 20)
+  expect_equal(r$steps, rep(h, 3))
+  expect_equal(r$results$group, c("all", "1", "2", "3"))
+  expect_equal(r$method, "MultiBridge, option 1")
+  r2 <- gof.levy(liste, "HGP", test = "VGE", method = "MultiBridge", option = 2, B = 20)
+  expect_equal(length(unique(table(r2$increments$id))), 1)
+  expect_error(gof.levy(liste, "HGP", method = "MultiBridge", option = 3), "option must be 1 or 2")
+})

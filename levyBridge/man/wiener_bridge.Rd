@@ -10,7 +10,9 @@ wiener_bridge(
   sigma,
   method = "Bridge",
   digits = NULL,
-  common_step = FALSE
+  common_step = FALSE,
+  option = 1,
+  mu = NULL
 )
 }
 \arguments{
@@ -27,9 +29,10 @@ root of time unit). The package \code{levyfit} returns the variance:
 use \code{sqrt(wiener_mle(x)[["sigma2"]])}.}
 
 \item{method}{\code{"Bridge"} (default) for the algorithm of Grall-Maës (2012),
-with as many grid points as observations, or \code{"ExtBridge"} for its
-extension, whose grid contains all the inspection times (see the section
-Method "ExtBridge").}
+with as many grid points as observations and one grid per trajectory;
+\code{"ExtBridge"} for its extension, whose grid contains all the inspection
+times (see the section Method "ExtBridge"); \code{"MultiBridge"} for several
+trajectories on one common grid (see the section Method "MultiBridge").}
 
 \item{digits}{Used only with \code{method = "ExtBridge"}: number of decimal
 places of the inspection times, which sets the time step of the grid.
@@ -42,6 +45,15 @@ largest one such that every inspection time of every trajectory is a grid
 point. With a common step, the reconstructed increments of all the
 trajectories have the same law under the model and can be tested
 together.}
+
+\item{option}{Used only with \code{method = "MultiBridge"}: \code{1} (default) to
+resample each trajectory up to its own last inspection, \code{2} to resample
+all the trajectories up to the last inspection time over all the
+trajectories, extending the shorter ones by increments of the process (see
+the section Method "MultiBridge").}
+
+\item{mu}{Drift of the Wiener process, real; used only with
+\code{method = "MultiBridge"} and \code{option = 2}, to extend the trajectories.}
 }
 \value{
 An object of class \code{"levybridge"}: a list with one data frame per
@@ -105,6 +117,16 @@ independent with the law of \eqn{X_{\Delta t_{eq}}}: they can be tested
 with an i.i.d. goodness-of-fit test. A grid point that equals an inspection
 time up to rounding errors (relative difference below \eqn{10^{-9}}) is
 set to that inspection time.
+
+\strong{Precision.} Each draw splits the increment \eqn{\Delta} of the current
+interval into a left part (up to the grid point) and a right part (up to
+the next inspection), both computed directly: here \eqn{\Delta\, Y} and
+\eqn{\Delta (1 - Y)}, with \eqn{Y = G_1 / (G_1 + G_2)},
+\eqn{G_1 \sim \Gamma(a \tau_1)}, \eqn{G_2 \sim \Gamma(a \tau_2)} drawn on
+the log scale. The reconstructed increments (\code{\link[=increments]{increments()}}) are these
+parts, not differences of levels: a very small increment keeps all its
+significant digits instead of being rounded to 0, even for very small
+shapes \eqn{a \tau}.
 }
 
 \section{Method "ExtBridge"}{
@@ -133,7 +155,66 @@ have more decimal places, they are rounded to \code{digits} decimal places, with
 a warning; two times equal after rounding give an error. A warning is also
 given when the grid has more than \eqn{10^5} steps, since the resampling
 then takes time. The grid and the time step are computed for each
-trajectory.
+trajectory; with \code{common_step = TRUE}, \eqn{d} and \eqn{h} are computed
+from the inspection times of all the trajectories, so that all the grids
+have the same step.
+}
+
+\section{Method "MultiBridge"}{
+
+Version of the method "Bridge" for several trajectories, with \strong{one
+regular grid common to all the trajectories} (Tito and Paroissin). With
+the method "Bridge", each trajectory has its own time step
+\eqn{t_N / N}: the reconstructed increments of two trajectories then have
+different laws and cannot be tested together. With the method
+"MultiBridge", all the reconstructed increments have the law of \eqn{X_h}
+for the same \eqn{h}: they form a single i.i.d. sample under the model,
+and one goodness-of-fit test can be applied to all the trajectories
+together.
+
+\strong{Time step.} For \eqn{n} trajectories, the trajectory \eqn{i} being
+observed on \eqn{[0, t_{i, max}]} with \eqn{m_i} increments,
+\deqn{h = \frac{t_{1, max} + \dots + t_{n, max}}{m_1 + \dots + m_n},}
+the total observed duration divided by the total number of increments.
+The number of reconstructed increments is then about the number of
+observed increments, as with the method "Bridge"; for one trajectory,
+\eqn{h = t_N / N} is the step of the method "Bridge". The grid is
+\eqn{t'_k = k h}; as with the method "Bridge", it does not necessarily
+contain the inspection times (a grid point equal to an inspection time
+keeps the observed value).
+
+\strong{Option 1} (\code{option = 1}, default): each trajectory is resampled up to
+its own last inspection, on the grid points \eqn{k h \le t_{i, max}}. Each
+grid point is drawn from the bridge between the last known value on the
+left and the next inspection, exactly as with the method "Bridge". The end
+of the trajectory, between its last grid point and \eqn{t_{i, max}}, is not
+used. A long trajectory gives many reconstructed increments, a short one
+few (none when \eqn{t_{i, max} < h}, with a warning). Under the model, with
+the true parameters, all the reconstructed increments are independent with
+the law of \eqn{X_h}: the pooled sample is exactly i.i.d. This is the
+recommended option.
+
+\strong{Option 2} (\code{option = 2}): all the trajectories are resampled up to the
+last inspection time over all the trajectories, \eqn{\max_i t_{i, max}}, so
+that they all have the same number of grid points. Up to
+\eqn{t_{i, max}}, as in option 1; beyond, there is no observation left and
+the trajectory is extended by increments of the process drawn with the
+given parameters (not a bridge): the first one starts from the last
+observation \eqn{x_{i, N}}. This needs all the parameters of the process
+(for instance \eqn{b} for the gamma process, see the arguments). Under the
+model, with the true parameters, the pooled sample is also i.i.d. with the
+law of \eqn{X_h}; but the extended values do not come from the data: they
+follow the null model by construction and dilute the information of the
+observations, which lowers the power of a test, all the more as the
+trajectories have different durations. Use it only for trajectories of
+similar durations.
+
+\strong{When to use "MultiBridge".} For several trajectories observed at
+different times, when one test on all the trajectories together is
+wanted. With one trajectory, both options give the method "Bridge". The
+method "ExtBridge" with \code{common_step = TRUE} also gives a common step, with
+a grid that contains all the inspection times, but it can have many more
+grid points.
 }
 
 \examples{
@@ -182,6 +263,15 @@ set.seed(2); y2 <- wiener_bridge(x, t, sigma = 1.5)[[1]]$X
 identical(y1, y2)
 
 # 8. Method "ExtBridge": the times have 1 decimal place, the grid
+# Method "MultiBridge": several trajectories with their own times on one common grid,
+# so that all the reconstructed increments have the same law
+liste4 <- list(data.frame(t = c(0, 3, 8), X = c(0, 1.5, 4.2)),
+               data.frame(t = c(0, 2, 5, 9, 12), X = c(0, 0.9, 2.8, 4.1, 6.5)),
+               data.frame(t = c(0, 4, 7, 11, 15), X = c(0, 2.2, 3.1, 5.6, 7.4)))
+r4 <- wiener_bridge(liste4, sigma = 1.5, method = "MultiBridge")
+attr(r4, "teq")
+sapply(r4, nrow)
+
 #    0, 0.1, ..., 22.5 contains all of them
 r3 <- wiener_bridge(x, t, sigma = 1.5, method = "ExtBridge")
 attr(r3, "teq")

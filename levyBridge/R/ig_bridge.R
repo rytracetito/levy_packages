@@ -36,8 +36,11 @@
 #'
 #' @inheritSection gamma_bridge Resampling algorithm (method "Bridge")
 #' @inheritSection gamma_bridge Method "ExtBridge"
+#' @inheritSection gamma_bridge Method "MultiBridge"
 #'
 #' @inheritParams gamma_bridge
+#' @param mu Mean degradation per unit of time, \eqn{\mu > 0}; used only with
+#'   `method = "MultiBridge"` and `option = 2`, to extend the trajectories.
 #' @param eta Shape parameter \eqn{\eta > 0}, for instance the estimate
 #'   `ig_mle(x)[["eta"]]` of the package `levyfit`.
 #'
@@ -125,6 +128,15 @@
 #' # Error: the first time must be 0
 #' try(ig_bridge(x, t + 1, eta = 3))
 #' @examplesIf requireNamespace("levysim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)
+#' # Method "MultiBridge": several trajectories with their own times on one common grid,
+#' # so that all the reconstructed increments have the same law
+#' liste4 <- list(data.frame(t = c(0, 3, 8), X = c(0, 1.5, 4.2)),
+#'                data.frame(t = c(0, 2, 5, 9, 12), X = c(0, 0.9, 2.8, 4.1, 6.5)),
+#'                data.frame(t = c(0, 4, 7, 11, 15), X = c(0, 2.2, 3.1, 5.6, 7.4)))
+#' r4 <- ig_bridge(liste4, eta = 3, method = "MultiBridge")
+#' attr(r4, "teq")
+#' sapply(r4, nrow)
+#'
 #' # 10. Ten trajectories simulated with levysim, inspected more and more often
 #' plan <- levysim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
 #' sims <- levysim::sim_ig(plan, mu = 1, eta = 3)
@@ -142,8 +154,22 @@
 #' # (mean mu * teq, variance mu^3 * teq / eta)
 #' c(mean(d$dx), 1 * d$teq[1], var(d$dx), d$teq[1] / 3)
 #' @export
-ig_bridge <- function(x, t = NULL, eta, method = "Bridge", digits = NULL, common_step = FALSE) {
+ig_bridge <- function(x, t = NULL, eta, method = "Bridge", digits = NULL, common_step = FALSE, option = 1,
+                      mu = NULL) {
   check_par(eta = eta)
+  sim <- NULL
+  if (!is.null(mu)) {
+    check_par(mu = mu)
+    # IG(mu s, eta s^2) par la méthode de Michael, Schucany et Haas ; petite racine = m^2 / grande racine
+    sim <- function(s) {
+      m <- mu * s
+      lam <- eta * s^2
+      q <- stats::rnorm(1)^2
+      w2 <- m + m^2 * q / (2 * lam) + m / (2 * lam) * sqrt(4 * m * lam * q + m^2 * q^2)
+      w1 <- m^2 / w2
+      if (stats::runif(1) <= m / (m + w1)) w1 else w2
+    }
+  }
   draw <- function(t_inf, delta, t, t_sup) {
     if (delta == 0) return(c(0, 0))
     tau1 <- t - t_inf
@@ -157,5 +183,5 @@ ig_bridge <- function(x, t = NULL, eta, method = "Bridge", digits = NULL, common
     delta * c(w / (1 + w), 1 / (1 + w))
   }
   bridge_paths(x, t, method, draw, "inverse Gaussian", c(eta = unname(eta)), increasing = TRUE, digits = digits,
-               common_step = common_step)
+               common_step = common_step, option = option, sim = sim)
 }

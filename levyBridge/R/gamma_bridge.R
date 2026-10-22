@@ -83,6 +83,61 @@
 #' from the inspection times of all the trajectories, so that all the grids
 #' have the same step.
 #'
+#' @section Method "MultiBridge":
+#' Version of the method "Bridge" for several trajectories, with **one
+#' regular grid common to all the trajectories** (Tito and Paroissin). With
+#' the method "Bridge", each trajectory has its own time step
+#' \eqn{t_N / N}: the reconstructed increments of two trajectories then have
+#' different laws and cannot be tested together. With the method
+#' "MultiBridge", all the reconstructed increments have the law of \eqn{X_h}
+#' for the same \eqn{h}: they form a single i.i.d. sample under the model,
+#' and one goodness-of-fit test can be applied to all the trajectories
+#' together.
+#'
+#' **Time step.** For \eqn{n} trajectories, the trajectory \eqn{i} being
+#' observed on \eqn{[0, t_{i, max}]} with \eqn{m_i} increments,
+#' \deqn{h = \frac{t_{1, max} + \dots + t_{n, max}}{m_1 + \dots + m_n},}
+#' the total observed duration divided by the total number of increments.
+#' The number of reconstructed increments is then about the number of
+#' observed increments, as with the method "Bridge"; for one trajectory,
+#' \eqn{h = t_N / N} is the step of the method "Bridge". The grid is
+#' \eqn{t'_k = k h}; as with the method "Bridge", it does not necessarily
+#' contain the inspection times (a grid point equal to an inspection time
+#' keeps the observed value).
+#'
+#' **Option 1** (`option = 1`, default): each trajectory is resampled up to
+#' its own last inspection, on the grid points \eqn{k h \le t_{i, max}}. Each
+#' grid point is drawn from the bridge between the last known value on the
+#' left and the next inspection, exactly as with the method "Bridge". The end
+#' of the trajectory, between its last grid point and \eqn{t_{i, max}}, is not
+#' used. A long trajectory gives many reconstructed increments, a short one
+#' few (none when \eqn{t_{i, max} < h}, with a warning). Under the model, with
+#' the true parameters, all the reconstructed increments are independent with
+#' the law of \eqn{X_h}: the pooled sample is exactly i.i.d. This is the
+#' recommended option.
+#'
+#' **Option 2** (`option = 2`): all the trajectories are resampled up to the
+#' last inspection time over all the trajectories, \eqn{\max_i t_{i, max}}, so
+#' that they all have the same number of grid points. Up to
+#' \eqn{t_{i, max}}, as in option 1; beyond, there is no observation left and
+#' the trajectory is extended by increments of the process drawn with the
+#' given parameters (not a bridge): the first one starts from the last
+#' observation \eqn{x_{i, N}}. This needs all the parameters of the process
+#' (for instance \eqn{b} for the gamma process, see the arguments). Under the
+#' model, with the true parameters, the pooled sample is also i.i.d. with the
+#' law of \eqn{X_h}; but the extended values do not come from the data: they
+#' follow the null model by construction and dilute the information of the
+#' observations, which lowers the power of a test, all the more as the
+#' trajectories have different durations. Use it only for trajectories of
+#' similar durations.
+#'
+#' **When to use "MultiBridge".** For several trajectories observed at
+#' different times, when one test on all the trajectories together is
+#' wanted. With one trajectory, both options give the method "Bridge". The
+#' method "ExtBridge" with `common_step = TRUE` also gives a common step, with
+#' a grid that contains all the inspection times, but it can have many more
+#' grid points.
+#'
 #' @param x Degradation levels of one trajectory; or a list of data frames,
 #'   one per trajectory, whose first column contains the inspection times and
 #'   second column the degradation levels (for instance the result of a
@@ -92,9 +147,10 @@
 #' @param a Shape parameter of the gamma process, \eqn{a > 0}, for instance
 #'   estimated with the function `gamma_mle()` of the package `levyfit`.
 #' @param method `"Bridge"` (default) for the algorithm of Grall-Maës (2012),
-#'   with as many grid points as observations, or `"ExtBridge"` for its
-#'   extension, whose grid contains all the inspection times (see the section
-#'   Method "ExtBridge").
+#'   with as many grid points as observations and one grid per trajectory;
+#'   `"ExtBridge"` for its extension, whose grid contains all the inspection
+#'   times (see the section Method "ExtBridge"); `"MultiBridge"` for several
+#'   trajectories on one common grid (see the section Method "MultiBridge").
 #' @param digits Used only with `method = "ExtBridge"`: number of decimal
 #'   places of the inspection times, which sets the time step of the grid.
 #'   `NULL` (default) finds it automatically.
@@ -105,6 +161,13 @@
 #'   point. With a common step, the reconstructed increments of all the
 #'   trajectories have the same law under the model and can be tested
 #'   together.
+#' @param option Used only with `method = "MultiBridge"`: `1` (default) to
+#'   resample each trajectory up to its own last inspection, `2` to resample
+#'   all the trajectories up to the last inspection time over all the
+#'   trajectories, extending the shorter ones by increments of the process (see
+#'   the section Method "MultiBridge").
+#' @param b Rate parameter of the gamma process, \eqn{b > 0}; used only with
+#'   `method = "MultiBridge"` and `option = 2`, to extend the trajectories.
 #'
 #' @return An object of class `"levybridge"`: a list with one data frame per
 #'   trajectory, with columns `t` (regular grid) and `X` (resampled levels).
@@ -211,6 +274,33 @@
 #' # Very small shapes: the reconstructed increments are tiny but never 0
 #' min(increments(gamma_bridge(x, t, a = 0.05, method = "ExtBridge"))$dx)
 #'
+#' # Method "MultiBridge": four trajectories with their own times, one common grid
+#' liste_t <- list(c(0, 3, 8), c(0, 2, 5, 9, 12), c(0, 4, 7, 11, 15, 18, 22, 27, 33, 39, 45),
+#'                 c(0, 2, 3, 5, 8, 9, 14, 15, 17, 20, 22, 25, 27, 30, 33, 46, 58))
+#' liste4 <- lapply(liste_t, function(tk) data.frame(t = tk, X = c(0, cumsum(rgamma(length(tk) - 1, 2 * diff(tk), 3)))))
+#'
+#' # Option 1: each trajectory up to its last inspection;
+#' # step h = (8 + 12 + 45 + 58) / (2 + 4 + 10 + 16) = 3.84 for all
+#' r5 <- gamma_bridge(liste4, a = 2, method = "MultiBridge")
+#' r5
+#' attr(r5, "teq")
+#' sapply(r5, nrow)
+#' plot_bridge(r5, trajectory = 1:4)
+#'
+#' # The reconstructed increments of the four trajectories have the same law Gamma(a h, b):
+#' # one sample for one test
+#' d5 <- increments(r5)
+#' ks.test(d5$dx, "pgamma", shape = 2 * attr(r5, "teq")[1], rate = 3)
+#'
+#' # Option 2: all the trajectories up to 58, the shorter ones extended by gamma
+#' # increments, which needs the rate b
+#' r6 <- gamma_bridge(liste4, a = 2, method = "MultiBridge", option = 2, b = 3)
+#' sapply(r6, nrow)
+#' try(gamma_bridge(liste4, a = 2, method = "MultiBridge", option = 2))
+#'
+#' # With one trajectory, "MultiBridge" is the method "Bridge"
+#' attr(gamma_bridge(x, t, a = 2, method = "MultiBridge"), "teq")
+#'
 #' # 10. Error: the first time must be 0
 #' try(gamma_bridge(x, t + 1, a = 2))
 #' @examplesIf requireNamespace("levysim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)
@@ -230,9 +320,15 @@
 #' # Under the model, the increments follow Gamma(a * teq, b)
 #' ks.test(d$dx, "pgamma", shape = 2 * d$teq[1], rate = 3)
 #' @export
-gamma_bridge <- function(x, t = NULL, a, method = "Bridge", digits = NULL, common_step = FALSE) {
+gamma_bridge <- function(x, t = NULL, a, method = "Bridge", digits = NULL, common_step = FALSE, option = 1,
+                         b = NULL) {
   check_par(a = a)
   draw <- function(t_inf, delta, t, t_sup) delta * rbeta_pair(a * (t - t_inf), a * (t_sup - t))
+  sim <- NULL
+  if (!is.null(b)) {
+    check_par(b = b)
+    sim <- function(s) exp(log_rgamma(a * s) - log(b))
+  }
   bridge_paths(x, t, method, draw, "gamma", c(a = unname(a)), increasing = TRUE, digits = digits,
-               common_step = common_step)
+               common_step = common_step, option = option, sim = sim)
 }

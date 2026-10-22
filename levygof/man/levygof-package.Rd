@@ -22,8 +22,12 @@ likelihood (package \code{levyfit}).
 \code{levyBridge}).
 \item \strong{Simulate the bridge} with the estimated parameters.
 \item \strong{Pseudo-sample on a regular grid}: each trajectory is resampled on a
-regular grid, with the method \code{"Bridge"} (Grall-Maës, 2012) or
-\code{"ExtBridge"} (grid containing all the inspection times).
+regular grid, with the method \code{"Bridge"} (Grall-Maës, 2012, one grid per
+trajectory), \code{"ExtBridge"} (grid containing all the inspection times,
+step common to all the trajectories) or \code{"MultiBridge"} (one grid of
+Grall-Maës type common to all the trajectories). With several
+trajectories, \code{"ExtBridge"} and \code{"MultiBridge"} give one i.i.d. sample
+for all the trajectories together.
 \item \strong{Choose a test} for an i.i.d. sample of the law of the increments,
 see \code{\link[=tests_disponibles]{tests_disponibles()}}.
 \item \strong{Apply the test} to the reconstructed increments.

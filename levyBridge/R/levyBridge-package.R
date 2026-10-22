@@ -46,9 +46,31 @@
 #'   one such that every inspection time is a grid point. The grid is covered
 #'   as for `"Bridge"`, so the pseudo-sample contains all the observations.
 #'   The grid has \eqn{t_N / h \ge N} steps, with equality for regular times.
+#'   With several trajectories, `common_step = TRUE` gives them the same step
+#'   \eqn{h} (gcd of all the gaps of all the trajectories);
+#' * `"MultiBridge"`: the method `"Bridge"` for several trajectories, on one
+#'   regular grid common to all of them, of step
+#'   \eqn{h = (t_{1, max} + \dots + t_{n, max}) / (m_1 + \dots + m_n)} (total
+#'   observed duration divided by the total number of increments; \eqn{t_N / N}
+#'   for one trajectory). With `option = 1` (default) each trajectory is
+#'   resampled up to its own last inspection; with `option = 2` all the
+#'   trajectories go up to the last inspection time over all of them, the
+#'   shorter ones being extended by increments of the process (this needs all
+#'   the parameters, and these extended values do not come from the data).
 #'
-#' Both methods use the same bridges and the same algorithm: only the grid
-#' differs.
+#' The three methods use the same bridges and the same algorithm: only the
+#' grid differs.
+#'
+#' **Which method?**
+#' * one trajectory: `"Bridge"`, or `"ExtBridge"` to keep all the observations
+#'   on the grid;
+#' * several trajectories, one test per trajectory: `"Bridge"` or
+#'   `"ExtBridge"`;
+#' * several trajectories, one test on all of them together: the
+#'   reconstructed increments must have the same law, hence the same time step:
+#'   `"MultiBridge"` (grid of Grall-Maës type, about as many points as
+#'   observations) or `"ExtBridge"` with `common_step = TRUE` (grid containing
+#'   all the inspection times, often many more points).
 #'
 #' @section Data:
 #' All the `_bridge` functions accept the same formats:
@@ -63,10 +85,11 @@
 #'   the levels), for instance the list returned by `levysim` with one plan
 #'   per trajectory.
 #'
-#' Each trajectory gets its own regular grid and its own time step. With the
-#' method "ExtBridge" and `common_step = TRUE`, all the trajectories get the
-#' same time step: their reconstructed increments then have the same law and
-#' can be tested together.
+#' With the methods "Bridge" and "ExtBridge", each trajectory gets its own
+#' regular grid and its own time step. With the method "MultiBridge", or
+#' "ExtBridge" with `common_step = TRUE`, all the trajectories get the same
+#' time step: their reconstructed increments then have the same law and can be
+#' tested together.
 #'
 #' @section Results:
 #' A `_bridge` function returns an object of class `"levybridge"`:
@@ -93,7 +116,7 @@
 #' 3. **Simulation of the bridge**: done by the `_bridge` function, with the
 #'    estimated parameters;
 #' 4. **Pseudo-sample on a regular grid**: the result of the `_bridge`
-#'    function, with the method "Bridge" or "ExtBridge";
+#'    function, with the method "Bridge", "ExtBridge" or "MultiBridge";
 #' 5. **Choose a test** for an i.i.d. sample of the law of
 #'    \eqn{X_{\Delta t_{eq}}}, for instance Kolmogorov-Smirnov, Cramér-von
 #'    Mises or Anderson-Darling;

@@ -15,8 +15,12 @@
 #'    `levyBridge`).
 #' 3. **Simulate the bridge** with the estimated parameters.
 #' 4. **Pseudo-sample on a regular grid**: each trajectory is resampled on a
-#'    regular grid, with the method `"Bridge"` (Grall-Maës, 2012) or
-#'    `"ExtBridge"` (grid containing all the inspection times).
+#'    regular grid, with the method `"Bridge"` (Grall-Maës, 2012, one grid per
+#'    trajectory), `"ExtBridge"` (grid containing all the inspection times,
+#'    step common to all the trajectories) or `"MultiBridge"` (one grid of
+#'    Grall-Maës type common to all the trajectories). With several
+#'    trajectories, `"ExtBridge"` and `"MultiBridge"` give one i.i.d. sample
+#'    for all the trajectories together.
 #' 5. **Choose a test** for an i.i.d. sample of the law of the increments,
 #'    see [tests_disponibles()].
 #' 6. **Apply the test** to the reconstructed increments.

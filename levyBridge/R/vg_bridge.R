@@ -31,6 +31,7 @@
 #'
 #' @inheritSection gamma_bridge Resampling algorithm (method "Bridge")
 #' @inheritSection gamma_bridge Method "ExtBridge"
+#' @inheritSection gamma_bridge Method "MultiBridge"
 #'
 #' @inheritParams gamma_bridge
 #' @param theta Drift of the subordinated Brownian motion, real.
@@ -116,6 +117,15 @@
 #' # Error: the first time must be 0
 #' try(vg_bridge(x, t + 1, theta = 0.5, sigma = 1.5, nu = 2))
 #' @examplesIf requireNamespace("levysim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)
+#' # Method "MultiBridge": several trajectories with their own times on one common grid,
+#' # so that all the reconstructed increments have the same law
+#' liste4 <- list(data.frame(t = c(0, 3, 8), X = c(0, 1.5, 4.2)),
+#'                data.frame(t = c(0, 2, 5, 9, 12), X = c(0, 0.9, 2.8, 4.1, 6.5)),
+#'                data.frame(t = c(0, 4, 7, 11, 15), X = c(0, 2.2, 3.1, 5.6, 7.4)))
+#' r4 <- vg_bridge(liste4, theta = 0.5, sigma = 1.5, nu = 2, method = "MultiBridge")
+#' attr(r4, "teq")
+#' sapply(r4, nrow)
+#'
 #' # 9. Ten trajectories simulated with levysim, inspected more and more often
 #' plan <- levysim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
 #' sims <- levysim::sim_vg(plan, theta = 0.5, sigma = 1.5, nu = 2)
@@ -133,7 +143,8 @@
 #' # variance (sigma^2 + nu * theta^2) * teq
 #' c(mean(d$dx), 0.5 * d$teq[1], var(d$dx), (1.5^2 + 2 * 0.5^2) * d$teq[1])
 #' @export
-vg_bridge <- function(x, t = NULL, theta, sigma, nu, method = "Bridge", digits = NULL, common_step = FALSE) {
+vg_bridge <- function(x, t = NULL, theta, sigma, nu, method = "Bridge", digits = NULL, common_step = FALSE,
+                      option = 1) {
   check_par(theta = theta, positive = FALSE)
   check_par(sigma = sigma, nu = nu)
   psi <- (theta^2 + 2 * sigma^2 / nu) / sigma^4
@@ -144,6 +155,10 @@ vg_bridge <- function(x, t = NULL, theta, sigma, nu, method = "Bridge", digits =
     e <- sqrt(s * y[1] * y[2]) * stats::rnorm(1)
     c(y[1] * delta + e, y[2] * delta - e)
   }
+  sim <- function(s) {
+    g <- nu * exp(log_rgamma(s / nu))
+    theta * g + sigma * sqrt(g) * stats::rnorm(1)
+  }
   bridge_paths(x, t, method, draw, "variance-gamma", c(theta = unname(theta), sigma = unname(sigma), nu = unname(nu)),
-               digits = digits, common_step = common_step)
+               digits = digits, common_step = common_step, option = option, sim = sim)
 }

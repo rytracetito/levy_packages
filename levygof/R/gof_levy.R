@@ -26,10 +26,20 @@
 #' @param test Names of the tests to apply; `NULL` (default) applies all the
 #'   tests of the model, see [tests_disponibles()].
 #' @param method Resampling method of the bridges, used with irregular
-#'   inspections only: `"Bridge"` (default, Grall-Maës, 2012: regular grid
-#'   with as many points as observations) or `"ExtBridge"` (regular grid
-#'   containing all the inspection times, with a time step common to all the
-#'   trajectories), see [levyBridge::gamma_bridge()].
+#'   inspections only (see [levyBridge::gamma_bridge()]):
+#'   * `"Bridge"` (default, Grall-Maës, 2012): one regular grid per
+#'     trajectory, with as many points as observations;
+#'   * `"ExtBridge"`: regular grid containing all the inspection times, with a
+#'     time step common to all the trajectories;
+#'   * `"MultiBridge"`: one regular grid common to all the trajectories, of
+#'     step (total observed duration) / (total number of increments), with
+#'     about as many points as observations.
+#' @param option Used only with `method = "MultiBridge"`: `1` (default) to
+#'   resample each trajectory up to its own last inspection, `2` to resample
+#'   all the trajectories up to the last inspection time over all of them, the
+#'   shorter ones being extended by increments of the process drawn with the
+#'   estimated parameters (these values do not come from the data and lower
+#'   the power; option 1 is recommended).
 #' @param alpha Level of the tests, strictly between 0 and 1.
 #' @param B Number of bootstrap replications of the tests that use a
 #'   parametric bootstrap.
@@ -77,12 +87,14 @@
 #' @section Several trajectories:
 #' Each trajectory is tested alone (group `1`, `2`, ...). When all the
 #' trajectories have the same time step, their increments have the same law
-#' under H0: they are also tested together (group `"all"`). This is always
-#' the case with the method `"ExtBridge"`, whose grids have a step common to
-#' all the trajectories (the largest step such that every inspection time of
-#' every trajectory is a grid point). With the method `"Bridge"` the step
+#' under H0: they form one i.i.d. sample and are also tested together (group
+#' `"all"`). This is always the case with the methods `"ExtBridge"` (step
+#' common to all the trajectories, the largest one such that every inspection
+#' time of every trajectory is a grid point) and `"MultiBridge"` (one grid
+#' common to all the trajectories). With the method `"Bridge"` the step
 #' \eqn{t_N / N} of each trajectory is generally different, and the
-#' increments of different trajectories are then not tested together.
+#' increments of different trajectories are then not tested together: use
+#' `"MultiBridge"` or `"ExtBridge"` for one test on all the trajectories.
 #'
 #' @section Randomness:
 #' The bridges and the bootstrap are random: use [set.seed()] before
@@ -142,6 +154,10 @@
 #' # 6b. The same trajectories with "ExtBridge": common step, so also one test on all
 #' gof.levy(liste, "HWP", test = c("SW", "AD"), method = "ExtBridge")
 #'
+#' # 6c. "MultiBridge": one common grid of Grall-Maes type, also one test on all
+#' gof.levy(liste, "HWP", test = c("SW", "AD"), method = "MultiBridge")
+#' gof.levy(liste, "HWP", test = c("SW", "AD"), method = "MultiBridge", option = 2)
+#'
 #' # 7. Several trajectories with the same irregular inspection times (matrix):
 #' #    the grids have the same step, so the increments are also tested together
 #' m <- cbind(t = t2, sapply(1:4, function(k) c(0, cumsum(rgamma(30, 10 * diff(t2), 5)))))
@@ -157,11 +173,14 @@
 #' gof.levy(data.frame(t2, vg), "VG", test = "AD", B = 50)
 #' }
 #' @export
-gof.levy <- function(data, model, test = NULL, method = "Bridge", alpha = 0.05, B = 200) {
+gof.levy <- function(data, model, test = NULL, method = "Bridge", option = 1, alpha = 0.05, B = 200) {
   model <- model_name(model)
   test <- test_names(test, model)
   check_alpha_B(alpha, B)
-  method <- match.arg(method, c("Bridge", "ExtBridge"))
+  method <- match.arg(method, c("Bridge", "ExtBridge", "MultiBridge"))
+  if (!(identical(option, 1) || identical(option, 2) || identical(option, 1L) || identical(option, 2L))) {
+    stop("option must be 1 or 2", call. = FALSE)
+  }
   traj <- as_trajectories(data)
 
   dx_obs <- lapply(traj, function(d) diff(d$x))
@@ -176,7 +195,7 @@ gof.levy <- function(data, model, test = NULL, method = "Bridge", alpha = 0.05, 
     pieces <- lapply(seq_along(traj), function(k) list(step = diff(traj[[k]]$t)[1], dx = dx_obs[[k]]))
   } else {
     par <- estimate_parameters(traj, model)
-    r <- bridge_trajectories(traj, model, par, method)
+    r <- bridge_trajectories(traj, model, par, method, option)
     teq <- attr(r, "teq")
     inc <- levyBridge::increments(r)
     pieces <- lapply(seq_along(r), function(k) list(step = teq[k], dx = inc$dx[inc$id == k]))
@@ -184,7 +203,9 @@ gof.levy <- function(data, model, test = NULL, method = "Bridge", alpha = 0.05, 
     check_zero_increments(unlist(lapply(pieces, `[[`, "dx")), model, method)
   }
 
-  structure(list(model = model, method = if (regular || out_of_support) NA_character_ else method,
+  structure(list(model = model,
+                 method = if (regular || out_of_support) NA_character_
+                          else if (method == "MultiBridge") paste0("MultiBridge, option ", option) else method,
                  alpha = alpha, B = B, regular = regular, out_of_support = out_of_support,
                  parameters = par, steps = vapply(pieces, `[[`, 0, "step"), bridge = bridge,
                  increments = do.call(rbind, lapply(seq_along(pieces), function(k)
@@ -245,18 +266,22 @@ estimate_parameters <- function(traj, model) {
   )
 }
 
-# Avec ExtBridge, pas commun à toutes les trajectoires : tous les accroissements reconstruits ont la même loi
-bridge_trajectories <- function(traj, model, par, method) {
+# Avec ExtBridge, pas commun à toutes les trajectoires ; MultiBridge a toujours une grille commune.
+# Tous les paramètres sont transmis : l'option 2 de MultiBridge en a besoin pour prolonger les trajectoires.
+bridge_trajectories <- function(traj, model, par, method, option = 1) {
   d <- as_data_frames(traj)
   cs <- method == "ExtBridge"
   switch(model,
-    HGP     = levyBridge::gamma_bridge(d, a = par[["a"]], method = method, common_step = cs),
-    HWP     = levyBridge::wiener_bridge(d, sigma = par[["sigma"]], method = method, common_step = cs),
-    InvGaus = levyBridge::ig_bridge(d, eta = par[["eta"]], method = method, common_step = cs),
+    HGP     = levyBridge::gamma_bridge(d, a = par[["a"]], method = method, common_step = cs, option = option,
+                                       b = par[["b"]]),
+    HWP     = levyBridge::wiener_bridge(d, sigma = par[["sigma"]], method = method, common_step = cs, option = option,
+                                        mu = par[["mu"]]),
+    InvGaus = levyBridge::ig_bridge(d, eta = par[["eta"]], method = method, common_step = cs, option = option,
+                                    mu = par[["mu"]]),
     VG      = levyBridge::vg_bridge(d, theta = par[["theta"]], sigma = par[["sigma"]], nu = par[["nu"]], method = method,
-                                    common_step = cs),
+                                    common_step = cs, option = option),
     Meixner = levyBridge::meixner_bridge(d, a = par[["a"]], d = par[["d"]], m = par[["m"]], method = method,
-                                         common_step = cs)
+                                         common_step = cs, option = option, b = par[["b"]])
   )
 }
 

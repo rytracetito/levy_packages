@@ -53,10 +53,11 @@ dmeixner_log <- function(x, a, b, d, m) {
 }
 
 # Lois sur un pas 1 : la famille est stable par changement de pas, le pas des accroissements est sans importance
+# Ajustement sur les accroissements eux-mêmes (increments_data) : aucune perte de précision
 families <- list(
   VG = list(
     fit = function(y) {
-      p <- suppressWarnings(levyfit::vg_mle(c(0, cumsum(y)), 0:length(y)))
+      p <- suppressWarnings(levyfit::vg_mle(levyfit::increments_data(y)))
       if (anyNA(p)) stop(attr(p, "message"), call. = FALSE)
       p
     },
@@ -67,7 +68,7 @@ families <- list(
     }),
   Meixner = list(
     fit = function(y) {
-      p <- suppressWarnings(levyfit::meixner_mle(c(0, cumsum(y)), 0:length(y)))
+      p <- suppressWarnings(levyfit::meixner_mle(levyfit::increments_data(y)))
       if (anyNA(p)) stop(attr(p, "message"), call. = FALSE)
       p
     },

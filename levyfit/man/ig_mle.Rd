@@ -9,7 +9,8 @@ ig_mle(x, t = NULL, ci = FALSE, level = 0.95)
 \arguments{
 \item{x}{Degradation levels of one trajectory, with strictly positive increments;
 or a list of data frames, one per trajectory, whose first column contains
-the inspection times and second column the degradation levels.}
+the inspection times and second column the degradation levels.
+The increments can also be given directly with \code{\link[=increments_data]{increments_data()}}.}
 
 \item{t}{Inspection times of the trajectory, strictly increasing. Not used
 when \code{x} is a list.}
