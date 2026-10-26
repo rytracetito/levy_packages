@@ -46,7 +46,7 @@ gamma law with this shape is estimated again); all the bootstrap
 statistics are kept, which gives both the p-value and the critical value.
 
 \strong{Wiener process (\code{"HWP"})}, increments
-\eqn{N(\mu \Delta, \sigma^2 \Delta)}: tests of normality with estimated
+\eqn{\mathcal{N}(\mu \Delta, \sigma^2 \Delta)}: tests of normality with estimated
 mean and variance.
 \itemize{
 \item \code{"AD"}, \code{"CvM"}, \code{"Lilliefors"}: Anderson-Darling, Cramer-von Mises and

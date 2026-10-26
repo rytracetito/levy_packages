@@ -69,11 +69,11 @@ It is infinitely divisible: the sum of independent \eqn{Meixner(a, b, d_1, m_1)}
 and \eqn{Meixner(a, b, d_2, m_2)} variables has the
 \eqn{Meixner(a, b, d_1 + d_2, m_1 + m_2)} distribution.
 
-The Meixner process satisfies \eqn{X(0) = 0}, has independent increments,
+The Meixner process satisfies \eqn{X_0 = 0}, has independent increments,
 and for \eqn{0 \le s < t},
-\deqn{X(t) - X(s) \sim Meixner\big(a, b, d (t - s), m (t - s)\big).}
-Hence \eqn{E[X(t)] = (m + a d \tan(b/2))\, t} and
-\eqn{Var(X(t)) = a^2 d\, t / (2 \cos^2(b/2))}. It is a Lévy process whose
+\deqn{X_t - X_s \sim Meixner\big(a, b, d (t - s), m (t - s)\big).}
+Hence \eqn{E[X_t] = (m + a d \tan(b/2))\, t} and
+\eqn{Var(X_t) = a^2 d\, t / (2 \cos^2(b/2))}. It is a Lévy process whose
 trajectories are not monotone, purely made of jumps, of infinite
 variation: \eqn{a} is a scale parameter, \eqn{b} sets the asymmetry,
 \eqn{d} the shape and \eqn{m} the location.

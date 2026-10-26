@@ -90,7 +90,7 @@ with three independent variables
 \eqn{S \sim \mathrm{GIG}(p, \kappa^2, \Delta^2)} (density proportional to
 \eqn{s^{p - 1} \exp(-(\kappa^2 s + \Delta^2 / s) / 2)}),
 \eqn{Y \sim \mathrm{Beta}(\tau_1 / \nu, \tau_2 / \nu)} and
-\eqn{\xi \sim N(0, 1)}. \eqn{S / \sigma^2} is the increment of the clock
+\eqn{\xi \sim \mathcal{N}(0, 1)}. \eqn{S / \sigma^2} is the increment of the clock
 \eqn{\gamma} over \eqn{[t_A, t_B]}, \eqn{Y} the fraction of it reached at
 \eqn{t}, and, given the clock, \eqn{X} is a Brownian bridge. The law of the
 bridge depends on \eqn{(\theta, \sigma, \nu)} only through \eqn{\nu} and

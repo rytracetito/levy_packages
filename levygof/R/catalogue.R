@@ -42,7 +42,7 @@ catalogue <- list(
 #' statistics are kept, which gives both the p-value and the critical value.
 #'
 #' **Wiener process (`"HWP"`)**, increments
-#' \eqn{N(\mu \Delta, \sigma^2 \Delta)}: tests of normality with estimated
+#' \eqn{\mathcal{N}(\mu \Delta, \sigma^2 \Delta)}: tests of normality with estimated
 #' mean and variance.
 #' * `"AD"`, `"CvM"`, `"Lilliefors"`: Anderson-Darling, Cramer-von Mises and
 #'   Lilliefors tests (`nortest`). The Lilliefors test is the

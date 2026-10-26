@@ -94,7 +94,7 @@ depend on \eqn{\mu}: only \eqn{\eta} is needed.
 
 The simulation combines this mixture with the method of Michael, Schucany
 and Haas (1976), with one Gaussian and one uniform variable: with
-\eqn{q = Z^2}, \eqn{Z \sim N(0, 1)}, the two roots
+\eqn{q = Z^2}, \eqn{Z \sim \mathcal{N}(0, 1)}, the two roots
 \deqn{w_2 = m + \frac{m^2 q}{2 \lambda} + \frac{m}{2 \lambda} \sqrt{4 m \lambda q + m^2 q^2}, \qquad w_1 = m^2 / w_2,}
 and \eqn{W = w_1} with probability
 \eqn{\tau_1 (1 + w_1) / (T (m + w_1))}, \eqn{W = w_2} otherwise. The small

@@ -20,11 +20,11 @@ plan per trajectory (\code{n_traj} is then ignored).
 }}
 
 \item{mu}{Drift of the homogeneous process, real: mean degradation per unit
-of time. Not given when \code{A} is given (the mean of \eqn{X(t)} is then
+of time. Not given when \code{A} is given (the mean of \eqn{X_t} is then
 \eqn{A(t)}).}
 
 \item{sigma}{Diffusion coefficient, \eqn{\sigma > 0}: standard deviation
-(not variance) of \eqn{X(t) - X(s)} for \eqn{t - s = 1} (homogeneous
+(not variance) of \eqn{X_t - X_s} for \eqn{t - s = 1} (homogeneous
 case) or \eqn{A(t) - A(s) = 1} (time-scaled case).}
 
 \item{A}{\code{NULL} (default) for the homogeneous process, or the time change
@@ -64,26 +64,26 @@ time-scaled Wiener process, obtained by a time change \eqn{A}.
 }
 \section{Model}{
 
-\eqn{B} denotes a standard Brownian motion and \eqn{N(m, v)} the normal
+\eqn{B} denotes a standard Brownian motion and \eqn{\mathcal{N}(m, v)} the normal
 distribution with mean \eqn{m} and variance \eqn{v}.
 
 \strong{Homogeneous Wiener process} (\code{A = NULL}, default). Let \eqn{\mu} be
 real and \eqn{\sigma > 0}. The process is
-\deqn{X(t) = \mu t + \sigma B(t), \qquad t \ge 0,}
+\deqn{X_t = \mu t + \sigma B_t, \qquad t \ge 0,}
 where \eqn{\mu} is the drift parameter (expected to be positive for a
 degradation) and \eqn{\sigma^2} the variance (or volatility) parameter. It
-has independent increments \eqn{X(t) - X(s) \sim N(\mu (t - s), \sigma^2 (t - s))},
-\eqn{E[X(t)] = \mu t} and \eqn{Var(X(t)) = \sigma^2 t}. It is a Lévy
+has independent increments \eqn{X_t - X_s \sim \mathcal{N}(\mu (t - s), \sigma^2 (t - s))},
+\eqn{E[X_t] = \mu t} and \eqn{Var(X_t) = \sigma^2 t}. It is a Lévy
 process with continuous, non-monotone trajectories.
 
 \strong{Time-scaled Wiener process} (\code{A} given). With the time change \eqn{A}
 defined in \link{DegradSim-package},
-\deqn{X(t) = A(t) + \sigma B(A(t)), \qquad t \ge 0,}
-that is \eqn{X(t) = Y(A(t))} with \eqn{Y(u) = u + \sigma B(u)}: the drift
+\deqn{X_t = A(t) + \sigma B_{A(t)}, \qquad t \ge 0,}
+that is \eqn{X_t = Y_{A(t)}} with \eqn{Y_u = u + \sigma B_u}: the drift
 is set to \eqn{\mu = 1} (identifiability, see \link{DegradSim-package}), as in
 Cha and Mercier (2019, Example 1). Its increments are independent,
-\eqn{X(t) - X(s) \sim N(A(t) - A(s), \sigma^2 (A(t) - A(s)))},
-\eqn{E[X(t)] = A(t)} and \eqn{Var(X(t)) = \sigma^2 A(t)}.
+\eqn{X_t - X_s \sim \mathcal{N}(A(t) - A(s), \sigma^2 (A(t) - A(s)))},
+\eqn{E[X_t] = A(t)} and \eqn{Var(X_t) = \sigma^2 A(t)}.
 }
 
 \section{Exact simulation}{
@@ -92,7 +92,7 @@ Random walk approximation, described in \link{DegradSim-package} (Kahle et
 al., 2016, algorithm 1.7): the increments
 \eqn{\Delta X_i = \mu \Delta t_i + \sigma \sqrt{\Delta t_i}\, Z_i} or
 \eqn{\Delta X_i = \Delta A_i + \sigma \sqrt{\Delta A_i}\, Z_i}, with
-\eqn{Z_i} independent \eqn{N(0, 1)} drawn with \code{\link[stats:Normal]{stats::rnorm()}}, are
+\eqn{Z_i} independent \eqn{\mathcal{N}(0, 1)} drawn with \code{\link[stats:Normal]{stats::rnorm()}}, are
 cumulated.
 }
 
@@ -123,7 +123,7 @@ x <- sim_wiener(list(c(0, 1, 3, 6), c(0, 2, 4, 6, 8, 10)), mu = 0.5, sigma = 1.5
 x[[2]]
 x[[2]]$X
 
-# 5. Time-scaled Wiener process X(t) = A(t) + sigma B(A(t)) with
+# 5. Time-scaled Wiener process X_t = A(t) + sigma B_{A(t)} with
 #    A(t) = 0.5 t^1.5 (Cha and Mercier, 2019, Example 1)
 x <- sim_wiener(t, sigma = 1.5, A = function(t) 0.5 * t^1.5, n_traj = 10)
 x

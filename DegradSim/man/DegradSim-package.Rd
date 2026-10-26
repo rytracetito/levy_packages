@@ -12,7 +12,7 @@ degradation trajectories of two families of processes:
 \item \strong{Lévy processes} (homogeneous case): gamma, Wiener, inverse Gaussian,
 variance-gamma and Meixner processes;
 \item \strong{non-homogeneous Lévy processes} obtained by a time change
-\eqn{X(t) = Y(A(t))} of a Lévy process \eqn{Y}: gamma, Wiener and
+\eqn{X_t = Y_{A(t)}} of a Lévy process \eqn{Y}: gamma, Wiener and
 inverse Gaussian processes.
 }
 }
@@ -54,9 +54,9 @@ and Meixner distributions are infinitely divisible.
 
 The simulation functions, with the distribution of an increment over a time
 \eqn{\Delta t = t - s}:\tabular{llll}{
-   Function \tab Process \tab Parameters \tab \eqn{X(t) - X(s)} \cr
+   Function \tab Process \tab Parameters \tab \eqn{X_t - X_s} \cr
    \code{\link[=sim_gamma]{sim_gamma()}} \tab gamma \tab \code{a}, \code{b} \tab \eqn{\Gamma(a \Delta t, b)}, rate \eqn{b} \cr
-   \code{\link[=sim_wiener]{sim_wiener()}} \tab Wiener with drift \tab \code{mu}, \code{sigma} \tab \eqn{N(\mu \Delta t, \sigma^2 \Delta t)} \cr
+   \code{\link[=sim_wiener]{sim_wiener()}} \tab Wiener with drift \tab \code{mu}, \code{sigma} \tab \eqn{\mathcal{N}(\mu \Delta t, \sigma^2 \Delta t)} \cr
    \code{\link[=sim_ig]{sim_ig()}} \tab inverse Gaussian \tab \code{mu}, \code{eta} \tab \eqn{IG(\mu \Delta t, \eta \Delta t^2)} \cr
    \code{\link[=sim_vg]{sim_vg()}} \tab variance-gamma \tab \code{theta}, \code{sigma}, \code{nu} \tab \eqn{VG(\theta, \sigma, \nu)} over \eqn{\Delta t} \cr
    \code{\link[=sim_meixner]{sim_meixner()}} \tab Meixner \tab \code{a}, \code{b}, \code{d}, \code{m} \tab \eqn{Meixner(a, b, d \Delta t, m \Delta t)} \cr
@@ -69,10 +69,10 @@ The simulation functions, with the distribution of an increment over a time
 non-decreasing function, right-continuous with left limits, with
 \eqn{A(0) = 0} and \eqn{A(t) \to +\infty} as \eqn{t \to +\infty}, and let
 \eqn{Y} be a homogeneous Lévy process. The process
-\deqn{X(t) = Y(A(t)), \qquad t \ge 0,}
+\deqn{X_t = Y_{A(t)}, \qquad t \ge 0,}
 is a non-homogeneous Lévy process (Kahle et al., 2016, p. xix-xx; Cha and
-Mercier, 2019, section 2): \eqn{X(0) = 0}, its increments are independent
-and \eqn{X(t) - X(s)} has the distribution of \eqn{Y(A(t) - A(s))}. Its
+Mercier, 2019, section 2): \eqn{X_0 = 0}, its increments are independent
+and \eqn{X_t - X_s} has the distribution of \eqn{Y_{A(t) - A(s)}}. Its
 increments are not stationary when \eqn{A} is not linear. When \eqn{A} is
 continuous, \eqn{X} is also stochastically continuous: it is an additive
 process in the sense of Sato (2001, p. 3), that is a process satisfying
@@ -92,14 +92,14 @@ constant between two inspection times, the increment of \eqn{X} is 0.
 cannot be identified separately: replacing \eqn{A} by \eqn{c A} can be
 compensated by a change of this parameter. This parameter is therefore set
 to 1 and contained in \eqn{A}. With \eqn{\Delta A = A(t) - A(s)}:\tabular{lllll}{
-   Function \tab Parameters \tab \eqn{X(t) - X(s)} \tab Fixed \tab Homogeneous case \cr
+   Function \tab Parameters \tab \eqn{X_t - X_s} \tab Fixed \tab Homogeneous case \cr
    \code{\link[=sim_gamma]{sim_gamma()}} \tab \code{b}, \code{A} \tab \eqn{\Gamma(\Delta A, b)} \tab \eqn{a = 1} \tab \eqn{A(t) = a t} \cr
-   \code{\link[=sim_wiener]{sim_wiener()}} \tab \code{sigma}, \code{A} \tab \eqn{N(\Delta A, \sigma^2 \Delta A)} \tab \eqn{\mu = 1} \tab \eqn{A(t) = \mu t}, \eqn{\sigma / \sqrt{\mu}} \cr
+   \code{\link[=sim_wiener]{sim_wiener()}} \tab \code{sigma}, \code{A} \tab \eqn{\mathcal{N}(\Delta A, \sigma^2 \Delta A)} \tab \eqn{\mu = 1} \tab \eqn{A(t) = \mu t}, \eqn{\sigma / \sqrt{\mu}} \cr
    \code{\link[=sim_ig]{sim_ig()}} \tab \code{eta}, \code{A} \tab \eqn{IG(\Delta A, \eta \Delta A^2)} \tab \eqn{\mu = 1} \tab \eqn{A(t) = \mu t}, \eqn{\eta / \mu^2} \cr
 }
 
 
-The time-scaled Wiener process is \eqn{X(t) = A(t) + \sigma B(A(t))}, with
+The time-scaled Wiener process is \eqn{X_t = A(t) + \sigma B_{A(t)}}, with
 \eqn{B} a standard Brownian motion. The last column gives the time change
 (and the parameter) that give back the homogeneous process of the first
 table: for instance, for the gamma process, replacing \eqn{A} by \eqn{c A}
@@ -177,9 +177,9 @@ distributions. The values at the inspection times
 \eqn{0 = t_0 < t_1 < \dots < t_n} are therefore simulated by the random walk
 approximation (RWA) of Kahle et al. (2016, algorithms 1.7 and 2.32):
 independent increments \eqn{\Delta X_i} with the distribution of
-\eqn{X(t_i) - X(t_{i-1})} are drawn, then \eqn{X(t_0) = 0} and
-\eqn{X(t_i) = \Delta X_1 + \dots + \Delta X_i}. The vector
-\eqn{(X(t_1), \dots, X(t_n))} has exactly the distribution of the process
+\eqn{X_{t_i} - X_{t_{i-1}}} are drawn, then \eqn{X_{t_0} = 0} and
+\eqn{X_{t_i} = \Delta X_1 + \dots + \Delta X_i}. The vector
+\eqn{(X_{t_1}, \dots, X_{t_n})} has exactly the distribution of the process
 at the inspection times; the name "approximation" refers only to the path
 between two inspection times, which is not simulated. Algorithm 2.32 is
 written for the gamma process, but the same scheme applies to every process

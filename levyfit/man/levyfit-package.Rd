@@ -113,7 +113,7 @@ process, \eqn{\widehat{se}(\hat\mu) = \hat\sigma / \sqrt{T}} and
 \section{Parametrizations}{
 
 \itemize{
-\item Wiener: \eqn{X_t - X_s \sim N(\mu (t - s), \sigma^2 (t - s))}.
+\item Wiener: \eqn{X_t - X_s \sim \mathcal{N}(\mu (t - s), \sigma^2 (t - s))}.
 \item Gamma: \eqn{X_t - X_s \sim \Gamma(a (t - s), b)}, shape \eqn{a(t - s)} and
 \strong{rate} \eqn{b}, so that \eqn{E[X_t] = a t / b}. The scale is \eqn{1 / b}.
 \item Inverse Gaussian: \eqn{X_t - X_s \sim IG(\mu (t - s), \eta (t - s)^2)}.

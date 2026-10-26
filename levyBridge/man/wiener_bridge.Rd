@@ -75,7 +75,7 @@ exact simulation of the Brownian bridge between the known values.
 The Wiener process with drift \eqn{\mu} and volatility \eqn{\sigma > 0} is
 \eqn{X_t = \mu t + \sigma B_t}, with \eqn{B} a standard Brownian motion:
 \eqn{X_0 = 0}, independent increments and
-\eqn{X_t - X_s \sim N(\mu (t - s), \sigma^2 (t - s))}. Its trajectories are
+\eqn{X_t - X_s \sim \mathcal{N}(\mu (t - s), \sigma^2 (t - s))}. Its trajectories are
 not monotone.
 }
 

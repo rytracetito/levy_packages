@@ -6,16 +6,16 @@
 #' @section Model:
 #' Let \eqn{\theta} be real, \eqn{\sigma > 0} and \eqn{\nu > 0}. Let \eqn{G}
 #' be a gamma process with
-#' \eqn{G(t) - G(s) \sim \Gamma((t - s) / \nu, \text{rate } 1 / \nu)}, so that
-#' \eqn{E[G(t)] = t} and \eqn{Var(G(t)) = \nu t}, and \eqn{B} an independent
+#' \eqn{G_t - G_s \sim \Gamma((t - s) / \nu, \text{rate } 1 / \nu)}, so that
+#' \eqn{E[G_t] = t} and \eqn{Var(G_t) = \nu t}, and \eqn{B} an independent
 #' standard Brownian motion. The VG process is the Brownian motion with drift
 #' evaluated at the random clock \eqn{G}:
-#' \deqn{X(t) = \theta G(t) + \sigma B(G(t)), \qquad t \ge 0.}
-#' It is a Lévy process: \eqn{X(0) = 0}, its increments are independent and
-#' stationary, \eqn{E[X(t)] = \theta t} and
-#' \eqn{Var(X(t)) = (\sigma^2 + \theta^2 \nu)\, t}. The trajectories are not
+#' \deqn{X_t = \theta G_t + \sigma B_{G_t}, \qquad t \ge 0.}
+#' It is a Lévy process: \eqn{X_0 = 0}, its increments are independent and
+#' stationary, \eqn{E[X_t] = \theta t} and
+#' \eqn{Var(X_t) = (\sigma^2 + \theta^2 \nu)\, t}. The trajectories are not
 #' monotone, purely made of jumps, of finite variation. As \eqn{\nu \to 0}, the
-#' VG process tends to the Wiener process \eqn{\theta t + \sigma B(t)}.
+#' VG process tends to the Wiener process \eqn{\theta t + \sigma B_t}.
 #'
 #' @section Exact simulation:
 #' Random walk approximation, described in [DegradSim-package]: each
@@ -25,11 +25,11 @@
 #'
 #' **Method 1, subordination** (`method = "subordination"`, default).
 #' Conditionally on the clock increment \eqn{\Delta G},
-#' \eqn{X(t) - X(s) \sim N(\theta \Delta G, \sigma^2 \Delta G)}:
+#' \eqn{X_t - X_s \sim \mathcal{N}(\theta \Delta G, \sigma^2 \Delta G)}:
 #' 1. draw independently \eqn{\Delta G_i \sim \Gamma(\Delta t_i / \nu)} with
 #'    scale \eqn{\nu};
 #' 2. \eqn{\Delta X_i = \theta \Delta G_i + \sigma \sqrt{\Delta G_i}\, Z_i},
-#'    with \eqn{Z_i} independent \eqn{N(0, 1)}.
+#'    with \eqn{Z_i} independent \eqn{\mathcal{N}(0, 1)}.
 #'
 #' This method follows the definition of the process and also gives the
 #' random clock \eqn{G}.

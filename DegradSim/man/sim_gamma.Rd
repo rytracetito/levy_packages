@@ -67,18 +67,18 @@ process, obtained by a time change \eqn{A}.
 \eqn{b^k x^{k-1} e^{-bx} / \Gamma(k)}, \eqn{x > 0}.
 
 \strong{Homogeneous gamma process} (\code{A = NULL}, default). Let \eqn{a > 0} and
-\eqn{b > 0}. The process satisfies \eqn{X(0) = 0}, has independent
+\eqn{b > 0}. The process satisfies \eqn{X_0 = 0}, has independent
 increments, and for \eqn{0 \le s < t},
-\deqn{X(t) - X(s) \sim \Gamma\big(a (t - s),\ b\big).}
-Then \eqn{E[X(t)] = a t / b} and \eqn{Var(X(t)) = a t / b^2}. It is a Lévy
+\deqn{X_t - X_s \sim \Gamma\big(a (t - s),\ b\big).}
+Then \eqn{E[X_t] = a t / b} and \eqn{Var(X_t) = a t / b^2}. It is a Lévy
 process, increasing and purely made of jumps.
 
 \strong{Non-homogeneous gamma process} (\code{A} given). With the time change
-\eqn{A} defined in \link{DegradSim-package}, \eqn{X(t) = Y(A(t))}, where \eqn{Y}
+\eqn{A} defined in \link{DegradSim-package}, \eqn{X_t = Y_{A(t)}}, where \eqn{Y}
 is the homogeneous gamma process with \eqn{a = 1} (identifiability, see
 \link{DegradSim-package}) and rate \eqn{b}:
-\deqn{X(t) - X(s) \sim \Gamma\big(A(t) - A(s),\ b\big),}
-\eqn{E[X(t)] = A(t) / b} and \eqn{Var(X(t)) = A(t) / b^2}. This is the
+\deqn{X_t - X_s \sim \Gamma\big(A(t) - A(s),\ b\big),}
+\eqn{E[X_t] = A(t) / b} and \eqn{Var(X_t) = A(t) / b^2}. This is the
 gamma process with shape function \eqn{A} of Kahle et al. (2016,
 chapter 2) and of Cha and Mercier (2019, Example 2). A classical choice is
 \eqn{A(t) = c\, t^\beta}.
@@ -122,7 +122,7 @@ x[[2]]$X
 x[[2]][, 2]
 
 # 5. Non-homogeneous process with the time change A(t) = 2 t^1.5
-#    (Cha and Mercier, 2019, Example 2): X(t) - X(s) ~ Gamma(A(t) - A(s), b)
+#    (Cha and Mercier, 2019, Example 2): X_t - X_s ~ Gamma(A(t) - A(s), b)
 x <- sim_gamma(t, b = 3, A = function(t) 2 * t^1.5, n_traj = 10)
 x
 plot_traj(x, "Non-homogeneous gamma process")

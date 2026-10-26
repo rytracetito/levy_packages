@@ -5,7 +5,7 @@
 #' 1. **Lévy processes** (homogeneous case): gamma, Wiener, inverse Gaussian,
 #'    variance-gamma and Meixner processes;
 #' 2. **non-homogeneous Lévy processes** obtained by a time change
-#'    \eqn{X(t) = Y(A(t))} of a Lévy process \eqn{Y}: gamma, Wiener and
+#'    \eqn{X_t = Y_{A(t)}} of a Lévy process \eqn{Y}: gamma, Wiener and
 #'    inverse Gaussian processes.
 #'
 #' The inspection times can be irregular and differ from one trajectory to
@@ -43,10 +43,10 @@
 #' The simulation functions, with the distribution of an increment over a time
 #' \eqn{\Delta t = t - s}:
 #'
-#' | Function | Process | Parameters | \eqn{X(t) - X(s)} |
+#' | Function | Process | Parameters | \eqn{X_t - X_s} |
 #' |---|---|---|---|
 #' | [sim_gamma()] | gamma | `a`, `b` | \eqn{\Gamma(a \Delta t, b)}, rate \eqn{b} |
-#' | [sim_wiener()] | Wiener with drift | `mu`, `sigma` | \eqn{N(\mu \Delta t, \sigma^2 \Delta t)} |
+#' | [sim_wiener()] | Wiener with drift | `mu`, `sigma` | \eqn{\mathcal{N}(\mu \Delta t, \sigma^2 \Delta t)} |
 #' | [sim_ig()] | inverse Gaussian | `mu`, `eta` | \eqn{IG(\mu \Delta t, \eta \Delta t^2)} |
 #' | [sim_vg()] | variance-gamma | `theta`, `sigma`, `nu` | \eqn{VG(\theta, \sigma, \nu)} over \eqn{\Delta t} |
 #' | [sim_meixner()] | Meixner | `a`, `b`, `d`, `m` | \eqn{Meixner(a, b, d \Delta t, m \Delta t)} |
@@ -56,10 +56,10 @@
 #' non-decreasing function, right-continuous with left limits, with
 #' \eqn{A(0) = 0} and \eqn{A(t) \to +\infty} as \eqn{t \to +\infty}, and let
 #' \eqn{Y} be a homogeneous Lévy process. The process
-#' \deqn{X(t) = Y(A(t)), \qquad t \ge 0,}
+#' \deqn{X_t = Y_{A(t)}, \qquad t \ge 0,}
 #' is a non-homogeneous Lévy process (Kahle et al., 2016, p. xix-xx; Cha and
-#' Mercier, 2019, section 2): \eqn{X(0) = 0}, its increments are independent
-#' and \eqn{X(t) - X(s)} has the distribution of \eqn{Y(A(t) - A(s))}. Its
+#' Mercier, 2019, section 2): \eqn{X_0 = 0}, its increments are independent
+#' and \eqn{X_t - X_s} has the distribution of \eqn{Y_{A(t) - A(s)}}. Its
 #' increments are not stationary when \eqn{A} is not linear. When \eqn{A} is
 #' continuous, \eqn{X} is also stochastically continuous: it is an additive
 #' process in the sense of Sato (2001, p. 3), that is a process satisfying
@@ -80,13 +80,13 @@
 #' compensated by a change of this parameter. This parameter is therefore set
 #' to 1 and contained in \eqn{A}. With \eqn{\Delta A = A(t) - A(s)}:
 #'
-#' | Function | Parameters | \eqn{X(t) - X(s)} | Fixed | Homogeneous case |
+#' | Function | Parameters | \eqn{X_t - X_s} | Fixed | Homogeneous case |
 #' |---|---|---|---|---|
 #' | [sim_gamma()] | `b`, `A` | \eqn{\Gamma(\Delta A, b)} | \eqn{a = 1} | \eqn{A(t) = a t} |
-#' | [sim_wiener()] | `sigma`, `A` | \eqn{N(\Delta A, \sigma^2 \Delta A)} | \eqn{\mu = 1} | \eqn{A(t) = \mu t}, \eqn{\sigma / \sqrt{\mu}} |
+#' | [sim_wiener()] | `sigma`, `A` | \eqn{\mathcal{N}(\Delta A, \sigma^2 \Delta A)} | \eqn{\mu = 1} | \eqn{A(t) = \mu t}, \eqn{\sigma / \sqrt{\mu}} |
 #' | [sim_ig()] | `eta`, `A` | \eqn{IG(\Delta A, \eta \Delta A^2)} | \eqn{\mu = 1} | \eqn{A(t) = \mu t}, \eqn{\eta / \mu^2} |
 #'
-#' The time-scaled Wiener process is \eqn{X(t) = A(t) + \sigma B(A(t))}, with
+#' The time-scaled Wiener process is \eqn{X_t = A(t) + \sigma B_{A(t)}}, with
 #' \eqn{B} a standard Brownian motion. The last column gives the time change
 #' (and the parameter) that give back the homogeneous process of the first
 #' table: for instance, for the gamma process, replacing \eqn{A} by \eqn{c A}
@@ -152,9 +152,9 @@
 #' \eqn{0 = t_0 < t_1 < \dots < t_n} are therefore simulated by the random walk
 #' approximation (RWA) of Kahle et al. (2016, algorithms 1.7 and 2.32):
 #' independent increments \eqn{\Delta X_i} with the distribution of
-#' \eqn{X(t_i) - X(t_{i-1})} are drawn, then \eqn{X(t_0) = 0} and
-#' \eqn{X(t_i) = \Delta X_1 + \dots + \Delta X_i}. The vector
-#' \eqn{(X(t_1), \dots, X(t_n))} has exactly the distribution of the process
+#' \eqn{X_{t_i} - X_{t_{i-1}}} are drawn, then \eqn{X_{t_0} = 0} and
+#' \eqn{X_{t_i} = \Delta X_1 + \dots + \Delta X_i}. The vector
+#' \eqn{(X_{t_1}, \dots, X_{t_n})} has exactly the distribution of the process
 #' at the inspection times; the name "approximation" refers only to the path
 #' between two inspection times, which is not simulated. Algorithm 2.32 is
 #' written for the gamma process, but the same scheme applies to every process

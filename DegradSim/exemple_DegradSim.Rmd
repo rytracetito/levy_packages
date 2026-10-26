@@ -22,7 +22,7 @@ Installation du package depuis GitHub :
 remotes::install_github("rytracetito/levy_packages", subdir = "DegradSim")
 ```
 
-Les parties I et II utilisent les **processus de Lévy** (cas homogène, `A = NULL` par défaut). La partie III montre les **processus de Lévy non homogènes** $X(t) = Y(A(t))$ obtenus par un changement de temps $A$ : gamma, Wiener et inverse gaussien.
+Les parties I et II utilisent les **processus de Lévy** (cas homogène, `A = NULL` par défaut). La partie III montre les **processus de Lévy non homogènes** $X_t = Y_{A(t)}$ obtenus par un changement de temps $A$ : gamma, Wiener et inverse gaussien.
 
 Paramètres utilisés :
 
@@ -589,12 +589,12 @@ ewpage
 
 # III - Processus de Lévy non homogènes
 
-Un changement de temps $A$ (fonction croissante, continue à droite avec des limites à gauche, $A(0) = 0$ et $A(t) \to +\infty$) donne le processus $X(t) = Y(A(t))$, où $Y$ est un processus de Lévy. Le paramètre que $A$ remplace (identifiabilité) n'est alors pas donné :
+Un changement de temps $A$ (fonction croissante, continue à droite avec des limites à gauche, $A(0) = 0$ et $A(t) \to +\infty$) donne le processus $X_t = Y_{A(t)}$, où $Y$ est un processus de Lévy. Le paramètre que $A$ remplace (identifiabilité) n'est alors pas donné :
 
-| Processus | Fonction | $X(t) - X(s)$, $\Delta A = A(t) - A(s)$ | Cas homogène |
+| Processus | Fonction | $X_t - X_s$, $\Delta A = A(t) - A(s)$ | Cas homogène |
 |---|---|---|---|
 | Gamma | `sim_gamma(t, b, A)` | $\Gamma(\Delta A, b)$ | $A(t) = a t$ |
-| Wiener | `sim_wiener(t, sigma, A)` | $N(\Delta A, \sigma^2 \Delta A)$ | $A(t) = \mu t$, $\sigma / \sqrt{\mu}$ |
+| Wiener | `sim_wiener(t, sigma, A)` | $\mathcal{N}(\Delta A, \sigma^2 \Delta A)$ | $A(t) = \mu t$, $\sigma / \sqrt{\mu}$ |
 | Inverse gaussien | `sim_ig(t, eta, A)` | $IG(\Delta A, \eta \Delta A^2)$ | $A(t) = \mu t$, $\eta / \mu^2$ |
 
 On prend $A(t) = 0.02\, t^{1.5}$, de sorte que $A(100) = 20$, et les 10 trajectoires du cas 2 de la partie II (inspections croissantes).

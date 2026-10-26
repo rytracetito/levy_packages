@@ -20,11 +20,11 @@ plan per trajectory (\code{n_traj} is then ignored).
 }}
 
 \item{mu}{Mean degradation per unit of time of the homogeneous process,
-\eqn{\mu > 0}. Not given when \code{A} is given (the mean of \eqn{X(t)} is then
+\eqn{\mu > 0}. Not given when \code{A} is given (the mean of \eqn{X_t} is then
 \eqn{A(t)}).}
 
 \item{eta}{Shape parameter, \eqn{\eta > 0}: the larger \eqn{\eta}, the less
-variable the increments. The variance of \eqn{X(t)} is
+variable the increments. The variance of \eqn{X_t} is
 \eqn{\mu^3 t / \eta} (homogeneous case) or \eqn{A(t) / \eta}
 (non-homogeneous case).}
 
@@ -71,19 +71,19 @@ non-homogeneous IG process, obtained by a time change \eqn{A}.
 and variance \eqn{m^3 / \lambda}.
 
 \strong{Homogeneous IG process} (\code{A = NULL}, default). Let \eqn{\mu > 0} and
-\eqn{\eta > 0}. The process satisfies \eqn{X(0) = 0}, has independent
+\eqn{\eta > 0}. The process satisfies \eqn{X_0 = 0}, has independent
 increments, and for \eqn{0 \le s < t},
-\deqn{X(t) - X(s) \sim IG\big(\mu (t - s),\ \eta (t - s)^2\big),}
-with the parametrization of Wang and Xu (2010). Then \eqn{E[X(t)] = \mu t}
-and \eqn{Var(X(t)) = \mu^3 t / \eta}. It is a Lévy process, increasing and
+\deqn{X_t - X_s \sim IG\big(\mu (t - s),\ \eta (t - s)^2\big),}
+with the parametrization of Wang and Xu (2010). Then \eqn{E[X_t] = \mu t}
+and \eqn{Var(X_t) = \mu^3 t / \eta}. It is a Lévy process, increasing and
 purely made of jumps.
 
 \strong{Non-homogeneous IG process} (\code{A} given). With the time change \eqn{A}
-defined in \link{DegradSim-package}, \eqn{X(t) = Y(A(t))}, where \eqn{Y} is the
+defined in \link{DegradSim-package}, \eqn{X_t = Y_{A(t)}}, where \eqn{Y} is the
 homogeneous IG process with \eqn{\mu = 1} (identifiability, see
 \link{DegradSim-package}):
-\deqn{X(t) - X(s) \sim IG\big(A(t) - A(s),\ \eta\, (A(t) - A(s))^2\big),}
-\eqn{E[X(t)] = A(t)} and \eqn{Var(X(t)) = A(t) / \eta}. This is the
+\deqn{X_t - X_s \sim IG\big(A(t) - A(s),\ \eta\, (A(t) - A(s))^2\big),}
+\eqn{E[X_t] = A(t)} and \eqn{Var(X_t) = A(t) / \eta}. This is the
 non-homogeneous IG process with mean function \eqn{A} of Cha and Mercier
 (2019, Example 3), whose parameter \eqn{b} is \eqn{\eta}.
 }
@@ -98,7 +98,7 @@ increments \eqn{\Delta X_i \sim IG(m_i, \lambda_i)}, with
 independently, then cumulated. Each increment \eqn{IG(m, \lambda)} is drawn
 by the method of Michael, Schucany and Haas (1976), based on
 \eqn{\lambda (X - m)^2 / (m^2 X) \sim \chi^2_1}: draw
-\eqn{Z \sim N(0, 1)}, set \eqn{\nu = Z^2},
+\eqn{Z \sim \mathcal{N}(0, 1)}, set \eqn{\nu = Z^2},
 \eqn{x_1 = m + m^2 \nu / (2\lambda) - m \sqrt{4 m \lambda \nu + m^2 \nu^2} / (2\lambda)},
 and return \eqn{x_1} with probability \eqn{m / (m + x_1)}, otherwise
 \eqn{m^2 / x_1}.
@@ -132,7 +132,7 @@ x[[2]]
 x[[2]]$X
 
 # 5. Non-homogeneous IG process with mean function A(t) = 0.5 t^1.5
-#    (Cha and Mercier, 2019, Example 3): X(t) - X(s) ~ IG(dA, eta dA^2)
+#    (Cha and Mercier, 2019, Example 3): X_t - X_s ~ IG(dA, eta dA^2)
 x <- sim_ig(t, eta = 2, A = function(t) 0.5 * t^1.5, n_traj = 10)
 x
 plot_traj(x, "Non-homogeneous inverse Gaussian process")

@@ -42,7 +42,7 @@ numerical optimization.
 \section{Model and data}{
 
 The increments are independent and
-\eqn{X_t - X_s \sim N(\mu (t - s), \sigma^2 (t - s))} for \eqn{s < t}; they
+\eqn{X_t - X_s \sim \mathcal{N}(\mu (t - s), \sigma^2 (t - s))} for \eqn{s < t}; they
 can be negative. The trajectories are independent and have the same law;
 each one is observed at its own inspection times. Let
 \eqn{(\Delta t_j, \Delta x_j)}, \eqn{j = 1, \dots, m}, be the durations and
@@ -86,7 +86,7 @@ observations: the intermediate inspections only bring information on
 
 Writing the standardized increments as a Gaussian vector and applying an
 orthogonal rotation shows that, for \eqn{m \ge 2},
-\deqn{\hat\mu \sim N(\mu, \sigma^2 / T), \qquad \hat Q / \sigma^2 \sim \chi^2_{m-1},}
+\deqn{\hat\mu \sim \mathcal{N}(\mu, \sigma^2 / T), \qquad \hat Q / \sigma^2 \sim \chi^2_{m-1},}
 and that \eqn{\hat\mu} and \eqn{\hat Q} are independent. Hence
 \eqn{\hat\mu} is unbiased, while
 \eqn{E[\hat\sigma^2] = \frac{m - 1}{m} \sigma^2}: \eqn{\hat\sigma^2} is

@@ -89,7 +89,7 @@
 #' \eqn{\widehat{se}(\hat\sigma^2) = \hat\sigma^2 \sqrt{2 / m}}.
 #'
 #' @section Parametrizations:
-#' * Wiener: \eqn{X_t - X_s \sim N(\mu (t - s), \sigma^2 (t - s))}.
+#' * Wiener: \eqn{X_t - X_s \sim \mathcal{N}(\mu (t - s), \sigma^2 (t - s))}.
 #' * Gamma: \eqn{X_t - X_s \sim \Gamma(a (t - s), b)}, shape \eqn{a(t - s)} and
 #'   **rate** \eqn{b}, so that \eqn{E[X_t] = a t / b}. The scale is \eqn{1 / b}.
 #' * Inverse Gaussian: \eqn{X_t - X_s \sim IG(\mu (t - s), \eta (t - s)^2)}.
