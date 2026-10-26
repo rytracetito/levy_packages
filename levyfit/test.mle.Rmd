@@ -19,11 +19,11 @@ library(ggplot2)
 
 # Préparation
 
-Installation des packages depuis GitHub : `levyfit` pour l'estimation et `levysim` pour la simulation.
+Installation des packages depuis GitHub : `levyfit` pour l'estimation et `DegradSim` pour la simulation.
 
 ```{r, eval = FALSE}
 remotes::install_github("rytracetito/levy_packages", subdir = "levyfit")
-remotes::install_github("rytracetito/levy_packages", subdir = "levysim")
+remotes::install_github("rytracetito/levy_packages", subdir = "DegradSim")
 ```
 
 Tout le code de l'étude (vraies valeurs, plans, simulation, estimation, résumé des répétitions) est dans le fichier `test.mle_code.R`, placé dans le même dossier que ce rapport :
@@ -46,7 +46,7 @@ Vraies valeurs des paramètres :
 
 Pour chaque modèle, chaque plan d'inspection et chaque configuration (une trajectoire ou plusieurs trajectoires), on répète \(R\) fois :
 
-1. simulation des trajectoires avec `levysim` ;
+1. simulation des trajectoires avec `DegradSim` ;
 2. estimation avec `levyfit`, par exemple `gamma_mle(x, ci = TRUE)`, qui donne l'estimateur du maximum de vraisemblance et son intervalle de confiance asymptotique à 95 %.
 
 On résume ensuite les \(R\) estimations de chaque paramètre. Pour un paramètre de vraie valeur \(\psi\), on note :

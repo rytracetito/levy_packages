@@ -78,31 +78,31 @@
 #' in maintenance. *Reliability Engineering & System Safety*, 94(1), 2-21.
 #' \doi{10.1016/j.ress.2007.03.019}
 #'
-#' @seealso [wiener_mle()], [ig_mle()], [inspection_times()]
+#' @seealso [wiener_mle()], [ig_mle()]
 #'
-#' @examplesIf requireNamespace("levysim", quietly = TRUE)
+#' @examplesIf requireNamespace("DegradSim", quietly = TRUE)
 #' # 1. One trajectory inspected every time unit up to 50 (a = 2, b = 3)
 #' t <- seq(0, 50, by = 1)
 #' set.seed(1)
-#' x <- levysim::sim_gamma(t, a = 2, b = 3)
+#' x <- DegradSim::sim_gamma(t, a = 2, b = 3)
 #' gamma_mle(x)
 #'
 #' # The same trajectory given as two vectors: degradation levels, then times
 #' gamma_mle(x[, "X1"], t)
 #'
 #' # 2. One trajectory with irregular inspections, more and more frequent
-#' t <- inspection_times("increasing", n = 50, tmax = 50)$time
-#' x <- levysim::sim_gamma(t, a = 2, b = 3)
+#' t <- DegradSim::inspection_times("increasing", n = 50, tmax = 50)$time
+#' x <- DegradSim::sim_gamma(t, a = 2, b = 3)
 #' gamma_mle(x)
 #'
 #' # 3. Ten trajectories with the same inspection times
 #' t <- seq(0, 50, by = 5)
-#' x <- levysim::sim_gamma(t, a = 2, b = 3, n_traj = 10)
+#' x <- DegradSim::sim_gamma(t, a = 2, b = 3, n_traj = 10)
 #' gamma_mle(x)
 #'
 #' # 4. Ten trajectories, each with its own inspection times
-#' plan <- inspection_times("decreasing", n = 5:14, n_traj = 10, tmax = 50)
-#' x <- levysim::sim_gamma(plan, a = 2, b = 3)
+#' plan <- DegradSim::inspection_times("decreasing", n = 5:14, n_traj = 10, tmax = 50)
+#' x <- DegradSim::sim_gamma(plan, a = 2, b = 3)
 #' gamma_mle(x)
 #'
 #' # 5. Estimates with 95 % confidence intervals

@@ -35,7 +35,7 @@
 #' [gof.levy()] accepts the formats of `levyfit` and `levyBridge`: a data
 #' frame (times, levels) for one trajectory, a list of such data frames for
 #' several trajectories with their own times, or a matrix (times, levels of
-#' each trajectory), as returned by the simulation functions of `levysim`.
+#' each trajectory), as returned by the simulation functions of `DegradSim`.
 #'
 #' @section Results:
 #' * `res` prints the model, the type of inspections, the time step, the

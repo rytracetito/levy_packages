@@ -1,0 +1,29 @@
+Package: DegradSim
+Title: Simulation of Lévy and Non-Homogeneous Lévy Degradation Processes
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Amedée Rytrace", "Tito", , "rytracetito5@gmail.com", role = c("aut", "cre")),
+    person("Christian", "Paroissin", , "christian.paroissin@univ-pau.fr", role = "aut")
+  )
+Description: Exact simulation, at given inspection times, of one or several
+    degradation trajectories of Lévy processes (gamma, Wiener, inverse
+    Gaussian, variance-gamma and Meixner processes) and of non-homogeneous
+    Lévy processes obtained by a time change X(t) = Y(A(t)) of a gamma,
+    Wiener or inverse Gaussian process (Kahle, Mercier and Paroissin, 2016,
+    ISBN:978-1-84821-888-8; Cha and Mercier, 2019,
+    <doi:10.1017/apr.2019.21>); inspection times with a chosen pattern,
+    plotting of the trajectories and extraction of the simulated data.
+License: GPL-3
+URL: https://github.com/rytracetito/levy_packages/tree/main/DegradSim, https://github.com/rytracetito/levy_packages
+BugReports: https://github.com/rytracetito/levy_packages/issues
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Imports:
+    ggplot2,
+    Runuran,
+    stats,
+    utils
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

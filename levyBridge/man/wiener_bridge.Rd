@@ -19,7 +19,7 @@ wiener_bridge(
 \item{x}{Degradation levels of one trajectory; or a list of data frames,
 one per trajectory, whose first column contains the inspection times and
 second column the degradation levels (for instance the result of a
-\code{levysim} simulation function).}
+\code{DegradSim} simulation function).}
 
 \item{t}{Inspection times of the trajectory, starting at 0 and strictly
 increasing. Not used when \code{x} is a list.}
@@ -282,10 +282,10 @@ plot_bridge(r3)
 
 # Error: the first time must be 0
 try(wiener_bridge(x, t + 1, sigma = 1.5))
-\dontshow{if (requireNamespace("levysim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
-# 9. Ten trajectories simulated with levysim, inspected more and more often
-plan <- levysim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
-sims <- levysim::sim_wiener(plan, mu = 0.5, sigma = 1.5)
+\dontshow{if (requireNamespace("DegradSim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+# 9. Ten trajectories simulated with DegradSim, inspected more and more often
+plan <- DegradSim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
+sims <- DegradSim::sim_wiener(plan, mu = 0.5, sigma = 1.5)
 
 # Parameters estimated with levyfit
 sigma_hat <- sqrt(levyfit::wiener_mle(sims)[["sigma2"]])

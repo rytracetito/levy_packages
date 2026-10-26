@@ -21,7 +21,6 @@ Estimation of the parameters (click on a function name for its help page):\tabul
    \code{\link[=ig_mle]{ig_mle()}} \tab inverse Gaussian \tab \code{mu}, \code{eta}, \code{eta_unbiased} \tab closed form \cr
    \code{\link[=vg_mle]{vg_mle()}} \tab variance-gamma \tab \code{theta}, \code{sigma}, \code{nu} \tab EM, then L-BFGS-B \cr
    \code{\link[=meixner_mle]{meixner_mle()}} \tab Meixner \tab \code{a}, \code{b}, \code{d}, \code{m} \tab profile likelihood \cr
-   \code{\link[=igam_mle]{igam_mle()}} \tab inverse gamma \tab \code{theta}, \code{alpha}, \code{beta} \tab forward filtering \cr
 }
 
 
@@ -31,9 +30,9 @@ Every estimation function returns the point estimates and, with
 estimator does not exist for the data, it gives a warning and returns \code{NA}
 estimates instead of stopping.
 
-Inspection schedules: \code{\link[=inspection_times]{inspection_times()}} gives inspection times on
-\eqn{[0, t_{max}]} for one or several trajectories, with a regular,
-increasing, decreasing or alternating number of inspections over time.
+Inspection times following a chosen pattern, and simulated trajectories
+to try the estimators, are given by the package \code{DegradSim}
+(\code{DegradSim::inspection_times()} and its simulation functions).
 }
 
 \section{Data}{
@@ -43,17 +42,15 @@ Every estimation function accepts the data in three forms:
 \item one trajectory: \code{f(x, t)}, with \code{x} the degradation levels and \code{t} the
 inspection times;
 \item several trajectories with the same inspection times: \code{f(x)}, with \code{x} the
-matrix returned by the \code{levysim} simulation functions (columns \code{t}, \code{X1},
+matrix returned by the \code{DegradSim} simulation functions (columns \code{t}, \code{X1},
 \code{X2}, ...);
 \item several trajectories, each with its own inspection times: \code{f(liste)},
 with \code{liste} a list of data frames, one per trajectory, whose first column
 contains the inspection times and second column the degradation levels.
 }
 
-The trajectories are assumed independent and with the same law. For the
-Lévy processes, the increments are computed within each trajectory and then
-pooled; for the inverse gamma process, which is not a Lévy process, the
-log-likelihoods of the trajectories are added.
+The trajectories are assumed independent and with the same law. The
+increments are computed within each trajectory and then pooled.
 }
 
 \section{Computation of the estimators}{
@@ -123,19 +120,17 @@ process, \eqn{\widehat{se}(\hat\mu) = \hat\sigma / \sqrt{T}} and
 \item Variance-gamma: \eqn{X_s = \theta \gamma_s + \sigma W_{\gamma_s}}, with
 \eqn{\gamma_s} of mean \eqn{s} and variance \eqn{\nu s}.
 \item Meixner: \eqn{X_s \sim Meixner(a, b, d s, m s)}.
-\item Inverse gamma: \eqn{W(t) = \inf\{w : T(w) > t\}}, with \eqn{T} a gamma
-process of shape \eqn{(w / \alpha)^\beta} and scale \eqn{\theta}.
 }
 }
 
 \examples{
-\dontshow{if (requireNamespace("levysim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+\dontshow{if (requireNamespace("DegradSim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 1. Inspection times: 10 trajectories inspected more and more often
-plan <- inspection_times("increasing", n = 20, n_traj = 10, tmax = 100)
+plan <- DegradSim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 100)
 
 # 2. Simulated data, here a gamma process (a = 2, b = 3)
 set.seed(1)
-x <- levysim::sim_gamma(plan, a = 2, b = 3)
+x <- DegradSim::sim_gamma(plan, a = 2, b = 3)
 
 # 3. Estimation of several models on the same data
 gamma_mle(x)
@@ -166,11 +161,6 @@ Review}, 2(1), 79-105. \doi{10.1023/A:1009703431535}
 \strong{Meixner process}: Schoutens, W. and Teugels, J. L. (1998). Lévy
 processes, polynomials and martingales. \emph{Communications in Statistics.
 Stochastic Models}, 14(1-2), 335-349.
-
-\strong{Inverse gamma process}: Guida, M. and Pulcini, G. (2013). The inverse
-Gamma process: a family of continuous stochastic models for describing
-state-dependent deterioration phenomena. \emph{Reliability Engineering & System
-Safety}, 120, 72-79. \doi{10.1016/j.ress.2013.03.013}
 
 The references of each method are given in the help page of each function.
 }

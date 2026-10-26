@@ -98,9 +98,9 @@
 #' Schoutens, W. (2002). The Meixner process: theory and applications in
 #' finance. EURANDOM report 2002-004.
 #'
-#' @seealso [vg_mle()], [inspection_times()]
+#' @seealso [vg_mle()]
 #'
-#' @examplesIf requireNamespace("levysim", quietly = TRUE)
+#' @examplesIf requireNamespace("DegradSim", quietly = TRUE)
 #' # The Meixner model needs many small increments: over long intervals its
 #' # increments are almost Gaussian and its parameters are hard to separate.
 #'
@@ -108,7 +108,7 @@
 #' #    (a = 1, b = 0.3, d = 1.5, m = 0.2)
 #' t <- seq(0, 500, by = 1)
 #' set.seed(1)
-#' x <- levysim::sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2)
+#' x <- DegradSim::sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2)
 #' meixner_mle(x)
 #'
 #' # The same trajectory given as two vectors: degradation levels, then times
@@ -116,7 +116,7 @@
 #'
 #' # 2. Twenty trajectories with the same inspection times
 #' t <- seq(0, 20, by = 1)
-#' x <- levysim::sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2, n_traj = 20)
+#' x <- DegradSim::sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2, n_traj = 20)
 #' meixner_mle(x)
 #'
 #' # 3. Estimates with 95 % confidence intervals
@@ -124,7 +124,7 @@
 #'
 #' # 4. Few increments over long intervals: the maximum is often at the
 #' #    boundary (Gaussian or shifted gamma limit): warning and NA estimates
-#' y <- levysim::sim_meixner(seq(0, 100, by = 10), a = 1, b = 0.3, d = 1.5, m = 0.2)
+#' y <- DegradSim::sim_meixner(seq(0, 100, by = 10), a = 1, b = 0.3, d = 1.5, m = 0.2)
 #' meixner_mle(y)
 #' @export
 meixner_mle <- function(x, t = NULL, ci = FALSE, level = 0.95, n_start = 5) {

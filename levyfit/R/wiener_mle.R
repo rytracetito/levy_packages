@@ -68,8 +68,7 @@
 #'   back, which always stays positive.
 #'
 #' These intervals are asymptotic: their coverage is close to `level` when the
-#' number of increments (or of trajectories, for the inverse gamma process) is
-#' large. The unbiased estimates `s2` (Wiener) and `eta_unbiased` (inverse
+#' number of increments is large. The unbiased estimates `s2` (Wiener) and `eta_unbiased` (inverse
 #' Gaussian) are given without interval. When \eqn{J} is not positive definite
 #' (estimate close to a boundary of the parameter space), the bounds are `NA`.
 #'
@@ -108,32 +107,31 @@
 #' degradation for highly reliable products. *Applied Stochastic Models in
 #' Business and Industry*, 31(1), 16-32. \doi{10.1002/asmb.2063}
 #'
-#' @seealso [gamma_mle()], [ig_mle()], [vg_mle()], [meixner_mle()],
-#'   [igam_mle()], [inspection_times()]
+#' @seealso [gamma_mle()], [ig_mle()], [vg_mle()], [meixner_mle()]
 #'
-#' @examplesIf requireNamespace("levysim", quietly = TRUE)
+#' @examplesIf requireNamespace("DegradSim", quietly = TRUE)
 #' # 1. One trajectory inspected every time unit up to 50 (mu = 0.5, sigma2 = 2.25)
 #' t <- seq(0, 50, by = 1)
 #' set.seed(1)
-#' x <- levysim::sim_wiener(t, mu = 0.5, sigma = 1.5)
+#' x <- DegradSim::sim_wiener(t, mu = 0.5, sigma = 1.5)
 #' wiener_mle(x)
 #'
 #' # The same trajectory given as two vectors: degradation levels, then times
 #' wiener_mle(x[, "X1"], t)
 #'
 #' # 2. One trajectory with irregular inspections, more and more frequent
-#' t <- inspection_times("increasing", n = 50, tmax = 50)$time
-#' x <- levysim::sim_wiener(t, mu = 0.5, sigma = 1.5)
+#' t <- DegradSim::inspection_times("increasing", n = 50, tmax = 50)$time
+#' x <- DegradSim::sim_wiener(t, mu = 0.5, sigma = 1.5)
 #' wiener_mle(x)
 #'
 #' # 3. Ten trajectories with the same inspection times
 #' t <- seq(0, 50, by = 5)
-#' x <- levysim::sim_wiener(t, mu = 0.5, sigma = 1.5, n_traj = 10)
+#' x <- DegradSim::sim_wiener(t, mu = 0.5, sigma = 1.5, n_traj = 10)
 #' wiener_mle(x)
 #'
 #' # 4. Ten trajectories, each with its own inspection times
-#' plan <- inspection_times("decreasing", n = 5:14, n_traj = 10, tmax = 50)
-#' x <- levysim::sim_wiener(plan, mu = 0.5, sigma = 1.5)
+#' plan <- DegradSim::inspection_times("decreasing", n = 5:14, n_traj = 10, tmax = 50)
+#' x <- DegradSim::sim_wiener(plan, mu = 0.5, sigma = 1.5)
 #' wiener_mle(x)
 #'
 #' # 5. Estimates with 95 % confidence intervals

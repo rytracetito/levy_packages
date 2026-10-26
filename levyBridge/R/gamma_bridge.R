@@ -142,7 +142,7 @@
 #' @param x Degradation levels of one trajectory; or a list of data frames,
 #'   one per trajectory, whose first column contains the inspection times and
 #'   second column the degradation levels (for instance the result of a
-#'   `levysim` simulation function).
+#'   `DegradSim` simulation function).
 #' @param t Inspection times of the trajectory, starting at 0 and strictly
 #'   increasing. Not used when `x` is a list.
 #' @param a Shape parameter of the gamma process, \eqn{a > 0}, for instance
@@ -307,10 +307,10 @@
 #'
 #' # 10. Error: the first time must be 0
 #' try(gamma_bridge(x, t + 1, a = 2))
-#' @examplesIf requireNamespace("levysim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)
-#' # 11. Ten trajectories simulated with levysim, inspected more and more often
-#' plan <- levysim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
-#' sims <- levysim::sim_gamma(plan, a = 2, b = 3)
+#' @examplesIf requireNamespace("DegradSim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)
+#' # 11. Ten trajectories simulated with DegradSim, inspected more and more often
+#' plan <- DegradSim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
+#' sims <- DegradSim::sim_gamma(plan, a = 2, b = 3)
 #'
 #' # Parameters estimated with levyfit
 #' a_hat <- levyfit::gamma_mle(sims)[["a"]]

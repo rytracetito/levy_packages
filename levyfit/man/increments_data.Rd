@@ -15,8 +15,7 @@ length as \code{dx}.}
 }
 \value{
 An object of class \code{"levy_increments"}, to be given as argument \code{x}
-of an estimation function (without \code{t}). It is not accepted by
-\code{\link[=igam_mle]{igam_mle()}}, whose likelihood needs the levels.
+of an estimation function (without \code{t}).
 }
 \description{
 Builds the data of the estimation functions (\code{\link[=gamma_mle]{gamma_mle()}},

@@ -113,8 +113,7 @@ back, which always stays positive.
 }
 
 These intervals are asymptotic: their coverage is close to \code{level} when the
-number of increments (or of trajectories, for the inverse gamma process) is
-large. The unbiased estimates \code{s2} (Wiener) and \code{eta_unbiased} (inverse
+number of increments is large. The unbiased estimates \code{s2} (Wiener) and \code{eta_unbiased} (inverse
 Gaussian) are given without interval. When \eqn{J} is not positive definite
 (estimate close to a boundary of the parameter space), the bounds are \code{NA}.
 
@@ -127,29 +126,29 @@ for an increasing process, too few observations) still give an error.
 }
 
 \examples{
-\dontshow{if (requireNamespace("levysim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+\dontshow{if (requireNamespace("DegradSim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 1. One trajectory inspected every time unit up to 50 (mu = 0.5, eta = 2)
 t <- seq(0, 50, by = 1)
 set.seed(1)
-x <- levysim::sim_ig(t, mu = 0.5, eta = 2)
+x <- DegradSim::sim_ig(t, mu = 0.5, eta = 2)
 ig_mle(x)
 
 # The same trajectory given as two vectors: degradation levels, then times
 ig_mle(x[, "X1"], t)
 
 # 2. One trajectory with irregular inspections, more and more frequent
-t <- inspection_times("increasing", n = 50, tmax = 50)$time
-x <- levysim::sim_ig(t, mu = 0.5, eta = 2)
+t <- DegradSim::inspection_times("increasing", n = 50, tmax = 50)$time
+x <- DegradSim::sim_ig(t, mu = 0.5, eta = 2)
 ig_mle(x)
 
 # 3. Ten trajectories with the same inspection times
 t <- seq(0, 50, by = 5)
-x <- levysim::sim_ig(t, mu = 0.5, eta = 2, n_traj = 10)
+x <- DegradSim::sim_ig(t, mu = 0.5, eta = 2, n_traj = 10)
 ig_mle(x)
 
 # 4. Ten trajectories, each with its own inspection times
-plan <- inspection_times("decreasing", n = 5:14, n_traj = 10, tmax = 50)
-x <- levysim::sim_ig(plan, mu = 0.5, eta = 2)
+plan <- DegradSim::inspection_times("decreasing", n = 5:14, n_traj = 10, tmax = 50)
+x <- DegradSim::sim_ig(plan, mu = 0.5, eta = 2)
 ig_mle(x)
 
 # 5. Estimates with 95 \% confidence intervals
@@ -179,5 +178,5 @@ degradation model. \emph{Technometrics}, 56(3), 302-311.
 \doi{10.1080/00401706.2013.830074}
 }
 \seealso{
-\code{\link[=wiener_mle]{wiener_mle()}}, \code{\link[=gamma_mle]{gamma_mle()}}, \code{\link[=inspection_times]{inspection_times()}}
+\code{\link[=wiener_mle]{wiener_mle()}}, \code{\link[=gamma_mle]{gamma_mle()}}
 }

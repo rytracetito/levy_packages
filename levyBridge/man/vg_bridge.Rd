@@ -20,7 +20,7 @@ vg_bridge(
 \item{x}{Degradation levels of one trajectory; or a list of data frames,
 one per trajectory, whose first column contains the inspection times and
 second column the degradation levels (for instance the result of a
-\code{levysim} simulation function).}
+\code{DegradSim} simulation function).}
 
 \item{t}{Inspection times of the trajectory, starting at 0 and strictly
 increasing. Not used when \code{x} is a list.}
@@ -282,7 +282,7 @@ plot_bridge(r3)
 
 # Error: the first time must be 0
 try(vg_bridge(x, t + 1, theta = 0.5, sigma = 1.5, nu = 2))
-\dontshow{if (requireNamespace("levysim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+\dontshow{if (requireNamespace("DegradSim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # Method "MultiBridge": several trajectories with their own times on one common grid,
 # so that all the reconstructed increments have the same law
 liste4 <- list(data.frame(t = c(0, 3, 8), X = c(0, 1.5, 4.2)),
@@ -292,9 +292,9 @@ r4 <- vg_bridge(liste4, theta = 0.5, sigma = 1.5, nu = 2, method = "MultiBridge"
 attr(r4, "teq")
 sapply(r4, nrow)
 
-# 9. Ten trajectories simulated with levysim, inspected more and more often
-plan <- levysim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
-sims <- levysim::sim_vg(plan, theta = 0.5, sigma = 1.5, nu = 2)
+# 9. Ten trajectories simulated with DegradSim, inspected more and more often
+plan <- DegradSim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
+sims <- DegradSim::sim_vg(plan, theta = 0.5, sigma = 1.5, nu = 2)
 
 # Parameters estimated with levyfit
 # With the true parameters (they can be estimated with levyfit::vg_mle())

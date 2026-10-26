@@ -135,8 +135,7 @@ back, which always stays positive.
 }
 
 These intervals are asymptotic: their coverage is close to \code{level} when the
-number of increments (or of trajectories, for the inverse gamma process) is
-large. The unbiased estimates \code{s2} (Wiener) and \code{eta_unbiased} (inverse
+number of increments is large. The unbiased estimates \code{s2} (Wiener) and \code{eta_unbiased} (inverse
 Gaussian) are given without interval. When \eqn{J} is not positive definite
 (estimate close to a boundary of the parameter space), the bounds are \code{NA}.
 
@@ -149,7 +148,7 @@ for an increasing process, too few observations) still give an error.
 }
 
 \examples{
-\dontshow{if (requireNamespace("levysim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+\dontshow{if (requireNamespace("DegradSim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # The Meixner model needs many small increments: over long intervals its
 # increments are almost Gaussian and its parameters are hard to separate.
 
@@ -157,7 +156,7 @@ for an increasing process, too few observations) still give an error.
 #    (a = 1, b = 0.3, d = 1.5, m = 0.2)
 t <- seq(0, 500, by = 1)
 set.seed(1)
-x <- levysim::sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2)
+x <- DegradSim::sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2)
 meixner_mle(x)
 
 # The same trajectory given as two vectors: degradation levels, then times
@@ -165,7 +164,7 @@ meixner_mle(x[, "X1"], t)
 
 # 2. Twenty trajectories with the same inspection times
 t <- seq(0, 20, by = 1)
-x <- levysim::sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2, n_traj = 20)
+x <- DegradSim::sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2, n_traj = 20)
 meixner_mle(x)
 
 # 3. Estimates with 95 \% confidence intervals
@@ -173,7 +172,7 @@ meixner_mle(x, ci = TRUE)
 
 # 4. Few increments over long intervals: the maximum is often at the
 #    boundary (Gaussian or shifted gamma limit): warning and NA estimates
-y <- levysim::sim_meixner(seq(0, 100, by = 10), a = 1, b = 0.3, d = 1.5, m = 0.2)
+y <- DegradSim::sim_meixner(seq(0, 100, by = 10), a = 1, b = 0.3, d = 1.5, m = 0.2)
 meixner_mle(y)
 \dontshow{\}) # examplesIf}
 }
@@ -186,5 +185,5 @@ Schoutens, W. (2002). The Meixner process: theory and applications in
 finance. EURANDOM report 2002-004.
 }
 \seealso{
-\code{\link[=vg_mle]{vg_mle()}}, \code{\link[=inspection_times]{inspection_times()}}
+\code{\link[=vg_mle]{vg_mle()}}
 }

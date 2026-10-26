@@ -148,7 +148,7 @@
 #'
 #' # Error: the first time must be 0
 #' try(meixner_bridge(x, t + 1, a = 1, d = 1.5, m = 0.2))
-#' @examplesIf requireNamespace("levysim", quietly = TRUE)
+#' @examplesIf requireNamespace("DegradSim", quietly = TRUE)
 #' # Method "MultiBridge": several trajectories with their own times on one common grid,
 #' # so that all the reconstructed increments have the same law
 #' liste4 <- list(data.frame(t = c(0, 3, 8), X = c(0, 1.5, 4.2)),
@@ -158,9 +158,9 @@
 #' attr(r4, "teq")
 #' sapply(r4, nrow)
 #'
-#' # 9. Ten trajectories simulated with levysim, inspected more and more often
-#' plan <- levysim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
-#' sims <- levysim::sim_meixner(plan, a = 1, b = 0.3, d = 1.5, m = 0.2)
+#' # 9. Ten trajectories simulated with DegradSim, inspected more and more often
+#' plan <- DegradSim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
+#' sims <- DegradSim::sim_meixner(plan, a = 1, b = 0.3, d = 1.5, m = 0.2)
 #'
 #' # With the true parameters (b is not needed by the bridge)
 #' r <- meixner_bridge(sims, a = 1, d = 1.5, m = 0.2)

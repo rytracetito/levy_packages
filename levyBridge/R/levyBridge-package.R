@@ -78,11 +78,11 @@
 #'   times `t`, starting at 0, or a data frame whose first column contains the
 #'   times and second column the levels;
 #' * **several trajectories with the same inspection times**: the matrix
-#'   returned by the `levysim` simulation functions, with columns `t`, `X1`,
+#'   returned by the `DegradSim` simulation functions, with columns `t`, `X1`,
 #'   `X2`, ...;
 #' * **several trajectories, each with its own inspection times**: a list of
 #'   data frames, one per trajectory (first column the times, second column
-#'   the levels), for instance the list returned by `levysim` with one plan
+#'   the levels), for instance the list returned by `DegradSim` with one plan
 #'   per trajectory.
 #'
 #' With the methods "Bridge" and "ExtBridge", each trajectory gets its own
@@ -160,10 +160,10 @@
 #' r2 <- gamma_bridge(liste, a = 2)
 #' attr(r2, "teq")
 #' increments(r2)
-#' @examplesIf requireNamespace("levysim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)
-#' # 4. Complete use: simulation (levysim), estimation (levyfit), bridge
-#' plan <- levysim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
-#' sims <- levysim::sim_gamma(plan, a = 2, b = 3)
+#' @examplesIf requireNamespace("DegradSim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)
+#' # 4. Complete use: simulation (DegradSim), estimation (levyfit), bridge
+#' plan <- DegradSim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
+#' sims <- DegradSim::sim_gamma(plan, a = 2, b = 3)
 #'
 #' # Step 1: estimation of the parameters
 #' est <- levyfit::gamma_mle(sims)

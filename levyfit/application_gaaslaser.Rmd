@@ -13,7 +13,7 @@ output:
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.height = 3.2, fig.width = 6.5, fig.align = "center")
 library(levyfit)
-library(levysim)
+library(DegradSim)
 library(ggplot2)
 ```
 
@@ -24,7 +24,7 @@ Installation des packages :
 ```{r, eval = FALSE}
 remotes::install_github("Auburngrads/SMRD.data")
 remotes::install_github("rytracetito/levy_packages", subdir = "levyfit")
-remotes::install_github("rytracetito/levy_packages", subdir = "levysim")
+remotes::install_github("rytracetito/levy_packages", subdir = "DegradSim")
 ```
 
 Les données `gaaslaser` donnent l'augmentation relative (en %) du courant de fonctionnement de 15 lasers GaAs, mesurée toutes les 250 heures, de 0 à 4000 heures. Un laser est considéré défaillant quand cette augmentation atteint 10 %.
@@ -46,7 +46,7 @@ extraire <- function(temps) {
 }
 ```
 
-Les instants d'inspection et les trajectoires sont tracés avec `plot_plan()` et `plot_traj()` du package `levysim`, complétés par le seuil de défaillance et le nom des axes :
+Les instants d'inspection et les trajectoires sont tracés avec `plot_plan()` et `plot_traj()` du package `DegradSim`, complétés par le seuil de défaillance et le nom des axes :
 
 ```{r}
 seuil_et_axes <- list(geom_hline(yintercept = seuil, linetype = "dashed", colour = "red"),

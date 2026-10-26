@@ -1,5 +1,4 @@
 as_trajectories <- function(x, t) {
-  if (inherits(x, "levy_increments")) stop("this estimation needs the degradation levels, not only the increments")
   if (is.matrix(x)) x <- lapply(seq_len(ncol(x) - 1) + 1, function(k) data.frame(t = x[, 1], X = x[, k]))
   if (is.data.frame(x)) x <- list(x)
   if (is.list(x)) {
@@ -42,8 +41,7 @@ increments <- function(x, t) {
 #'   length as `dx`.
 #'
 #' @return An object of class `"levy_increments"`, to be given as argument `x`
-#'   of an estimation function (without `t`). It is not accepted by
-#'   [igam_mle()], whose likelihood needs the levels.
+#'   of an estimation function (without `t`).
 #'
 #' @examples
 #' set.seed(1)

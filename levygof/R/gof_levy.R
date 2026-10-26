@@ -15,7 +15,7 @@
 #'     such data frames;
 #'   * several trajectories with the same inspection times: a matrix whose
 #'     first column contains the times and the other columns the levels, for
-#'     instance the result of a simulation function of `levysim`.
+#'     instance the result of a simulation function of `DegradSim`.
 #'
 #'   The columns are read by position, not by name. The inspection times of
 #'   a trajectory must be strictly increasing; they do not have to start at

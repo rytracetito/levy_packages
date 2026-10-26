@@ -13,17 +13,17 @@ output:
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 6.5, fig.align = "center")
 library(levygof)
-library(levysim)
+library(DegradSim)
 library(ggplot2)
 ```
 
 # Préparation
 
-Installation des packages depuis GitHub : `levygof` pour les tests, `levysim` pour simuler des trajectoires. `levygof` utilise `levyfit` (estimation) et `levyBridge` (ponts), installés avec lui.
+Installation des packages depuis GitHub : `levygof` pour les tests, `DegradSim` pour simuler des trajectoires. `levygof` utilise `levyfit` (estimation) et `levyBridge` (ponts), installés avec lui.
 
 ```{r, eval = FALSE}
 remotes::install_github("rytracetito/levy_packages", subdir = "levygof")
-remotes::install_github("rytracetito/levy_packages", subdir = "levysim")
+remotes::install_github("rytracetito/levy_packages", subdir = "DegradSim")
 ```
 
 ## Principe
@@ -212,7 +212,7 @@ r_m2 <- gof.levy(xs, "HGP", test = c("VGE", "AD"), method = "MultiBridge",
 table(r_m2$increments$id)
 ```
 
-Les trajectoires simulées par `levysim` sur un même plan (matrice) ou sur des plans différents (liste) s'utilisent directement :
+Les trajectoires simulées par `DegradSim` sur un même plan (matrice) ou sur des plans différents (liste) s'utilisent directement :
 
 ```{r}
 set.seed(9)

@@ -149,8 +149,7 @@ back, which always stays positive.
 }
 
 These intervals are asymptotic: their coverage is close to \code{level} when the
-number of increments (or of trajectories, for the inverse gamma process) is
-large. The unbiased estimates \code{s2} (Wiener) and \code{eta_unbiased} (inverse
+number of increments is large. The unbiased estimates \code{s2} (Wiener) and \code{eta_unbiased} (inverse
 Gaussian) are given without interval. When \eqn{J} is not positive definite
 (estimate close to a boundary of the parameter space), the bounds are \code{NA}.
 
@@ -163,12 +162,12 @@ for an increasing process, too few observations) still give an error.
 }
 
 \examples{
-\dontshow{if (requireNamespace("levysim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+\dontshow{if (requireNamespace("DegradSim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 1. One trajectory inspected every 2 time units up to 400
 #    (theta = 0.5, sigma = 1.5, nu = 2)
 t <- seq(0, 400, by = 2)
 set.seed(1)
-x <- levysim::sim_vg(t, theta = 0.5, sigma = 1.5, nu = 2)
+x <- DegradSim::sim_vg(t, theta = 0.5, sigma = 1.5, nu = 2)
 vg_mle(x)
 
 # The same trajectory given as two vectors: degradation levels, then times
@@ -176,12 +175,12 @@ vg_mle(x[, "X1"], t)
 
 # 2. Twenty trajectories with the same inspection times
 t <- seq(0, 40, by = 2)
-x <- levysim::sim_vg(t, theta = 0.5, sigma = 1.5, nu = 2, n_traj = 20)
+x <- DegradSim::sim_vg(t, theta = 0.5, sigma = 1.5, nu = 2, n_traj = 20)
 vg_mle(x)
 
 # 3. Twenty trajectories, each with its own inspection times
-plan <- inspection_times("dec-inc", n = 15:34, n_traj = 20, tmax = 40)
-x <- levysim::sim_vg(plan, theta = 0.5, sigma = 1.5, nu = 2)
+plan <- DegradSim::inspection_times("dec-inc", n = 15:34, n_traj = 20, tmax = 40)
+x <- DegradSim::sim_vg(plan, theta = 0.5, sigma = 1.5, nu = 2)
 vg_mle(x)
 
 # 4. Estimates with 95 \% confidence intervals
@@ -189,7 +188,7 @@ vg_mle(x, ci = TRUE)
 
 # 5. Increasing data, here from a gamma process: the likelihood is maximal
 #    at the gamma limit (sigma = 0): warning suggesting gamma_mle(), NA estimates
-y <- levysim::sim_gamma(seq(0, 100, by = 1), a = 2, b = 3)
+y <- DegradSim::sim_gamma(seq(0, 100, by = 1), a = 2, b = 3)
 vg_mle(y)
 gamma_mle(y)
 \dontshow{\}) # examplesIf}
@@ -209,5 +208,5 @@ from incomplete data via the EM algorithm. \emph{Journal of the Royal Statistica
 Society, Series B}, 39(1), 1-22. \doi{10.1111/j.2517-6161.1977.tb01600.x}
 }
 \seealso{
-\code{\link[=wiener_mle]{wiener_mle()}}, \code{\link[=meixner_mle]{meixner_mle()}}, \code{\link[=inspection_times]{inspection_times()}}
+\code{\link[=wiener_mle]{wiener_mle()}}, \code{\link[=meixner_mle]{meixner_mle()}}
 }

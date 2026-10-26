@@ -115,8 +115,7 @@ back, which always stays positive.
 }
 
 These intervals are asymptotic: their coverage is close to \code{level} when the
-number of increments (or of trajectories, for the inverse gamma process) is
-large. The unbiased estimates \code{s2} (Wiener) and \code{eta_unbiased} (inverse
+number of increments is large. The unbiased estimates \code{s2} (Wiener) and \code{eta_unbiased} (inverse
 Gaussian) are given without interval. When \eqn{J} is not positive definite
 (estimate close to a boundary of the parameter space), the bounds are \code{NA}.
 
@@ -129,29 +128,29 @@ for an increasing process, too few observations) still give an error.
 }
 
 \examples{
-\dontshow{if (requireNamespace("levysim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+\dontshow{if (requireNamespace("DegradSim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 1. One trajectory inspected every time unit up to 50 (a = 2, b = 3)
 t <- seq(0, 50, by = 1)
 set.seed(1)
-x <- levysim::sim_gamma(t, a = 2, b = 3)
+x <- DegradSim::sim_gamma(t, a = 2, b = 3)
 gamma_mle(x)
 
 # The same trajectory given as two vectors: degradation levels, then times
 gamma_mle(x[, "X1"], t)
 
 # 2. One trajectory with irregular inspections, more and more frequent
-t <- inspection_times("increasing", n = 50, tmax = 50)$time
-x <- levysim::sim_gamma(t, a = 2, b = 3)
+t <- DegradSim::inspection_times("increasing", n = 50, tmax = 50)$time
+x <- DegradSim::sim_gamma(t, a = 2, b = 3)
 gamma_mle(x)
 
 # 3. Ten trajectories with the same inspection times
 t <- seq(0, 50, by = 5)
-x <- levysim::sim_gamma(t, a = 2, b = 3, n_traj = 10)
+x <- DegradSim::sim_gamma(t, a = 2, b = 3, n_traj = 10)
 gamma_mle(x)
 
 # 4. Ten trajectories, each with its own inspection times
-plan <- inspection_times("decreasing", n = 5:14, n_traj = 10, tmax = 50)
-x <- levysim::sim_gamma(plan, a = 2, b = 3)
+plan <- DegradSim::inspection_times("decreasing", n = 5:14, n_traj = 10, tmax = 50)
+x <- DegradSim::sim_gamma(plan, a = 2, b = 3)
 gamma_mle(x)
 
 # 5. Estimates with 95 \% confidence intervals
@@ -173,5 +172,5 @@ in maintenance. \emph{Reliability Engineering & System Safety}, 94(1), 2-21.
 \doi{10.1016/j.ress.2007.03.019}
 }
 \seealso{
-\code{\link[=wiener_mle]{wiener_mle()}}, \code{\link[=ig_mle]{ig_mle()}}, \code{\link[=inspection_times]{inspection_times()}}
+\code{\link[=wiener_mle]{wiener_mle()}}, \code{\link[=ig_mle]{ig_mle()}}
 }

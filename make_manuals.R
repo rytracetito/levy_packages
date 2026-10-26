@@ -1,7 +1,7 @@
 # Manuels de référence (format CRAN) des packages, rangés dans le dossier manuels/
 # À exécuter dans RStudio, ligne par ligne ou en entier.
 
-packages <- c("levysim", "levyfit", "levyBridge", "levygof")
+packages <- c("DegradSim", "levyfit", "levyBridge", "levygof")
 
 racine <- if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
   dirname(rstudioapi::getSourceEditorContext()$path)

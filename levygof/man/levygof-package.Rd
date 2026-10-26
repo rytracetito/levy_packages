@@ -45,7 +45,7 @@ steps 1 to 4 are skipped. \code{\link[=gof.levy]{gof.levy()}} does all the steps
 \code{\link[=gof.levy]{gof.levy()}} accepts the formats of \code{levyfit} and \code{levyBridge}: a data
 frame (times, levels) for one trajectory, a list of such data frames for
 several trajectories with their own times, or a matrix (times, levels of
-each trajectory), as returned by the simulation functions of \code{levysim}.
+each trajectory), as returned by the simulation functions of \code{DegradSim}.
 }
 
 \section{Results}{

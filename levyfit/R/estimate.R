@@ -4,7 +4,7 @@ no_mle <- function(message) {
 
 parameter_names <- list(gamma = c("a", "b"), wiener = c("mu", "sigma2", "s2"),
                         ig = c("mu", "eta", "eta_unbiased"), vg = c("theta", "sigma", "nu"),
-                        meixner = c("a", "b", "d", "m"), igam = c("theta", "alpha", "beta"))
+                        meixner = c("a", "b", "d", "m"))
 
 estimate <- function(model, x, t, ci, level, ...) {
   if (!is.logical(ci) || length(ci) != 1 || is.na(ci)) stop("ci must be TRUE or FALSE")
@@ -12,7 +12,7 @@ estimate <- function(model, x, t, ci, level, ...) {
     stop("level must be a number between 0 and 1")
   }
   fit <- tryCatch(switch(model, gamma = gamma_est(x, t), wiener = wiener_est(x, t), ig = ig_est(x, t),
-                         vg = vg_est(x, t), meixner = meixner_est(x, t, ...), igam = igam_est(x, t)),
+                         vg = vg_est(x, t), meixner = meixner_est(x, t, ...)),
                   no_mle = function(e) e)
   if (inherits(fit, "no_mle")) {
     warning("estimation impossible: ", conditionMessage(fit), call. = FALSE)
@@ -44,12 +44,6 @@ confidence_intervals <- function(model, x, t, fit, level) {
 }
 
 loglik_fun <- function(x, t, model) {
-  if (model == "igam") {
-    traj <- as_trajectories(x, t)
-    W <- lapply(traj, function(d) d$x)
-    tt <- lapply(traj, function(d) d$t)
-    return(function(p) igam_loglik(W, tt, p[1], p[2], p[3]))
-  }
   d <- increments(x, t)
   dt <- d$dt
   dx <- d$dx

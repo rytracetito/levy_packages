@@ -16,7 +16,6 @@
 #' | [ig_mle()] | inverse Gaussian | `mu`, `eta`, `eta_unbiased` | closed form |
 #' | [vg_mle()] | variance-gamma | `theta`, `sigma`, `nu` | EM, then L-BFGS-B |
 #' | [meixner_mle()] | Meixner | `a`, `b`, `d`, `m` | profile likelihood |
-#' | [igam_mle()] | inverse gamma | `theta`, `alpha`, `beta` | forward filtering |
 #'
 #' `s2` and `eta_unbiased` are the unbiased versions of `sigma2` and `eta`.
 #' Every estimation function returns the point estimates and, with
@@ -24,25 +23,23 @@
 #' estimator does not exist for the data, it gives a warning and returns `NA`
 #' estimates instead of stopping.
 #'
-#' Inspection schedules: [inspection_times()] gives inspection times on
-#' \eqn{[0, t_{max}]} for one or several trajectories, with a regular,
-#' increasing, decreasing or alternating number of inspections over time.
+#' Inspection times following a chosen pattern, and simulated trajectories
+#' to try the estimators, are given by the package `DegradSim`
+#' (`DegradSim::inspection_times()` and its simulation functions).
 #'
 #' @section Data:
 #' Every estimation function accepts the data in three forms:
 #' * one trajectory: `f(x, t)`, with `x` the degradation levels and `t` the
 #'   inspection times;
 #' * several trajectories with the same inspection times: `f(x)`, with `x` the
-#'   matrix returned by the `levysim` simulation functions (columns `t`, `X1`,
+#'   matrix returned by the `DegradSim` simulation functions (columns `t`, `X1`,
 #'   `X2`, ...);
 #' * several trajectories, each with its own inspection times: `f(liste)`,
 #'   with `liste` a list of data frames, one per trajectory, whose first column
 #'   contains the inspection times and second column the degradation levels.
 #'
-#' The trajectories are assumed independent and with the same law. For the
-#' Lévy processes, the increments are computed within each trajectory and then
-#' pooled; for the inverse gamma process, which is not a Lévy process, the
-#' log-likelihoods of the trajectories are added.
+#' The trajectories are assumed independent and with the same law. The
+#' increments are computed within each trajectory and then pooled.
 #'
 #' @section Computation of the estimators:
 #' With \eqn{(\Delta t_j, \Delta x_j)}, \eqn{j = 1, \dots, m}, the durations and
@@ -99,8 +96,6 @@
 #' * Variance-gamma: \eqn{X_s = \theta \gamma_s + \sigma W_{\gamma_s}}, with
 #'   \eqn{\gamma_s} of mean \eqn{s} and variance \eqn{\nu s}.
 #' * Meixner: \eqn{X_s \sim Meixner(a, b, d s, m s)}.
-#' * Inverse gamma: \eqn{W(t) = \inf\{w : T(w) > t\}}, with \eqn{T} a gamma
-#'   process of shape \eqn{(w / \alpha)^\beta} and scale \eqn{\theta}.
 #'
 #' @references
 #' **Gamma process**: van Noortwijk, J. M. (2009). A survey of the application
@@ -123,20 +118,15 @@
 #' processes, polynomials and martingales. *Communications in Statistics.
 #' Stochastic Models*, 14(1-2), 335-349.
 #'
-#' **Inverse gamma process**: Guida, M. and Pulcini, G. (2013). The inverse
-#' Gamma process: a family of continuous stochastic models for describing
-#' state-dependent deterioration phenomena. *Reliability Engineering & System
-#' Safety*, 120, 72-79. \doi{10.1016/j.ress.2013.03.013}
-#'
 #' The references of each method are given in the help page of each function.
 #'
-#' @examplesIf requireNamespace("levysim", quietly = TRUE)
+#' @examplesIf requireNamespace("DegradSim", quietly = TRUE)
 #' # 1. Inspection times: 10 trajectories inspected more and more often
-#' plan <- inspection_times("increasing", n = 20, n_traj = 10, tmax = 100)
+#' plan <- DegradSim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 100)
 #'
 #' # 2. Simulated data, here a gamma process (a = 2, b = 3)
 #' set.seed(1)
-#' x <- levysim::sim_gamma(plan, a = 2, b = 3)
+#' x <- DegradSim::sim_gamma(plan, a = 2, b = 3)
 #'
 #' # 3. Estimation of several models on the same data
 #' gamma_mle(x)
@@ -148,5 +138,5 @@
 #' @keywords package
 "_PACKAGE"
 
-#' @importFrom stats coef dgamma dnorm integrate lm optim optimHess optimize pgamma qnorm runif sd uniroot
+#' @importFrom stats dgamma dnorm integrate optim optimHess optimize qnorm runif sd uniroot
 NULL

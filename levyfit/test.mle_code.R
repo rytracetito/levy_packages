@@ -1,5 +1,5 @@
 library(levyfit)
-library(levysim)
+library(DegradSim)
 
 # Vraies valeurs, plans d'inspection et nombre de répétitions
 vraies <- list(gamma   = c(a = 1.5, b = 3),
@@ -63,7 +63,7 @@ if (file.exists(fichier)) {
                           plan = names(plans), stringsAsFactors = FALSE)
   cl <- parallel::makeCluster(parallel::detectCores() - 1)
   parallel::clusterSetRNGStream(cl, 2026)
-  parallel::clusterEvalQ(cl, {library(levyfit); library(levysim)})
+  parallel::clusterEvalQ(cl, {library(levyfit); library(DegradSim)})
   parallel::clusterExport(cl, c("vraies", "plans", "R", "R_meixner", "simuler",
                                 "estimer", "plan_de", "une_cellule"))
   res <- do.call(rbind, parallel::parLapply(cl, split(cellules, seq_len(nrow(cellules))),

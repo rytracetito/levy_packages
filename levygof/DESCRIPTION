@@ -34,11 +34,11 @@ Imports:
     stats,
     tseries
 Suggests:
-    levysim,
+    DegradSim,
     statmod,
     testthat (>= 3.0.0)
 Remotes:
     github::rytracetito/levy_packages/levyfit,
     github::rytracetito/levy_packages/levyBridge,
-    github::rytracetito/levy_packages/levysim
+    github::rytracetito/levy_packages/DegradSim
 Config/testthat/edition: 3

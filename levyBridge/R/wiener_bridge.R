@@ -110,10 +110,10 @@
 #'
 #' # Error: the first time must be 0
 #' try(wiener_bridge(x, t + 1, sigma = 1.5))
-#' @examplesIf requireNamespace("levysim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)
-#' # 9. Ten trajectories simulated with levysim, inspected more and more often
-#' plan <- levysim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
-#' sims <- levysim::sim_wiener(plan, mu = 0.5, sigma = 1.5)
+#' @examplesIf requireNamespace("DegradSim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)
+#' # 9. Ten trajectories simulated with DegradSim, inspected more and more often
+#' plan <- DegradSim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
+#' sims <- DegradSim::sim_wiener(plan, mu = 0.5, sigma = 1.5)
 #'
 #' # Parameters estimated with levyfit
 #' sigma_hat <- sqrt(levyfit::wiener_mle(sims)[["sigma2"]])

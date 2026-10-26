@@ -13,16 +13,16 @@ output:
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.height = 4.2, fig.width = 6.5, fig.align = "center")
 library(levyBridge)
-library(levysim)
+library(DegradSim)
 ```
 
 # Préparation
 
-Installation des packages depuis GitHub : `levyBridge` pour les ponts et `levysim` pour simuler des trajectoires.
+Installation des packages depuis GitHub : `levyBridge` pour les ponts et `DegradSim` pour simuler des trajectoires.
 
 ```{r, eval = FALSE}
 remotes::install_github("rytracetito/levy_packages", subdir = "levyBridge")
-remotes::install_github("rytracetito/levy_packages", subdir = "levysim")
+remotes::install_github("rytracetito/levy_packages", subdir = "DegradSim")
 ```
 
 ## Pourquoi MultiBridge

@@ -94,11 +94,11 @@ All the \verb{_bridge} functions accept the same formats:
 times \code{t}, starting at 0, or a data frame whose first column contains the
 times and second column the levels;
 \item \strong{several trajectories with the same inspection times}: the matrix
-returned by the \code{levysim} simulation functions, with columns \code{t}, \code{X1},
+returned by the \code{DegradSim} simulation functions, with columns \code{t}, \code{X1},
 \code{X2}, ...;
 \item \strong{several trajectories, each with its own inspection times}: a list of
 data frames, one per trajectory (first column the times, second column
-the levels), for instance the list returned by \code{levysim} with one plan
+the levels), for instance the list returned by \code{DegradSim} with one plan
 per trajectory.
 }
 
@@ -174,10 +174,10 @@ liste <- list(data.frame(t = c(0, 1, 3, 6), X = c(0, 0.4, 2.3, 2.9)),
 r2 <- gamma_bridge(liste, a = 2)
 attr(r2, "teq")
 increments(r2)
-\dontshow{if (requireNamespace("levysim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
-# 4. Complete use: simulation (levysim), estimation (levyfit), bridge
-plan <- levysim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
-sims <- levysim::sim_gamma(plan, a = 2, b = 3)
+\dontshow{if (requireNamespace("DegradSim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+# 4. Complete use: simulation (DegradSim), estimation (levyfit), bridge
+plan <- DegradSim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
+sims <- DegradSim::sim_gamma(plan, a = 2, b = 3)
 
 # Step 1: estimation of the parameters
 est <- levyfit::gamma_mle(sims)

@@ -33,18 +33,10 @@ test_that("the data can be given in several forms", {
   expect_equal(gamma_mle(list(data.frame(t = plan, X = x))), gamma_mle(x, plan))
 })
 
-test_that("igam_mle accepts several trajectories", {
-  skip_on_cran()
-  x <- c(0, 2.212327259, 2.81893462, 3.413725025, 4.801409076, 6.228550224,
-         7.714096072, 7.949339032, 8.524511739, 9.238423227, 9.359099294)
-  expect_equal(igam_mle(list(data.frame(t = plan, X = x))), igam_mle(x, plan))
-})
-
 test_that("invalid lists of trajectories are refused", {
   expect_error(gamma_mle(list(data.frame(t = 0, X = 0), data.frame(t = 0:2, X = 0:2))),
                "at least two observations")
   expect_error(wiener_mle(list(data.frame(t = c(0, 2, 1), X = c(0, 1, 2)))), "strictly increasing")
-  expect_error(igam_mle(list(data.frame(t = c(1, 2), X = c(0, 1)))), "start at")
 })
 
 test_that("increments_data gives the increments directly, without loss of precision", {
@@ -59,5 +51,4 @@ test_that("increments_data gives the increments directly, without loss of precis
                wiener_mle(c(0, 1, 3, 3.5, 6.5), c(0, 1, 3, 4, 6)))
   expect_error(increments_data(c(1, NA)), "dx")
   expect_error(increments_data(1:3, dt = c(1, 2)), "dt")
-  expect_error(igam_mle(increments_data(1:3)), "levels")
 })

@@ -24,7 +24,7 @@ inspection times and second column the degradation levels;
 such data frames;
 \item several trajectories with the same inspection times: a matrix whose
 first column contains the times and the other columns the levels, for
-instance the result of a simulation function of \code{levysim}.
+instance the result of a simulation function of \code{DegradSim}.
 }
 
 The columns are read by position, not by name. The inspection times of
