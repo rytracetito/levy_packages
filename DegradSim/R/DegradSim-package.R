@@ -77,26 +77,22 @@
 #'
 #' **Identifiability.** The time change \eqn{A} and one parameter of \eqn{Y}
 #' cannot be identified separately: replacing \eqn{A} by \eqn{c A} can be
-#' compensated by a change of this parameter. This parameter is therefore set
-#' to 1 and contained in \eqn{A}. With \eqn{\Delta A = A(t) - A(s)}:
+#' compensated by a change of this parameter. This parameter (\eqn{a} for the
+#' gamma process, \eqn{\mu} for the Wiener and inverse Gaussian processes) is
+#' therefore set to 1 and contained in \eqn{A}. With
+#' \eqn{\Delta A = A(t) - A(s)}:
 #'
-#' | Function | Parameters | \eqn{X_t - X_s} | Fixed | Homogeneous case |
-#' |---|---|---|---|---|
-#' | [sim_gamma()] | `b`, `A` | \eqn{\Gamma(\Delta A, b)} | \eqn{a = 1} | \eqn{A(t) = a t} |
-#' | [sim_wiener()] | `sigma`, `A` | \eqn{\mathcal{N}(\Delta A, \sigma^2 \Delta A)} | \eqn{\mu = 1} | \eqn{A(t) = \mu t}, \eqn{\sigma / \sqrt{\mu}} |
-#' | [sim_ig()] | `eta`, `A` | \eqn{IG(\Delta A, \eta \Delta A^2)} | \eqn{\mu = 1} | \eqn{A(t) = \mu t}, \eqn{\eta / \mu^2} |
+#' | Function | Parameters | \eqn{X_t - X_s} |
+#' |---|---|---|
+#' | [sim_gamma()] | `b`, `A` | \eqn{\Gamma(\Delta A, b)} |
+#' | [sim_wiener()] | `sigma`, `A` | \eqn{\mathcal{N}(\Delta A, \sigma^2 \Delta A)} |
+#' | [sim_ig()] | `eta`, `A` | \eqn{IG(\Delta A, \eta \Delta A^2)} |
 #'
 #' The time-scaled Wiener process is \eqn{X_t = A(t) + \sigma B_{A(t)}}, with
-#' \eqn{B} a standard Brownian motion. The last column gives the time change
-#' (and the parameter) that give back the homogeneous process of the first
-#' table: for instance, for the gamma process, replacing \eqn{A} by \eqn{c A}
-#' multiplies the shape of every increment by \eqn{c}, exactly as a shape
-#' parameter \eqn{a = c} would, so that \eqn{a} and \eqn{A} could not be
-#' estimated separately. In each function, the argument `A` is `NULL` by
-#' default (homogeneous process); a function `A` gives the non-homogeneous
-#' process, and the fixed parameter must then not be given. The
-#' variance-gamma and Meixner processes are simulated in the homogeneous case
-#' only.
+#' \eqn{B} a standard Brownian motion. The homogeneous case is
+#' \eqn{A(t) = a t} for the gamma process, and \eqn{A(t) = \mu t} for the
+#' Wiener and inverse Gaussian processes, with \eqn{\sigma / \sqrt{\mu}}
+#' instead of \eqn{\sigma} and \eqn{\eta / \mu^2} instead of \eqn{\eta}.
 #'
 #' @section Getting started:
 #' A simulation always follows the same three steps.

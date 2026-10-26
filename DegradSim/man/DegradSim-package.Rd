@@ -90,26 +90,22 @@ constant between two inspection times, the increment of \eqn{X} is 0.
 
 \strong{Identifiability.} The time change \eqn{A} and one parameter of \eqn{Y}
 cannot be identified separately: replacing \eqn{A} by \eqn{c A} can be
-compensated by a change of this parameter. This parameter is therefore set
-to 1 and contained in \eqn{A}. With \eqn{\Delta A = A(t) - A(s)}:\tabular{lllll}{
-   Function \tab Parameters \tab \eqn{X_t - X_s} \tab Fixed \tab Homogeneous case \cr
-   \code{\link[=sim_gamma]{sim_gamma()}} \tab \code{b}, \code{A} \tab \eqn{\Gamma(\Delta A, b)} \tab \eqn{a = 1} \tab \eqn{A(t) = a t} \cr
-   \code{\link[=sim_wiener]{sim_wiener()}} \tab \code{sigma}, \code{A} \tab \eqn{\mathcal{N}(\Delta A, \sigma^2 \Delta A)} \tab \eqn{\mu = 1} \tab \eqn{A(t) = \mu t}, \eqn{\sigma / \sqrt{\mu}} \cr
-   \code{\link[=sim_ig]{sim_ig()}} \tab \code{eta}, \code{A} \tab \eqn{IG(\Delta A, \eta \Delta A^2)} \tab \eqn{\mu = 1} \tab \eqn{A(t) = \mu t}, \eqn{\eta / \mu^2} \cr
+compensated by a change of this parameter. This parameter (\eqn{a} for the
+gamma process, \eqn{\mu} for the Wiener and inverse Gaussian processes) is
+therefore set to 1 and contained in \eqn{A}. With
+\eqn{\Delta A = A(t) - A(s)}:\tabular{lll}{
+   Function \tab Parameters \tab \eqn{X_t - X_s} \cr
+   \code{\link[=sim_gamma]{sim_gamma()}} \tab \code{b}, \code{A} \tab \eqn{\Gamma(\Delta A, b)} \cr
+   \code{\link[=sim_wiener]{sim_wiener()}} \tab \code{sigma}, \code{A} \tab \eqn{\mathcal{N}(\Delta A, \sigma^2 \Delta A)} \cr
+   \code{\link[=sim_ig]{sim_ig()}} \tab \code{eta}, \code{A} \tab \eqn{IG(\Delta A, \eta \Delta A^2)} \cr
 }
 
 
 The time-scaled Wiener process is \eqn{X_t = A(t) + \sigma B_{A(t)}}, with
-\eqn{B} a standard Brownian motion. The last column gives the time change
-(and the parameter) that give back the homogeneous process of the first
-table: for instance, for the gamma process, replacing \eqn{A} by \eqn{c A}
-multiplies the shape of every increment by \eqn{c}, exactly as a shape
-parameter \eqn{a = c} would, so that \eqn{a} and \eqn{A} could not be
-estimated separately. In each function, the argument \code{A} is \code{NULL} by
-default (homogeneous process); a function \code{A} gives the non-homogeneous
-process, and the fixed parameter must then not be given. The
-variance-gamma and Meixner processes are simulated in the homogeneous case
-only.
+\eqn{B} a standard Brownian motion. The homogeneous case is
+\eqn{A(t) = a t} for the gamma process, and \eqn{A(t) = \mu t} for the
+Wiener and inverse Gaussian processes, with \eqn{\sigma / \sqrt{\mu}}
+instead of \eqn{\sigma} and \eqn{\eta / \mu^2} instead of \eqn{\eta}.
 }
 
 \section{Getting started}{
