@@ -78,6 +78,16 @@ continuous, \eqn{X} is also stochastically continuous: it is an additive
 process in the sense of Sato (2001, p. 3), that is a process satisfying
 the conditions 1, 2, 4 and 5 above.
 
+\strong{The time change in the package.} \eqn{A} is given as the argument \code{A}
+of \code{\link[=sim_gamma]{sim_gamma()}}, \code{\link[=sim_wiener]{sim_wiener()}} and \code{\link[=sim_ig]{sim_ig()}}, a vectorized R function
+of \code{t} (\code{A(t)} returns one value per time), for instance
+\code{function(t) 2 * t^1.5}. Each of these functions checks that
+\eqn{A(0) = 0} and that \eqn{A} is finite and non-decreasing at the
+inspection times, and raises an error otherwise. The conditions
+"right-continuous with left limits" and \eqn{A(t) \to +\infty} cannot be
+checked on a finite set of times: they are left to the user. If \eqn{A} is
+constant between two inspection times, the increment of \eqn{X} is 0.
+
 \strong{Identifiability.} The time change \eqn{A} and one parameter of \eqn{Y}
 cannot be identified separately: replacing \eqn{A} by \eqn{c A} can be
 compensated by a change of this parameter. This parameter is therefore set
@@ -92,10 +102,14 @@ to 1 and contained in \eqn{A}. With \eqn{\Delta A = A(t) - A(s)}:\tabular{lllll}
 The time-scaled Wiener process is \eqn{X(t) = A(t) + \sigma B(A(t))}, with
 \eqn{B} a standard Brownian motion. The last column gives the time change
 (and the parameter) that give back the homogeneous process of the first
-table. In each function, the argument \code{A} is \code{NULL} by default (homogeneous
-process); a function \code{A} gives the non-homogeneous process, and the fixed
-parameter must then not be given. The variance-gamma and Meixner processes
-are simulated in the homogeneous case only.
+table: for instance, for the gamma process, replacing \eqn{A} by \eqn{c A}
+multiplies the shape of every increment by \eqn{c}, exactly as a shape
+parameter \eqn{a = c} would, so that \eqn{a} and \eqn{A} could not be
+estimated separately. In each function, the argument \code{A} is \code{NULL} by
+default (homogeneous process); a function \code{A} gives the non-homogeneous
+process, and the fixed parameter must then not be given. The
+variance-gamma and Meixner processes are simulated in the homogeneous case
+only.
 }
 
 \section{Getting started}{
@@ -121,13 +135,9 @@ result of \code{\link[=inspection_times]{inspection_times()}}, and an error expl
 fails.
 \item \strong{Simulate} with the function of the chosen process and its
 parameters, for instance \code{sim_gamma(t, a = 2, b = 3)} for a homogeneous
-gamma process. For a non-homogeneous process, give the time change
-instead of the fixed parameter, for instance
-\code{sim_gamma(t, b = 3, A = function(t) 2 * t^1.5)}. The function \code{A} must
-be vectorized, with \eqn{A(0) = 0}, finite and non-decreasing at the
-inspection times: this is checked too. The conditions "right-continuous
-with left limits" and \eqn{A(t) \to +\infty} cannot be checked on a
-finite set of times and are left to the user.
+gamma process. For a non-homogeneous process, give the time change \code{A}
+(see the section Non-homogeneous Lévy processes) instead of the fixed
+parameter, for instance \code{sim_gamma(t, b = 3, A = function(t) 2 * t^1.5)}.
 \item \strong{Store and use the result} \code{x}, an object of class \code{DegradSim}. Its
 form depends on the times:
 \itemize{
@@ -171,18 +181,10 @@ independent increments \eqn{\Delta X_i} with the distribution of
 \eqn{X(t_i) = \Delta X_1 + \dots + \Delta X_i}. The vector
 \eqn{(X(t_1), \dots, X(t_n))} has exactly the distribution of the process
 at the inspection times; the name "approximation" refers only to the path
-between two inspection times, which is not simulated. The increments are
-drawn with:
-\itemize{
-\item gamma: \code{\link[stats:GammaDist]{stats::rgamma()}}; Wiener: \code{\link[stats:Normal]{stats::rnorm()}};
-\item inverse Gaussian: method of Michael, Schucany and Haas (1976);
-\item variance-gamma: subordination of a Brownian motion by a gamma process,
-or difference of two gamma processes (argument \code{method});
-\item Meixner: numerical inversion of the distribution function (method PINV
-of \code{Runuran}, error of order \eqn{10^{-10}}).
-}
-
-The details are given in the help page of each function.
+between two inspection times, which is not simulated. Algorithm 2.32 is
+written for the gamma process, but the same scheme applies to every process
+with independent increments. The way each increment is drawn is given in
+the help page of each simulation function.
 }
 
 \examples{
@@ -217,7 +219,7 @@ z[[2]]$X
 Sato, K. (2001). Basic results on Lévy processes. In O. E.
 Barndorff-Nielsen, T. Mikosch and S. I. Resnick (eds.), \emph{Lévy Processes:
 Theory and Applications}, 3-37. Birkhäuser, Boston.
-\href{https://doi.org/10.1007/978-1-4612-0197-7}{doi:10.1007/978-1-4612-0197-7}
+\doi{10.1007/978-1-4612-0197-7}
 
 Kahle, W., Mercier, S. and Paroissin, C. (2016). \emph{Degradation Processes in
 Reliability}. ISTE and Wiley, London. ISBN 978-1-84821-888-8.

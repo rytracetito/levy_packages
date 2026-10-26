@@ -16,48 +16,21 @@
 #' Then \eqn{E[X(t)] = a t / b} and \eqn{Var(X(t)) = a t / b^2}. It is a Lévy
 #' process, increasing and purely made of jumps.
 #'
-#' **Non-homogeneous gamma process** (`A` given). Let \eqn{A} be a time
-#' change: a non-decreasing function, right-continuous with left limits, with
-#' \eqn{A(0) = 0} and \eqn{A(t) \to +\infty} as \eqn{t \to +\infty}. The
-#' process is \eqn{X(t) = Y(A(t))}, where \eqn{Y} is the homogeneous gamma
-#' process with \eqn{a = 1} and rate \eqn{b}, so that
+#' **Non-homogeneous gamma process** (`A` given). With the time change
+#' \eqn{A} defined in [DegradSim-package], \eqn{X(t) = Y(A(t))}, where \eqn{Y}
+#' is the homogeneous gamma process with \eqn{a = 1} (identifiability, see
+#' [DegradSim-package]) and rate \eqn{b}:
 #' \deqn{X(t) - X(s) \sim \Gamma\big(A(t) - A(s),\ b\big),}
 #' \eqn{E[X(t)] = A(t) / b} and \eqn{Var(X(t)) = A(t) / b^2}. This is the
-#' gamma process with shape function \eqn{A} and rate \eqn{b} of Kahle et al.
-#' (2016, chapter 2) and of Cha and Mercier (2019, Example 2). A classical
-#' choice is \eqn{A(t) = c\, t^\beta}.
+#' gamma process with shape function \eqn{A} of Kahle et al. (2016,
+#' chapter 2) and of Cha and Mercier (2019, Example 2). A classical choice is
+#' \eqn{A(t) = c\, t^\beta}.
 #'
-#' **Why \eqn{a = 1} in the non-homogeneous case.** With a shape
-#' \eqn{a\,(A(t) - A(s))}, the functions \eqn{A} and \eqn{c A} with the shapes
-#' \eqn{a} and \eqn{a / c} would give the same process: \eqn{a} and \eqn{A}
-#' could not be identified separately. The shape parameter is therefore
-#' contained in \eqn{A}, and the homogeneous process is the special case
-#' \eqn{A(t) = a t}, which gives \eqn{\Gamma(a (t - s), b)}.
-#'
-#' @section Exact simulation at the inspection times (random walk approximation):
-#' The increments over disjoint intervals are independent with known
-#' distributions, so the values at the inspection times
-#' \eqn{0 = t_0 < t_1 < \dots < t_n} are simulated exactly by the random walk
-#' approximation (RWA) of Kahle et al. (2016, section 2.5.1, algorithm 2.32):
-#' 1. \eqn{\Delta_i = a (t_i - t_{i-1})} (homogeneous case) or
-#'    \eqn{\Delta_i = A(t_i) - A(t_{i-1})} (non-homogeneous case),
-#'    \eqn{i = 1, \dots, n};
-#' 2. draw independently \eqn{\Delta X_i \sim \Gamma(\Delta_i, b)} with
-#'    [stats::rgamma()];
-#' 3. \eqn{X(t_0) = 0} and \eqn{X(t_i) = \sum_{j \le i} \Delta X_j}.
-#'
-#' The values at the inspection times have exactly the distribution of the
-#' process; only the path between two inspection times is not simulated. If
-#' \eqn{A} is constant between two inspection times, the increment is 0.
-#'
-#' @section Conditions on the inspection times and on A:
-#' The times of each trajectory must be finite, start at 0 and be strictly
-#' increasing, with at least two times (0 and one inspection). The function
-#' `A` must be vectorized (`A(t)` returns one value per time), with
-#' \eqn{A(0) = 0}, finite and non-decreasing at the inspection times: these
-#' conditions are checked and an error is raised otherwise. The conditions
-#' "right-continuous with left limits" and \eqn{A(t) \to +\infty} cannot be
-#' checked on a finite set of times: they are left to the user.
+#' @section Exact simulation:
+#' Random walk approximation, described in [DegradSim-package]: the
+#' increments \eqn{\Delta X_i \sim \Gamma(\Delta_i, b)}, with
+#' \eqn{\Delta_i = a (t_i - t_{i-1})} or \eqn{\Delta_i = A(t_i) - A(t_{i-1})},
+#' are drawn independently with [stats::rgamma()], then cumulated.
 #'
 #' @param t Inspection times. The times of each trajectory must start at 0 and
 #'   be strictly increasing. Three forms are accepted:
@@ -73,9 +46,8 @@
 #'   given when `A` is given (the shape is then \eqn{A(t) - A(s)}).
 #' @param b Rate parameter, \eqn{b > 0} (the scale is \eqn{1 / b}).
 #' @param A `NULL` (default) for the homogeneous process, or the time change
-#'   for the non-homogeneous process: a vectorized R function of `t`,
-#'   non-decreasing with \eqn{A(0) = 0}, for instance
-#'   `function(t) 2 * t^1.5`.
+#'   \eqn{A} of the non-homogeneous process (defined in [DegradSim-package]):
+#'   a vectorized R function of `t`, for instance `function(t) 2 * t^1.5`.
 #' @param n_traj Number of trajectories to simulate when `t` is a vector
 #'   (default 1), a positive integer.
 #'

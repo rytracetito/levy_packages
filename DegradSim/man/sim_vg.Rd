@@ -79,15 +79,12 @@ monotone, purely made of jumps, of finite variation. As \eqn{\nu \to 0}, the
 VG process tends to the Wiener process \eqn{\theta t + \sigma B(t)}.
 }
 
-\section{Exact simulation at the inspection times (random walk approximation)}{
+\section{Exact simulation}{
 
-The increments over disjoint intervals are independent with known
-distributions, so the values at the inspection times
-\eqn{0 = t_0 < t_1 < \dots < t_n} are simulated exactly by the random walk
-approximation (RWA) of Kahle et al. (2016, section 2.5.1, written there for the gamma process): independent
-increments are drawn, then cumulated. Each increment, over a time
-\eqn{\Delta t_i = t_i - t_{i-1}}, is drawn by one of two exact methods
-(argument \code{method}), which give the same distribution.
+Random walk approximation, described in \link{DegradSim-package}: each
+increment, over a time \eqn{\Delta t_i = t_i - t_{i-1}}, is drawn by one of
+two exact methods (argument \code{method}), which give the same distribution,
+then the increments are cumulated.
 
 \strong{Method 1, subordination} (\code{method = "subordination"}, default).
 Conditionally on the clock increment \eqn{\Delta G},
@@ -96,8 +93,7 @@ Conditionally on the clock increment \eqn{\Delta G},
 \item draw independently \eqn{\Delta G_i \sim \Gamma(\Delta t_i / \nu)} with
 scale \eqn{\nu};
 \item \eqn{\Delta X_i = \theta \Delta G_i + \sigma \sqrt{\Delta G_i}\, Z_i},
-with \eqn{Z_i} independent \eqn{N(0, 1)};
-\item \eqn{X(t_0) = 0} and \eqn{X(t_i) = \sum_{j \le i} \Delta X_j}.
+with \eqn{Z_i} independent \eqn{N(0, 1)}.
 }
 
 This method follows the definition of the process and also gives the
@@ -119,21 +115,10 @@ which is the characteristic function of the VG increment (Madan et al.,
 \item Draw independently \eqn{\Delta G^+_i \sim \Gamma(\Delta t_i / \nu)} with
 scale \eqn{\nu \mu_+} and \eqn{\Delta G^-_i \sim \Gamma(\Delta t_i / \nu)}
 with scale \eqn{\nu \mu_-};
-\item \eqn{\Delta X_i = \Delta G^+_i - \Delta G^-_i};
-\item \eqn{X(t_0) = 0} and \eqn{X(t_i) = \sum_{j \le i} \Delta X_j}.
+\item \eqn{\Delta X_i = \Delta G^+_i - \Delta G^-_i}.
 }
 
 This method only uses gamma draws.
-
-The values at the inspection times have exactly the distribution of the
-process; only the path between two inspection times is not simulated.
-}
-
-\section{Conditions on the inspection times}{
-
-The times of each trajectory must be finite, start at 0 and be strictly
-increasing, with at least two times (0 and one inspection); an error is
-raised otherwise.
 }
 
 \examples{
@@ -176,9 +161,6 @@ head(traj_df(x))
 head(traj_df(x, increments = TRUE))
 }
 \references{
-Kahle, W., Mercier, S. and Paroissin, C. (2016). \emph{Degradation Processes in
-Reliability}. ISTE and Wiley, London. ISBN 978-1-84821-888-8.
-
 Madan, D. B., Carr, P. P. and Chang, E. C. (1998). The variance gamma
 process and option pricing. \emph{European Finance Review}, 2(1), 79-105.
 \doi{10.1023/A:1009703431535}

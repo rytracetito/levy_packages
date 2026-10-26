@@ -28,9 +28,8 @@ of time. Not given when \code{A} is given (the mean of \eqn{X(t)} is then
 case) or \eqn{A(t) - A(s) = 1} (time-scaled case).}
 
 \item{A}{\code{NULL} (default) for the homogeneous process, or the time change
-for the time-scaled process: a vectorized R function of \code{t},
-non-decreasing with \eqn{A(0) = 0}, for instance
-\code{function(t) 0.5 * t^1.5}.}
+\eqn{A} of the non-homogeneous process (defined in \link{DegradSim-package}):
+a vectorized R function of \code{t}, for instance \code{function(t) 2 * t^1.5}.}
 
 \item{n_traj}{Number of trajectories to simulate when \code{t} is a vector
 (default 1), a positive integer.}
@@ -77,57 +76,24 @@ has independent increments \eqn{X(t) - X(s) \sim N(\mu (t - s), \sigma^2 (t - s)
 \eqn{E[X(t)] = \mu t} and \eqn{Var(X(t)) = \sigma^2 t}. It is a Lévy
 process with continuous, non-monotone trajectories.
 
-\strong{Time-scaled Wiener process} (\code{A} given). Let \eqn{A} be a time change: a
-non-decreasing function, right-continuous with left limits, with
-\eqn{A(0) = 0} and \eqn{A(t) \to +\infty} as \eqn{t \to +\infty}. The
-process is
+\strong{Time-scaled Wiener process} (\code{A} given). With the time change \eqn{A}
+defined in \link{DegradSim-package},
 \deqn{X(t) = A(t) + \sigma B(A(t)), \qquad t \ge 0,}
-that is \eqn{X(t) = Y(A(t))} with \eqn{Y(u) = u + \sigma B(u)} (Cha and
-Mercier, 2019, Example 1, with \eqn{\mu = 1}). Its increments are
-independent, \eqn{X(t) - X(s) \sim N(A(t) - A(s), \sigma^2 (A(t) - A(s)))},
+that is \eqn{X(t) = Y(A(t))} with \eqn{Y(u) = u + \sigma B(u)}: the drift
+is set to \eqn{\mu = 1} (identifiability, see \link{DegradSim-package}), as in
+Cha and Mercier (2019, Example 1). Its increments are independent,
+\eqn{X(t) - X(s) \sim N(A(t) - A(s), \sigma^2 (A(t) - A(s)))},
 \eqn{E[X(t)] = A(t)} and \eqn{Var(X(t)) = \sigma^2 A(t)}.
-
-\strong{Why \eqn{\mu = 1} in the time-scaled case.} With a drift \eqn{\mu}, the
-processes \eqn{\mu A(t) + \sigma B(A(t))} and
-\eqn{(\mu / c) (c A(t)) + (\sigma / \sqrt{c}) B(c A(t))} have the same
-distribution for every \eqn{c > 0}: \eqn{\mu}, \eqn{\sigma} and \eqn{A}
-could not be identified separately. The drift is therefore contained in
-\eqn{A}. With \eqn{A(t) = \mu t} (\eqn{\mu > 0}), the time-scaled process
-is the homogeneous process with drift \eqn{\mu} and variance parameter
-\eqn{\sigma^2 \mu}: the homogeneous process with parameters
-\eqn{(\mu, \sigma)} is obtained with \eqn{A(t) = \mu t} and
-\eqn{\sigma / \sqrt{\mu}}.
 }
 
-\section{Exact simulation at the inspection times (random walk approximation)}{
+\section{Exact simulation}{
 
-The increments over disjoint intervals are independent normal variables,
-so the values at the inspection times \eqn{0 = t_0 < t_1 < \dots < t_n} are
-simulated exactly by the random walk approximation (RWA) of Kahle et al.
-(2016, section 1.3.1, algorithm 1.7):
-\enumerate{
-\item \eqn{\Delta X_i = \mu \Delta t_i + \sigma \sqrt{\Delta t_i}\, Z_i}
-(homogeneous case) or
-\eqn{\Delta X_i = \Delta A_i + \sigma \sqrt{\Delta A_i}\, Z_i}
-(time-scaled case), with \eqn{\Delta t_i = t_i - t_{i-1}},
-\eqn{\Delta A_i = A(t_i) - A(t_{i-1})} and \eqn{Z_i} independent
-\eqn{N(0, 1)} drawn with \code{\link[stats:Normal]{stats::rnorm()}};
-\item \eqn{X(t_0) = 0} and \eqn{X(t_i) = \sum_{j \le i} \Delta X_j}.
-}
-
-The values at the inspection times have exactly the distribution of the
-process; only the path between two inspection times is not simulated.
-}
-
-\section{Conditions on the inspection times and on A}{
-
-The times of each trajectory must be finite, start at 0 and be strictly
-increasing, with at least two times (0 and one inspection). The function
-\code{A} must be vectorized (\code{A(t)} returns one value per time), with
-\eqn{A(0) = 0}, finite and non-decreasing at the inspection times: these
-conditions are checked and an error is raised otherwise. The conditions
-"right-continuous with left limits" and \eqn{A(t) \to +\infty} cannot be
-checked on a finite set of times: they are left to the user.
+Random walk approximation, described in \link{DegradSim-package} (Kahle et
+al., 2016, algorithm 1.7): the increments
+\eqn{\Delta X_i = \mu \Delta t_i + \sigma \sqrt{\Delta t_i}\, Z_i} or
+\eqn{\Delta X_i = \Delta A_i + \sigma \sqrt{\Delta A_i}\, Z_i}, with
+\eqn{Z_i} independent \eqn{N(0, 1)} drawn with \code{\link[stats:Normal]{stats::rnorm()}}, are
+cumulated.
 }
 
 \examples{

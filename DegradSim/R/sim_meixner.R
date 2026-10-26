@@ -22,24 +22,16 @@
 #' variation: \eqn{a} is a scale parameter, \eqn{b} sets the asymmetry,
 #' \eqn{d} the shape and \eqn{m} the location.
 #'
-#' @section Exact simulation at the inspection times (random walk approximation):
-#' The increments over disjoint intervals are independent with known
-#' distributions, so the values at the inspection times
-#' \eqn{0 = t_0 < t_1 < \dots < t_n} are simulated by the random walk
-#' approximation (RWA) of Kahle et al. (2016, section 2.5.1, written there for the gamma process):
-#' 1. draw independently
-#'    \eqn{\Delta X_i \sim Meixner(a, b, d \Delta t_i, m \Delta t_i)}, with
-#'    \eqn{\Delta t_i = t_i - t_{i-1}};
-#' 2. \eqn{X(t_0) = 0} and \eqn{X(t_i) = \sum_{j \le i} \Delta X_j}.
-#'
-#' There is no Meixner generator in `stats`: each increment is drawn by
-#' numerical inversion of its distribution function (method PINV of the package
-#' `Runuran`, built from the exact density, with an error in \eqn{u} of order
-#' \eqn{10^{-10}}). One generator is built for each distinct time step
-#' \eqn{\Delta t_i} and reused for all the trajectories. The simulation is
-#' therefore exact up to this numerical error.
-#'
-#' @inheritSection sim_vg Conditions on the inspection times
+#' @section Exact simulation:
+#' Random walk approximation, described in [DegradSim-package]: with
+#' \eqn{\Delta t_i = t_i - t_{i-1}}, the increments
+#' \deqn{\Delta X_i \sim Meixner(a, b, d \Delta t_i, m \Delta t_i)}
+#' are drawn independently, then cumulated. There is no Meixner generator in `stats`: each increment is
+#' drawn by numerical inversion of its distribution function (method PINV of
+#' the package `Runuran`, built from the exact density, with an error in
+#' \eqn{u} of order \eqn{10^{-10}}). One generator is built for each distinct
+#' time step \eqn{\Delta t_i} and reused for all the trajectories. The
+#' simulation is therefore exact up to this numerical error.
 #'
 #' @inheritParams sim_gamma
 #' @param a Scale parameter, \eqn{a > 0}.
@@ -51,9 +43,6 @@
 #' @inherit sim_gamma return
 #'
 #' @references
-#' Kahle, W., Mercier, S. and Paroissin, C. (2016). *Degradation Processes in
-#' Reliability*. ISTE and Wiley, London. ISBN 978-1-84821-888-8.
-#'
 #' Schoutens, W. (2003). *Lévy Processes in Finance: Pricing Financial
 #' Derivatives*. Wiley, Chichester. ISBN 978-0-470-85156-2.
 #'

@@ -29,9 +29,8 @@ variable the increments. The variance of \eqn{X(t)} is
 (non-homogeneous case).}
 
 \item{A}{\code{NULL} (default) for the homogeneous process, or the time change
-for the non-homogeneous process: a vectorized R function of \code{t},
-non-decreasing with \eqn{A(0) = 0}, for instance
-\code{function(t) 0.5 * t^1.5}.}
+\eqn{A} of the non-homogeneous process (defined in \link{DegradSim-package}):
+a vectorized R function of \code{t}, for instance \code{function(t) 2 * t^1.5}.}
 
 \item{n_traj}{Number of trajectories to simulate when \code{t} is a vector
 (default 1), a positive integer.}
@@ -79,63 +78,30 @@ with the parametrization of Wang and Xu (2010). Then \eqn{E[X(t)] = \mu t}
 and \eqn{Var(X(t)) = \mu^3 t / \eta}. It is a Lévy process, increasing and
 purely made of jumps.
 
-\strong{Non-homogeneous IG process} (\code{A} given). Let \eqn{A} be a time change: a
-non-decreasing function, right-continuous with left limits, with
-\eqn{A(0) = 0} and \eqn{A(t) \to +\infty} as \eqn{t \to +\infty}. The
-process is \eqn{X(t) = Y(A(t))}, where \eqn{Y} is the homogeneous IG
-process with \eqn{\mu = 1}, so that
+\strong{Non-homogeneous IG process} (\code{A} given). With the time change \eqn{A}
+defined in \link{DegradSim-package}, \eqn{X(t) = Y(A(t))}, where \eqn{Y} is the
+homogeneous IG process with \eqn{\mu = 1} (identifiability, see
+\link{DegradSim-package}):
 \deqn{X(t) - X(s) \sim IG\big(A(t) - A(s),\ \eta\, (A(t) - A(s))^2\big),}
 \eqn{E[X(t)] = A(t)} and \eqn{Var(X(t)) = A(t) / \eta}. This is the
 non-homogeneous IG process with mean function \eqn{A} of Cha and Mercier
 (2019, Example 3), whose parameter \eqn{b} is \eqn{\eta}.
-
-\strong{Why \eqn{\mu = 1} in the non-homogeneous case.} With a mean
-\eqn{\mu \Delta A}, replacing \eqn{(A, \mu, \eta)} by
-\eqn{(c A, \mu / c, \eta / c^2)}, \eqn{c > 0}, gives the same distribution
-\eqn{IG(\mu \Delta A, \eta \Delta A^2)} of the increments: \eqn{\mu},
-\eqn{\eta} and \eqn{A} could not be identified separately. The mean is therefore contained in \eqn{A}. With
-\eqn{A(t) = \mu t}, the non-homogeneous process has increments
-\eqn{IG(\mu \Delta t, \eta \mu^2 \Delta t^2)}: the homogeneous process with
-parameters \eqn{(\mu, \eta)} is obtained with \eqn{A(t) = \mu t} and
-\eqn{\eta / \mu^2}.
 }
 
-\section{Exact simulation at the inspection times (random walk approximation)}{
+\section{Exact simulation}{
 
-The increments over disjoint intervals are independent with known
-distributions, so the values at the inspection times
-\eqn{0 = t_0 < t_1 < \dots < t_n} are simulated exactly by the random walk
-approximation (RWA) of Kahle et al. (2016, section 2.5.1, written there for the gamma process): independent
-increments are drawn, then cumulated.
-\enumerate{
-\item \eqn{m_i = \mu \Delta t_i} and \eqn{\lambda_i = \eta \Delta t_i^2}
-(homogeneous case), or \eqn{m_i = \Delta A_i} and
-\eqn{\lambda_i = \eta \Delta A_i^2} (non-homogeneous case), with
-\eqn{\Delta t_i = t_i - t_{i-1}} and \eqn{\Delta A_i = A(t_i) - A(t_{i-1})}.
-\item Draw independently \eqn{\Delta X_i \sim IG(m_i, \lambda_i)} by the method
-of Michael, Schucany and Haas (1976), based on
+Random walk approximation, described in \link{DegradSim-package}: the
+increments \eqn{\Delta X_i \sim IG(m_i, \lambda_i)}, with
+\eqn{m_i = \mu \Delta t_i}, \eqn{\lambda_i = \eta \Delta t_i^2}
+(homogeneous case) or \eqn{m_i = \Delta A_i},
+\eqn{\lambda_i = \eta \Delta A_i^2} (non-homogeneous case), are drawn
+independently, then cumulated. Each increment \eqn{IG(m, \lambda)} is drawn
+by the method of Michael, Schucany and Haas (1976), based on
 \eqn{\lambda (X - m)^2 / (m^2 X) \sim \chi^2_1}: draw
 \eqn{Z \sim N(0, 1)}, set \eqn{\nu = Z^2},
 \eqn{x_1 = m + m^2 \nu / (2\lambda) - m \sqrt{4 m \lambda \nu + m^2 \nu^2} / (2\lambda)},
 and return \eqn{x_1} with probability \eqn{m / (m + x_1)}, otherwise
 \eqn{m^2 / x_1}.
-\item \eqn{X(t_0) = 0} and \eqn{X(t_i) = \sum_{j \le i} \Delta X_j}.
-}
-
-The values at the inspection times have exactly the distribution of the
-process; only the path between two inspection times is not simulated. If
-\eqn{A} is constant between two inspection times, the increment is 0.
-}
-
-\section{Conditions on the inspection times and on A}{
-
-The times of each trajectory must be finite, start at 0 and be strictly
-increasing, with at least two times (0 and one inspection). The function
-\code{A} must be vectorized (\code{A(t)} returns one value per time), with
-\eqn{A(0) = 0}, finite and non-decreasing at the inspection times: these
-conditions are checked and an error is raised otherwise. The conditions
-"right-continuous with left limits" and \eqn{A(t) \to +\infty} cannot be
-checked on a finite set of times: they are left to the user.
 }
 
 \examples{
@@ -186,9 +152,6 @@ head(traj_df(x, increments = TRUE))
 Cha, J. H. and Mercier, S. (2019). Transformed Lévy processes as
 state-dependent wear models. \emph{Advances in Applied Probability}, 51(2),
 468-486. \doi{10.1017/apr.2019.21}
-
-Kahle, W., Mercier, S. and Paroissin, C. (2016). \emph{Degradation Processes in
-Reliability}. ISTE and Wiley, London. ISBN 978-1-84821-888-8.
 
 Michael, J. R., Schucany, W. R. and Haas, R. W. (1976). Generating random
 variates using transformations with multiple roots. \emph{The American
