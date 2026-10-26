@@ -75,12 +75,9 @@
 #' checked on a finite set of times: they are left to the user. If \eqn{A} is
 #' constant between two inspection times, the increment of \eqn{X} is 0.
 #'
-#' **Identifiability.** The time change \eqn{A} and one parameter of \eqn{Y}
-#' cannot be identified separately: replacing \eqn{A} by \eqn{c A} can be
-#' compensated by a change of this parameter. This parameter (\eqn{a} for the
-#' gamma process, \eqn{\mu} for the Wiener and inverse Gaussian processes) is
-#' therefore set to 1 and contained in \eqn{A}. With
-#' \eqn{\Delta A = A(t) - A(s)}:
+#' **Identifiability.** One parameter of \eqn{Y} (\eqn{a} for the gamma
+#' process, \eqn{\mu} for the Wiener and inverse Gaussian processes) is set to
+#' 1 and contained in \eqn{A}. With \eqn{\Delta A = A(t) - A(s)}:
 #'
 #' | Function | Parameters | \eqn{X_t - X_s} |
 #' |---|---|---|

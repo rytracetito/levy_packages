@@ -88,12 +88,9 @@ inspection times, and raises an error otherwise. The conditions
 checked on a finite set of times: they are left to the user. If \eqn{A} is
 constant between two inspection times, the increment of \eqn{X} is 0.
 
-\strong{Identifiability.} The time change \eqn{A} and one parameter of \eqn{Y}
-cannot be identified separately: replacing \eqn{A} by \eqn{c A} can be
-compensated by a change of this parameter. This parameter (\eqn{a} for the
-gamma process, \eqn{\mu} for the Wiener and inverse Gaussian processes) is
-therefore set to 1 and contained in \eqn{A}. With
-\eqn{\Delta A = A(t) - A(s)}:\tabular{lll}{
+\strong{Identifiability.} One parameter of \eqn{Y} (\eqn{a} for the gamma
+process, \eqn{\mu} for the Wiener and inverse Gaussian processes) is set to
+1 and contained in \eqn{A}. With \eqn{\Delta A = A(t) - A(s)}:\tabular{lll}{
    Function \tab Parameters \tab \eqn{X_t - X_s} \cr
    \code{\link[=sim_gamma]{sim_gamma()}} \tab \code{b}, \code{A} \tab \eqn{\Gamma(\Delta A, b)} \cr
    \code{\link[=sim_wiener]{sim_wiener()}} \tab \code{sigma}, \code{A} \tab \eqn{\mathcal{N}(\Delta A, \sigma^2 \Delta A)} \cr
