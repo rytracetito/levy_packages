@@ -11,6 +11,21 @@ Levy process: gamma (\code{"HGP"}), Wiener (\code{"HWP"}), inverse Gaussian
 (\code{"InvGaus"}), variance-gamma (\code{"VG"}) or Meixner (\code{"Meixner"}), with
 unknown parameters. The main function is \code{\link[=gof.levy]{gof.levy()}}.
 }
+\section{Functions of the package}{
+
+Click on a function name for its help page:\tabular{lll}{
+   Function \tab Input \tab Role \cr
+   \code{\link[=gof.levy]{gof.levy()}} \tab one or several trajectories \tab estimation, bridges if needed, tests \cr
+   \code{\link[=test_adequation]{test_adequation()}} \tab i.i.d. sample of increments \tab tests only (steps 5 and 6 below) \cr
+   \code{\link[=tests_disponibles]{tests_disponibles()}} \tab name of a model, or nothing \tab list of the tests of each model \cr
+}
+
+
+Inspection times following a chosen pattern, and simulated trajectories
+to try the tests, are given by the package \code{DegradSim}
+(\code{DegradSim::inspection_times()} and its simulation functions).
+}
+
 \section{Methodology}{
 
 A Levy process has independent and stationary increments: the increments
@@ -61,17 +76,20 @@ the tested increments.
 }
 
 \examples{
+\dontshow{if (requireNamespace("DegradSim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+# 1. A gamma trajectory (a = 2, b = 3) with irregular inspections,
+#    more and more frequent
 set.seed(1)
-# A gamma trajectory observed at irregular times
-t <- c(0, cumsum(round(runif(30, 0.5, 3.5), 1)))
-x <- c(0, cumsum(rgamma(30, shape = 2 * diff(t), rate = 3)))
+t <- DegradSim::inspection_times("decreasing", n = 30, tmax = 60, digits = 1)$time
+x <- DegradSim::sim_gamma(t, a = 2, b = 3)
 
-# Is it a gamma process? Is it a Wiener process?
-gof.levy(data.frame(t, x), "HGP", test = c("KS", "AD"), B = 100)
-gof.levy(data.frame(t, x), "HWP")
+# 2. Is it a gamma process? Is it a Wiener process?
+gof.levy(x, "HGP", test = c("KS", "AD"), B = 100)
+gof.levy(x, "HWP")
 
-# The tests of each model
+# 3. The tests of each model
 tests_disponibles()
+\dontshow{\}) # examplesIf}
 }
 \references{
 Grall-Maës, E. (2012). Use of the Kolmogorov-Smirnov test for gamma
@@ -99,4 +117,4 @@ Authors:
 }
 
 }
-\keyword{internal}
+\keyword{package}

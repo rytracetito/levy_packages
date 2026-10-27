@@ -206,43 +206,43 @@ The bridges and the bootstrap are random: use \code{\link[=set.seed]{set.seed()}
 }
 
 \examples{
+\dontshow{if (requireNamespace("DegradSim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 set.seed(1)
 
 # 1. One gamma trajectory (a = 2, b = 3) inspected every 2 time units:
 #    the observed increments are tested directly
-t <- seq(0, 60, by = 2)
-x <- c(0, cumsum(rgamma(30, shape = 2 * 2, rate = 3)))
-gof.levy(data.frame(t, x), "HGP", B = 100)
+t <- DegradSim::inspection_times("regular", n = 30, tmax = 60)$time
+x <- DegradSim::sim_gamma(t, a = 2, b = 3)
+gof.levy(x, "HGP", B = 100)
 
-# 2. Irregular inspections (a = 10, b = 5): estimation, gamma bridge, test
-t2 <- c(0, cumsum(round(runif(30, 0.5, 3.5), 1)))
-x2 <- c(0, cumsum(rgamma(30, shape = 10 * diff(t2), rate = 5)))
-res <- gof.levy(data.frame(t2, x2), "HGP", test = c("KS", "AD"), B = 100)
+# 2. Irregular inspections, more and more frequent (a = 10, b = 5):
+#    estimation, gamma bridge, test
+t2 <- DegradSim::inspection_times("decreasing", n = 30, tmax = 60, digits = 1)$time
+x2 <- DegradSim::sim_gamma(t2, a = 10, b = 5)
+res <- gof.levy(x2, "HGP", test = c("KS", "AD"), B = 100)
 res
 res$parameters
 res$results
 
 # 3. The same trajectory with the method "ExtBridge"
-gof.levy(data.frame(t2, x2), "HGP", test = c("KS", "AD"), method = "ExtBridge", B = 100)
+gof.levy(x2, "HGP", test = c("KS", "AD"), method = "ExtBridge", B = 100)
 
 # 3b. A small shape (a = 2): the reconstructed increments can be tiny but stay positive
-x4 <- c(0, cumsum(rgamma(30, shape = 2 * diff(t2), rate = 3)))
-gof.levy(data.frame(t2, x4), "HGP", test = "AD", method = "ExtBridge", B = 100)
+x4 <- DegradSim::sim_gamma(t2, a = 2, b = 3)
+gof.levy(x4, "HGP", test = "AD", method = "ExtBridge", B = 100)
 
 # 4. Wiener model on the same data, at level 10 \%
-gof.levy(data.frame(t2, x2), "hwp", alpha = 0.1)
+gof.levy(x2, "hwp", alpha = 0.1)
 
-# 5. A decreasing step: the gamma model is rejected for sure
+# 5. A degradation level that goes down: the gamma model is rejected for sure
 x3 <- x2
-x3[10] <- x3[9] - 0.1
-gof.levy(data.frame(t2, x3), "HGP", test = "KS")
+x3[10, "X1"] <- x3[9, "X1"] - 0.1
+gof.levy(x3, "HGP", test = "KS")
 
-# 6. Several trajectories with their own inspection times (a list):
-#    one test per trajectory
-liste <- lapply(1:3, function(k) {
-  tk <- c(0, cumsum(round(runif(20, 0.5, 3.5), 1)))
-  data.frame(t = tk, X = c(0, cumsum(rnorm(20, 0.5 * diff(tk), 1.5 * sqrt(diff(tk))))))
-})
+# 6. Three Wiener trajectories (mu = 0.5, sigma = 1.5) with their own
+#    inspection times, up to 40, 50 and 60 (a list): one test per trajectory
+plan <- DegradSim::inspection_times("dec-inc", n = 20, n_traj = 3, tmax = c(40, 50, 60), digits = 1)
+liste <- DegradSim::sim_wiener(plan, mu = 0.5, sigma = 1.5)
 gof.levy(liste, "HWP", test = c("SW", "AD"))
 
 # 6b. The same trajectories with "ExtBridge": common step, so also one test on all
@@ -252,38 +252,38 @@ gof.levy(liste, "HWP", test = c("SW", "AD"), method = "ExtBridge")
 gof.levy(liste, "HWP", test = c("SW", "AD"), method = "MultiBridge")
 gof.levy(liste, "HWP", test = c("SW", "AD"), method = "MultiBridge", option = 2)
 
-# 7. Several trajectories with the same irregular inspection times (matrix):
+# 7. Four trajectories with the same irregular inspection times (matrix):
 #    the grids have the same step, so the increments are also tested together
-m <- cbind(t = t2, sapply(1:4, function(k) c(0, cumsum(rgamma(30, 10 * diff(t2), 5)))))
+m <- DegradSim::sim_gamma(t2, a = 10, b = 5, n_traj = 4)
 gof.levy(m, "HGP", test = "AD", B = 100)
 
-# 7b. Several trajectories inspected every 2 time units (regular, same step):
+# 7b. Three trajectories inspected every 2 time units (regular, same step):
 #     observed increments, one test per trajectory and one on all of them
-m2 <- cbind(t = t, sapply(1:3, function(k) c(0, cumsum(rgamma(30, 2 * 2, 3)))))
+m2 <- DegradSim::sim_gamma(t, a = 2, b = 3, n_traj = 3)
 gof.levy(m2, "HGP", test = "VGE", B = 50)
 
 \donttest{
-# 8. Inverse Gaussian and variance-gamma models (slower)
-ig <- c(0, cumsum(statmod::rinvgauss(30, mean = diff(t2), shape = 3 * diff(t2)^2)))
-gof.levy(data.frame(t2, ig), "InvGaus", test = c("KS", "AD", "HK2"), B = 100)
+# 8. Inverse Gaussian (mu = 1, eta = 3) and variance-gamma
+#    (theta = 0.5, sigma = 1.5, nu = 1) models (slower)
+ig <- DegradSim::sim_ig(t2, mu = 1, eta = 3)
+gof.levy(ig, "InvGaus", test = c("KS", "AD", "HK2"), B = 100)
 
-t5 <- c(0, cumsum(round(runif(60, 0.5, 3.5), 1)))
-g <- rgamma(60, shape = diff(t5), scale = 1)
-vg <- c(0, cumsum(0.5 * g + 1.5 * sqrt(g) * rnorm(60)))
-gof.levy(data.frame(t5, vg), "VG", test = "AD", B = 50)
+t5 <- DegradSim::inspection_times("increasing", n = 60, tmax = 120, digits = 1)$time
+vg <- DegradSim::sim_vg(t5, theta = 0.5, sigma = 1.5, nu = 1)
+gof.levy(vg, "VG", test = "AD", B = 50)
 
 # 9. Meixner model (a = 1, b = 1, d = 0.5, m = 0.2), regular and irregular
 #    inspections; with few increments the maximum likelihood estimator of
 #    the Meixner process may not exist, and the test then stops with a message
-rmx <- function(dt) vapply(dt, function(s) Runuran::ur(Runuran::pinvd.new(
-  Runuran::udmeixner(alpha = 1, beta = 1, delta = 0.5 * s, mu = 0.2 * s)), 1), 0)
-set.seed(1)
-t_reg <- 0:100
-gof.levy(data.frame(t_reg, c(0, cumsum(rmx(rep(1, 100))))), "Meixner", test = "AD", B = 30)
-set.seed(1)
-t3 <- c(0, cumsum(round(runif(60, 0.5, 3.5), 1)))
-gof.levy(data.frame(t3, c(0, cumsum(rmx(diff(t3))))), "Meixner", test = "AD", B = 30)
+t_reg <- DegradSim::inspection_times("regular", n = 100, tmax = 100)$time
+mx <- DegradSim::sim_meixner(t_reg, a = 1, b = 1, d = 0.5, m = 0.2)
+gof.levy(mx, "Meixner", test = "AD", B = 30)
+
+t3 <- DegradSim::inspection_times("dec-inc", n = 60, tmax = 120, digits = 1)$time
+mx3 <- DegradSim::sim_meixner(t3, a = 1, b = 1, d = 0.5, m = 0.2)
+gof.levy(mx3, "Meixner", test = "AD", B = 30)
 }
+\dontshow{\}) # examplesIf}
 }
 \references{
 Grall-Maës, E. (2012). Use of the Kolmogorov-Smirnov test for gamma

@@ -1,6 +1,6 @@
 Package: levygof
 Title: Goodness-of-Fit Tests for Levy Degradation Processes
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: c(
     person("Amedée Rytrace", "Tito", , "rytracetito5@gmail.com", role = c("aut", "cre")),
     person("Christian", "Paroissin", , "christian.paroissin@univ-pau.fr", role = "aut")
@@ -35,7 +35,6 @@ Imports:
     tseries
 Suggests:
     DegradSim,
-    statmod,
     testthat (>= 3.0.0)
 Remotes:
     github::rytracetito/levy_packages/levyfit,
