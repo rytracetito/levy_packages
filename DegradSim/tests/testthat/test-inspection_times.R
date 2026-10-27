@@ -12,7 +12,7 @@ test_that("decreasing is the mirror image of increasing", {
   expect_equal(dec, 100 - rev(inc))
 })
 
-test_that("the interval [0, 10] gives a ratio of about 11 between the extreme gaps", {
+test_that("the pattern increasing gives a ratio of about 11 between the extreme gaps", {
   g <- diff(inspection_times("increasing", n = 1000)$time)
   expect_equal(g[1] / g[1000], 11, tolerance = 0.01)
 })
@@ -27,7 +27,7 @@ test_that("invalid schedules are refused", {
   expect_error(inspection_times("foo"), "unknown pattern")
   expect_error(inspection_times("inc-dec-inc"), "unknown pattern")
   expect_error(inspection_times("dec-inc-dec"), "unknown pattern")
-  expect_error(inspection_times(function(x) x * (10 - x)), "strictly increasing")
+  expect_error(inspection_times(function(x) x * (1 - x)), "strictly increasing")
   expect_error(inspection_times(n = 2.5), "n must be")
   expect_error(inspection_times(n = 0), "n must be")
   expect_error(inspection_times(n = c(5, 6), n_traj = 3), "n must be")
@@ -71,4 +71,18 @@ test_that("the alternating patterns have the expected phases", {
 
 test_that("invalid values of a are refused", {
   for (s in list(-0.1, 1, 2, NA, c(0.2, 0.3), "a")) expect_error(inspection_times("inc-dec", a = s), "a must be")
+})
+
+test_that("the grid [0, 1] gives the same times as the former grid [0, 10]", {
+  old <- function(f, n, tmax = 100) {
+    fx <- f(seq(0, 10, length.out = n + 1))
+    tmax * (fx - fx[1]) / (fx[n + 1] - fx[1])
+  }
+  a <- 0.5
+  expect_equal(inspection_times("increasing", n = 30)$time, old(function(x) log(x + 1), 30))
+  expect_equal(inspection_times("decreasing", n = 30)$time, old(function(x) -log(11 - x), 30))
+  expect_equal(inspection_times("inc-dec", n = 30)$time,
+               old(function(x) x + a * 10 / (2 * pi) * sin(2 * pi * x / 10), 30))
+  expect_equal(inspection_times("dec-inc", n = 30)$time,
+               old(function(x) x - a * 10 / (2 * pi) * sin(2 * pi * x / 10), 30))
 })

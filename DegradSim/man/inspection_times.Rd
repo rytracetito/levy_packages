@@ -16,7 +16,7 @@ inspection_times(
 \arguments{
 \item{pattern}{Name of the pattern, \code{"regular"} (default), \code{"increasing"},
 \code{"decreasing"}, \code{"inc-dec"} or \code{"dec-inc"} (see Details), or a strictly
-increasing R function on \eqn{[0, 10]}.}
+increasing R function on \eqn{[0, 1]}.}
 
 \item{n}{Number of inspections after time 0, a positive integer. A single
 value gives the same number of inspections to all the trajectories; a
@@ -53,39 +53,29 @@ simulation functions, such as \code{\link[=sim_gamma]{sim_gamma()}}, and plotted
 }
 \details{
 \strong{Construction.} The times are the values of a strictly increasing
-function \eqn{f} on the regular grid \eqn{x_i = i\, x_{max} / n},
-\eqn{i = 0, \dots, n}, of \eqn{[0, x_{max}]} with \eqn{x_{max} = 10},
-rescaled to \eqn{[0, t_{max}]}:
-\deqn{t_i = t_{max} \frac{f(x_i) - f(0)}{f(x_{max}) - f(0)}, \qquad i = 0, \dots, n.}
+function \eqn{f} on the regular grid \eqn{x_i = i / n},
+\eqn{i = 0, \dots, n}, of \eqn{[0, 1]}, rescaled to \eqn{[0, t_{max}]}:
+\deqn{t_i = t_{max} \frac{f(x_i) - f(0)}{f(1) - f(0)}, \qquad i = 0, \dots, n.}
 So \eqn{t_0 = 0}, \eqn{t_n = t_{max}}, and the gap between two successive
 inspections is about proportional to the slope \eqn{f'(x_i)}: the
 inspections are frequent where \eqn{f} is flat and rare where \eqn{f} is
 steep.
 
-\strong{Why the interval \eqn{[0, 10]}.} The rescaling removes the scale of the
-values of \eqn{f}, but not the scale of \eqn{x}: for a non-linear \eqn{f},
-the length of the interval sets the contrast between the smallest and the
-largest gap. For \eqn{f(x) = \ln(x + 1)}, the ratio of the first gap to the
-last one is about \eqn{f'(0) / f'(x_{max}) = x_{max} + 1}: 2 on
-\eqn{[0, 1]} (almost regular inspections), 11 on \eqn{[0, 10]} and 101 on
-\eqn{[0, 100]} (almost all the inspections at one end). The value
-\eqn{x_{max} = 10} gives a clear but moderate contrast. It is fixed, and a
-function given as \code{pattern} is also evaluated on \eqn{[0, 10]}.
-
 \strong{Patterns.}
 \itemize{
 \item \code{"regular"}: \eqn{f(x) = x}, constant gaps \eqn{t_{max} / n};
-\item \code{"increasing"}: \eqn{f(x) = \ln(x + 1)}, decreasing gaps: inspections
-rare at the beginning and more and more frequent;
-\item \code{"decreasing"}: \eqn{f(x) = -\ln(x_{max} + 1 - x)}, increasing gaps:
+\item \code{"increasing"}: \eqn{f(x) = \ln(1 + 10 x)}, decreasing gaps: inspections
+rare at the beginning and more and more frequent; the first gap is about
+\eqn{f'(0) / f'(1) = 11} times the last one;
+\item \code{"decreasing"}: \eqn{f(x) = -\ln(11 - 10 x)}, increasing gaps:
 inspections frequent at the beginning and rarer and rarer, mirror image
 of \code{"increasing"};
-\item \code{"inc-dec"}: \eqn{f(x) = x + a\, \frac{x_{max}}{2\pi} \sin(2\pi x / x_{max})},
-gaps that decrease then increase: inspections rare at the beginning,
-frequent in the middle, rare at the end;
-\item \code{"dec-inc"}: \eqn{f(x) = x - a\, \frac{x_{max}}{2\pi} \sin(2\pi x / x_{max})},
-gaps that increase then decrease: inspections frequent at the beginning,
-rare in the middle, frequent at the end.
+\item \code{"inc-dec"}: \eqn{f(x) = x + \frac{a}{2\pi} \sin(2\pi x)}, gaps that
+decrease then increase: inspections rare at the beginning, frequent in
+the middle, rare at the end;
+\item \code{"dec-inc"}: \eqn{f(x) = x - \frac{a}{2\pi} \sin(2\pi x)}, gaps that
+increase then decrease: inspections frequent at the beginning, rare in
+the middle, frequent at the end.
 }
 
 The names describe the number of inspections per unit of time:
@@ -93,7 +83,7 @@ The names describe the number of inspections per unit of time:
 fewer inspections.
 
 \strong{Amplitude \code{a} of \code{"inc-dec"} and \code{"dec-inc"}.} Here
-\eqn{f'(x) = 1 \pm a \cos(2\pi x / x_{max})}: the gaps vary between
+\eqn{f'(x) = 1 \pm a \cos(2\pi x)}: the gaps vary between
 \eqn{1 - a} and \eqn{1 + a} times the mean gap \eqn{t_{max} / n}, so that
 the largest gap is \eqn{(1 + a) / (1 - a)} times the smallest one. With the
 default \eqn{a = 0.5}, this ratio is 3 and the gaps change progressively;
@@ -105,7 +95,7 @@ places. If the rounding makes two successive times equal, the repeated
 times are removed, so that the trajectory has fewer than \code{n} inspections
 after time 0, and a warning gives the number of inspections that are kept.
 
-\strong{Other patterns.} Any strictly increasing R function on \eqn{[0, 10]} can
+\strong{Other patterns.} Any strictly increasing R function on \eqn{[0, 1]} can
 be given as \code{pattern}, for instance \code{sqrt}; an error is raised if it is not
 strictly increasing on the grid.
 }
@@ -146,7 +136,7 @@ inspection_times("increasing", n = 5, n_traj = 3, tmax = 10)
 # 9. Rounding too strong: the repeated times are removed with a warning
 inspection_times("decreasing", n = 30, tmax = 20, digits = 0)
 
-# 10. Any strictly increasing function on [0, 10]: with sqrt, the
+# 10. Any strictly increasing function on [0, 1]: with sqrt, the
 #     inspections are rare at the beginning and more and more frequent
 inspection_times(sqrt, n = 10, digits = 0)
 
@@ -154,7 +144,7 @@ inspection_times(sqrt, n = 10, digits = 0)
 #     inspections around a point that moves to the right when w increases
 #     (0 < w < 1)
 w <- 0.8
-inspection_times(function(x) w * log(x + 1) - (1 - w) * log(11 - x), n = 20, digits = 1)
+inspection_times(function(x) w * log(1 + 10 * x) - (1 - w) * log(11 - 10 * x), n = 20, digits = 1)
 
 # 12. Plot the inspection times, one row per trajectory, then simulate
 plan <- inspection_times("dec-inc", n = c(10, 20, 30), n_traj = 3, tmax = 100)

@@ -49,9 +49,7 @@ of \eqn{n} independent random variables with distribution \eqn{\mu_n}. For a
 Lévy process, the distribution of \eqn{X_t} is infinitely divisible for
 every \eqn{t}; conversely, every infinitely divisible distribution is the
 distribution of \eqn{X_1} for a Lévy process, unique in law (Sato, 2001,
-Theorems 1.1 and 1.2). The gamma, normal, inverse Gaussian, variance-gamma,
-Meixner, normal inverse Gaussian and compound Poisson distributions are
-infinitely divisible.
+Theorems 1.1 and 1.2).
 
 The simulation functions, with the distribution of an increment over a time
 \eqn{\Delta t = t - s}:\tabular{llll}{
