@@ -129,11 +129,12 @@ x <- sim_wiener(t, sigma = 1.5, A = function(t) 0.5 * t^1.5, n_traj = 10)
 x
 plot_traj(x, "Time-scaled Wiener process")
 
-# 6. The homogeneous process (mu, sigma) is A(t) = mu t with sigma / sqrt(mu)
+# 6. With A(t) = mu t, the time-scaled process with sigma is the homogeneous
+#    process with drift mu and diffusion coefficient sigma sqrt(mu)
 set.seed(2)
-y1 <- sim_wiener(t, mu = 0.5, sigma = 1.5)
+y1 <- sim_wiener(t, sigma = 1.5, A = function(t) 0.5 * t)
 set.seed(2)
-y2 <- sim_wiener(t, sigma = 1.5 / sqrt(0.5), A = function(t) 0.5 * t)
+y2 <- sim_wiener(t, mu = 0.5, sigma = 1.5 * sqrt(0.5))
 all.equal(unclass(y1)[, 2], unclass(y2)[, 2])
 
 # 7. All the simulated data in a single data frame, with the increments

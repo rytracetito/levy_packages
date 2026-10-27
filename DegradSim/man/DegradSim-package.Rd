@@ -131,10 +131,19 @@ process, \eqn{\mu} for the Wiener and inverse Gaussian processes) is set to
 
 
 The time-scaled Wiener process is \eqn{X_t = A(t) + \sigma B_{A(t)}}, with
-\eqn{B} a standard Brownian motion. The homogeneous case is
-\eqn{A(t) = a t} for the gamma process, and \eqn{A(t) = \mu t} for the
-Wiener and inverse Gaussian processes, with \eqn{\sigma / \sqrt{\mu}}
-instead of \eqn{\sigma} and \eqn{\eta / \mu^2} instead of \eqn{\eta}.
+\eqn{B} a standard Brownian motion.
+
+\strong{Homogeneous case.} With \eqn{A(t) = a t}, the gamma process is the
+homogeneous gamma process with shape \eqn{a}. With \eqn{A(t) = \mu t}, the
+time-scaled Wiener process \eqn{\mu t + \sigma B_{\mu t}} has the
+distribution of \eqn{\mu t + \sigma \sqrt{\mu}\, B_t}, since
+\eqn{(B_{\mu t})_{t \ge 0}} has the distribution of
+\eqn{(\sqrt{\mu}\, B_t)_{t \ge 0}}: it is the homogeneous Wiener process
+with drift \eqn{\mu} and diffusion coefficient \eqn{\sigma \sqrt{\mu}}. In
+the same way, with \eqn{A(t) = \mu t}, the increments of the inverse
+Gaussian process are \eqn{IG(\mu \Delta t, \eta \mu^2 \Delta t^2)}: it is
+the homogeneous inverse Gaussian process with parameters \eqn{\mu} and
+\eqn{\eta \mu^2}.
 }
 
 \section{Getting started}{

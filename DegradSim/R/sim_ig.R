@@ -102,11 +102,12 @@
 #' x
 #' plot_traj(x, "Non-homogeneous inverse Gaussian process")
 #'
-#' # 6. The homogeneous process (mu, eta) is A(t) = mu t with eta / mu^2
+#' # 6. With A(t) = mu t, the non-homogeneous process with eta is the
+#' #    homogeneous process with parameters mu and eta mu^2
 #' set.seed(2)
-#' y1 <- sim_ig(t, mu = 0.5, eta = 2)
+#' y1 <- sim_ig(t, eta = 2, A = function(t) 0.5 * t)
 #' set.seed(2)
-#' y2 <- sim_ig(t, eta = 2 / 0.5^2, A = function(t) 0.5 * t)
+#' y2 <- sim_ig(t, mu = 0.5, eta = 2 * 0.5^2)
 #' all.equal(unclass(y1)[, 2], unclass(y2)[, 2])
 #'
 #' # 7. All the simulated data in a single data frame, with the increments

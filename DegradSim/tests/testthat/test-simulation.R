@@ -53,9 +53,9 @@ test_that("the increments of the non-homogeneous processes have the right distri
 test_that("A(t) = a t, mu t gives back the homogeneous processes", {
   for (f in list(
     list(function() sim_gamma(tg, a = 2, b = 3), function() sim_gamma(tg, b = 3, A = function(t) 2 * t)),
-    list(function() sim_wiener(tg, mu = 0.5, sigma = 1.5),
-         function() sim_wiener(tg, sigma = 1.5 / sqrt(0.5), A = function(t) 0.5 * t)),
-    list(function() sim_ig(tg, mu = 0.5, eta = 2), function() sim_ig(tg, eta = 8, A = function(t) 0.5 * t)))) {
+    list(function() sim_wiener(tg, mu = 0.5, sigma = 1.5 * sqrt(0.5)),
+         function() sim_wiener(tg, sigma = 1.5, A = function(t) 0.5 * t)),
+    list(function() sim_ig(tg, mu = 0.5, eta = 2 * 0.5^2), function() sim_ig(tg, eta = 2, A = function(t) 0.5 * t)))) {
     set.seed(9)
     y1 <- unclass(f[[1]]())[, 2]
     set.seed(9)
