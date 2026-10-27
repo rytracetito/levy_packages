@@ -18,24 +18,24 @@
 #'
 #' **Patterns.**
 #' * `"regular"`: \eqn{f(x) = x}, constant gaps \eqn{t_{max} / n};
-#' * `"increasing"`: \eqn{f(x) = \ln(1 + 10 x)}, decreasing gaps: inspections
+#' * `"decreasing"`: \eqn{f(x) = \ln(1 + 10 x)}, decreasing gaps: inspections
 #'   rare at the beginning and more and more frequent; the first gap is about
 #'   \eqn{f'(0) / f'(1) = 11} times the last one;
-#' * `"decreasing"`: \eqn{f(x) = -\ln(11 - 10 x)}, increasing gaps:
+#' * `"increasing"`: \eqn{f(x) = -\ln(11 - 10 x)}, increasing gaps:
 #'   inspections frequent at the beginning and rarer and rarer, mirror image
-#'   of `"increasing"`;
-#' * `"inc-dec"`: \eqn{f(x) = x + \frac{a}{2\pi} \sin(2\pi x)}, gaps that
+#'   of `"decreasing"`;
+#' * `"dec-inc"`: \eqn{f(x) = x + \frac{a}{2\pi} \sin(2\pi x)}, gaps that
 #'   decrease then increase: inspections rare at the beginning, frequent in
 #'   the middle, rare at the end;
-#' * `"dec-inc"`: \eqn{f(x) = x - \frac{a}{2\pi} \sin(2\pi x)}, gaps that
+#' * `"inc-dec"`: \eqn{f(x) = x - \frac{a}{2\pi} \sin(2\pi x)}, gaps that
 #'   increase then decrease: inspections frequent at the beginning, rare in
 #'   the middle, frequent at the end.
 #'
-#' The names describe the number of inspections per unit of time:
-#' `"increasing"` means more and more inspections, `"inc-dec"` more, then
-#' fewer inspections.
+#' The names describe the gaps between successive inspections:
+#' `"decreasing"` means gaps that decrease, so more and more frequent
+#' inspections; `"dec-inc"` means gaps that decrease then increase.
 #'
-#' **Amplitude `a` of `"inc-dec"` and `"dec-inc"`.** Here
+#' **Amplitude `a` of `"dec-inc"` and `"inc-dec"`.** Here
 #' \eqn{f'(x) = 1 \pm a \cos(2\pi x)}: the gaps vary between
 #' \eqn{1 - a} and \eqn{1 + a} times the mean gap \eqn{t_{max} / n}, so that
 #' the largest gap is \eqn{(1 + a) / (1 - a)} times the smallest one. With the
@@ -52,8 +52,8 @@
 #' be given as `pattern`, for instance `sqrt`; an error is raised if it is not
 #' strictly increasing on the grid.
 #'
-#' @param pattern Name of the pattern, `"regular"` (default), `"increasing"`,
-#'   `"decreasing"`, `"inc-dec"` or `"dec-inc"` (see Details), or a strictly
+#' @param pattern Name of the pattern, `"regular"` (default), `"decreasing"`,
+#'   `"increasing"`, `"dec-inc"` or `"inc-dec"` (see Details), or a strictly
 #'   increasing R function on \eqn{[0, 1]}.
 #' @param n Number of inspections after time 0, a positive integer. A single
 #'   value gives the same number of inspections to all the trajectories; a
@@ -65,7 +65,7 @@
 #' @param digits Number of decimal places of the times, a non-negative
 #'   integer, or `NULL` (default) for no rounding. Times made equal by the
 #'   rounding are removed, with a warning (see Details).
-#' @param a Amplitude of the patterns `"inc-dec"` and `"dec-inc"`, in
+#' @param a Amplitude of the patterns `"dec-inc"` and `"inc-dec"`, in
 #'   \eqn{[0, 1[}: it sets the contrast between frequent and rare inspections,
 #'   from 0 (regular inspections) to 1 excluded; default 0.5. Not used by the
 #'   other patterns.
@@ -84,25 +84,25 @@
 #' inspection_times("regular", n = 10, tmax = 100)
 #'
 #' # 2. More and more frequent inspections, times rounded to integers
-#' inspection_times("increasing", n = 10, digits = 0)
-#'
-#' # 3. Fewer and fewer inspections
 #' inspection_times("decreasing", n = 10, digits = 0)
 #'
-#' # 4. Rare at the beginning, frequent in the middle, rare at the end
-#' inspection_times("inc-dec", n = 20, digits = 1)
+#' # 3. Fewer and fewer inspections
+#' inspection_times("increasing", n = 10, digits = 0)
 #'
-#' # 5. Frequent at the beginning and at the end, rare in the middle
+#' # 4. Rare at the beginning, frequent in the middle, rare at the end
 #' inspection_times("dec-inc", n = 20, digits = 1)
 #'
+#' # 5. Frequent at the beginning and at the end, rare in the middle
+#' inspection_times("inc-dec", n = 20, digits = 1)
+#'
 #' # 6. Stronger contrast between frequent and rare inspections
-#' inspection_times("dec-inc", n = 20, digits = 1, a = 0.8)
+#' inspection_times("inc-dec", n = 20, digits = 1, a = 0.8)
 #'
 #' # Gaps between inspections: from about 2.5 to 7.5 with the default amplitude
-#' range(diff(inspection_times("dec-inc", n = 20)$time))
+#' range(diff(inspection_times("inc-dec", n = 20)$time))
 #'
 #' # 7. Three trajectories with 10, 15 and 20 inspections, up to 50, 100 and 150
-#' plan <- inspection_times("increasing", n = c(10, 15, 20), n_traj = 3,
+#' plan <- inspection_times("decreasing", n = c(10, 15, 20), n_traj = 3,
 #'                          tmax = c(50, 100, 150), digits = 1)
 #' plan
 #'
@@ -111,10 +111,10 @@
 #'
 #' # 8. Same number of inspections and same tmax: the same times for the
 #' #    three trajectories
-#' inspection_times("increasing", n = 5, n_traj = 3, tmax = 10)
+#' inspection_times("decreasing", n = 5, n_traj = 3, tmax = 10)
 #'
 #' # 9. Rounding too strong: the repeated times are removed with a warning
-#' inspection_times("decreasing", n = 30, tmax = 20, digits = 0)
+#' inspection_times("increasing", n = 30, tmax = 20, digits = 0)
 #'
 #' # 10. Any strictly increasing function on [0, 1]: with sqrt, the
 #' #     inspections are rare at the beginning and more and more frequent
@@ -127,7 +127,7 @@
 #' inspection_times(function(x) w * log(1 + 10 * x) - (1 - w) * log(11 - 10 * x), n = 20, digits = 1)
 #'
 #' # 12. Plot the inspection times, one row per trajectory, then simulate
-#' plan <- inspection_times("dec-inc", n = c(10, 20, 30), n_traj = 3, tmax = 100)
+#' plan <- inspection_times("inc-dec", n = c(10, 20, 30), n_traj = 3, tmax = 100)
 #' plot_plan(plan)
 #' x <- sim_gamma(plan, a = 0.2, b = 1)
 #' plot_traj(x)
@@ -154,10 +154,10 @@ inspection_times <- function(pattern = "regular", n = 10,
   } else {
     f <- switch(pattern,
       "regular"    = function(x) x,
-      "increasing" = function(x) log(1 + 10 * x),
-      "decreasing" = function(x) -log(11 - 10 * x),
-      "inc-dec"    = function(x) x + a / (2 * pi) * sin(2 * pi * x),
-      "dec-inc"    = function(x) x - a / (2 * pi) * sin(2 * pi * x),
+      "decreasing" = function(x) log(1 + 10 * x),
+      "increasing" = function(x) -log(11 - 10 * x),
+      "dec-inc"    = function(x) x + a / (2 * pi) * sin(2 * pi * x),
+      "inc-dec"    = function(x) x - a / (2 * pi) * sin(2 * pi * x),
       stop("unknown pattern: ", pattern,
            " (use \"regular\", \"increasing\", \"decreasing\", \"inc-dec\", \"dec-inc\" or a function)"))
   }

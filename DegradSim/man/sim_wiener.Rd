@@ -102,7 +102,7 @@ head(x[, 1:4])
 x[, "X2"]
 
 # 3. Irregular inspections, frequent at the beginning and at the end
-plan <- inspection_times("dec-inc", n = 50, n_traj = 5, tmax = 10)
+plan <- inspection_times("inc-dec", n = 50, n_traj = 5, tmax = 10)
 x <- sim_wiener(plan, mu = 0.5, sigma = 1.5)
 plot_traj(x)
 

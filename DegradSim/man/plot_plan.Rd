@@ -38,11 +38,11 @@ rare.
 plot_plan(inspection_times("regular", n = 20, tmax = 10)$time)
 
 # Inspections more and more frequent over time, with a custom title
-t <- inspection_times("increasing", n = 30, tmax = 100)
-plot_plan(t, "Increasing number of inspections")
+t <- inspection_times("decreasing", n = 30, tmax = 100)
+plot_plan(t, "Decreasing gaps between inspections")
 
 # Five trajectories, each with its own times: one row per trajectory
-plan <- inspection_times("dec-inc", n = c(10, 15, 20, 25, 30), n_traj = 5, tmax = 100)
+plan <- inspection_times("inc-dec", n = c(10, 15, 20, 25, 30), n_traj = 5, tmax = 100)
 plot_plan(plan)
 
 # Different inspection times given as a list

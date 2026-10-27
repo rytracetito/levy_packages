@@ -103,7 +103,7 @@ r[[1]]
 20 trajectoires inspectées entre 0 et 40, de plus en plus souvent. Chaque trajectoire a ses propres instants d'inspection : 11 instants pour la première, 12 pour la deuxième, et ainsi de suite jusqu'à 30 pour la dernière. Le pont reconstruit chaque trajectoire sur sa propre grille régulière.
 
 ```{r}
-plan <- inspection_times("increasing", n = 10:29, n_traj = 20, tmax = 40)
+plan <- inspection_times("decreasing", n = 10:29, n_traj = 20, tmax = 40)
 ```
 
 ## Gamma

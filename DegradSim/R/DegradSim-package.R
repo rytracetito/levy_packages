@@ -142,7 +142,7 @@
 #'    * a list of numeric vectors, one per trajectory, for instance
 #'      `list(c(0, 1, 3), c(0, 2, 4, 6))`;
 #'    * the data frame returned by [inspection_times()], which gives one plan
-#'      per trajectory, for instance with the pattern `"increasing"` for
+#'      per trajectory, for instance with the pattern `"decreasing"` for
 #'      trajectories inspected more and more often (`n_traj` is then ignored).
 #'
 #'    The times of each trajectory must be finite, start at 0 and be
@@ -179,7 +179,7 @@
 #'
 #' Other functions:
 #' * [inspection_times()]: inspection times following a chosen pattern
-#'   (regular, increasing, decreasing, or alternating between frequent and
+#'   (regular, with increasing or decreasing gaps, or alternating between frequent and
 #'   rare inspections);
 #' * [plot_plan()]: plot of the inspection times, one row per trajectory
 #'   (`ggplot2`);
@@ -291,7 +291,7 @@
 #'
 #' @examples
 #' # 1. Inspection times: 10 trajectories, inspected more and more often
-#' plan <- inspection_times("increasing", n = 20, n_traj = 10, tmax = 100)
+#' plan <- inspection_times("decreasing", n = 20, n_traj = 10, tmax = 100)
 #' plot_plan(plan)
 #'
 #' # 2. Simulation of a gamma process (a Levy process)

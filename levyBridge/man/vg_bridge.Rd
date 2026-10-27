@@ -293,7 +293,7 @@ attr(r4, "teq")
 sapply(r4, nrow)
 
 # 9. Ten trajectories simulated with DegradSim, inspected more and more often
-plan <- DegradSim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
+plan <- DegradSim::inspection_times("decreasing", n = 20, n_traj = 10, tmax = 40)
 sims <- DegradSim::sim_vg(plan, theta = 0.5, sigma = 1.5, nu = 2)
 
 # Parameters estimated with levyfit

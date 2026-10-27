@@ -85,9 +85,9 @@ Le modèle de Meixner a besoin d'inspections très rapprochées : ses cas utilis
 
 ```{r}
 t_reg <- inspection_times("regular", n = 200, tmax = 100)$time
-t_irr <- inspection_times("increasing", n = 200, tmax = 100)$time
+t_irr <- inspection_times("decreasing", n = 200, tmax = 100)$time
 t_meme <- inspection_times("regular", n = 50, tmax = 100)$time
-plan_diff <- inspection_times("increasing", n = 30:39, n_traj = 10, tmax = 100)
+plan_diff <- inspection_times("decreasing", n = 30:39, n_traj = 10, tmax = 100)
 
 convergence <- function(simuler, estimer, vraies, n, tmax = n) {
   lignes <- lapply(seq_along(n), function(i) {
@@ -285,7 +285,7 @@ Le cas 2 arrondit les instants à trois décimales : la simulation construit un 
 
 ```{r}
 t_reg_m <- inspection_times("regular", n = 50000, tmax = 500)$time
-t_irr_m <- inspection_times("increasing", n = 50000, tmax = 500, digits = 3)$time
+t_irr_m <- inspection_times("decreasing", n = 50000, tmax = 500, digits = 3)$time
 t_meme_m <- inspection_times("regular", n = 2500, tmax = 25)$time
 plan_diff_m <- inspection_times("regular", n = 2490:2509, n_traj = 20, tmax = 25)
 ```
@@ -540,7 +540,7 @@ Inverse gaussien & Aucun plan meilleur & Plusieurs : biais de \texttt{eta} plus 
 \addlinespace
 Variance-gamma & Aucun plan meilleur & Les deux conviennent \\
 \addlinespace
-Meixner & Compte : le plan régulier est le moins bon (11~\% d'échecs, plus grand biais de \texttt{d}), le plan croissant le meilleur & Une longue trajectoire : moins d'échecs \\
+Meixner & Compte : le plan régulier est le moins bon (11~\% d'échecs, plus grand biais de \texttt{d}), le plan décroissant le meilleur & Une longue trajectoire : moins d'échecs \\
 \bottomrule
 \end{tabular}
 \end{center}

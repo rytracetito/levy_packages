@@ -164,7 +164,7 @@ their number is given by \code{n_traj};
 \item a list of numeric vectors, one per trajectory, for instance
 \code{list(c(0, 1, 3), c(0, 2, 4, 6))};
 \item the data frame returned by \code{\link[=inspection_times]{inspection_times()}}, which gives one plan
-per trajectory, for instance with the pattern \code{"increasing"} for
+per trajectory, for instance with the pattern \code{"decreasing"} for
 trajectories inspected more and more often (\code{n_traj} is then ignored).
 }
 
@@ -206,7 +206,7 @@ Use \code{set.seed()} before a simulation to make it reproducible.
 Other functions:
 \itemize{
 \item \code{\link[=inspection_times]{inspection_times()}}: inspection times following a chosen pattern
-(regular, increasing, decreasing, or alternating between frequent and
+(regular, with increasing or decreasing gaps, or alternating between frequent and
 rare inspections);
 \item \code{\link[=plot_plan]{plot_plan()}}: plot of the inspection times, one row per trajectory
 (\code{ggplot2});
@@ -234,7 +234,7 @@ the help page of each simulation function.
 
 \examples{
 # 1. Inspection times: 10 trajectories, inspected more and more often
-plan <- inspection_times("increasing", n = 20, n_traj = 10, tmax = 100)
+plan <- inspection_times("decreasing", n = 20, n_traj = 10, tmax = 100)
 plot_plan(plan)
 
 # 2. Simulation of a gamma process (a Levy process)

@@ -90,7 +90,7 @@
 #' x[, "X2"]
 #'
 #' # 3. Irregular inspections, more and more frequent over time
-#' plan <- inspection_times("increasing", n = 50, n_traj = 5, tmax = 10)
+#' plan <- inspection_times("decreasing", n = 50, n_traj = 5, tmax = 10)
 #' x <- sim_nig(plan, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 #' plot_traj(x)
 #'

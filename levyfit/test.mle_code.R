@@ -11,7 +11,7 @@ noms <- c(gamma = "Gamma", wiener = "Wiener", ig = "Inverse gaussien",
           vg = "Variance-gamma", meixner = "Meixner")
 
 plans <- c(regulier = "regular", croissant = "increasing", decroissant = "decreasing",
-           mixte_bouts = "dec-inc", mixte_milieu = "inc-dec")
+           mixte_bouts = "inc-dec", mixte_milieu = "dec-inc")
 libelles <- c(regulier = "Régulier", croissant = "Croissant", decroissant = "Décroissant",
               mixte_bouts = "Mixte (bouts)", mixte_milieu = "Mixte (milieu)")
 

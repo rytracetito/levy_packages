@@ -159,7 +159,7 @@
 #' sapply(r4, nrow)
 #'
 #' # 9. Ten trajectories simulated with DegradSim, inspected more and more often
-#' plan <- DegradSim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
+#' plan <- DegradSim::inspection_times("decreasing", n = 20, n_traj = 10, tmax = 40)
 #' sims <- DegradSim::sim_meixner(plan, a = 1, b = 0.3, d = 1.5, m = 0.2)
 #'
 #' # With the true parameters (b is not needed by the bridge)

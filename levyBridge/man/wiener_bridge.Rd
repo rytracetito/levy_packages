@@ -284,7 +284,7 @@ plot_bridge(r3)
 try(wiener_bridge(x, t + 1, sigma = 1.5))
 \dontshow{if (requireNamespace("DegradSim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 9. Ten trajectories simulated with DegradSim, inspected more and more often
-plan <- DegradSim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
+plan <- DegradSim::inspection_times("decreasing", n = 20, n_traj = 10, tmax = 40)
 sims <- DegradSim::sim_wiener(plan, mu = 0.5, sigma = 1.5)
 
 # Parameters estimated with levyfit

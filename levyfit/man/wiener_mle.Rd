@@ -137,7 +137,7 @@ wiener_mle(x)
 wiener_mle(x[, "X1"], t)
 
 # 2. One trajectory with irregular inspections, more and more frequent
-t <- DegradSim::inspection_times("increasing", n = 50, tmax = 50)$time
+t <- DegradSim::inspection_times("decreasing", n = 50, tmax = 50)$time
 x <- DegradSim::sim_wiener(t, mu = 0.5, sigma = 1.5)
 wiener_mle(x)
 
@@ -147,7 +147,7 @@ x <- DegradSim::sim_wiener(t, mu = 0.5, sigma = 1.5, n_traj = 10)
 wiener_mle(x)
 
 # 4. Ten trajectories, each with its own inspection times
-plan <- DegradSim::inspection_times("decreasing", n = 5:14, n_traj = 10, tmax = 50)
+plan <- DegradSim::inspection_times("increasing", n = 5:14, n_traj = 10, tmax = 50)
 x <- DegradSim::sim_wiener(plan, mu = 0.5, sigma = 1.5)
 wiener_mle(x)
 

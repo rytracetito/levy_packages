@@ -140,7 +140,7 @@
 #' vg_mle(x)
 #'
 #' # 3. Twenty trajectories, each with its own inspection times
-#' plan <- DegradSim::inspection_times("dec-inc", n = 15:34, n_traj = 20, tmax = 40)
+#' plan <- DegradSim::inspection_times("inc-dec", n = 15:34, n_traj = 20, tmax = 40)
 #' x <- DegradSim::sim_vg(plan, theta = 0.5, sigma = 1.5, nu = 2)
 #' vg_mle(x)
 #'

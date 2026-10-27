@@ -96,7 +96,7 @@
 #' plot_traj(y, "Variance-gamma process, difference of two gamma processes")
 #'
 #' # 4. Irregular inspections, more and more frequent over time
-#' plan <- inspection_times("increasing", n = 50, n_traj = 5, tmax = 10)
+#' plan <- inspection_times("decreasing", n = 50, n_traj = 5, tmax = 10)
 #' x <- sim_vg(plan, theta = 0.5, sigma = 1.2, nu = 0.8)
 #' plot_traj(x)
 #'

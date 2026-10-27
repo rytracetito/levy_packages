@@ -330,7 +330,7 @@ attr(gamma_bridge(x, t, a = 2, method = "MultiBridge"), "teq")
 try(gamma_bridge(x, t + 1, a = 2))
 \dontshow{if (requireNamespace("DegradSim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 11. Ten trajectories simulated with DegradSim, inspected more and more often
-plan <- DegradSim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
+plan <- DegradSim::inspection_times("decreasing", n = 20, n_traj = 10, tmax = 40)
 sims <- DegradSim::sim_gamma(plan, a = 2, b = 3)
 
 # Parameters estimated with levyfit

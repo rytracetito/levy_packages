@@ -162,7 +162,7 @@
 #' increments(r2)
 #' @examplesIf requireNamespace("DegradSim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)
 #' # 4. Complete use: simulation (DegradSim), estimation (levyfit), bridge
-#' plan <- DegradSim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 40)
+#' plan <- DegradSim::inspection_times("decreasing", n = 20, n_traj = 10, tmax = 40)
 #' sims <- DegradSim::sim_gamma(plan, a = 2, b = 3)
 #'
 #' # Step 1: estimation of the parameters

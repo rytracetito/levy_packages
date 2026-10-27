@@ -113,19 +113,19 @@ afficher(res1)
 
 \newpage
 
-# Application 2 : inspections irrégulières, fréquence décroissante
+# Application 2 : inspections irrégulières, pas croissants
 
 Inspections fréquentes au début, plus espacées ensuite.
 
 ```{r, fig.height = 1.6}
 temps2 <- c(0, 250, 500, 750, 1000, 1500, 2000, 2500, 3000, 4000)
-plot_plan(temps2, "Inspections décroissantes : beaucoup au début, peu à la fin") +
+plot_plan(temps2, "Pas croissants : beaucoup d'inspections au début, peu à la fin") +
   labs(x = "Temps (heures)")
 ```
 
 ```{r}
 liste2 <- extraire(temps2)
-plot_traj(liste2, "Lasers GaAs : inspections décroissantes") + seuil_et_axes
+plot_traj(liste2, "Lasers GaAs : pas croissants") + seuil_et_axes
 ```
 
 ```{r, cache = TRUE}
@@ -135,19 +135,19 @@ afficher(res2)
 
 \newpage
 
-# Application 3 : inspections irrégulières, fréquence croissante
+# Application 3 : inspections irrégulières, pas décroissants
 
 Inspections espacées au début, plus fréquentes ensuite.
 
 ```{r, fig.height = 1.6}
 temps3 <- c(0, 1000, 1500, 2000, 2500, 3000, 3250, 3500, 3750, 4000)
-plot_plan(temps3, "Inspections croissantes : peu au début, beaucoup à la fin") +
+plot_plan(temps3, "Pas décroissants : peu d'inspections au début, beaucoup à la fin") +
   labs(x = "Temps (heures)")
 ```
 
 ```{r}
 liste3 <- extraire(temps3)
-plot_traj(liste3, "Lasers GaAs : inspections croissantes") + seuil_et_axes
+plot_traj(liste3, "Lasers GaAs : pas décroissants") + seuil_et_axes
 ```
 
 ```{r, cache = TRUE}
@@ -162,7 +162,7 @@ afficher(res3)
 Les estimations des modèles Wiener, gamma et inverse gaussien, pour les trois plans d'inspection.
 
 ```{r}
-listes <- list("Complètes" = liste1, "Décroissantes" = liste2, "Croissantes" = liste3)
+listes <- list("Complètes" = liste1, "Pas croissants" = liste2, "Pas décroissants" = liste3)
 ```
 
 ## Wiener : dérive `mu`, variance `sigma2` et sa version sans biais `s2`

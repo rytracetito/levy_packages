@@ -97,7 +97,7 @@ head(x[, 1:4])
 x[, "X2"]
 
 # 3. Irregular inspections, frequent in the middle of the period
-plan <- inspection_times("inc-dec", n = 50, n_traj = 5, tmax = 10)
+plan <- inspection_times("dec-inc", n = 50, n_traj = 5, tmax = 10)
 x <- sim_meixner(plan, a = 1, b = 0.3, d = 1.5, m = 0.2)
 plot_traj(x)
 

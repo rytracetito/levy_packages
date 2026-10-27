@@ -116,11 +116,11 @@ plot_traj(x, "Poisson composé")
 
 \newpage
 
-## Cas 2 : inspections croissantes
+## Cas 2 : pas décroissants
 
 ```{r, fig.height = 1.6}
-t2 <- inspection_times("increasing", n = 49, tmax = 100)$time
-plot_plan(t2, "Inspections croissantes : peu au début, beaucoup à la fin")
+t2 <- inspection_times("decreasing", n = 49, tmax = 100)$time
+plot_plan(t2, "Pas décroissants : peu d'inspections au début, beaucoup à la fin")
 ```
 
 ### Modèle 1 : gamma
@@ -188,11 +188,11 @@ plot_traj(x, "Poisson composé")
 
 \newpage
 
-## Cas 3 : inspections décroissantes
+## Cas 3 : pas croissants
 
 ```{r, fig.height = 1.6}
-t3 <- inspection_times("decreasing", n = 49, tmax = 100)$time
-plot_plan(t3, "Inspections décroissantes : beaucoup au début, peu à la fin")
+t3 <- inspection_times("increasing", n = 49, tmax = 100)$time
+plot_plan(t3, "Pas croissants : beaucoup d'inspections au début, peu à la fin")
 ```
 
 ### Modèle 1 : gamma
@@ -263,7 +263,7 @@ plot_traj(x, "Poisson composé")
 ## Cas 4 : mixtes, beaucoup au début et à la fin
 
 ```{r, fig.height = 1.6}
-t4 <- inspection_times("dec-inc", n = 49, tmax = 100)$time
+t4 <- inspection_times("inc-dec", n = 49, tmax = 100)$time
 plot_plan(t4, "Beaucoup au début et à la fin, peu au milieu")
 ```
 
@@ -335,7 +335,7 @@ plot_traj(x, "Poisson composé")
 ## Cas 5 : mixtes, beaucoup au milieu
 
 ```{r, fig.height = 1.6}
-t5 <- inspection_times("inc-dec", n = 49, tmax = 100)$time
+t5 <- inspection_times("dec-inc", n = 49, tmax = 100)$time
 plot_plan(t5, "Peu au début et à la fin, beaucoup au milieu")
 ```
 
@@ -480,11 +480,11 @@ plot_traj(x, "Poisson composé : 10 trajectoires")
 
 \newpage
 
-## Cas 2 : inspections croissantes
+## Cas 2 : pas décroissants
 
 ```{r, fig.height = 1.6}
-p2 <- inspection_times("increasing", n = 19, n_traj = 10, tmax = 100)
-plot_plan(p2$time[p2$id == 1], "Inspections croissantes : peu au début, beaucoup à la fin")
+p2 <- inspection_times("decreasing", n = 19, n_traj = 10, tmax = 100)
+plot_plan(p2$time[p2$id == 1], "Pas décroissants : peu d'inspections au début, beaucoup à la fin")
 ```
 
 ### Modèle 1 : gamma
@@ -552,11 +552,11 @@ plot_traj(x, "Poisson composé : 10 trajectoires")
 
 \newpage
 
-## Cas 3 : inspections décroissantes
+## Cas 3 : pas croissants
 
 ```{r, fig.height = 1.6}
-p3 <- inspection_times("decreasing", n = 19, n_traj = 10, tmax = 100)
-plot_plan(p3$time[p3$id == 1], "Inspections décroissantes : beaucoup au début, peu à la fin")
+p3 <- inspection_times("increasing", n = 19, n_traj = 10, tmax = 100)
+plot_plan(p3$time[p3$id == 1], "Pas croissants : beaucoup d'inspections au début, peu à la fin")
 ```
 
 ### Modèle 1 : gamma
@@ -627,7 +627,7 @@ plot_traj(x, "Poisson composé : 10 trajectoires")
 ## Cas 4 : mixtes, beaucoup au début et à la fin
 
 ```{r, fig.height = 1.6}
-p4 <- inspection_times("dec-inc", n = 19, n_traj = 10, tmax = 100)
+p4 <- inspection_times("inc-dec", n = 19, n_traj = 10, tmax = 100)
 plot_plan(p4$time[p4$id == 1], "Beaucoup au début et à la fin, peu au milieu")
 ```
 
@@ -699,7 +699,7 @@ plot_traj(x, "Poisson composé : 10 trajectoires")
 ## Cas 5 : mixtes, beaucoup au milieu
 
 ```{r, fig.height = 1.6}
-p5 <- inspection_times("inc-dec", n = 19, n_traj = 10, tmax = 100)
+p5 <- inspection_times("dec-inc", n = 19, n_traj = 10, tmax = 100)
 plot_plan(p5$time[p5$id == 1], "Peu au début et à la fin, beaucoup au milieu")
 ```
 
@@ -781,7 +781,7 @@ Une fonction d'échelle de temps $A$ (fonction croissante, continue à droite av
 
 Pour le Wiener, $X_t = \mu t + \sigma B_{\mu t}$ a la loi de $\mu t + \sigma \sqrt{\mu}\, B_t$, car $(B_{\mu t})_{t \ge 0}$ a la loi de $(\sqrt{\mu}\, B_t)_{t \ge 0}$.
 
-On prend $A(t) = 0.02\, t^{1.5}$, de sorte que $A(100) = 20$, et les 10 trajectoires du cas 2 de la partie II (inspections croissantes).
+On prend $A(t) = 0.02\, t^{1.5}$, de sorte que $A(100) = 20$, et les 10 trajectoires du cas 2 de la partie II (pas décroissants).
 
 ## Modèle 1 : gamma à échelle de temps (Cha et Mercier, 2019, exemple 2)
 

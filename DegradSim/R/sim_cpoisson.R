@@ -85,7 +85,7 @@
 #' plot_traj(x, "Poisson process")
 #'
 #' # 5. Irregular inspections, more and more frequent over time
-#' plan <- inspection_times("increasing", n = 50, n_traj = 5, tmax = 10)
+#' plan <- inspection_times("decreasing", n = 50, n_traj = 5, tmax = 10)
 #' x <- sim_cpoisson(plan, lambda = 2)
 #' plot_traj(x)
 #'

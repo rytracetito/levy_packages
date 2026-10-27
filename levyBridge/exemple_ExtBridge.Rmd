@@ -148,7 +148,7 @@ attr(r_reg, "teq")
 20 trajectoires inspectées entre 0 et 40, de plus en plus souvent, chacune avec ses propres instants (de 11 à 30 instants), arrondis à une décimale. La méthode `"ExtBridge"` construit une grille et un pas pour chaque trajectoire.
 
 ```{r}
-plan <- inspection_times("increasing", n = 10:29, n_traj = 20, tmax = 40, digits = 1)
+plan <- inspection_times("decreasing", n = 10:29, n_traj = 20, tmax = 40, digits = 1)
 ```
 
 ## Gamma

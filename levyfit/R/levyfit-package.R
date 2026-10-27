@@ -123,7 +123,7 @@
 #'
 #' @examplesIf requireNamespace("DegradSim", quietly = TRUE)
 #' # 1. Inspection times: 10 trajectories inspected more and more often
-#' plan <- DegradSim::inspection_times("increasing", n = 20, n_traj = 10, tmax = 100)
+#' plan <- DegradSim::inspection_times("decreasing", n = 20, n_traj = 10, tmax = 100)
 #'
 #' # 2. Simulated data, here a gamma process (a = 2, b = 3)
 #' set.seed(1)

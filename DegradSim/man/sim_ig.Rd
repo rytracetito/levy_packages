@@ -110,7 +110,7 @@ head(x[, 1:4])
 x[, "X2"]
 
 # 3. Irregular inspections, less and less frequent over time
-plan <- inspection_times("decreasing", n = 50, n_traj = 5, tmax = 10)
+plan <- inspection_times("increasing", n = 50, n_traj = 5, tmax = 10)
 x <- sim_ig(plan, mu = 0.5, eta = 2)
 plot_traj(x)
 

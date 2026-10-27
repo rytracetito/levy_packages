@@ -4,7 +4,7 @@ test_that("plot_plan draws one point per inspection and one row per trajectory",
   expect_equal(nrow(p$data), 21)
   expect_equal(unique(p$data$id), 1)
 
-  plan <- inspection_times("increasing", n = c(5, 10, 15), n_traj = 3, tmax = 10)
+  plan <- inspection_times("decreasing", n = c(5, 10, 15), n_traj = 3, tmax = 10)
   p <- plot_plan(plan, "Three plans")
   expect_equal(nrow(p$data), 3 + 5 + 10 + 15)
   expect_equal(sort(unique(p$data$id)), 1:3)
