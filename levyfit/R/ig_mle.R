@@ -1,7 +1,7 @@
 #' Maximum likelihood estimation for the inverse Gaussian process
 #'
 #' Computes the maximum likelihood estimator (MLE) of the parameters \eqn{\mu}
-#' and \eqn{\eta} of the homogeneous inverse Gaussian (IG) process from one or several
+#' and \eqn{\eta} of the inverse Gaussian (IG) process from one or several
 #' trajectories observed at possibly irregular inspection times. The MLE is
 #' obtained in closed form by maximizing the likelihood directly, without
 #' numerical optimization.
@@ -88,7 +88,7 @@
 #'
 #' @examplesIf requireNamespace("DegradSim", quietly = TRUE)
 #' # 1. One trajectory inspected every time unit up to 50 (mu = 0.5, eta = 2)
-#' t <- seq(0, 50, by = 1)
+#' t <- DegradSim::inspection_times("regular", n = 50, tmax = 50)$time
 #' set.seed(1)
 #' x <- DegradSim::sim_ig(t, mu = 0.5, eta = 2)
 #' ig_mle(x)
@@ -102,7 +102,7 @@
 #' ig_mle(x)
 #'
 #' # 3. Ten trajectories with the same inspection times
-#' t <- seq(0, 50, by = 5)
+#' t <- DegradSim::inspection_times("regular", n = 10, tmax = 50)$time
 #' x <- DegradSim::sim_ig(t, mu = 0.5, eta = 2, n_traj = 10)
 #' ig_mle(x)
 #'

@@ -69,7 +69,7 @@ and \eqn{\hat a} is the unique root of a decreasing function, found by
 not depend on this starting point.
 \item \strong{Numerical maximization}: variance-gamma and Meixner.
 \itemize{
-\item Variance-gamma: EM algorithm, the gamma time change being the hidden
+\item Variance-gamma: EM algorithm, the gamma clock being the hidden
 variable (each step is explicit or a unique root), started from the
 Wiener MLE, then L-BFGS-B (\code{\link[stats:optim]{stats::optim()}}) with a numerical gradient.
 \item Meixner: L-BFGS-B on the likelihood profiled in \eqn{b} (\eqn{\hat b} is

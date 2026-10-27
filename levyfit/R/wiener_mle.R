@@ -111,7 +111,7 @@
 #'
 #' @examplesIf requireNamespace("DegradSim", quietly = TRUE)
 #' # 1. One trajectory inspected every time unit up to 50 (mu = 0.5, sigma2 = 2.25)
-#' t <- seq(0, 50, by = 1)
+#' t <- DegradSim::inspection_times("regular", n = 50, tmax = 50)$time
 #' set.seed(1)
 #' x <- DegradSim::sim_wiener(t, mu = 0.5, sigma = 1.5)
 #' wiener_mle(x)
@@ -125,7 +125,7 @@
 #' wiener_mle(x)
 #'
 #' # 3. Ten trajectories with the same inspection times
-#' t <- seq(0, 50, by = 5)
+#' t <- DegradSim::inspection_times("regular", n = 10, tmax = 50)$time
 #' x <- DegradSim::sim_wiener(t, mu = 0.5, sigma = 1.5, n_traj = 10)
 #' wiener_mle(x)
 #'

@@ -165,7 +165,7 @@ for an increasing process, too few observations) still give an error.
 \dontshow{if (requireNamespace("DegradSim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 1. One trajectory inspected every 2 time units up to 400
 #    (theta = 0.5, sigma = 1.5, nu = 2)
-t <- seq(0, 400, by = 2)
+t <- DegradSim::inspection_times("regular", n = 200, tmax = 400)$time
 set.seed(1)
 x <- DegradSim::sim_vg(t, theta = 0.5, sigma = 1.5, nu = 2)
 vg_mle(x)
@@ -174,7 +174,7 @@ vg_mle(x)
 vg_mle(x[, "X1"], t)
 
 # 2. Twenty trajectories with the same inspection times
-t <- seq(0, 40, by = 2)
+t <- DegradSim::inspection_times("regular", n = 20, tmax = 40)$time
 x <- DegradSim::sim_vg(t, theta = 0.5, sigma = 1.5, nu = 2, n_traj = 20)
 vg_mle(x)
 
@@ -188,7 +188,8 @@ vg_mle(x, ci = TRUE)
 
 # 5. Increasing data, here from a gamma process: the likelihood is maximal
 #    at the gamma limit (sigma = 0): warning suggesting gamma_mle(), NA estimates
-y <- DegradSim::sim_gamma(seq(0, 100, by = 1), a = 2, b = 3)
+t100 <- DegradSim::inspection_times("regular", n = 100, tmax = 100)$time
+y <- DegradSim::sim_gamma(t100, a = 2, b = 3)
 vg_mle(y)
 gamma_mle(y)
 \dontshow{\}) # examplesIf}

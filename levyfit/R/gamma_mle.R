@@ -1,7 +1,7 @@
 #' Maximum likelihood estimation for the gamma process
 #'
 #' Computes the maximum likelihood estimator (MLE) of the shape \eqn{a} and
-#' the rate \eqn{b} of the homogeneous gamma process from one or several
+#' the rate \eqn{b} of the gamma process from one or several
 #' trajectories observed at possibly irregular inspection times. The MLE always exists
 #' (with probability one), is unique, and is the root of an equation in one
 #' variable.
@@ -82,7 +82,7 @@
 #'
 #' @examplesIf requireNamespace("DegradSim", quietly = TRUE)
 #' # 1. One trajectory inspected every time unit up to 50 (a = 2, b = 3)
-#' t <- seq(0, 50, by = 1)
+#' t <- DegradSim::inspection_times("regular", n = 50, tmax = 50)$time
 #' set.seed(1)
 #' x <- DegradSim::sim_gamma(t, a = 2, b = 3)
 #' gamma_mle(x)
@@ -96,7 +96,7 @@
 #' gamma_mle(x)
 #'
 #' # 3. Ten trajectories with the same inspection times
-#' t <- seq(0, 50, by = 5)
+#' t <- DegradSim::inspection_times("regular", n = 10, tmax = 50)$time
 #' x <- DegradSim::sim_gamma(t, a = 2, b = 3, n_traj = 10)
 #' gamma_mle(x)
 #'

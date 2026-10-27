@@ -154,7 +154,7 @@ for an increasing process, too few observations) still give an error.
 
 # 1. One trajectory inspected every time unit up to 500
 #    (a = 1, b = 0.3, d = 1.5, m = 0.2)
-t <- seq(0, 500, by = 1)
+t <- DegradSim::inspection_times("regular", n = 500, tmax = 500)$time
 set.seed(1)
 x <- DegradSim::sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2)
 meixner_mle(x)
@@ -163,7 +163,7 @@ meixner_mle(x)
 meixner_mle(x[, "X1"], t)
 
 # 2. Twenty trajectories with the same inspection times
-t <- seq(0, 20, by = 1)
+t <- DegradSim::inspection_times("regular", n = 20, tmax = 20)$time
 x <- DegradSim::sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2, n_traj = 20)
 meixner_mle(x)
 
@@ -172,7 +172,8 @@ meixner_mle(x, ci = TRUE)
 
 # 4. Few increments over long intervals: the maximum is often at the
 #    boundary (Gaussian or shifted gamma limit): warning and NA estimates
-y <- DegradSim::sim_meixner(seq(0, 100, by = 10), a = 1, b = 0.3, d = 1.5, m = 0.2)
+t10 <- DegradSim::inspection_times("regular", n = 10, tmax = 100)$time
+y <- DegradSim::sim_meixner(t10, a = 1, b = 0.3, d = 1.5, m = 0.2)
 meixner_mle(y)
 \dontshow{\}) # examplesIf}
 }

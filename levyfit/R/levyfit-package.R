@@ -54,7 +54,7 @@
 #'   [stats::uniroot()] from the method of moments estimator; the result does
 #'   not depend on this starting point.
 #' * **Numerical maximization**: variance-gamma and Meixner.
-#'   * Variance-gamma: EM algorithm, the gamma time change being the hidden
+#'   * Variance-gamma: EM algorithm, the gamma clock being the hidden
 #'     variable (each step is explicit or a unique root), started from the
 #'     Wiener MLE, then L-BFGS-B ([stats::optim()]) with a numerical gradient.
 #'   * Meixner: L-BFGS-B on the likelihood profiled in \eqn{b} (\eqn{\hat b} is
