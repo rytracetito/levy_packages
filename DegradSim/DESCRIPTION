@@ -7,7 +7,8 @@ Authors@R: c(
   )
 Description: Exact simulation, at given inspection times, of one or several
     degradation trajectories of Lévy processes (gamma, Wiener, inverse
-    Gaussian, variance-gamma and Meixner processes) and of non-homogeneous
+    Gaussian, variance-gamma, Meixner, normal inverse Gaussian and compound
+    Poisson processes) and of non-homogeneous
     Lévy processes obtained by a time change X_t = Y_{A(t)} of a gamma,
     Wiener or inverse Gaussian process (Kahle, Mercier and Paroissin, 2016,
     ISBN:978-1-84821-888-8; Cha and Mercier, 2019,

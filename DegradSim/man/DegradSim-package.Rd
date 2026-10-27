@@ -10,7 +10,8 @@
 degradation trajectories of two families of processes:
 \enumerate{
 \item \strong{Lévy processes} (homogeneous case): gamma, Wiener, inverse Gaussian,
-variance-gamma and Meixner processes;
+variance-gamma, Meixner, normal inverse Gaussian and compound Poisson
+processes;
 \item \strong{non-homogeneous Lévy processes} obtained by a time change
 \eqn{X_t = Y_{A(t)}} of a Lévy process \eqn{Y}: gamma, Wiener and
 inverse Gaussian processes.
@@ -49,8 +50,9 @@ of \eqn{n} independent random variables with distribution \eqn{\mu_n}. For a
 Lévy process, the distribution of \eqn{X_t} is infinitely divisible for
 every \eqn{t}; conversely, every infinitely divisible distribution is the
 distribution of \eqn{X_1} for a Lévy process, unique in law (Sato, 2001,
-Theorems 1.1 and 1.2). The gamma, normal, inverse Gaussian, variance-gamma
-and Meixner distributions are infinitely divisible.
+Theorems 1.1 and 1.2). The gamma, normal, inverse Gaussian, variance-gamma,
+Meixner, normal inverse Gaussian and compound Poisson distributions are
+infinitely divisible.
 
 The simulation functions, with the distribution of an increment over a time
 \eqn{\Delta t = t - s}:\tabular{llll}{
@@ -60,6 +62,36 @@ The simulation functions, with the distribution of an increment over a time
    \code{\link[=sim_ig]{sim_ig()}} \tab inverse Gaussian \tab \code{mu}, \code{eta} \tab \eqn{IG(\mu \Delta t, \eta \Delta t^2)} \cr
    \code{\link[=sim_vg]{sim_vg()}} \tab variance-gamma \tab \code{theta}, \code{sigma}, \code{nu} \tab \eqn{VG(\theta, \sigma, \nu)} over \eqn{\Delta t} \cr
    \code{\link[=sim_meixner]{sim_meixner()}} \tab Meixner \tab \code{a}, \code{b}, \code{d}, \code{m} \tab \eqn{Meixner(a, b, d \Delta t, m \Delta t)} \cr
+   \code{\link[=sim_nig]{sim_nig()}} \tab normal inverse Gaussian \tab \code{alpha}, \code{beta}, \code{delta}, \code{mu} \tab \eqn{NIG(\alpha, \beta, \delta \Delta t, \mu \Delta t)} \cr
+   \code{\link[=sim_cpoisson]{sim_cpoisson()}} \tab compound Poisson \tab \code{lambda}, \code{rjump} \tab sum of \eqn{Poisson(\lambda \Delta t)} jumps \cr
+}
+}
+
+\section{Other Lévy processes}{
+
+There are other Lévy processes. \code{DegradSim} does not simulate them, except
+the Poisson process, given by \code{\link[=sim_cpoisson]{sim_cpoisson()}} with jumps equal to 1:
+\itemize{
+\item the \strong{Poisson process}, increments \eqn{Poisson(\lambda \Delta t)}
+(Hoyle, 2010, section 2.11);
+\item the \strong{Cauchy process}, increments \eqn{Cauchy(0, \gamma \Delta t)}, of
+infinite mean (Hoyle, 2010, section 2.9);
+\item the \strong{\eqn{\alpha}-stable processes}, of infinite variance for
+\eqn{\alpha < 2}; for \eqn{\alpha < 1}, the stable subordinator is
+increasing (Samorodnitsky and Taqqu, 1994; exact simulation by Chambers,
+Mallows and Stuck, 1976);
+\item the \strong{generalized hyperbolic (GH) processes}, whose distribution at time
+1 is generalized hyperbolic (Barndorff-Nielsen, 1977); the NIG and the
+variance-gamma processes are special or limiting cases;
+\item the \strong{tempered stable processes}, stable processes whose large jumps are
+tempered by an exponential factor (Koponen, 1995; Rosiński, 2007); the
+gamma and inverse Gaussian processes are tempered stable subordinators;
+\item the \strong{Lévy jump-diffusion processes}, a Brownian motion with drift plus
+a compound Poisson process, with normal jumps (Merton, 1976) or double
+exponential jumps (Kou, 2002);
+\item the \strong{CGMY process} (Carr, Geman, Madan and Yor, 2002), a tempered
+stable process that contains the variance-gamma process as a special
+case.
 }
 }
 
@@ -242,6 +274,47 @@ The variance gamma process and option pricing. \emph{European Finance Review},
 Meixner process: Schoutens, W. and Teugels, J. L. (1998). Lévy processes,
 polynomials and martingales. \emph{Communications in Statistics. Stochastic
 Models}, 14(1-2), 335-349.
+
+Normal inverse Gaussian process: Barndorff-Nielsen, O. E. (1997). Normal
+inverse Gaussian distributions and stochastic volatility modelling.
+\emph{Scandinavian Journal of Statistics}, 24(1), 1-13.
+\doi{10.1111/1467-9469.00045}
+
+Compound Poisson process: Kahle et al. (2016), chapter 3, above.
+
+Hoyle, A. E. V. (2010). \emph{Information-Based Models for Finance and
+Insurance}. PhD thesis, Imperial College London. arXiv:1010.0829.
+
+\strong{Other Lévy processes}
+
+Barndorff-Nielsen, O. E. (1977). Exponentially decreasing distributions for
+the logarithm of particle size. \emph{Proceedings of the Royal Society of London.
+Series A}, 353, 401-419.
+
+Carr, P., Geman, H., Madan, D. B. and Yor, M. (2002). The fine structure of
+asset returns: an empirical investigation. \emph{The Journal of Business},
+75(2), 305-332. \doi{10.1086/338705}
+
+Chambers, J. M., Mallows, C. L. and Stuck, B. W. (1976). A method for
+simulating stable random variables. \emph{Journal of the American Statistical
+Association}, 71(354), 340-344.
+
+Koponen, I. (1995). Analytic approach to the problem of convergence of
+truncated Lévy flights towards the Gaussian stochastic process. \emph{Physical
+Review E}, 52, 1197-1199.
+
+Kou, S. G. (2002). A jump-diffusion model for option pricing. \emph{Management
+Science}, 48(8), 1086-1101. \doi{10.1287/mnsc.48.8.1086.166}
+
+Merton, R. C. (1976). Option pricing when underlying stock returns are
+discontinuous. \emph{Journal of Financial Economics}, 3(1-2), 125-144.
+\doi{10.1016/0304-405X(76)90022-2}
+
+Rosiński, J. (2007). Tempering stable processes. \emph{Stochastic Processes and
+their Applications}, 117(6), 677-707.
+
+Samorodnitsky, G. and Taqqu, M. S. (1994). \emph{Stable Non-Gaussian Random
+Processes}. Chapman and Hall, New York.
 
 \strong{Simulation methods}
 

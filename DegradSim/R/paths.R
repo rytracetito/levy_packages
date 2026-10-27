@@ -157,6 +157,7 @@ print.DegradSim <- function(x, ...) {
   cat(if (is.matrix(x)) ", same inspection times (matrix)\n" else ", own inspection times (list)\n")
   cat("parameters:", paste(names(par), signif(par, 4), sep = " = ", collapse = ", "), "\n")
   if (!is.null(attr(x, "A"))) cat("time change: A =", attr(x, "A"), "\n")
+  if (!is.null(attr(x, "jumps"))) cat("jumps: rjump =", attr(x, "jumps"), "\n")
   cat("\n")
   if (is.matrix(x)) print(utils::head(unclass(x)[, seq_len(min(ncol(x), 6)), drop = FALSE])) else print(utils::head(traj_df(x)))
   invisible(x)
