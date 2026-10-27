@@ -81,7 +81,7 @@ Puis un tableau de **convergence** : avec une trajectoire de plus en plus longue
 
 Sur un seul jeu de données, l'estimation n'est jamais exactement la vraie valeur : avec quelques centaines d'accroissements, des écarts de quelques pour cent, parfois 10 à 15 %, sont normaux. Ce qui compte est que ces écarts restent modérés et diminuent quand les données augmentent, ce que montrent les tableaux de convergence. Pour la dérive \(\mu\) du Wiener, c'est surtout la durée totale observée qui compte : son écart type est \(\sigma / \sqrt{T}\).
 
-Le modèle de Meixner a besoin de plus de données et d'inspections rapprochées : ses cas utilisent un pas d'environ 1 et davantage d'accroissements (voir sa section).
+Le modèle de Meixner a besoin d'inspections très rapprochées : ses cas utilisent 50 000 accroissements au pas de 0.01 (voir sa section).
 
 ```{r}
 t_reg <- inspection_times("regular", n = 200, tmax = 100)$time
@@ -89,10 +89,11 @@ t_irr <- inspection_times("increasing", n = 200, tmax = 100)$time
 t_meme <- inspection_times("regular", n = 50, tmax = 100)$time
 plan_diff <- inspection_times("increasing", n = 30:39, n_traj = 10, tmax = 100)
 
-convergence <- function(simuler, estimer, vraies, n) {
-  lignes <- lapply(n, function(k) {
+convergence <- function(simuler, estimer, vraies, n, tmax = n) {
+  lignes <- lapply(seq_along(n), function(i) {
+    k <- n[i]
     set.seed(k)
-    e <- estimer(simuler(inspection_times("regular", n = k, tmax = k)$time))
+    e <- estimer(simuler(inspection_times("regular", n = k, tmax = tmax[i])$time))
     data.frame(Accroissements = k, t(signif(e[names(vraies)], 4)))
   })
   vraie <- data.frame(Accroissements = "vraie valeur", t(vraies))
@@ -276,15 +277,17 @@ convergence(function(t) sim_vg(t, theta = 0.5, sigma = 1.5, nu = 2), vg_mle, vra
 
 ## Meixner
 
-Les mêmes cas, avec des inspections espacées d'environ 1 et plus d'accroissements : 1 000 inspections jusqu'à 1 000 pour une trajectoire, 20 trajectoires d'environ 100 inspections jusqu'à 100 pour plusieurs trajectoires.
+Les mêmes cas, avec des inspections très rapprochées : 50 000 accroissements au pas de 0.01 sur une durée de 500, pour une trajectoire comme pour plusieurs (20 trajectoires de 2 500 inspections jusqu'à 25).
 
-Le pas compte pour ce modèle. Sur un long intervalle, un accroissement du processus de Meixner est la somme de très nombreux petits sauts, et sa loi est presque normale : la vraisemblance ne permet alors plus de séparer \(a\), \(b\), \(d\) et \(m\), et elle n'a pas de maximum intérieur (cas limite gaussien, décrit dans l'aide de `meixner_mle()`). Avec un pas de 5, environ 30 % des jeux de données sont dans ce cas ; avec un pas de 1 et assez de données, presque aucun.
+Pour ce modèle, c'est la **finesse du pas** qui compte, plus que la durée. Sur un long intervalle, un accroissement du processus de Meixner est la somme de très nombreux petits sauts, et sa loi est presque normale : la vraisemblance ne permet plus de séparer \(a\), \(b\), \(d\) et \(m\), ou n'a même plus de maximum intérieur (cas limite gaussien, décrit dans l'aide de `meixner_mle()`). Sur un intervalle court, l'accroissement garde la forme propre au Meixner (asymétrie, queues), qui permet de séparer les paramètres. Le tableau de convergence ci-dessous le montre, à durée fixée.
+
+Le cas 2 arrondit les instants à trois décimales : la simulation construit un générateur par pas distinct, et l'arrondi en laisse une quarantaine au lieu de 50 000.
 
 ```{r}
-t_reg_m <- inspection_times("regular", n = 1000, tmax = 1000)$time
-t_irr_m <- inspection_times("increasing", n = 1000, tmax = 1000)$time
-t_meme_m <- inspection_times("regular", n = 100, tmax = 100)$time
-plan_diff_m <- inspection_times("regular", n = 90:109, n_traj = 20, tmax = 100)
+t_reg_m <- inspection_times("regular", n = 50000, tmax = 500)$time
+t_irr_m <- inspection_times("increasing", n = 50000, tmax = 500, digits = 3)$time
+t_meme_m <- inspection_times("regular", n = 2500, tmax = 25)$time
+plan_diff_m <- inspection_times("regular", n = 2490:2509, n_traj = 20, tmax = 25)
 ```
 
 ### Cas 1 : une trajectoire, inspections régulières
@@ -321,11 +324,11 @@ comparer(meixner_mle(x), vraies$meixner)
 
 ### Convergence
 
-Avec 200 accroissements, les estimations de \(b\), \(d\) et \(m\) sont encore loin des vraies valeurs : ces paramètres sont difficiles à séparer avec peu de données (voir l'aide de `meixner_mle()`). Elles s'en rapprochent quand les données augmentent.
+Durée fixée à 500, avec un pas de plus en plus fin : 500 accroissements au pas de 1, 5 000 au pas de 0.1, puis 50 000 au pas de 0.01. Avec un pas de 1, les estimations de \(b\) et \(m\) peuvent rester loin des vraies valeurs ; elles s'en rapprochent quand le pas diminue.
 
 ```{r}
 convergence(function(t) sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2), meixner_mle,
-            vraies$meixner, c(200, 2000, 20000))
+            vraies$meixner, c(500, 5000, 50000), tmax = c(500, 500, 500))
 ```
 
 \newpage

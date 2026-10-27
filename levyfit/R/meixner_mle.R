@@ -90,7 +90,13 @@
 #' The parameters \eqn{a} and \eqn{d} are strongly correlated and \eqn{d} is
 #' poorly identified: hundreds of increments are needed for a stable
 #' estimation, and with few increments there is often no interior maximum, in
-#' which case the function returns `NA` with a warning. Even with several
+#' which case the function returns `NA` with a warning. A small time step
+#' matters more than a long duration: over a long interval, an increment is
+#' the sum of many small jumps and its distribution is almost Gaussian, so that
+#' the four parameters can hardly be separated. For instance, over a duration
+#' of 500, 5000 increments with a step 0.1 give estimates close to the true
+#' values, while 500 increments with a step 1, or even 5000 increments with a
+#' step 1 over a duration of 5000, do not. Even with several
 #' hundred increments, \eqn{b} and \eqn{m} can be far from their true values
 #' although the fitted distribution is close to the true one (same mean and
 #' variance): different parameters give almost the same distribution. The
@@ -152,35 +158,41 @@
 #' @seealso [vg_mle()]
 #'
 #' @examplesIf requireNamespace("DegradSim", quietly = TRUE)
-#' # The Meixner model needs many small increments: over long intervals its
+#' # The Meixner model needs small time steps: over long intervals its
 #' # increments are almost Gaussian and its parameters are hard to separate.
+#' # A small step matters more than a long duration.
 #'
-#' # 1. One trajectory inspected every time unit up to 500
-#' #    (a = 1, b = 0.3, d = 1.5, m = 0.2). With 500 increments, the estimates
-#' #    of b and m can be far from the true values although the fitted
-#' #    distribution is close: compare the means and variances below.
-#' t <- DegradSim::inspection_times("regular", n = 500, tmax = 500)$time
+#' # 1. One trajectory with 5000 inspections up to 500 (step 0.1)
+#' #    (a = 1, b = 0.3, d = 1.5, m = 0.2)
+#' t <- DegradSim::inspection_times("regular", n = 5000, tmax = 500)$time
 #' set.seed(1)
 #' x <- DegradSim::sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2)
-#' p <- meixner_mle(x)
-#' p
-#'
-#' # Mean and variance of an increment over one time unit: true, estimated
-#' c(true = 0.2 + 1.5 * tan(0.15), fitted = p[["m"]] + p[["a"]] * p[["d"]] * tan(p[["b"]] / 2))
-#' c(true = 1.5 / (2 * cos(0.15)^2), fitted = p[["a"]]^2 * p[["d"]] / (2 * cos(p[["b"]] / 2)^2))
+#' meixner_mle(x)
 #'
 #' # The same trajectory given as two vectors: degradation levels, then times
 #' meixner_mle(x[, "X1"], t)
 #'
-#' # 2. Twenty trajectories with the same inspection times
-#' t <- DegradSim::inspection_times("regular", n = 20, tmax = 20)$time
+#' # 2. The same duration with a step 1 (500 increments): the estimates of b
+#' #    and m can be far from the true values although the fitted distribution
+#' #    is close: compare the means and variances of an increment over one
+#' #    time unit, true and fitted
+#' t1 <- DegradSim::inspection_times("regular", n = 500, tmax = 500)$time
+#' set.seed(1)
+#' x1 <- DegradSim::sim_meixner(t1, a = 1, b = 0.3, d = 1.5, m = 0.2)
+#' p <- meixner_mle(x1)
+#' p
+#' c(true = 0.2 + 1.5 * tan(0.15), fitted = p[["m"]] + p[["a"]] * p[["d"]] * tan(p[["b"]] / 2))
+#' c(true = 1.5 / (2 * cos(0.15)^2), fitted = p[["a"]]^2 * p[["d"]] / (2 * cos(p[["b"]] / 2)^2))
+#'
+#' # 3. Twenty trajectories with the same inspection times (step 0.1)
+#' t <- DegradSim::inspection_times("regular", n = 200, tmax = 20)$time
 #' x <- DegradSim::sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2, n_traj = 20)
 #' meixner_mle(x)
 #'
-#' # 3. Estimates with 95 % confidence intervals
+#' # 4. Estimates with 95 % confidence intervals
 #' meixner_mle(x, ci = TRUE)
 #'
-#' # 4. Few increments over long intervals: the maximum is often at the
+#' # 5. Few increments over long intervals: the maximum is often at the
 #' #    boundary (Gaussian or shifted gamma limit): warning and NA estimates
 #' t10 <- DegradSim::inspection_times("regular", n = 10, tmax = 100)$time
 #' y <- DegradSim::sim_meixner(t10, a = 1, b = 0.3, d = 1.5, m = 0.2)
