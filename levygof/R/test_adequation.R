@@ -1,6 +1,6 @@
 #' Goodness-of-fit tests for an i.i.d. sample of increments
 #'
-#' Applies goodness-of-fit tests to a sample of increments of a Lévy process
+#' Applies goodness-of-fit tests to a sample of increments of a Levy process
 #' observed with a constant time step: the increments are then independent
 #' and identically distributed. This is the last step of [gof.levy()], also
 #' useful alone when the increments are already available (regular

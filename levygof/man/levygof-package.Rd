@@ -4,16 +4,16 @@
 \name{levygof-package}
 \alias{levygof}
 \alias{levygof-package}
-\title{levygof: goodness-of-fit tests for Lévy degradation processes}
+\title{levygof: goodness-of-fit tests for Levy degradation processes}
 \description{
 \code{levygof} tests whether degradation trajectories come from a parametric
-Lévy process: gamma (\code{"HGP"}), Wiener (\code{"HWP"}), inverse Gaussian
+Levy process: gamma (\code{"HGP"}), Wiener (\code{"HWP"}), inverse Gaussian
 (\code{"InvGaus"}), variance-gamma (\code{"VG"}) or Meixner (\code{"Meixner"}), with
 unknown parameters. The main function is \code{\link[=gof.levy]{gof.levy()}}.
 }
 \section{Methodology}{
 
-A Lévy process has independent and stationary increments: the increments
+A Levy process has independent and stationary increments: the increments
 over a same time step are i.i.d. The test proceeds in six steps.
 \enumerate{
 \item \strong{Estimate} the parameters from the observed trajectories by maximum

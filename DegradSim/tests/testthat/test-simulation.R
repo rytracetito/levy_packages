@@ -9,7 +9,7 @@ test_that("sim_gamma with A(t) = 2 t^1.5 reproduces the values of the report", {
   expect_equal(var(v), 6.980, tolerance = 1e-3)
 })
 
-test_that("the moments at t = 10 match the theory, Lévy processes", {
+test_that("the moments at t = 10 match the theory, Levy processes", {
   set.seed(2)
   v <- last_values(sim_gamma(tg, a = 2, b = 3, n_traj = 4000))
   expect_equal(mean(v), 2 * 10 / 3, tolerance = 0.02)
@@ -50,7 +50,7 @@ test_that("the increments of the time-scaled processes have the right distributi
   expect_gt(ks.test(x[3, -1] - x[2, -1], "pnorm", dA, 1.5 * sqrt(dA))$p.value, 0.01)
 })
 
-test_that("A(t) = a t, mu t gives back the Lévy processes", {
+test_that("A(t) = a t, mu t gives back the Levy processes", {
   for (f in list(
     list(function() sim_gamma(tg, a = 2, b = 3), function() sim_gamma(tg, b = 3, A = function(t) 2 * t)),
     list(function() sim_wiener(tg, mu = 0.5, sigma = 1.5 * sqrt(0.5)),

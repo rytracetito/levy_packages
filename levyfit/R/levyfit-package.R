@@ -44,7 +44,7 @@
 #' @section Computation of the estimators:
 #' With \eqn{(\Delta t_j, \Delta x_j)}, \eqn{j = 1, \dots, m}, the durations and
 #' increments between two consecutive inspections, pooled over the
-#' trajectories, the log-likelihood of a Lévy process is
+#' trajectories, the log-likelihood of a Levy process is
 #' \eqn{\ell(\psi) = \sum_j \ln f_{\Delta t_j}(\Delta x_j; \psi)}.
 #' * **Closed form**: Wiener and inverse Gaussian. The MLE is explicit, with
 #'   \eqn{\hat\mu = S / T}, \eqn{S} the total degradation and \eqn{T} the total

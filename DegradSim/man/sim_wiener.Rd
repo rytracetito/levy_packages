@@ -47,7 +47,7 @@ section Getting started of \link{DegradSim-package}.
 }
 \description{
 Simulates exactly, at given inspection times, one or several trajectories of
-a Wiener process with drift (a Lévy process) or of a time-scaled Wiener
+a Wiener process with drift (a Levy process) or of a time-scaled Wiener
 process, obtained with a time-scaling function \eqn{A}.
 }
 \section{Model}{
@@ -61,7 +61,7 @@ real and \eqn{\sigma > 0}. The process is
 where \eqn{\mu} is the drift parameter (expected to be positive for a
 degradation) and \eqn{\sigma^2} the variance (or volatility) parameter. It
 has independent increments \eqn{X_t - X_s \sim \mathcal{N}(\mu (t - s), \sigma^2 (t - s))},
-\eqn{E[X_t] = \mu t} and \eqn{Var(X_t) = \sigma^2 t}. It is a Lévy
+\eqn{E[X_t] = \mu t} and \eqn{Var(X_t) = \sigma^2 t}. It is a Levy
 process with continuous, non-monotone trajectories.
 
 \strong{Time-scaled Wiener process} (\code{A} given). With the time-scaling function \eqn{A}

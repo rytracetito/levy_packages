@@ -42,7 +42,7 @@ section Getting started of \link{DegradSim-package}.
 }
 \description{
 Simulates exactly, at given inspection times, one or several trajectories of
-a compound Poisson process, a Lévy process: a shock model where
+a compound Poisson process, a Levy process: a shock model where
 each shock adds a random amount of degradation.
 }
 \section{Model}{
@@ -52,7 +52,7 @@ times of the shocks) and \eqn{J_1, J_2, \dots} independent random variables
 with the same distribution, independent of \eqn{N} (the sizes of the
 shocks). The compound Poisson process is
 \deqn{X_t = \sum_{k = 1}^{N_t} J_k, \qquad t \ge 0,}
-with \eqn{X_t = 0} when \eqn{N_t = 0}. It is a Lévy process: \eqn{X_0 = 0},
+with \eqn{X_t = 0} when \eqn{N_t = 0}. It is a Levy process: \eqn{X_0 = 0},
 and for \eqn{0 \le s < t}, \eqn{X_t - X_s} is the sum of
 \eqn{N_t - N_s \sim Poisson(\lambda (t - s))} independent jumps. Hence
 \eqn{E[X_t] = \lambda t\, E[J]} and \eqn{Var(X_t) = \lambda t\, E[J^2]}.

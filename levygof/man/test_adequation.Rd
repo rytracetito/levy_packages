@@ -43,7 +43,7 @@ The column \code{message} is not printed when it is empty for all the tests;
 it stays in the data frame.
 }
 \description{
-Applies goodness-of-fit tests to a sample of increments of a Lévy process
+Applies goodness-of-fit tests to a sample of increments of a Levy process
 observed with a constant time step: the increments are then independent
 and identically distributed. This is the last step of \code{\link[=gof.levy]{gof.levy()}}, also
 useful alone when the increments are already available (regular

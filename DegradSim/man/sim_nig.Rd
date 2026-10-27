@@ -44,7 +44,7 @@ section Getting started of \link{DegradSim-package}.
 }
 \description{
 Simulates exactly, at given inspection times, one or several trajectories of
-a normal inverse Gaussian (NIG) process, a Lévy process.
+a normal inverse Gaussian (NIG) process, a Levy process.
 }
 \section{Model}{
 
@@ -65,7 +65,7 @@ The NIG process satisfies \eqn{X_0 = 0}, has independent increments, and for
 \eqn{0 \le s < t},
 \deqn{X_t - X_s \sim NIG\big(\alpha, \beta, \delta (t - s), \mu (t - s)\big).}
 Hence \eqn{E[X_t] = (\mu + \delta \beta / \gamma)\, t} and
-\eqn{Var(X_t) = \delta \alpha^2 t / \gamma^3}. It is a Lévy process whose
+\eqn{Var(X_t) = \delta \alpha^2 t / \gamma^3}. It is a Levy process whose
 trajectories are not monotone, purely made of jumps, of infinite
 variation: \eqn{\alpha} sets the tails, \eqn{\beta} the asymmetry,
 \eqn{\delta} the scale and \eqn{\mu} the location. It is a subordinated

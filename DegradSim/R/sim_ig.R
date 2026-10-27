@@ -1,7 +1,7 @@
 #' Simulation of the inverse Gaussian process
 #'
 #' Simulates exactly, at given inspection times, one or several trajectories of
-#' an inverse Gaussian (IG) process (a Lévy process) or of a time-scaled IG
+#' an inverse Gaussian (IG) process (a Levy process) or of a time-scaled IG
 #' process, obtained with a time-scaling function \eqn{A}.
 #'
 #' @section Model:
@@ -15,7 +15,7 @@
 #' increments, and for \eqn{0 \le s < t},
 #' \deqn{X_t - X_s \sim IG\big(\mu (t - s),\ \eta (t - s)^2\big),}
 #' with the parametrization of Wang and Xu (2010). Then \eqn{E[X_t] = \mu t}
-#' and \eqn{Var(X_t) = \mu^3 t / \eta}. It is a Lévy process, increasing and
+#' and \eqn{Var(X_t) = \mu^3 t / \eta}. It is a Levy process, increasing and
 #' purely made of jumps.
 #'
 #' **Time-scaled IG process** (`A` given). With the time-scaling function

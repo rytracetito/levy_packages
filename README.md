@@ -1,11 +1,11 @@
 # levy_packages
 
-R packages for degradation models based on Lévy and time-scaled Lévy processes.
+R packages for degradation models based on Levy and time-scaled Levy processes.
 
 | Package | Content | Status |
 |---|---|---|
-| `DegradSim` | Exact simulation of one or several trajectories of Lévy processes (gamma, Wiener, inverse Gaussian, variance-gamma, Meixner, normal inverse Gaussian, compound Poisson) and of time-scaled Lévy processes X_t = Y_{A(t)} (gamma, Wiener, inverse Gaussian), plots and data, inspection schedules | In progress |
-| `levyfit` | Maximum likelihood estimation for the five Lévy processes, from one or several trajectories | In progress |
+| `DegradSim` | Exact simulation of one or several trajectories of Levy processes (gamma, Wiener, inverse Gaussian, variance-gamma, Meixner, normal inverse Gaussian, compound Poisson) and of time-scaled Levy processes X_t = Y_{A(t)} (gamma, Wiener, inverse Gaussian), plots and data, inspection schedules | In progress |
+| `levyfit` | Maximum likelihood estimation for the five Levy processes, from one or several trajectories | In progress |
 | `levyBridge` | Exact simulation of the bridges of the gamma, Wiener, inverse Gaussian, variance-gamma and Meixner processes, and resampling of trajectories observed at irregular times onto a regular grid (Grall-Maës, 2012); reconstructed increments for the tests | In progress |
 | `levygof` | Goodness-of-fit tests for the gamma, Wiener, inverse Gaussian, variance-gamma and Meixner processes, from one or several trajectories inspected at regular or irregular times (estimation with `levyfit`, bridges with `levyBridge`, methods "Bridge", "ExtBridge" and "MultiBridge") | In progress |
 

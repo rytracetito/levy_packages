@@ -1,7 +1,7 @@
-#' Goodness-of-fit test of a Lévy degradation process
+#' Goodness-of-fit test of a Levy degradation process
 #'
 #' Tests whether one or several degradation trajectories come from a given
-#' Lévy process (gamma, Wiener, inverse Gaussian, variance-gamma or Meixner),
+#' Levy process (gamma, Wiener, inverse Gaussian, variance-gamma or Meixner),
 #' with unknown parameters. With regular inspections the observed increments
 #' are tested; with irregular inspections the parameters are estimated, the
 #' trajectories are resampled on a regular grid by stochastic bridges, and
@@ -64,7 +64,7 @@
 #'
 #' @section Method:
 #' The null hypothesis H0 is: the trajectories are independent trajectories
-#' of the Lévy process `model`, with unknown parameters.
+#' of the Levy process `model`, with unknown parameters.
 #'
 #' 1. **Regular inspections** (each trajectory inspected with a constant
 #'    time step \eqn{\Delta}): the increments are i.i.d. with the law of

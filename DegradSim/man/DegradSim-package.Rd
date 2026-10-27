@@ -4,15 +4,15 @@
 \name{DegradSim-package}
 \alias{DegradSim}
 \alias{DegradSim-package}
-\title{DegradSim: simulation of Lévy and time-scaled Lévy degradation processes}
+\title{DegradSim: simulation of Levy and time-scaled Levy degradation processes}
 \description{
 \code{DegradSim} simulates exactly, at given inspection times, one or several
 degradation trajectories of two families of processes:
 \enumerate{
-\item \strong{Lévy processes}: gamma, Wiener, inverse Gaussian, variance-gamma,
+\item \strong{Levy processes}: gamma, Wiener, inverse Gaussian, variance-gamma,
 Meixner, normal inverse Gaussian and compound Poisson processes;
-\item \strong{time-scaled Lévy processes} \eqn{X_t = Y_{A(t)}}, where \eqn{Y} is a
-Lévy process and \eqn{A} a time-scaling function: time-scaled gamma,
+\item \strong{time-scaled Levy processes} \eqn{X_t = Y_{A(t)}}, where \eqn{Y} is a
+Levy process and \eqn{A} a time-scaling function: time-scaled gamma,
 Wiener and inverse Gaussian processes.
 }
 }
@@ -22,10 +22,10 @@ another; \code{\link[=inspection_times]{inspection_times()}} builds them with a 
 simulated trajectories can be printed, plotted and extracted as a data
 frame.
 }
-\section{Lévy processes}{
+\section{Levy processes}{
 
 \strong{Definition} (Sato, 2001, p. 3). A real stochastic process
-\eqn{(X_t)_{t \ge 0}} is a Lévy process if
+\eqn{(X_t)_{t \ge 0}} is a Levy process if
 \enumerate{
 \item it has independent increments: for all \eqn{n \ge 1} and
 \eqn{0 \le t_0 < t_1 < \dots < t_n}, the random variables
@@ -46,9 +46,9 @@ limits (càdlàg), almost surely.
 \eqn{\mu = \mu_n^{n*}}, the \eqn{n}-fold convolution of \eqn{\mu_n}: a
 random variable with distribution \eqn{\mu} has the distribution of the sum
 of \eqn{n} independent random variables with distribution \eqn{\mu_n}. For a
-Lévy process, the distribution of \eqn{X_t} is infinitely divisible for
+Levy process, the distribution of \eqn{X_t} is infinitely divisible for
 every \eqn{t}; conversely, every infinitely divisible distribution is the
-distribution of \eqn{X_1} for a Lévy process, unique in law (Sato, 2001,
+distribution of \eqn{X_1} for a Levy process, unique in law (Sato, 2001,
 Theorems 1.1 and 1.2).
 
 The simulation functions, with the distribution of an increment over a time
@@ -69,9 +69,9 @@ For the variance-gamma process, \eqn{B} is a standard Brownian motion and
 \eqn{G_{\Delta t} \sim \Gamma(\Delta t / \nu, 1 / \nu)} (see \code{\link[=sim_vg]{sim_vg()}}).
 }
 
-\section{Other Lévy processes}{
+\section{Other Levy processes}{
 
-There are other Lévy processes. \code{DegradSim} does not simulate them, except
+There are other Levy processes. \code{DegradSim} does not simulate them, except
 the Poisson process, given by \code{\link[=sim_cpoisson]{sim_cpoisson()}} with jumps equal to 1:
 \itemize{
 \item the \strong{Poisson process}, increments \eqn{Poisson(\lambda \Delta t)}
@@ -88,7 +88,7 @@ variance-gamma processes are special or limiting cases;
 \item the \strong{tempered stable processes}, stable processes whose large jumps are
 tempered by an exponential factor (Koponen, 1995; Rosiński, 2007); the
 gamma and inverse Gaussian processes are tempered stable subordinators;
-\item the \strong{Lévy jump-diffusion processes}, a Brownian motion with drift plus
+\item the \strong{Levy jump-diffusion processes}, a Brownian motion with drift plus
 a compound Poisson process, with normal jumps (Merton, 1976) or double
 exponential jumps (Kou, 2002);
 \item the \strong{CGMY process} (Carr, Geman, Madan and Yor, 2002), a tempered
@@ -97,19 +97,19 @@ case.
 }
 }
 
-\section{Time-scaled Lévy processes}{
+\section{Time-scaled Levy processes}{
 
 \strong{Time-scaling function.} Let \eqn{A : [0, +\infty[ \to [0, +\infty[} be
 a non-decreasing function, right-continuous with left limits, with
 \eqn{A(0) = 0} and \eqn{A(t) \to +\infty} as \eqn{t \to +\infty} (a
 time-scaling function, Cha and Mercier, 2019, Example 1), and let \eqn{Y}
-be a Lévy process. The process
+be a Levy process. The process
 \deqn{X_t = Y_{A(t)}, \qquad t \ge 0,}
-is a time-scaled Lévy process (Kahle et al., 2016, p. xix-xx; Cha and
+is a time-scaled Levy process (Kahle et al., 2016, p. xix-xx; Cha and
 Mercier, 2019, section 2): \eqn{X_0 = 0}, its increments are independent
 and \eqn{X_t - X_s} has the distribution of \eqn{Y_{A(t) - A(s)}}. Its
 increments are not stationary when \eqn{A} is not linear: \eqn{X} is not a
-Lévy process, but a non-homogeneous Lévy process. When \eqn{A} is
+Levy process, but a non-homogeneous Levy process. When \eqn{A} is
 continuous, \eqn{X} is also stochastically continuous: it is an additive
 process in the sense of Sato (2001, p. 3), that is a process satisfying
 the conditions 1, 2, 4 and 5 above.
@@ -175,8 +175,8 @@ result of \code{\link[=inspection_times]{inspection_times()}}, and an error expl
 fails.
 \item \strong{Simulate} with the function of the chosen process and its
 parameters, for instance \code{sim_gamma(t, a = 2, b = 3)} for a gamma
-process. For a time-scaled Lévy process, give the time-scaling function
-\code{A} (see the section Time-scaled Lévy processes) instead of the fixed
+process. For a time-scaled Levy process, give the time-scaling function
+\code{A} (see the section Time-scaled Levy processes) instead of the fixed
 parameter, for instance \code{sim_gamma(t, b = 3, A = function(t) 2 * t^1.5)}.
 \item \strong{Store and use the result} \code{x}, an object of class \code{DegradSim}. Its
 form depends on the times:
@@ -237,7 +237,7 @@ the help page of each simulation function.
 plan <- inspection_times("increasing", n = 20, n_traj = 10, tmax = 100)
 plot_plan(plan)
 
-# 2. Simulation of a gamma process (a Lévy process)
+# 2. Simulation of a gamma process (a Levy process)
 set.seed(1)
 x <- sim_gamma(plan, a = 0.2, b = 1)
 
@@ -262,7 +262,7 @@ z[[2]]$X      # its levels, the same as z[[2]][, 2]
 z[[2]][, 2]
 }
 \references{
-\strong{Lévy processes and time-scaled Lévy processes}
+\strong{Levy processes and time-scaled Levy processes}
 
 Sato, K. (2001). Basic results on Lévy processes. In O. E.
 Barndorff-Nielsen, T. Mikosch and S. I. Resnick (eds.), \emph{Lévy Processes:
@@ -308,7 +308,7 @@ Compound Poisson process: Kahle et al. (2016), chapter 3, above.
 Hoyle, A. E. V. (2010). \emph{Information-Based Models for Finance and
 Insurance}. PhD thesis, Imperial College London. arXiv:1010.0829.
 
-\strong{Other Lévy processes}
+\strong{Other Levy processes}
 
 Barndorff-Nielsen, O. E. (1977). Exponentially decreasing distributions for
 the logarithm of particle size. \emph{Proceedings of the Royal Society of London.

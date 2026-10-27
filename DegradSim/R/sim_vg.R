@@ -1,7 +1,7 @@
 #' Simulation of the variance-gamma process
 #'
 #' Simulates exactly, at given inspection times, one or several trajectories of
-#' a variance-gamma (VG) process, a Lévy process.
+#' a variance-gamma (VG) process, a Levy process.
 #'
 #' @section Model:
 #' Let \eqn{\theta} be real, \eqn{\sigma > 0} and \eqn{\nu > 0}. Let \eqn{G}
@@ -11,7 +11,7 @@
 #' standard Brownian motion. The VG process is the Brownian motion with drift
 #' evaluated at the random clock \eqn{G}:
 #' \deqn{X_t = \theta G_t + \sigma B_{G_t}, \qquad t \ge 0.}
-#' It is a Lévy process: \eqn{X_0 = 0}, its increments are independent and
+#' It is a Levy process: \eqn{X_0 = 0}, its increments are independent and
 #' stationary, \eqn{E[X_t] = \theta t} and
 #' \eqn{Var(X_t) = (\sigma^2 + \theta^2 \nu)\, t}. The trajectories are not
 #' monotone, purely made of jumps, of finite variation. As \eqn{\nu \to 0}, the

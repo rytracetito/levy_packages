@@ -57,7 +57,7 @@ increments are computed within each trajectory and then pooled.
 
 With \eqn{(\Delta t_j, \Delta x_j)}, \eqn{j = 1, \dots, m}, the durations and
 increments between two consecutive inspections, pooled over the
-trajectories, the log-likelihood of a Lévy process is
+trajectories, the log-likelihood of a Levy process is
 \eqn{\ell(\psi) = \sum_j \ln f_{\Delta t_j}(\Delta x_j; \psi)}.
 \itemize{
 \item \strong{Closed form}: Wiener and inverse Gaussian. The MLE is explicit, with

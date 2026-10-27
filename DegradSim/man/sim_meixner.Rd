@@ -43,7 +43,7 @@ section Getting started of \link{DegradSim-package}.
 }
 \description{
 Simulates exactly, at given inspection times, one or several trajectories of
-a Meixner process, a Lévy process.
+a Meixner process, a Levy process.
 }
 \section{Model}{
 
@@ -60,7 +60,7 @@ The Meixner process satisfies \eqn{X_0 = 0}, has independent increments,
 and for \eqn{0 \le s < t},
 \deqn{X_t - X_s \sim Meixner\big(a, b, d (t - s), m (t - s)\big).}
 Hence \eqn{E[X_t] = (m + a d \tan(b/2))\, t} and
-\eqn{Var(X_t) = a^2 d\, t / (2 \cos^2(b/2))}. It is a Lévy process whose
+\eqn{Var(X_t) = a^2 d\, t / (2 \cos^2(b/2))}. It is a Levy process whose
 trajectories are not monotone, purely made of jumps, of infinite
 variation: \eqn{a} is a scale parameter, \eqn{b} sets the asymmetry,
 \eqn{d} the shape and \eqn{m} the location.

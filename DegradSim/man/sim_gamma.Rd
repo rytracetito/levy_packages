@@ -45,7 +45,7 @@ section Getting started of \link{DegradSim-package}.
 }
 \description{
 Simulates exactly, at given inspection times, one or several trajectories of
-a gamma process (a Lévy process) or of a time-scaled gamma process, obtained
+a gamma process (a Levy process) or of a time-scaled gamma process, obtained
 with a time-scaling function \eqn{A}.
 }
 \section{Model}{
@@ -58,7 +58,7 @@ with a time-scaling function \eqn{A}.
 The process satisfies \eqn{X_0 = 0}, has independent increments, and for
 \eqn{0 \le s < t},
 \deqn{X_t - X_s \sim \Gamma\big(a (t - s),\ b\big).}
-Then \eqn{E[X_t] = a t / b} and \eqn{Var(X_t) = a t / b^2}. It is a Lévy
+Then \eqn{E[X_t] = a t / b} and \eqn{Var(X_t) = a t / b^2}. It is a Levy
 process, increasing and purely made of jumps.
 
 \strong{Time-scaled gamma process} (\code{A} given). With the time-scaling function

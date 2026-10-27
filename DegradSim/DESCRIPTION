@@ -1,14 +1,14 @@
 Package: DegradSim
-Title: Simulation of Lévy and Time-Scaled Lévy Degradation Processes
+Title: Simulation of Levy and Time-Scaled Levy Degradation Processes
 Version: 0.1.0
 Authors@R: c(
     person("Amedée Rytrace", "Tito", , "rytracetito5@gmail.com", role = c("aut", "cre")),
     person("Christian", "Paroissin", , "christian.paroissin@univ-pau.fr", role = "aut")
   )
 Description: Exact simulation, at given inspection times, of one or several
-    degradation trajectories of Lévy processes (gamma, Wiener, inverse
+    degradation trajectories of Levy processes (gamma, Wiener, inverse
     Gaussian, variance-gamma, Meixner, normal inverse Gaussian and compound
-    Poisson processes) and of time-scaled Lévy processes X_t = Y_{A(t)},
+    Poisson processes) and of time-scaled Levy processes X_t = Y_{A(t)},
     obtained with a time-scaling function A from a gamma, Wiener or inverse
     Gaussian process (Kahle, Mercier and Paroissin, 2016,
     ISBN:978-1-84821-888-8; Cha and Mercier, 2019,

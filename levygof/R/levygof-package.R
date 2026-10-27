@@ -1,12 +1,12 @@
-#' levygof: goodness-of-fit tests for Lévy degradation processes
+#' levygof: goodness-of-fit tests for Levy degradation processes
 #'
 #' `levygof` tests whether degradation trajectories come from a parametric
-#' Lévy process: gamma (`"HGP"`), Wiener (`"HWP"`), inverse Gaussian
+#' Levy process: gamma (`"HGP"`), Wiener (`"HWP"`), inverse Gaussian
 #' (`"InvGaus"`), variance-gamma (`"VG"`) or Meixner (`"Meixner"`), with
 #' unknown parameters. The main function is [gof.levy()].
 #'
 #' @section Methodology:
-#' A Lévy process has independent and stationary increments: the increments
+#' A Levy process has independent and stationary increments: the increments
 #' over a same time step are i.i.d. The test proceeds in six steps.
 #'
 #' 1. **Estimate** the parameters from the observed trajectories by maximum

@@ -43,7 +43,7 @@ For \eqn{a > 0}, \eqn{-\pi < b < \pi}, \eqn{d > 0} and real \eqn{m}, the
 \eqn{Meixner(a, b, d, m)} distribution has density
 \deqn{f(x) = \frac{(2 \cos(b/2))^{2d}}{2 a \pi\, \Gamma(2d)}
   \exp\Big(\frac{b (x - m)}{a}\Big) \Big|\Gamma\Big(d + i \frac{x - m}{a}\Big)\Big|^2, \qquad x \in R.}
-The Meixner process is the Lévy process such that
+The Meixner process is the Levy process such that
 \eqn{X_s \sim Meixner(a, b, d s, m s)}. Its mean and variance per unit of
 time are \eqn{\kappa_1 = m + a d \tan(b/2)} and
 \eqn{\kappa_2 = a^2 d / (2 \cos^2(b/2))}. The trajectories are independent

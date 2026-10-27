@@ -11,7 +11,7 @@
 #' Let \eqn{\gamma} be a gamma process such that \eqn{\gamma_s} has mean
 #' \eqn{s} and variance \eqn{\nu s} (shape \eqn{s / \nu}, scale \eqn{\nu}), and
 #' \eqn{W} an independent standard Brownian motion. The VG process is
-#' \eqn{X_s = \theta \gamma_s + \sigma W_{\gamma_s}}, a Lévy process that can
+#' \eqn{X_s = \theta \gamma_s + \sigma W_{\gamma_s}}, a Levy process that can
 #' decrease. With \eqn{\lambda_s = s / \nu},
 #' \eqn{c = \sqrt{\theta^2 + 2 \sigma^2 / \nu}} and \eqn{\kappa = c / \sigma^2},
 #' \eqn{X_s} has the density

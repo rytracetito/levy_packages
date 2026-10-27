@@ -1,13 +1,13 @@
-#' levyBridge: stochastic bridges for Lévy degradation processes
+#' levyBridge: stochastic bridges for Levy degradation processes
 #'
 #' `levyBridge` resamples degradation trajectories observed at irregular
 #' inspection times onto a regular time grid, by exact simulation of the
 #' bridge of the process between the known values. Under the model, the
 #' reconstructed increments are independent and identically distributed: they
-#' are the input of the goodness-of-fit tests for Lévy degradation processes.
+#' are the input of the goodness-of-fit tests for Levy degradation processes.
 #'
-#' @section Bridge of a Lévy process:
-#' Let \eqn{X} be a Lévy process such that \eqn{X_s} has the density
+#' @section Bridge of a Levy process:
+#' Let \eqn{X} be a Levy process such that \eqn{X_s} has the density
 #' \eqn{f_s}, and \eqn{t_A < t < t_B}. Given \eqn{X_{t_A} = x_A} and
 #' \eqn{X_{t_B} = x_B}, \eqn{X_t} has the density
 #' \deqn{f_{t | t_A, t_B}(x) = \frac{f_{t - t_A}(x - x_A)\, f_{t_B - t}(x_B - x)}{f_{t_B - t_A}(x_B - x_A)}}
@@ -108,7 +108,7 @@
 #'
 #' @section Goodness-of-fit test, step by step:
 #' The package covers steps 2 to 4 of the methodology of goodness-of-fit tests
-#' for a parametric family of Lévy processes:
+#' for a parametric family of Levy processes:
 #' 1. **Estimate** the parameters from the observed trajectories, for instance
 #'    with the package `levyfit` (`gamma_mle()`, `meixner_mle()`, ...);
 #' 2. **Law of the bridge**: it is given in the help page of each `_bridge`
