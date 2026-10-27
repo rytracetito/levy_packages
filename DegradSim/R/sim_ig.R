@@ -1,8 +1,8 @@
 #' Simulation of the inverse Gaussian process
 #'
 #' Simulates exactly, at given inspection times, one or several trajectories of
-#' a homogeneous inverse Gaussian (IG) process (a Lévy process) or of a
-#' non-homogeneous IG process, obtained by a time change \eqn{A}.
+#' an inverse Gaussian (IG) process (a Lévy process) or of a time-scaled IG
+#' process, obtained with a time-scaling function \eqn{A}.
 #'
 #' @section Model:
 #' \eqn{IG(m, \lambda)} denotes the inverse Gaussian distribution with mean
@@ -10,7 +10,7 @@
 #' \deqn{\sqrt{\frac{\lambda}{2 \pi x^3}} \exp\Big(-\frac{\lambda (x - m)^2}{2 m^2 x}\Big), \qquad x > 0,}
 #' and variance \eqn{m^3 / \lambda}.
 #'
-#' **Homogeneous IG process** (`A = NULL`, default). Let \eqn{\mu > 0} and
+#' **IG process** (`A = NULL`, default). Let \eqn{\mu > 0} and
 #' \eqn{\eta > 0}. The process satisfies \eqn{X_0 = 0}, has independent
 #' increments, and for \eqn{0 \le s < t},
 #' \deqn{X_t - X_s \sim IG\big(\mu (t - s),\ \eta (t - s)^2\big),}
@@ -18,21 +18,21 @@
 #' and \eqn{Var(X_t) = \mu^3 t / \eta}. It is a Lévy process, increasing and
 #' purely made of jumps.
 #'
-#' **Non-homogeneous IG process** (`A` given). With the time change \eqn{A}
-#' defined in [DegradSim-package], \eqn{X_t = Y_{A(t)}}, where \eqn{Y} is the
-#' homogeneous IG process with \eqn{\mu = 1} (identifiability, see
+#' **Time-scaled IG process** (`A` given). With the time-scaling function
+#' \eqn{A} defined in [DegradSim-package], \eqn{X_t = Y_{A(t)}}, where \eqn{Y}
+#' is the IG process with \eqn{\mu = 1} (identifiability, see
 #' [DegradSim-package]):
 #' \deqn{X_t - X_s \sim IG\big(A(t) - A(s),\ \eta\, (A(t) - A(s))^2\big),}
 #' \eqn{E[X_t] = A(t)} and \eqn{Var(X_t) = A(t) / \eta}. This is the
-#' non-homogeneous IG process with mean function \eqn{A} of Cha and Mercier
+#' time-scaled IG process with mean function \eqn{A} of Cha and Mercier
 #' (2019, Example 3), whose parameter \eqn{b} is \eqn{\eta}.
 #'
 #' @section Exact simulation:
 #' Random walk approximation, described in [DegradSim-package]: the
 #' increments \eqn{\Delta X_i \sim IG(m_i, \lambda_i)}, with
 #' \eqn{m_i = \mu \Delta t_i}, \eqn{\lambda_i = \eta \Delta t_i^2}
-#' (homogeneous case) or \eqn{m_i = \Delta A_i},
-#' \eqn{\lambda_i = \eta \Delta A_i^2} (non-homogeneous case), are drawn
+#' (IG process) or \eqn{m_i = \Delta A_i},
+#' \eqn{\lambda_i = \eta \Delta A_i^2} (time-scaled IG process), are drawn
 #' independently, then cumulated. Each increment \eqn{IG(m, \lambda)} is drawn
 #' by the method of Michael, Schucany and Haas (1976), based on
 #' \eqn{\lambda (X - m)^2 / (m^2 X) \sim \chi^2_1}: draw
@@ -42,13 +42,13 @@
 #' \eqn{m^2 / x_1}.
 #'
 #' @inheritParams sim_gamma
-#' @param mu Mean degradation per unit of time of the homogeneous process,
+#' @param mu Mean degradation per unit of time of the IG process,
 #'   \eqn{\mu > 0}. Not given when `A` is given (the mean of \eqn{X_t} is then
 #'   \eqn{A(t)}).
 #' @param eta Shape parameter, \eqn{\eta > 0}: the larger \eqn{\eta}, the less
 #'   variable the increments. The variance of \eqn{X_t} is
-#'   \eqn{\mu^3 t / \eta} (homogeneous case) or \eqn{A(t) / \eta}
-#'   (non-homogeneous case).
+#'   \eqn{\mu^3 t / \eta} (IG process) or \eqn{A(t) / \eta} (time-scaled
+#'   IG process).
 #'
 #' @inherit sim_gamma return
 #'
@@ -65,13 +65,13 @@
 #' degradation data. *Technometrics*, 52(2), 188-197.
 #' \doi{10.1198/TECH.2009.08197}
 #'
-#' @seealso [sim_gamma()] and [sim_wiener()] for the other processes with a
-#'   time change, [plot_traj()], [traj_df()], [inspection_times()],
+#' @seealso [sim_gamma()] and [sim_wiener()] for the other time-scaled
+#'   processes, [plot_traj()], [traj_df()], [inspection_times()],
 #'   [plot_plan()]
 #'
 #' @examples
-#' # 1. Homogeneous process: one trajectory inspected every 0.5 time unit
-#' t <- seq(0, 10, by = 0.5)
+#' # 1. One trajectory with 200 regular inspections up to 10 (step 0.05)
+#' t <- inspection_times("regular", n = 200, tmax = 10)$time
 #' set.seed(1)
 #' x <- sim_ig(t, mu = 0.5, eta = 2)
 #' x
@@ -87,7 +87,7 @@
 #' x[, "X2"]
 #'
 #' # 3. Irregular inspections, less and less frequent over time
-#' plan <- inspection_times("decreasing", n = 20, n_traj = 5, tmax = 10)
+#' plan <- inspection_times("decreasing", n = 50, n_traj = 5, tmax = 10)
 #' x <- sim_ig(plan, mu = 0.5, eta = 2)
 #' plot_traj(x)
 #'
@@ -96,14 +96,14 @@
 #' x[[2]]
 #' x[[2]]$X
 #'
-#' # 5. Non-homogeneous IG process with mean function A(t) = 0.5 t^1.5
+#' # 5. Time-scaled IG process with mean function A(t) = 0.5 t^1.5
 #' #    (Cha and Mercier, 2019, Example 3): X_t - X_s ~ IG(dA, eta dA^2)
 #' x <- sim_ig(t, eta = 2, A = function(t) 0.5 * t^1.5, n_traj = 10)
 #' x
-#' plot_traj(x, "Non-homogeneous inverse Gaussian process")
+#' plot_traj(x, "Time-scaled inverse Gaussian process")
 #'
-#' # 6. With A(t) = mu t, the non-homogeneous process with eta is the
-#' #    homogeneous process with parameters mu and eta mu^2
+#' # 6. With A(t) = mu t, the time-scaled IG process with eta is the IG
+#' #    process with parameters mu and eta mu^2
 #' set.seed(2)
 #' y1 <- sim_ig(t, eta = 2, A = function(t) 0.5 * t)
 #' set.seed(2)
@@ -115,9 +115,10 @@
 #' head(traj_df(x, increments = TRUE))
 #'
 #' # 8. Histogram of the increments, with the density of the increments in red.
-#' #    Homogeneous process and constant step h = 0.5: the increments are i.i.d.
+#' #    Constant step h = 0.5: the increments are i.i.d.
 #' #    with distribution IG(m, lambda), m = mu h and lambda = eta h^2
-#' x <- sim_ig(seq(0, 25, by = 0.5), mu = 0.5, eta = 2, n_traj = 20)
+#' t8 <- inspection_times("regular", n = 50, tmax = 25)$time
+#' x <- sim_ig(t8, mu = 0.5, eta = 2, n_traj = 20)
 #' dx <- traj_df(x, increments = TRUE)$dX
 #' dx <- dx[!is.na(dx)]
 #' m <- 0.5 * 0.5
@@ -132,7 +133,7 @@
 sim_ig <- function(t, mu, eta, A = NULL, n_traj = 1) {
   if (missing(eta) || !is.numeric(eta) || length(eta) != 1 || !(eta > 0)) stop("eta must be a positive number")
   if (is.null(A)) {
-    if (missing(mu)) stop("mu is missing: give mu (homogeneous process) or A (non-homogeneous process)")
+    if (missing(mu)) stop("mu is missing: give mu (IG process) or A (time-scaled IG process)")
     if (!is.numeric(mu) || length(mu) != 1 || !(mu > 0)) stop("mu must be a positive number")
     clock <- function(t) diff(t)
     drift <- mu
@@ -142,7 +143,7 @@ sim_ig <- function(t, mu, eta, A = NULL, n_traj = 1) {
     if (!missing(mu)) stop("give mu or A, not both: with A, the mean of X_t is A(t) (mu = 1)")
     clock <- function(t) time_change(A, t)
     drift <- 1
-    model <- "non-homogeneous inverse Gaussian"
+    model <- "time-scaled inverse Gaussian"
     parameters <- c(eta = eta)
   }
   one_path <- function(t) {

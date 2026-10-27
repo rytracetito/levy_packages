@@ -10,7 +10,8 @@ sim_wiener(t, mu, sigma, A = NULL, n_traj = 1)
 \item{t}{Inspection times. The times of each trajectory must start at 0 and
 be strictly increasing. Three forms are accepted:
 \itemize{
-\item a numeric vector, for instance \code{seq(0, 10, by = 0.5)}: all the
+\item a numeric vector, for instance
+\code{inspection_times("regular", n = 200, tmax = 10)$time}: all the
 trajectories share these times, and their number is \code{n_traj};
 \item a list of vectors, one per trajectory, for instance
 \code{list(c(0, 1, 3), c(0, 2, 4, 6))}: each trajectory has its own times
@@ -19,55 +20,42 @@ trajectories share these times, and their number is \code{n_traj};
 plan per trajectory (\code{n_traj} is then ignored).
 }}
 
-\item{mu}{Drift of the homogeneous process, real: mean degradation per unit
+\item{mu}{Drift of the Wiener process, real: mean degradation per unit
 of time. Not given when \code{A} is given (the mean of \eqn{X_t} is then
 \eqn{A(t)}).}
 
 \item{sigma}{Diffusion coefficient, \eqn{\sigma > 0}: standard deviation
-(not variance) of \eqn{X_t - X_s} for \eqn{t - s = 1} (homogeneous
-case) or \eqn{A(t) - A(s) = 1} (time-scaled case).}
+(not variance) of \eqn{X_t - X_s} for \eqn{t - s = 1} (Wiener process)
+or \eqn{A(t) - A(s) = 1} (time-scaled Wiener process).}
 
-\item{A}{\code{NULL} (default) for the homogeneous process, or the time change
-\eqn{A} of the non-homogeneous process (defined in \link{DegradSim-package}):
-a vectorized R function of \code{t}, for instance \code{function(t) 2 * t^1.5}.}
+\item{A}{\code{NULL} (default) for the gamma process, or the time-scaling
+function \eqn{A} of the time-scaled process (defined in
+\link{DegradSim-package}): a vectorized R function of \code{t}, for instance
+\code{function(t) 2 * t^1.5}.}
 
 \item{n_traj}{Number of trajectories to simulate when \code{t} is a vector
 (default 1), a positive integer.}
 }
 \value{
-An object of class \code{DegradSim}, whose form depends on the
-inspection times:
-\itemize{
-\item \strong{same times for all the trajectories} (\code{t} a vector, or a plan of
-\code{\link[=inspection_times]{inspection_times()}} with the same times for all the trajectories): a
-matrix with columns \code{t} (inspection times), \code{X1}, ..., \code{Xn} (simulated
-degradation levels of the trajectories 1 to \eqn{n}, equal to 0 at
-\code{t = 0}). The levels of the \eqn{k}-th trajectory are \code{x[, k + 1]} or
-\code{x[, "Xk"]};
-\item \strong{different times} (\code{t} a list, or a plan of \code{\link[=inspection_times]{inspection_times()}} with
-different times): a list with one data frame per trajectory, with
-columns \code{t} and \code{X}. The \eqn{k}-th trajectory is the data frame
-\code{x[[k]]}, its times are \code{x[[k]]$t} (or \code{x[[k]][, 1]}) and its levels
-\code{x[[k]]$X} (or \code{x[[k]][, 2]}).
-}
-
-The model, the parameters and, for a non-homogeneous process, the time
-change are stored as attributes. Printing the object shows them with the
-first simulated values. Use \code{\link[=traj_df]{traj_df()}} to gather the data in a single
-data frame (with the increments if needed) and \code{\link[=plot_traj]{plot_traj()}} to plot the
-trajectories.
+An object of class \code{DegradSim}: a matrix (column \code{t}, then one
+column of levels per trajectory) when all the trajectories have the same
+inspection times, otherwise a list with one data frame (\code{t}, \code{X}) per
+trajectory. The model, the parameters and the time-scaling function, if
+any, are stored as attributes. The use of the result (a trajectory, its
+times and levels, \code{\link[=traj_df]{traj_df()}}, \code{\link[=plot_traj]{plot_traj()}}) is described in the
+section Getting started of \link{DegradSim-package}.
 }
 \description{
 Simulates exactly, at given inspection times, one or several trajectories of
-a homogeneous Wiener process with drift (a Lévy process) or of a
-time-scaled Wiener process, obtained by a time change \eqn{A}.
+a Wiener process with drift (a Lévy process) or of a time-scaled Wiener
+process, obtained with a time-scaling function \eqn{A}.
 }
 \section{Model}{
 
 \eqn{B} denotes a standard Brownian motion and \eqn{\mathcal{N}(m, v)} the normal
 distribution with mean \eqn{m} and variance \eqn{v}.
 
-\strong{Homogeneous Wiener process} (\code{A = NULL}, default). Let \eqn{\mu} be
+\strong{Wiener process} (\code{A = NULL}, default). Let \eqn{\mu} be
 real and \eqn{\sigma > 0}. The process is
 \deqn{X_t = \mu t + \sigma B_t, \qquad t \ge 0,}
 where \eqn{\mu} is the drift parameter (expected to be positive for a
@@ -76,7 +64,7 @@ has independent increments \eqn{X_t - X_s \sim \mathcal{N}(\mu (t - s), \sigma^2
 \eqn{E[X_t] = \mu t} and \eqn{Var(X_t) = \sigma^2 t}. It is a Lévy
 process with continuous, non-monotone trajectories.
 
-\strong{Time-scaled Wiener process} (\code{A} given). With the time change \eqn{A}
+\strong{Time-scaled Wiener process} (\code{A} given). With the time-scaling function \eqn{A}
 defined in \link{DegradSim-package},
 \deqn{X_t = A(t) + \sigma B_{A(t)}, \qquad t \ge 0,}
 that is \eqn{X_t = Y_{A(t)}} with \eqn{Y_u = u + \sigma B_u}: the drift
@@ -97,8 +85,8 @@ cumulated.
 }
 
 \examples{
-# 1. Homogeneous process: one trajectory inspected every 0.5 time unit
-t <- seq(0, 10, by = 0.5)
+# 1. One trajectory with 200 regular inspections up to 10 (step 0.05)
+t <- inspection_times("regular", n = 200, tmax = 10)$time
 set.seed(1)
 x <- sim_wiener(t, mu = 0.5, sigma = 1.5)
 x
@@ -114,7 +102,7 @@ head(x[, 1:4])
 x[, "X2"]
 
 # 3. Irregular inspections, frequent at the beginning and at the end
-plan <- inspection_times("dec-inc", n = 20, n_traj = 5, tmax = 10)
+plan <- inspection_times("dec-inc", n = 50, n_traj = 5, tmax = 10)
 x <- sim_wiener(plan, mu = 0.5, sigma = 1.5)
 plot_traj(x)
 
@@ -129,8 +117,8 @@ x <- sim_wiener(t, sigma = 1.5, A = function(t) 0.5 * t^1.5, n_traj = 10)
 x
 plot_traj(x, "Time-scaled Wiener process")
 
-# 6. With A(t) = mu t, the time-scaled process with sigma is the homogeneous
-#    process with drift mu and diffusion coefficient sigma sqrt(mu)
+# 6. With A(t) = mu t, the time-scaled Wiener process with sigma is the
+#    Wiener process with drift mu and diffusion coefficient sigma sqrt(mu)
 set.seed(2)
 y1 <- sim_wiener(t, sigma = 1.5, A = function(t) 0.5 * t)
 set.seed(2)
@@ -141,10 +129,10 @@ all.equal(unclass(y1)[, 2], unclass(y2)[, 2])
 head(traj_df(x))
 head(traj_df(x, increments = TRUE))
 
-# 8. Histogram of the increments, with the density of the increments in red.
-#    Homogeneous process and constant step h = 0.5: the increments are i.i.d.
-#    with distribution N(mu h, sigma^2 h)
-x <- sim_wiener(seq(0, 25, by = 0.5), mu = 0.5, sigma = 1.5, n_traj = 20)
+# 8. Histogram of the increments, with their density in red. Constant
+#    step h = 0.5: the increments are i.i.d. N(mu h, sigma^2 h)
+t8 <- inspection_times("regular", n = 50, tmax = 25)$time
+x <- sim_wiener(t8, mu = 0.5, sigma = 1.5, n_traj = 20)
 dx <- traj_df(x, increments = TRUE)$dX
 dx <- dx[!is.na(dx)]
 ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
@@ -165,6 +153,6 @@ Whitmore, G. A. (1995). Estimating degradation by a Wiener diffusion process
 subject to measurement error. \emph{Lifetime Data Analysis}, 1, 307-319.
 }
 \seealso{
-\code{\link[=sim_gamma]{sim_gamma()}} and \code{\link[=sim_ig]{sim_ig()}} for the other processes with a time
-change, \code{\link[=plot_traj]{plot_traj()}}, \code{\link[=traj_df]{traj_df()}}, \code{\link[=inspection_times]{inspection_times()}}, \code{\link[=plot_plan]{plot_plan()}}
+\code{\link[=sim_gamma]{sim_gamma()}} and \code{\link[=sim_ig]{sim_ig()}} for the other time-scaled processes,
+\code{\link[=plot_traj]{plot_traj()}}, \code{\link[=traj_df]{traj_df()}}, \code{\link[=inspection_times]{inspection_times()}}, \code{\link[=plot_plan]{plot_plan()}}
 }

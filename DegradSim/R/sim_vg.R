@@ -1,7 +1,7 @@
 #' Simulation of the variance-gamma process
 #'
 #' Simulates exactly, at given inspection times, one or several trajectories of
-#' a homogeneous variance-gamma (VG) process, a Lévy process.
+#' a variance-gamma (VG) process, a Lévy process.
 #'
 #' @section Model:
 #' Let \eqn{\theta} be real, \eqn{\sigma > 0} and \eqn{\nu > 0}. Let \eqn{G}
@@ -75,8 +75,8 @@
 #' @seealso [plot_traj()], [traj_df()], [inspection_times()], [plot_plan()]
 #'
 #' @examples
-#' # 1. One trajectory inspected every 0.5 time unit up to 10
-#' t <- seq(0, 10, by = 0.5)
+#' # 1. One trajectory with 200 regular inspections up to 10 (step 0.05)
+#' t <- inspection_times("regular", n = 200, tmax = 10)$time
 #' set.seed(1)
 #' x <- sim_vg(t, theta = 0.5, sigma = 1.2, nu = 0.8)
 #' x
@@ -96,7 +96,7 @@
 #' plot_traj(y, "Variance-gamma process, difference of two gamma processes")
 #'
 #' # 4. Irregular inspections, more and more frequent over time
-#' plan <- inspection_times("increasing", n = 20, n_traj = 5, tmax = 10)
+#' plan <- inspection_times("increasing", n = 50, n_traj = 5, tmax = 10)
 #' x <- sim_vg(plan, theta = 0.5, sigma = 1.2, nu = 0.8)
 #' plot_traj(x)
 #'
@@ -114,9 +114,10 @@
 #' head(traj_df(x, increments = TRUE))
 #'
 #' # 8. Histogram of the increments, with the density of the increments in red.
-#' #    Homogeneous process and constant step h = 1: the increments are i.i.d.
+#' #    Constant step h = 1: the increments are i.i.d.
 #' #    with the VG density of Madan et al. (1998), written with besselK()
-#' x <- sim_vg(seq(0, 50, by = 1), theta = 0.5, sigma = 1.2, nu = 0.8, n_traj = 20)
+#' t8 <- inspection_times("regular", n = 50, tmax = 50)$time
+#' x <- sim_vg(t8, theta = 0.5, sigma = 1.2, nu = 0.8, n_traj = 20)
 #' dx <- traj_df(x, increments = TRUE)$dX
 #' dx <- dx[!is.na(dx)]
 #' dvg <- function(y, h = 1, theta = 0.5, sigma = 1.2, nu = 0.8) {

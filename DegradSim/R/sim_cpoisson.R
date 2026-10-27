@@ -1,7 +1,7 @@
 #' Simulation of the compound Poisson process
 #'
 #' Simulates exactly, at given inspection times, one or several trajectories of
-#' a homogeneous compound Poisson process, a Lévy process: a shock model where
+#' a compound Poisson process, a Lévy process: a shock model where
 #' each shock adds a random amount of degradation.
 #'
 #' @section Model:
@@ -57,9 +57,9 @@
 #'   [plot_plan()]
 #'
 #' @examples
-#' # 1. One trajectory inspected every 0.5 time unit up to 10, exponential
+#' # 1. One trajectory with 200 regular inspections up to 10 (step 0.05), exponential
 #' #    jumps of mean 1 (default)
-#' t <- seq(0, 10, by = 0.5)
+#' t <- inspection_times("regular", n = 200, tmax = 10)$time
 #' set.seed(1)
 #' x <- sim_cpoisson(t, lambda = 2)
 #' x
@@ -85,7 +85,7 @@
 #' plot_traj(x, "Poisson process")
 #'
 #' # 5. Irregular inspections, more and more frequent over time
-#' plan <- inspection_times("increasing", n = 20, n_traj = 5, tmax = 10)
+#' plan <- inspection_times("increasing", n = 50, n_traj = 5, tmax = 10)
 #' x <- sim_cpoisson(plan, lambda = 2)
 #' plot_traj(x)
 #'
@@ -101,7 +101,8 @@
 #' # 8. Increments over the constant step h = 1, with exponential jumps of
 #' #    rate 1: an increment is 0 with probability exp(-lambda h) (no shock);
 #' #    otherwise its density is sum_k P(N = k) dgamma(y, k, 1) / (1 - exp(-lambda h))
-#' x <- sim_cpoisson(seq(0, 100, by = 1), lambda = 2, n_traj = 10)
+#' t8 <- inspection_times("regular", n = 100, tmax = 100)$time
+#' x <- sim_cpoisson(t8, lambda = 2, n_traj = 10)
 #' dx <- traj_df(x, increments = TRUE)$dX
 #' dx <- dx[!is.na(dx)]
 #' c(zero_observed = mean(dx == 0), zero_theory = exp(-2))

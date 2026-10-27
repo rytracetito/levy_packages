@@ -1,7 +1,7 @@
 #' Simulation of the normal inverse Gaussian process
 #'
 #' Simulates exactly, at given inspection times, one or several trajectories of
-#' a homogeneous normal inverse Gaussian (NIG) process, a Lévy process.
+#' a normal inverse Gaussian (NIG) process, a Lévy process.
 #'
 #' @section Model:
 #' The \eqn{NIG(\alpha, \beta, \delta, \mu)} distribution, with
@@ -73,8 +73,8 @@
 #'   [plot_plan()]
 #'
 #' @examples
-#' # 1. One trajectory inspected every 0.5 time unit up to 10
-#' t <- seq(0, 10, by = 0.5)
+#' # 1. One trajectory with 200 regular inspections up to 10 (step 0.05)
+#' t <- inspection_times("regular", n = 200, tmax = 10)$time
 #' set.seed(1)
 #' x <- sim_nig(t, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 #' x
@@ -90,7 +90,7 @@
 #' x[, "X2"]
 #'
 #' # 3. Irregular inspections, more and more frequent over time
-#' plan <- inspection_times("increasing", n = 20, n_traj = 5, tmax = 10)
+#' plan <- inspection_times("increasing", n = 50, n_traj = 5, tmax = 10)
 #' x <- sim_nig(plan, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 #' plot_traj(x)
 #'
@@ -110,7 +110,8 @@
 #' # 7. Histogram of the increments, with the density of the increments in red.
 #' #    Constant step h = 1: the increments are i.i.d.
 #' #    with distribution NIG(alpha, beta, delta h, mu h)
-#' x <- sim_nig(seq(0, 50, by = 1), alpha = 2, beta = 0.5, delta = 1, mu = 0.2, n_traj = 20)
+#' t7 <- inspection_times("regular", n = 50, tmax = 50)$time
+#' x <- sim_nig(t7, alpha = 2, beta = 0.5, delta = 1, mu = 0.2, n_traj = 20)
 #' dx <- traj_df(x, increments = TRUE)$dX
 #' dx <- dx[!is.na(dx)]
 #' dnig <- function(y, alpha = 2, beta = 0.5, delta = 1, mu = 0.2) {

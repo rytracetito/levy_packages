@@ -9,7 +9,7 @@ test_that("sim_gamma with A(t) = 2 t^1.5 reproduces the values of the report", {
   expect_equal(var(v), 6.980, tolerance = 1e-3)
 })
 
-test_that("the moments at t = 10 match the theory, homogeneous processes", {
+test_that("the moments at t = 10 match the theory, Lévy processes", {
   set.seed(2)
   v <- last_values(sim_gamma(tg, a = 2, b = 3, n_traj = 4000))
   expect_equal(mean(v), 2 * 10 / 3, tolerance = 0.02)
@@ -28,7 +28,7 @@ test_that("the moments at t = 10 match the theory, homogeneous processes", {
   expect_equal(var(v), 1.5 / (2 * cos(0.15)^2) * 10, tolerance = 0.08)
 })
 
-test_that("the moments at t = 10 match the theory, non-homogeneous processes", {
+test_that("the moments at t = 10 match the theory, time-scaled processes", {
   set.seed(3)
   v <- last_values(sim_gamma(tg, b = 3, A = A15, n_traj = 4000))
   expect_equal(mean(v), A15(10) / 3, tolerance = 0.02)
@@ -41,7 +41,7 @@ test_that("the moments at t = 10 match the theory, non-homogeneous processes", {
   expect_equal(var(v), A15(10) / 2, tolerance = 0.06)
 })
 
-test_that("the increments of the non-homogeneous processes have the right distribution", {
+test_that("the increments of the time-scaled processes have the right distribution", {
   set.seed(8)
   x <- sim_gamma(c(0, 2, 5), b = 3, A = A15, n_traj = 3000)
   expect_gt(ks.test(x[3, -1] - x[2, -1], "pgamma", shape = A15(5) - A15(2), rate = 3)$p.value, 0.01)
@@ -50,7 +50,7 @@ test_that("the increments of the non-homogeneous processes have the right distri
   expect_gt(ks.test(x[3, -1] - x[2, -1], "pnorm", dA, 1.5 * sqrt(dA))$p.value, 0.01)
 })
 
-test_that("A(t) = a t, mu t gives back the homogeneous processes", {
+test_that("A(t) = a t, mu t gives back the Lévy processes", {
   for (f in list(
     list(function() sim_gamma(tg, a = 2, b = 3), function() sim_gamma(tg, b = 3, A = function(t) 2 * t)),
     list(function() sim_wiener(tg, mu = 0.5, sigma = 1.5 * sqrt(0.5)),
@@ -64,7 +64,7 @@ test_that("A(t) = a t, mu t gives back the homogeneous processes", {
   }
 })
 
-test_that("a constant time change gives zero increments", {
+test_that("a constant time-scaling function gives zero increments", {
   set.seed(10)
   A <- function(t) pmin(t, 3)
   for (x in list(sim_gamma(tg, b = 3, A = A), sim_wiener(tg, sigma = 1, A = A), sim_ig(tg, eta = 2, A = A))) {
@@ -118,16 +118,16 @@ test_that("several trajectories and inspection plans are handled", {
   expect_output(print(y), "list")
 })
 
-test_that("the model and the time change are stored and printed", {
+test_that("the model and the time-scaling function are stored and printed", {
   set.seed(11)
   x <- sim_gamma(tg, b = 3, A = function(t) 2 * t^1.5)
-  expect_equal(attr(x, "model"), "non-homogeneous gamma")
+  expect_equal(attr(x, "model"), "time-scaled gamma")
   expect_equal(attr(x, "parameters"), c(b = 3))
-  expect_output(print(x), "time change: A =")
-  expect_equal(plot_traj(x)$labels$title, "non-homogeneous gamma process")
+  expect_output(print(x), "time-scaling function: A =")
+  expect_equal(plot_traj(x)$labels$title, "time-scaled gamma process")
   expect_null(attr(sim_gamma(tg, 2, 3), "A"))
   expect_equal(attr(sim_wiener(tg, sigma = 1, A = A15), "model"), "time-scaled Wiener")
-  expect_equal(attr(sim_ig(tg, eta = 1, A = A15), "model"), "non-homogeneous inverse Gaussian")
+  expect_equal(attr(sim_ig(tg, eta = 1, A = A15), "model"), "time-scaled inverse Gaussian")
 })
 
 test_that("invalid inspection times are refused", {
@@ -156,7 +156,7 @@ test_that("a and A (or mu and A) cannot be given together", {
   expect_error(sim_ig(tg, mu = 1, eta = 1, A = A15), "not both")
 })
 
-test_that("invalid time changes are refused", {
+test_that("invalid time-scaling functions are refused", {
   expect_error(sim_gamma(tg, b = 3, A = 2), "R function")
   expect_error(sim_gamma(tg, b = 3, A = function(t) t + 1), "A\\(0\\) = 0")
   expect_error(sim_wiener(tg, sigma = 1, A = function(t) -t), "non-decreasing")

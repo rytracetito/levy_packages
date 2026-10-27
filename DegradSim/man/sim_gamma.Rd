@@ -10,7 +10,8 @@ sim_gamma(t, a, b, A = NULL, n_traj = 1)
 \item{t}{Inspection times. The times of each trajectory must start at 0 and
 be strictly increasing. Three forms are accepted:
 \itemize{
-\item a numeric vector, for instance \code{seq(0, 10, by = 0.5)}: all the
+\item a numeric vector, for instance
+\code{inspection_times("regular", n = 200, tmax = 10)$time}: all the
 trajectories share these times, and their number is \code{n_traj};
 \item a list of vectors, one per trajectory, for instance
 \code{list(c(0, 1, 3), c(0, 2, 4, 6))}: each trajectory has its own times
@@ -19,46 +20,33 @@ trajectories share these times, and their number is \code{n_traj};
 plan per trajectory (\code{n_traj} is then ignored).
 }}
 
-\item{a}{Shape parameter of the homogeneous process, \eqn{a > 0}: the
-increment over a time \eqn{\Delta t} has shape \eqn{a \Delta t}. Not
-given when \code{A} is given (the shape is then \eqn{A(t) - A(s)}).}
+\item{a}{Shape parameter of the gamma process, \eqn{a > 0}: the increment
+over a time \eqn{\Delta t} has shape \eqn{a \Delta t}. Not given when \code{A}
+is given (the shape is then \eqn{A(t) - A(s)}).}
 
 \item{b}{Rate parameter, \eqn{b > 0} (the scale is \eqn{1 / b}).}
 
-\item{A}{\code{NULL} (default) for the homogeneous process, or the time change
-\eqn{A} of the non-homogeneous process (defined in \link{DegradSim-package}):
-a vectorized R function of \code{t}, for instance \code{function(t) 2 * t^1.5}.}
+\item{A}{\code{NULL} (default) for the gamma process, or the time-scaling
+function \eqn{A} of the time-scaled process (defined in
+\link{DegradSim-package}): a vectorized R function of \code{t}, for instance
+\code{function(t) 2 * t^1.5}.}
 
 \item{n_traj}{Number of trajectories to simulate when \code{t} is a vector
 (default 1), a positive integer.}
 }
 \value{
-An object of class \code{DegradSim}, whose form depends on the
-inspection times:
-\itemize{
-\item \strong{same times for all the trajectories} (\code{t} a vector, or a plan of
-\code{\link[=inspection_times]{inspection_times()}} with the same times for all the trajectories): a
-matrix with columns \code{t} (inspection times), \code{X1}, ..., \code{Xn} (simulated
-degradation levels of the trajectories 1 to \eqn{n}, equal to 0 at
-\code{t = 0}). The levels of the \eqn{k}-th trajectory are \code{x[, k + 1]} or
-\code{x[, "Xk"]};
-\item \strong{different times} (\code{t} a list, or a plan of \code{\link[=inspection_times]{inspection_times()}} with
-different times): a list with one data frame per trajectory, with
-columns \code{t} and \code{X}. The \eqn{k}-th trajectory is the data frame
-\code{x[[k]]}, its times are \code{x[[k]]$t} (or \code{x[[k]][, 1]}) and its levels
-\code{x[[k]]$X} (or \code{x[[k]][, 2]}).
-}
-
-The model, the parameters and, for a non-homogeneous process, the time
-change are stored as attributes. Printing the object shows them with the
-first simulated values. Use \code{\link[=traj_df]{traj_df()}} to gather the data in a single
-data frame (with the increments if needed) and \code{\link[=plot_traj]{plot_traj()}} to plot the
-trajectories.
+An object of class \code{DegradSim}: a matrix (column \code{t}, then one
+column of levels per trajectory) when all the trajectories have the same
+inspection times, otherwise a list with one data frame (\code{t}, \code{X}) per
+trajectory. The model, the parameters and the time-scaling function, if
+any, are stored as attributes. The use of the result (a trajectory, its
+times and levels, \code{\link[=traj_df]{traj_df()}}, \code{\link[=plot_traj]{plot_traj()}}) is described in the
+section Getting started of \link{DegradSim-package}.
 }
 \description{
 Simulates exactly, at given inspection times, one or several trajectories of
-a homogeneous gamma process (a Lévy process) or of a non-homogeneous gamma
-process, obtained by a time change \eqn{A}.
+a gamma process (a Lévy process) or of a time-scaled gamma process, obtained
+with a time-scaling function \eqn{A}.
 }
 \section{Model}{
 
@@ -66,16 +54,16 @@ process, obtained by a time change \eqn{A}.
 \strong{rate} \eqn{b > 0} (scale \eqn{1 / b}), of density
 \eqn{b^k x^{k-1} e^{-bx} / \Gamma(k)}, \eqn{x > 0}.
 
-\strong{Homogeneous gamma process} (\code{A = NULL}, default). Let \eqn{a > 0} and
-\eqn{b > 0}. The process satisfies \eqn{X_0 = 0}, has independent
-increments, and for \eqn{0 \le s < t},
+\strong{Gamma process} (\code{A = NULL}, default). Let \eqn{a > 0} and \eqn{b > 0}.
+The process satisfies \eqn{X_0 = 0}, has independent increments, and for
+\eqn{0 \le s < t},
 \deqn{X_t - X_s \sim \Gamma\big(a (t - s),\ b\big).}
 Then \eqn{E[X_t] = a t / b} and \eqn{Var(X_t) = a t / b^2}. It is a Lévy
 process, increasing and purely made of jumps.
 
-\strong{Non-homogeneous gamma process} (\code{A} given). With the time change
+\strong{Time-scaled gamma process} (\code{A} given). With the time-scaling function
 \eqn{A} defined in \link{DegradSim-package}, \eqn{X_t = Y_{A(t)}}, where \eqn{Y}
-is the homogeneous gamma process with \eqn{a = 1} (identifiability, see
+is the gamma process with \eqn{a = 1} (identifiability, see
 \link{DegradSim-package}) and rate \eqn{b}:
 \deqn{X_t - X_s \sim \Gamma\big(A(t) - A(s),\ b\big),}
 \eqn{E[X_t] = A(t) / b} and \eqn{Var(X_t) = A(t) / b^2}. This is the
@@ -93,8 +81,8 @@ are drawn independently with \code{\link[stats:GammaDist]{stats::rgamma()}}, the
 }
 
 \examples{
-# 1. Homogeneous process: one trajectory inspected every 0.5 time unit
-t <- seq(0, 10, by = 0.5)
+# 1. One trajectory with 200 regular inspections up to 10 (step 0.05)
+t <- inspection_times("regular", n = 200, tmax = 10)$time
 set.seed(1)
 x <- sim_gamma(t, a = 2, b = 3)
 x
@@ -108,10 +96,9 @@ plot_traj(x)
 # then one column per trajectory (X1, X2, ...)
 head(x[, 1:4])
 x[, "X2"]
-x[, 3]
 
 # 3. Irregular inspections, more and more frequent over time
-plan <- inspection_times("increasing", n = 20, n_traj = 5, tmax = 10)
+plan <- inspection_times("increasing", n = 50, n_traj = 5, tmax = 10)
 x <- sim_gamma(plan, a = 2, b = 3)
 plot_traj(x)
 
@@ -119,29 +106,29 @@ plot_traj(x)
 x <- sim_gamma(list(c(0, 1, 3, 6), c(0, 2, 4, 6, 8, 10)), a = 2, b = 3)
 x[[2]]
 x[[2]]$X
-x[[2]][, 2]
 
-# 5. Non-homogeneous process with the time change A(t) = 2 t^1.5
+# 5. Time-scaled gamma process with A(t) = 2 t^1.5
 #    (Cha and Mercier, 2019, Example 2): X_t - X_s ~ Gamma(A(t) - A(s), b)
 x <- sim_gamma(t, b = 3, A = function(t) 2 * t^1.5, n_traj = 10)
 x
-plot_traj(x, "Non-homogeneous gamma process")
+plot_traj(x, "Time-scaled gamma process")
 
-# 6. A(t) = a t gives back the homogeneous process with shape a
+# 6. With A(t) = a t, the time-scaled gamma process is the gamma process
+#    with shape a
 set.seed(2)
-y1 <- sim_gamma(t, a = 2, b = 3)
+y1 <- sim_gamma(t, b = 3, A = function(t) 2 * t)
 set.seed(2)
-y2 <- sim_gamma(t, b = 3, A = function(t) 2 * t)
+y2 <- sim_gamma(t, a = 2, b = 3)
 all.equal(unclass(y1)[, 2], unclass(y2)[, 2])
 
 # 7. All the simulated data in a single data frame, with the increments
 head(traj_df(x))
 head(traj_df(x, increments = TRUE))
 
-# 8. Histogram of the increments, with the density of the increments in red.
-#    Homogeneous process and constant step h = 0.5: the increments are i.i.d.
-#    with distribution Gamma(a h, b) = Gamma(1, 3)
-x <- sim_gamma(seq(0, 25, by = 0.5), a = 2, b = 3, n_traj = 20)
+# 8. Histogram of the increments, with their density in red. Constant
+#    step h = 0.5: the increments are i.i.d. Gamma(a h, b) = Gamma(1, 3)
+t8 <- inspection_times("regular", n = 50, tmax = 25)$time
+x <- sim_gamma(t8, a = 2, b = 3, n_traj = 20)
 dx <- traj_df(x, increments = TRUE)$dX
 dx <- dx[!is.na(dx)]
 ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
@@ -163,6 +150,6 @@ in maintenance. \emph{Reliability Engineering & System Safety}, 94(1), 2-21.
 \doi{10.1016/j.ress.2007.03.019}
 }
 \seealso{
-\code{\link[=sim_ig]{sim_ig()}} and \code{\link[=sim_wiener]{sim_wiener()}} for the other processes with a time
-change, \code{\link[=plot_traj]{plot_traj()}}, \code{\link[=traj_df]{traj_df()}}, \code{\link[=inspection_times]{inspection_times()}}, \code{\link[=plot_plan]{plot_plan()}}
+\code{\link[=sim_ig]{sim_ig()}} and \code{\link[=sim_wiener]{sim_wiener()}} for the other time-scaled processes,
+\code{\link[=plot_traj]{plot_traj()}}, \code{\link[=traj_df]{traj_df()}}, \code{\link[=inspection_times]{inspection_times()}}, \code{\link[=plot_plan]{plot_plan()}}
 }

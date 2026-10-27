@@ -22,7 +22,7 @@ Installation du package depuis GitHub :
 remotes::install_github("rytracetito/levy_packages", subdir = "DegradSim")
 ```
 
-Les parties I et II utilisent les sept **processus de Lévy** du package (cas homogène, `A = NULL` par défaut). La partie III montre les **processus de Lévy non homogènes** $X_t = Y_{A(t)}$ obtenus par un changement de temps $A$ : gamma, Wiener et inverse gaussien.
+Les parties I et II utilisent les sept **processus de Lévy** du package (`A = NULL` par défaut). La partie III montre les **processus de Lévy à échelle de temps** (*time-scaled Lévy processes*) $X_t = Y_{A(t)}$, obtenus avec une fonction d'échelle de temps $A$ (*time-scaling function*) : gamma, Wiener et inverse gaussien.
 
 Paramètres utilisés :
 
@@ -57,7 +57,7 @@ plot_plan(t1, "Inspections régulières")
 set.seed(11)
 x <- sim_gamma(t1, a = 2, b = 3)
 head(x)
-plot_traj(x, "Gamma homogène")
+plot_traj(x, "Gamma")
 ```
 
 ### Modèle 2 : Wiener
@@ -66,7 +66,7 @@ plot_traj(x, "Gamma homogène")
 set.seed(12)
 x <- sim_wiener(t1, mu = 0.5, sigma = 1.5)
 head(x)
-plot_traj(x, "Wiener homogène")
+plot_traj(x, "Wiener")
 ```
 
 ### Modèle 3 : inverse gaussien
@@ -75,7 +75,7 @@ plot_traj(x, "Wiener homogène")
 set.seed(13)
 x <- sim_ig(t1, mu = 0.5, eta = 2)
 head(x)
-plot_traj(x, "Inverse gaussien homogène")
+plot_traj(x, "Inverse gaussien")
 ```
 
 ### Modèle 4 : variance-gamma
@@ -84,7 +84,7 @@ plot_traj(x, "Inverse gaussien homogène")
 set.seed(14)
 x <- sim_vg(t1, theta = 0.5, sigma = 1.5, nu = 2)
 head(x)
-plot_traj(x, "Variance-gamma homogène")
+plot_traj(x, "Variance-gamma")
 ```
 
 ### Modèle 5 : Meixner
@@ -93,7 +93,7 @@ plot_traj(x, "Variance-gamma homogène")
 set.seed(15)
 x <- sim_meixner(t1, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x)
-plot_traj(x, "Meixner homogène")
+plot_traj(x, "Meixner")
 ```
 
 ### Modèle 6 : normal inverse gaussien (NIG)
@@ -102,7 +102,7 @@ plot_traj(x, "Meixner homogène")
 set.seed(16)
 x <- sim_nig(t1, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 head(x)
-plot_traj(x, "NIG homogène")
+plot_traj(x, "NIG")
 ```
 
 ### Modèle 7 : Poisson composé
@@ -129,7 +129,7 @@ plot_plan(t2, "Inspections croissantes : peu au début, beaucoup à la fin")
 set.seed(21)
 x <- sim_gamma(t2, a = 2, b = 3)
 head(x)
-plot_traj(x, "Gamma homogène")
+plot_traj(x, "Gamma")
 ```
 
 ### Modèle 2 : Wiener
@@ -138,7 +138,7 @@ plot_traj(x, "Gamma homogène")
 set.seed(22)
 x <- sim_wiener(t2, mu = 0.5, sigma = 1.5)
 head(x)
-plot_traj(x, "Wiener homogène")
+plot_traj(x, "Wiener")
 ```
 
 ### Modèle 3 : inverse gaussien
@@ -147,7 +147,7 @@ plot_traj(x, "Wiener homogène")
 set.seed(23)
 x <- sim_ig(t2, mu = 0.5, eta = 2)
 head(x)
-plot_traj(x, "Inverse gaussien homogène")
+plot_traj(x, "Inverse gaussien")
 ```
 
 ### Modèle 4 : variance-gamma
@@ -156,7 +156,7 @@ plot_traj(x, "Inverse gaussien homogène")
 set.seed(24)
 x <- sim_vg(t2, theta = 0.5, sigma = 1.5, nu = 2)
 head(x)
-plot_traj(x, "Variance-gamma homogène")
+plot_traj(x, "Variance-gamma")
 ```
 
 ### Modèle 5 : Meixner
@@ -165,7 +165,7 @@ plot_traj(x, "Variance-gamma homogène")
 set.seed(25)
 x <- sim_meixner(t2, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x)
-plot_traj(x, "Meixner homogène")
+plot_traj(x, "Meixner")
 ```
 
 ### Modèle 6 : normal inverse gaussien (NIG)
@@ -174,7 +174,7 @@ plot_traj(x, "Meixner homogène")
 set.seed(26)
 x <- sim_nig(t2, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 head(x)
-plot_traj(x, "NIG homogène")
+plot_traj(x, "NIG")
 ```
 
 ### Modèle 7 : Poisson composé
@@ -201,7 +201,7 @@ plot_plan(t3, "Inspections décroissantes : beaucoup au début, peu à la fin")
 set.seed(31)
 x <- sim_gamma(t3, a = 2, b = 3)
 head(x)
-plot_traj(x, "Gamma homogène")
+plot_traj(x, "Gamma")
 ```
 
 ### Modèle 2 : Wiener
@@ -210,7 +210,7 @@ plot_traj(x, "Gamma homogène")
 set.seed(32)
 x <- sim_wiener(t3, mu = 0.5, sigma = 1.5)
 head(x)
-plot_traj(x, "Wiener homogène")
+plot_traj(x, "Wiener")
 ```
 
 ### Modèle 3 : inverse gaussien
@@ -219,7 +219,7 @@ plot_traj(x, "Wiener homogène")
 set.seed(33)
 x <- sim_ig(t3, mu = 0.5, eta = 2)
 head(x)
-plot_traj(x, "Inverse gaussien homogène")
+plot_traj(x, "Inverse gaussien")
 ```
 
 ### Modèle 4 : variance-gamma
@@ -228,7 +228,7 @@ plot_traj(x, "Inverse gaussien homogène")
 set.seed(34)
 x <- sim_vg(t3, theta = 0.5, sigma = 1.5, nu = 2)
 head(x)
-plot_traj(x, "Variance-gamma homogène")
+plot_traj(x, "Variance-gamma")
 ```
 
 ### Modèle 5 : Meixner
@@ -237,7 +237,7 @@ plot_traj(x, "Variance-gamma homogène")
 set.seed(35)
 x <- sim_meixner(t3, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x)
-plot_traj(x, "Meixner homogène")
+plot_traj(x, "Meixner")
 ```
 
 ### Modèle 6 : normal inverse gaussien (NIG)
@@ -246,7 +246,7 @@ plot_traj(x, "Meixner homogène")
 set.seed(36)
 x <- sim_nig(t3, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 head(x)
-plot_traj(x, "NIG homogène")
+plot_traj(x, "NIG")
 ```
 
 ### Modèle 7 : Poisson composé
@@ -273,7 +273,7 @@ plot_plan(t4, "Beaucoup au début et à la fin, peu au milieu")
 set.seed(41)
 x <- sim_gamma(t4, a = 2, b = 3)
 head(x)
-plot_traj(x, "Gamma homogène")
+plot_traj(x, "Gamma")
 ```
 
 ### Modèle 2 : Wiener
@@ -282,7 +282,7 @@ plot_traj(x, "Gamma homogène")
 set.seed(42)
 x <- sim_wiener(t4, mu = 0.5, sigma = 1.5)
 head(x)
-plot_traj(x, "Wiener homogène")
+plot_traj(x, "Wiener")
 ```
 
 ### Modèle 3 : inverse gaussien
@@ -291,7 +291,7 @@ plot_traj(x, "Wiener homogène")
 set.seed(43)
 x <- sim_ig(t4, mu = 0.5, eta = 2)
 head(x)
-plot_traj(x, "Inverse gaussien homogène")
+plot_traj(x, "Inverse gaussien")
 ```
 
 ### Modèle 4 : variance-gamma
@@ -300,7 +300,7 @@ plot_traj(x, "Inverse gaussien homogène")
 set.seed(44)
 x <- sim_vg(t4, theta = 0.5, sigma = 1.5, nu = 2)
 head(x)
-plot_traj(x, "Variance-gamma homogène")
+plot_traj(x, "Variance-gamma")
 ```
 
 ### Modèle 5 : Meixner
@@ -309,7 +309,7 @@ plot_traj(x, "Variance-gamma homogène")
 set.seed(45)
 x <- sim_meixner(t4, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x)
-plot_traj(x, "Meixner homogène")
+plot_traj(x, "Meixner")
 ```
 
 ### Modèle 6 : normal inverse gaussien (NIG)
@@ -318,7 +318,7 @@ plot_traj(x, "Meixner homogène")
 set.seed(46)
 x <- sim_nig(t4, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 head(x)
-plot_traj(x, "NIG homogène")
+plot_traj(x, "NIG")
 ```
 
 ### Modèle 7 : Poisson composé
@@ -345,7 +345,7 @@ plot_plan(t5, "Peu au début et à la fin, beaucoup au milieu")
 set.seed(51)
 x <- sim_gamma(t5, a = 2, b = 3)
 head(x)
-plot_traj(x, "Gamma homogène")
+plot_traj(x, "Gamma")
 ```
 
 ### Modèle 2 : Wiener
@@ -354,7 +354,7 @@ plot_traj(x, "Gamma homogène")
 set.seed(52)
 x <- sim_wiener(t5, mu = 0.5, sigma = 1.5)
 head(x)
-plot_traj(x, "Wiener homogène")
+plot_traj(x, "Wiener")
 ```
 
 ### Modèle 3 : inverse gaussien
@@ -363,7 +363,7 @@ plot_traj(x, "Wiener homogène")
 set.seed(53)
 x <- sim_ig(t5, mu = 0.5, eta = 2)
 head(x)
-plot_traj(x, "Inverse gaussien homogène")
+plot_traj(x, "Inverse gaussien")
 ```
 
 ### Modèle 4 : variance-gamma
@@ -372,7 +372,7 @@ plot_traj(x, "Inverse gaussien homogène")
 set.seed(54)
 x <- sim_vg(t5, theta = 0.5, sigma = 1.5, nu = 2)
 head(x)
-plot_traj(x, "Variance-gamma homogène")
+plot_traj(x, "Variance-gamma")
 ```
 
 ### Modèle 5 : Meixner
@@ -381,7 +381,7 @@ plot_traj(x, "Variance-gamma homogène")
 set.seed(55)
 x <- sim_meixner(t5, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x)
-plot_traj(x, "Meixner homogène")
+plot_traj(x, "Meixner")
 ```
 
 ### Modèle 6 : normal inverse gaussien (NIG)
@@ -390,7 +390,7 @@ plot_traj(x, "Meixner homogène")
 set.seed(56)
 x <- sim_nig(t5, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 head(x)
-plot_traj(x, "NIG homogène")
+plot_traj(x, "NIG")
 ```
 
 ### Modèle 7 : Poisson composé
@@ -421,7 +421,7 @@ plot_plan(p1$time[p1$id == 1], "Inspections régulières")
 set.seed(111)
 x <- sim_gamma(p1, a = 2, b = 3)
 head(x[, 1:4])
-plot_traj(x, "Gamma homogène : 10 trajectoires")
+plot_traj(x, "Gamma : 10 trajectoires")
 ```
 
 ### Modèle 2 : Wiener
@@ -430,7 +430,7 @@ plot_traj(x, "Gamma homogène : 10 trajectoires")
 set.seed(112)
 x <- sim_wiener(p1, mu = 0.5, sigma = 1.5)
 head(x[, 1:4])
-plot_traj(x, "Wiener homogène : 10 trajectoires")
+plot_traj(x, "Wiener : 10 trajectoires")
 ```
 
 ### Modèle 3 : inverse gaussien
@@ -439,7 +439,7 @@ plot_traj(x, "Wiener homogène : 10 trajectoires")
 set.seed(113)
 x <- sim_ig(p1, mu = 0.5, eta = 2)
 head(x[, 1:4])
-plot_traj(x, "Inverse gaussien homogène : 10 trajectoires")
+plot_traj(x, "Inverse gaussien : 10 trajectoires")
 ```
 
 ### Modèle 4 : variance-gamma
@@ -448,7 +448,7 @@ plot_traj(x, "Inverse gaussien homogène : 10 trajectoires")
 set.seed(114)
 x <- sim_vg(p1, theta = 0.5, sigma = 1.5, nu = 2)
 head(x[, 1:4])
-plot_traj(x, "Variance-gamma homogène : 10 trajectoires")
+plot_traj(x, "Variance-gamma : 10 trajectoires")
 ```
 
 ### Modèle 5 : Meixner
@@ -457,7 +457,7 @@ plot_traj(x, "Variance-gamma homogène : 10 trajectoires")
 set.seed(115)
 x <- sim_meixner(p1, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x[, 1:4])
-plot_traj(x, "Meixner homogène : 10 trajectoires")
+plot_traj(x, "Meixner : 10 trajectoires")
 ```
 
 ### Modèle 6 : normal inverse gaussien (NIG)
@@ -466,7 +466,7 @@ plot_traj(x, "Meixner homogène : 10 trajectoires")
 set.seed(116)
 x <- sim_nig(p1, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 head(x[, 1:4])
-plot_traj(x, "NIG homogène : 10 trajectoires")
+plot_traj(x, "NIG : 10 trajectoires")
 ```
 
 ### Modèle 7 : Poisson composé
@@ -493,7 +493,7 @@ plot_plan(p2$time[p2$id == 1], "Inspections croissantes : peu au début, beaucou
 set.seed(121)
 x <- sim_gamma(p2, a = 2, b = 3)
 head(x[, 1:4])
-plot_traj(x, "Gamma homogène : 10 trajectoires")
+plot_traj(x, "Gamma : 10 trajectoires")
 ```
 
 ### Modèle 2 : Wiener
@@ -502,7 +502,7 @@ plot_traj(x, "Gamma homogène : 10 trajectoires")
 set.seed(122)
 x <- sim_wiener(p2, mu = 0.5, sigma = 1.5)
 head(x[, 1:4])
-plot_traj(x, "Wiener homogène : 10 trajectoires")
+plot_traj(x, "Wiener : 10 trajectoires")
 ```
 
 ### Modèle 3 : inverse gaussien
@@ -511,7 +511,7 @@ plot_traj(x, "Wiener homogène : 10 trajectoires")
 set.seed(123)
 x <- sim_ig(p2, mu = 0.5, eta = 2)
 head(x[, 1:4])
-plot_traj(x, "Inverse gaussien homogène : 10 trajectoires")
+plot_traj(x, "Inverse gaussien : 10 trajectoires")
 ```
 
 ### Modèle 4 : variance-gamma
@@ -520,7 +520,7 @@ plot_traj(x, "Inverse gaussien homogène : 10 trajectoires")
 set.seed(124)
 x <- sim_vg(p2, theta = 0.5, sigma = 1.5, nu = 2)
 head(x[, 1:4])
-plot_traj(x, "Variance-gamma homogène : 10 trajectoires")
+plot_traj(x, "Variance-gamma : 10 trajectoires")
 ```
 
 ### Modèle 5 : Meixner
@@ -529,7 +529,7 @@ plot_traj(x, "Variance-gamma homogène : 10 trajectoires")
 set.seed(125)
 x <- sim_meixner(p2, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x[, 1:4])
-plot_traj(x, "Meixner homogène : 10 trajectoires")
+plot_traj(x, "Meixner : 10 trajectoires")
 ```
 
 ### Modèle 6 : normal inverse gaussien (NIG)
@@ -538,7 +538,7 @@ plot_traj(x, "Meixner homogène : 10 trajectoires")
 set.seed(126)
 x <- sim_nig(p2, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 head(x[, 1:4])
-plot_traj(x, "NIG homogène : 10 trajectoires")
+plot_traj(x, "NIG : 10 trajectoires")
 ```
 
 ### Modèle 7 : Poisson composé
@@ -565,7 +565,7 @@ plot_plan(p3$time[p3$id == 1], "Inspections décroissantes : beaucoup au début,
 set.seed(131)
 x <- sim_gamma(p3, a = 2, b = 3)
 head(x[, 1:4])
-plot_traj(x, "Gamma homogène : 10 trajectoires")
+plot_traj(x, "Gamma : 10 trajectoires")
 ```
 
 ### Modèle 2 : Wiener
@@ -574,7 +574,7 @@ plot_traj(x, "Gamma homogène : 10 trajectoires")
 set.seed(132)
 x <- sim_wiener(p3, mu = 0.5, sigma = 1.5)
 head(x[, 1:4])
-plot_traj(x, "Wiener homogène : 10 trajectoires")
+plot_traj(x, "Wiener : 10 trajectoires")
 ```
 
 ### Modèle 3 : inverse gaussien
@@ -583,7 +583,7 @@ plot_traj(x, "Wiener homogène : 10 trajectoires")
 set.seed(133)
 x <- sim_ig(p3, mu = 0.5, eta = 2)
 head(x[, 1:4])
-plot_traj(x, "Inverse gaussien homogène : 10 trajectoires")
+plot_traj(x, "Inverse gaussien : 10 trajectoires")
 ```
 
 ### Modèle 4 : variance-gamma
@@ -592,7 +592,7 @@ plot_traj(x, "Inverse gaussien homogène : 10 trajectoires")
 set.seed(134)
 x <- sim_vg(p3, theta = 0.5, sigma = 1.5, nu = 2)
 head(x[, 1:4])
-plot_traj(x, "Variance-gamma homogène : 10 trajectoires")
+plot_traj(x, "Variance-gamma : 10 trajectoires")
 ```
 
 ### Modèle 5 : Meixner
@@ -601,7 +601,7 @@ plot_traj(x, "Variance-gamma homogène : 10 trajectoires")
 set.seed(135)
 x <- sim_meixner(p3, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x[, 1:4])
-plot_traj(x, "Meixner homogène : 10 trajectoires")
+plot_traj(x, "Meixner : 10 trajectoires")
 ```
 
 ### Modèle 6 : normal inverse gaussien (NIG)
@@ -610,7 +610,7 @@ plot_traj(x, "Meixner homogène : 10 trajectoires")
 set.seed(136)
 x <- sim_nig(p3, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 head(x[, 1:4])
-plot_traj(x, "NIG homogène : 10 trajectoires")
+plot_traj(x, "NIG : 10 trajectoires")
 ```
 
 ### Modèle 7 : Poisson composé
@@ -637,7 +637,7 @@ plot_plan(p4$time[p4$id == 1], "Beaucoup au début et à la fin, peu au milieu")
 set.seed(141)
 x <- sim_gamma(p4, a = 2, b = 3)
 head(x[, 1:4])
-plot_traj(x, "Gamma homogène : 10 trajectoires")
+plot_traj(x, "Gamma : 10 trajectoires")
 ```
 
 ### Modèle 2 : Wiener
@@ -646,7 +646,7 @@ plot_traj(x, "Gamma homogène : 10 trajectoires")
 set.seed(142)
 x <- sim_wiener(p4, mu = 0.5, sigma = 1.5)
 head(x[, 1:4])
-plot_traj(x, "Wiener homogène : 10 trajectoires")
+plot_traj(x, "Wiener : 10 trajectoires")
 ```
 
 ### Modèle 3 : inverse gaussien
@@ -655,7 +655,7 @@ plot_traj(x, "Wiener homogène : 10 trajectoires")
 set.seed(143)
 x <- sim_ig(p4, mu = 0.5, eta = 2)
 head(x[, 1:4])
-plot_traj(x, "Inverse gaussien homogène : 10 trajectoires")
+plot_traj(x, "Inverse gaussien : 10 trajectoires")
 ```
 
 ### Modèle 4 : variance-gamma
@@ -664,7 +664,7 @@ plot_traj(x, "Inverse gaussien homogène : 10 trajectoires")
 set.seed(144)
 x <- sim_vg(p4, theta = 0.5, sigma = 1.5, nu = 2)
 head(x[, 1:4])
-plot_traj(x, "Variance-gamma homogène : 10 trajectoires")
+plot_traj(x, "Variance-gamma : 10 trajectoires")
 ```
 
 ### Modèle 5 : Meixner
@@ -673,7 +673,7 @@ plot_traj(x, "Variance-gamma homogène : 10 trajectoires")
 set.seed(145)
 x <- sim_meixner(p4, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x[, 1:4])
-plot_traj(x, "Meixner homogène : 10 trajectoires")
+plot_traj(x, "Meixner : 10 trajectoires")
 ```
 
 ### Modèle 6 : normal inverse gaussien (NIG)
@@ -682,7 +682,7 @@ plot_traj(x, "Meixner homogène : 10 trajectoires")
 set.seed(146)
 x <- sim_nig(p4, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 head(x[, 1:4])
-plot_traj(x, "NIG homogène : 10 trajectoires")
+plot_traj(x, "NIG : 10 trajectoires")
 ```
 
 ### Modèle 7 : Poisson composé
@@ -709,7 +709,7 @@ plot_plan(p5$time[p5$id == 1], "Peu au début et à la fin, beaucoup au milieu")
 set.seed(151)
 x <- sim_gamma(p5, a = 2, b = 3)
 head(x[, 1:4])
-plot_traj(x, "Gamma homogène : 10 trajectoires")
+plot_traj(x, "Gamma : 10 trajectoires")
 ```
 
 ### Modèle 2 : Wiener
@@ -718,7 +718,7 @@ plot_traj(x, "Gamma homogène : 10 trajectoires")
 set.seed(152)
 x <- sim_wiener(p5, mu = 0.5, sigma = 1.5)
 head(x[, 1:4])
-plot_traj(x, "Wiener homogène : 10 trajectoires")
+plot_traj(x, "Wiener : 10 trajectoires")
 ```
 
 ### Modèle 3 : inverse gaussien
@@ -727,7 +727,7 @@ plot_traj(x, "Wiener homogène : 10 trajectoires")
 set.seed(153)
 x <- sim_ig(p5, mu = 0.5, eta = 2)
 head(x[, 1:4])
-plot_traj(x, "Inverse gaussien homogène : 10 trajectoires")
+plot_traj(x, "Inverse gaussien : 10 trajectoires")
 ```
 
 ### Modèle 4 : variance-gamma
@@ -736,7 +736,7 @@ plot_traj(x, "Inverse gaussien homogène : 10 trajectoires")
 set.seed(154)
 x <- sim_vg(p5, theta = 0.5, sigma = 1.5, nu = 2)
 head(x[, 1:4])
-plot_traj(x, "Variance-gamma homogène : 10 trajectoires")
+plot_traj(x, "Variance-gamma : 10 trajectoires")
 ```
 
 ### Modèle 5 : Meixner
@@ -745,7 +745,7 @@ plot_traj(x, "Variance-gamma homogène : 10 trajectoires")
 set.seed(155)
 x <- sim_meixner(p5, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x[, 1:4])
-plot_traj(x, "Meixner homogène : 10 trajectoires")
+plot_traj(x, "Meixner : 10 trajectoires")
 ```
 
 ### Modèle 6 : normal inverse gaussien (NIG)
@@ -754,7 +754,7 @@ plot_traj(x, "Meixner homogène : 10 trajectoires")
 set.seed(156)
 x <- sim_nig(p5, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 head(x[, 1:4])
-plot_traj(x, "NIG homogène : 10 trajectoires")
+plot_traj(x, "NIG : 10 trajectoires")
 ```
 
 ### Modèle 7 : Poisson composé
@@ -769,56 +769,56 @@ plot_traj(x, "Poisson composé : 10 trajectoires")
 
 ewpage
 
-# III - Processus de Lévy non homogènes
+# III - Processus de Lévy à échelle de temps
 
-Un changement de temps $A$ (fonction croissante, continue à droite avec des limites à gauche, $A(0) = 0$ et $A(t) \to +\infty$) donne le processus $X_t = Y_{A(t)}$, où $Y$ est un processus de Lévy. Le paramètre que $A$ remplace (identifiabilité) n'est alors pas donné :
+Une fonction d'échelle de temps $A$ (fonction croissante, continue à droite avec des limites à gauche, $A(0) = 0$ et $A(t) \to +\infty$) donne le processus de Lévy à échelle de temps $X_t = Y_{A(t)}$, où $Y$ est un processus de Lévy. Le paramètre que $A$ remplace (identifiabilité) n'est alors pas donné :
 
 | Processus | Fonction | $X_t - X_s$, $\Delta A = A(t) - A(s)$ | Avec $A(t) = a t$ ou $\mu t$ |
 |---|---|---|---|
-| Gamma | `sim_gamma(t, b, A)` | $\Gamma(\Delta A, b)$ | gamma homogène de forme $a$ |
-| Wiener | `sim_wiener(t, sigma, A)` | $\mathcal{N}(\Delta A, \sigma^2 \Delta A)$ | Wiener homogène $(\mu, \sigma \sqrt{\mu})$ |
-| Inverse gaussien | `sim_ig(t, eta, A)` | $IG(\Delta A, \eta \Delta A^2)$ | IG homogène $(\mu, \eta \mu^2)$ |
+| Gamma | `sim_gamma(t, b, A)` | $\Gamma(\Delta A, b)$ | gamma de forme $a$ |
+| Wiener | `sim_wiener(t, sigma, A)` | $\mathcal{N}(\Delta A, \sigma^2 \Delta A)$ | Wiener $(\mu, \sigma \sqrt{\mu})$ |
+| Inverse gaussien | `sim_ig(t, eta, A)` | $IG(\Delta A, \eta \Delta A^2)$ | IG $(\mu, \eta \mu^2)$ |
 
 Pour le Wiener, $X_t = \mu t + \sigma B_{\mu t}$ a la loi de $\mu t + \sigma \sqrt{\mu}\, B_t$, car $(B_{\mu t})_{t \ge 0}$ a la loi de $(\sqrt{\mu}\, B_t)_{t \ge 0}$.
 
 On prend $A(t) = 0.02\, t^{1.5}$, de sorte que $A(100) = 20$, et les 10 trajectoires du cas 2 de la partie II (inspections croissantes).
 
-## Modèle 1 : gamma non homogène (Cha et Mercier, 2019, exemple 2)
+## Modèle 1 : gamma à échelle de temps (Cha et Mercier, 2019, exemple 2)
 
 ```{r}
 A <- function(t) 0.02 * t^1.5
 set.seed(301)
 x <- sim_gamma(p2, b = 3, A = A)
 x
-plot_traj(x, "Gamma non homogène : 10 trajectoires")
+plot_traj(x, "Gamma à échelle de temps : 10 trajectoires")
 ```
 
-## Modèle 2 : Wiener avec changement de temps (Cha et Mercier, 2019, exemple 1)
+## Modèle 2 : Wiener à échelle de temps (Cha et Mercier, 2019, exemple 1)
 
 ```{r}
 set.seed(302)
 x <- sim_wiener(p2, sigma = 1.5, A = A)
 head(x[, 1:4])
-plot_traj(x, "Wiener avec changement de temps : 10 trajectoires")
+plot_traj(x, "Wiener à échelle de temps : 10 trajectoires")
 ```
 
-## Modèle 3 : inverse gaussien non homogène (Cha et Mercier, 2019, exemple 3)
+## Modèle 3 : inverse gaussien à échelle de temps (Cha et Mercier, 2019, exemple 3)
 
 ```{r}
 set.seed(303)
 x <- sim_ig(p2, eta = 2, A = A)
 head(x[, 1:4])
-plot_traj(x, "Inverse gaussien non homogène : 10 trajectoires")
+plot_traj(x, "Inverse gaussien à échelle de temps : 10 trajectoires")
 ```
 
-## Vérification : $A(t) = a t$ redonne le processus homogène
+## Vérification : avec $A(t) = a t$, on retrouve le processus gamma de forme $a$
 
-Avec la même graine, le gamma homogène $(a, b) = (2, 3)$ et le gamma non homogène avec $A(t) = 2t$ donnent les mêmes trajectoires :
+Avec la même graine, le gamma à échelle de temps avec $A(t) = 2t$ et le gamma $(a, b) = (2, 3)$ donnent les mêmes trajectoires :
 
 ```{r}
 set.seed(304)
-y1 <- sim_gamma(p2, a = 2, b = 3)
+y1 <- sim_gamma(p2, b = 3, A = function(t) 2 * t)
 set.seed(304)
-y2 <- sim_gamma(p2, b = 3, A = function(t) 2 * t)
+y2 <- sim_gamma(p2, a = 2, b = 3)
 all.equal(unclass(y1)[, -1], unclass(y2)[, -1], check.attributes = FALSE)
 ```

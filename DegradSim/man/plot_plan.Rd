@@ -10,7 +10,8 @@ plot_plan(t, title = "Inspection times")
 \item{t}{Inspection times, in one of the three forms accepted by the \code{sim_}
 functions:
 \itemize{
-\item a numeric vector, for one trajectory, for instance \code{seq(0, 10, by = 0.5)};
+\item a numeric vector, for one trajectory, for instance
+\code{inspection_times("regular", n = 20, tmax = 10)$time};
 \item a list of numeric vectors, one per trajectory, for instance
 \code{list(c(0, 1, 3), c(0, 2, 4, 6))};
 \item the result of \code{\link[=inspection_times]{inspection_times()}}, one plan per trajectory.
@@ -33,8 +34,8 @@ It shows at a glance where the inspections are frequent and where they are
 rare.
 }
 \examples{
-# One trajectory inspected every 0.5 time unit
-plot_plan(seq(0, 10, by = 0.5))
+# One trajectory with 20 regular inspections up to 10 (step 0.5)
+plot_plan(inspection_times("regular", n = 20, tmax = 10)$time)
 
 # Inspections more and more frequent over time, with a custom title
 t <- inspection_times("increasing", n = 30, tmax = 100)

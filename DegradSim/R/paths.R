@@ -79,7 +79,7 @@ as_path_list <- function(x) {
 #'
 #' @examples
 #' set.seed(1)
-#' x <- sim_gamma(seq(0, 10, by = 1), a = 2, b = 3, n_traj = 3)
+#' x <- sim_gamma(inspection_times("regular", n = 10, tmax = 10)$time, a = 2, b = 3, n_traj = 3)
 #' d <- traj_df(x)
 #' head(d)
 #'
@@ -128,7 +128,8 @@ traj_df <- function(x, increments = FALSE) {
 #'
 #' @examples
 #' set.seed(1)
-#' x <- sim_wiener(seq(0, 10, by = 0.5), mu = 0.5, sigma = 1.5, n_traj = 5)
+#' t <- inspection_times("regular", n = 200, tmax = 10)$time
+#' x <- sim_wiener(t, mu = 0.5, sigma = 1.5, n_traj = 5)
 #' plot_traj(x)
 #'
 #' # Custom title
@@ -156,7 +157,7 @@ print.DegradSim <- function(x, ...) {
   cat(n, "simulated trajectory(ies) of the", attr(x, "model"), "process")
   cat(if (is.matrix(x)) ", same inspection times (matrix)\n" else ", own inspection times (list)\n")
   cat("parameters:", paste(names(par), signif(par, 4), sep = " = ", collapse = ", "), "\n")
-  if (!is.null(attr(x, "A"))) cat("time change: A =", attr(x, "A"), "\n")
+  if (!is.null(attr(x, "A"))) cat("time-scaling function: A =", attr(x, "A"), "\n")
   if (!is.null(attr(x, "jumps"))) cat("jumps: rjump =", attr(x, "jumps"), "\n")
   cat("\n")
   if (is.matrix(x)) print(utils::head(unclass(x)[, seq_len(min(ncol(x), 6)), drop = FALSE])) else print(utils::head(traj_df(x)))

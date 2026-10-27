@@ -1,7 +1,7 @@
 #' Simulation of the Meixner process
 #'
 #' Simulates exactly, at given inspection times, one or several trajectories of
-#' a homogeneous Meixner process, a Lévy process.
+#' a Meixner process, a Lévy process.
 #'
 #' @section Model:
 #' The \eqn{Meixner(a, b, d, m)} distribution, with \eqn{a > 0},
@@ -35,7 +35,7 @@
 #'
 #' @inheritParams sim_gamma
 #' @param a Scale parameter, \eqn{a > 0}.
-#' @param b Asymmetry parameter, \eqn{-\pi < b < \pi}: \eqn{b = 0} gives
+#' @param b Asymmetry parameter, \eqn{b \in ]-\pi, \pi[}: \eqn{b = 0} gives
 #'   symmetric increments, \eqn{b > 0} increments skewed to the right.
 #' @param d Shape parameter per unit of time, \eqn{d > 0}.
 #' @param m Location parameter per unit of time, real.
@@ -57,8 +57,8 @@
 #' @seealso [plot_traj()], [traj_df()], [inspection_times()], [plot_plan()]
 #'
 #' @examples
-#' # 1. One trajectory inspected every 0.5 time unit up to 10
-#' t <- seq(0, 10, by = 0.5)
+#' # 1. One trajectory with 200 regular inspections up to 10 (step 0.05)
+#' t <- inspection_times("regular", n = 200, tmax = 10)$time
 #' set.seed(1)
 #' x <- sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2)
 #' x
@@ -74,7 +74,7 @@
 #' x[, "X2"]
 #'
 #' # 3. Irregular inspections, frequent in the middle of the period
-#' plan <- inspection_times("inc-dec", n = 20, n_traj = 5, tmax = 10)
+#' plan <- inspection_times("inc-dec", n = 50, n_traj = 5, tmax = 10)
 #' x <- sim_meixner(plan, a = 1, b = 0.3, d = 1.5, m = 0.2)
 #' plot_traj(x)
 #'
@@ -92,9 +92,10 @@
 #' head(traj_df(x, increments = TRUE))
 #'
 #' # 7. Histogram of the increments, with the density of the increments in red.
-#' #    Homogeneous process and constant step h = 1: the increments are i.i.d.
+#' #    Constant step h = 1: the increments are i.i.d.
 #' #    with distribution Meixner(a, b, d h, m h), density from Runuran::ud()
-#' x <- sim_meixner(seq(0, 50, by = 1), a = 1, b = 0.3, d = 1.5, m = 0.2, n_traj = 20)
+#' t7 <- inspection_times("regular", n = 50, tmax = 50)$time
+#' x <- sim_meixner(t7, a = 1, b = 0.3, d = 1.5, m = 0.2, n_traj = 20)
 #' dx <- traj_df(x, increments = TRUE)$dX
 #' dx <- dx[!is.na(dx)]
 #' law <- Runuran::udmeixner(alpha = 1, beta = 0.3, delta = 1.5, mu = 0.2)

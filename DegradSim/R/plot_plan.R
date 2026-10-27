@@ -7,7 +7,8 @@
 #'
 #' @param t Inspection times, in one of the three forms accepted by the `sim_`
 #'   functions:
-#'   * a numeric vector, for one trajectory, for instance `seq(0, 10, by = 0.5)`;
+#'   * a numeric vector, for one trajectory, for instance
+#'     `inspection_times("regular", n = 20, tmax = 10)$time`;
 #'   * a list of numeric vectors, one per trajectory, for instance
 #'     `list(c(0, 1, 3), c(0, 2, 4, 6))`;
 #'   * the result of [inspection_times()], one plan per trajectory.
@@ -23,8 +24,8 @@
 #' @seealso [inspection_times()], [plot_traj()]
 #'
 #' @examples
-#' # One trajectory inspected every 0.5 time unit
-#' plot_plan(seq(0, 10, by = 0.5))
+#' # One trajectory with 20 regular inspections up to 10 (step 0.5)
+#' plot_plan(inspection_times("regular", n = 20, tmax = 10)$time)
 #'
 #' # Inspections more and more frequent over time, with a custom title
 #' t <- inspection_times("increasing", n = 30, tmax = 100)

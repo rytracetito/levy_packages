@@ -25,7 +25,8 @@ grey line per trajectory, with a point at each inspection.
 }
 \examples{
 set.seed(1)
-x <- sim_wiener(seq(0, 10, by = 0.5), mu = 0.5, sigma = 1.5, n_traj = 5)
+t <- inspection_times("regular", n = 200, tmax = 10)$time
+x <- sim_wiener(t, mu = 0.5, sigma = 1.5, n_traj = 5)
 plot_traj(x)
 
 # Custom title

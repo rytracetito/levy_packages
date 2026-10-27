@@ -1,13 +1,12 @@
-#' DegradSim: simulation of Lévy and non-homogeneous Lévy degradation processes
+#' DegradSim: simulation of Lévy and time-scaled Lévy degradation processes
 #'
 #' `DegradSim` simulates exactly, at given inspection times, one or several
 #' degradation trajectories of two families of processes:
-#' 1. **Lévy processes** (homogeneous case): gamma, Wiener, inverse Gaussian,
-#'    variance-gamma, Meixner, normal inverse Gaussian and compound Poisson
-#'    processes;
-#' 2. **non-homogeneous Lévy processes** obtained by a time change
-#'    \eqn{X_t = Y_{A(t)}} of a Lévy process \eqn{Y}: gamma, Wiener and
-#'    inverse Gaussian processes.
+#' 1. **Lévy processes**: gamma, Wiener, inverse Gaussian, variance-gamma,
+#'    Meixner, normal inverse Gaussian and compound Poisson processes;
+#' 2. **time-scaled Lévy processes** \eqn{X_t = Y_{A(t)}}, where \eqn{Y} is a
+#'    Lévy process and \eqn{A} a time-scaling function: time-scaled gamma,
+#'    Wiener and inverse Gaussian processes.
 #'
 #' The inspection times can be irregular and differ from one trajectory to
 #' another; [inspection_times()] builds them with a chosen pattern. The
@@ -47,13 +46,17 @@
 #'
 #' | Function | Process | Parameters | \eqn{X_t - X_s} |
 #' |---|---|---|---|
-#' | [sim_gamma()] | gamma | `a`, `b` | \eqn{\Gamma(a \Delta t, b)}, rate \eqn{b} |
+#' | [sim_gamma()] | gamma | `a`, `b` | \eqn{\Gamma(a \Delta t, b)} |
 #' | [sim_wiener()] | Wiener with drift | `mu`, `sigma` | \eqn{\mathcal{N}(\mu \Delta t, \sigma^2 \Delta t)} |
 #' | [sim_ig()] | inverse Gaussian | `mu`, `eta` | \eqn{IG(\mu \Delta t, \eta \Delta t^2)} |
-#' | [sim_vg()] | variance-gamma | `theta`, `sigma`, `nu` | \eqn{VG(\theta, \sigma, \nu)} over \eqn{\Delta t} |
+#' | [sim_vg()] | variance-gamma | `theta`, `sigma`, `nu` | \eqn{\theta G_{\Delta t} + \sigma B_{G_{\Delta t}}} |
 #' | [sim_meixner()] | Meixner | `a`, `b`, `d`, `m` | \eqn{Meixner(a, b, d \Delta t, m \Delta t)} |
 #' | [sim_nig()] | normal inverse Gaussian | `alpha`, `beta`, `delta`, `mu` | \eqn{NIG(\alpha, \beta, \delta \Delta t, \mu \Delta t)} |
 #' | [sim_cpoisson()] | compound Poisson | `lambda`, `rjump` | sum of \eqn{Poisson(\lambda \Delta t)} jumps |
+#'
+#' For the variance-gamma process, \eqn{B} is a standard Brownian motion and
+#' \eqn{G} an independent gamma process with
+#' \eqn{G_{\Delta t} \sim \Gamma(\Delta t / \nu, 1 / \nu)} (see [sim_vg()]).
 #'
 #' @section Other Lévy processes:
 #' There are other Lévy processes. `DegradSim` does not simulate them, except
@@ -79,23 +82,25 @@
 #'   stable process that contains the variance-gamma process as a special
 #'   case.
 #'
-#' @section Non-homogeneous Lévy processes:
-#' **Time change.** Let \eqn{A : [0, +\infty[ \to [0, +\infty[} be a
-#' non-decreasing function, right-continuous with left limits, with
-#' \eqn{A(0) = 0} and \eqn{A(t) \to +\infty} as \eqn{t \to +\infty}, and let
-#' \eqn{Y} be a homogeneous Lévy process. The process
+#' @section Time-scaled Lévy processes:
+#' **Time-scaling function.** Let \eqn{A : [0, +\infty[ \to [0, +\infty[} be
+#' a non-decreasing function, right-continuous with left limits, with
+#' \eqn{A(0) = 0} and \eqn{A(t) \to +\infty} as \eqn{t \to +\infty} (a
+#' time-scaling function, Cha and Mercier, 2019, Example 1), and let \eqn{Y}
+#' be a Lévy process. The process
 #' \deqn{X_t = Y_{A(t)}, \qquad t \ge 0,}
-#' is a non-homogeneous Lévy process (Kahle et al., 2016, p. xix-xx; Cha and
+#' is a time-scaled Lévy process (Kahle et al., 2016, p. xix-xx; Cha and
 #' Mercier, 2019, section 2): \eqn{X_0 = 0}, its increments are independent
 #' and \eqn{X_t - X_s} has the distribution of \eqn{Y_{A(t) - A(s)}}. Its
-#' increments are not stationary when \eqn{A} is not linear. When \eqn{A} is
+#' increments are not stationary when \eqn{A} is not linear: \eqn{X} is not a
+#' Lévy process, but a non-homogeneous Lévy process. When \eqn{A} is
 #' continuous, \eqn{X} is also stochastically continuous: it is an additive
 #' process in the sense of Sato (2001, p. 3), that is a process satisfying
 #' the conditions 1, 2, 4 and 5 above.
 #'
-#' **The time change in the package.** \eqn{A} is given as the argument `A`
-#' of [sim_gamma()], [sim_wiener()] and [sim_ig()], a vectorized R function
-#' of `t` (`A(t)` returns one value per time), for instance
+#' **The time-scaling function in the package.** \eqn{A} is given as the
+#' argument `A` of [sim_gamma()], [sim_wiener()] and [sim_ig()], a vectorized R
+#' function of `t` (`A(t)` returns one value per time), for instance
 #' `function(t) 2 * t^1.5`. Each of these functions checks that
 #' \eqn{A(0) = 0} and that \eqn{A} is finite and non-decreasing at the
 #' inspection times, and raises an error otherwise. The conditions
@@ -116,29 +121,31 @@
 #' The time-scaled Wiener process is \eqn{X_t = A(t) + \sigma B_{A(t)}}, with
 #' \eqn{B} a standard Brownian motion.
 #'
-#' **Homogeneous case.** With \eqn{A(t) = a t}, the gamma process is the
-#' homogeneous gamma process with shape \eqn{a}. With \eqn{A(t) = \mu t}, the
-#' time-scaled Wiener process \eqn{\mu t + \sigma B_{\mu t}} has the
-#' distribution of \eqn{\mu t + \sigma \sqrt{\mu}\, B_t}, since
-#' \eqn{(B_{\mu t})_{t \ge 0}} has the distribution of
-#' \eqn{(\sqrt{\mu}\, B_t)_{t \ge 0}}: it is the homogeneous Wiener process
-#' with drift \eqn{\mu} and diffusion coefficient \eqn{\sigma \sqrt{\mu}}. In
-#' the same way, with \eqn{A(t) = \mu t}, the increments of the inverse
-#' Gaussian process are \eqn{IG(\mu \Delta t, \eta \mu^2 \Delta t^2)}: it is
-#' the homogeneous inverse Gaussian process with parameters \eqn{\mu} and
-#' \eqn{\eta \mu^2}.
+#' **Linear time-scaling function.** With \eqn{A(t) = a t}, the time-scaled
+#' gamma process is the gamma process with shape \eqn{a}. With
+#' \eqn{A(t) = \mu t}, the time-scaled Wiener process
+#' \eqn{\mu t + \sigma B_{\mu t}} has the distribution of
+#' \eqn{\mu t + \sigma \sqrt{\mu}\, B_t}, since \eqn{(B_{\mu t})_{t \ge 0}}
+#' has the distribution of \eqn{(\sqrt{\mu}\, B_t)_{t \ge 0}}: it is the
+#' Wiener process with drift \eqn{\mu} and diffusion coefficient
+#' \eqn{\sigma \sqrt{\mu}}. In the same way, with \eqn{A(t) = \mu t}, the
+#' increments of the time-scaled inverse Gaussian process are
+#' \eqn{IG(\mu \Delta t, \eta \mu^2 \Delta t^2)}: it is the inverse Gaussian
+#' process with parameters \eqn{\mu} and \eqn{\eta \mu^2}.
 #'
 #' @section Getting started:
 #' A simulation always follows the same three steps.
 #' 1. **Choose the inspection times** `t`. Three forms are accepted by every
 #'    `sim_` function:
-#'    * a numeric vector, for instance `seq(0, 10, by = 0.5)`: all the
-#'      trajectories share these times, and their number is given by
-#'      `n_traj`;
+#'    * a numeric vector, for instance
+#'      `inspection_times("regular", n = 200, tmax = 10)$time` (200 regular
+#'      inspections, step 0.05): all the trajectories share these times, and
+#'      their number is given by `n_traj`;
 #'    * a list of numeric vectors, one per trajectory, for instance
 #'      `list(c(0, 1, 3), c(0, 2, 4, 6))`;
-#'    * the result of [inspection_times()], for instance with the pattern
-#'      `"increasing"` for trajectories inspected more and more often.
+#'    * the data frame returned by [inspection_times()], which gives one plan
+#'      per trajectory, for instance with the pattern `"increasing"` for
+#'      trajectories inspected more and more often (`n_traj` is then ignored).
 #'
 #'    The times of each trajectory must be finite, start at 0 and be
 #'    strictly increasing, with at least two times (0 and one inspection).
@@ -146,24 +153,29 @@
 #'    result of [inspection_times()], and an error explains which condition
 #'    fails.
 #' 2. **Simulate** with the function of the chosen process and its
-#'    parameters, for instance `sim_gamma(t, a = 2, b = 3)` for a homogeneous
-#'    gamma process. For a non-homogeneous process, give the time change `A`
-#'    (see the section Non-homogeneous Lévy processes) instead of the fixed
+#'    parameters, for instance `sim_gamma(t, a = 2, b = 3)` for a gamma
+#'    process. For a time-scaled Lévy process, give the time-scaling function
+#'    `A` (see the section Time-scaled Lévy processes) instead of the fixed
 #'    parameter, for instance `sim_gamma(t, b = 3, A = function(t) 2 * t^1.5)`.
 #' 3. **Store and use the result** `x`, an object of class `DegradSim`. Its
 #'    form depends on the times:
-#'    * same times for all the trajectories: a matrix with the column `t`
-#'      and one column per trajectory, `X1`, ..., `Xn`; the levels of the
-#'      \eqn{k}-th trajectory are `x[, k + 1]` or `x[, "Xk"]`;
-#'    * different times: a list with one data frame (`t`, `X`) per
-#'      trajectory; the \eqn{k}-th trajectory is `x[[k]]`, with times
-#'      `x[[k]]$t` (or `x[[k]][, 1]`) and levels `x[[k]]$X` (or
-#'      `x[[k]][, 2]`).
+#'    * **same times for all the trajectories**: a matrix with the column `t`
+#'      (inspection times, starting at 0) and one column per trajectory, `X1`,
+#'      ..., `Xn` (levels, equal to 0 at `t = 0`). The levels of the
+#'      \eqn{k}-th trajectory are the column `x[, "Xk"]`, which is also the
+#'      column number \eqn{k + 1}, `x[, k + 1]`;
+#'    * **different times**: a list with one data frame per trajectory. The
+#'      data frame `x[[k]]` of the \eqn{k}-th trajectory has two columns: `t`
+#'      (its inspection times) and `X` (its levels). A column can be taken by
+#'      its name or by its position: `x[[k]]$t` is the same as `x[[k]][, 1]`
+#'      (first column), and `x[[k]]$X` is the same as `x[[k]][, 2]` (second
+#'      column).
 #'
-#'    In both cases, `x` prints the model, the parameters, the time change if
-#'    any and the first simulated values; `traj_df(x)` gives all the data in
-#'    one data frame (`id`, `t`, `X`, and `dt`, `dX` with
-#'    `increments = TRUE`) and `plot_traj(x)` plots the trajectories.
+#'    In both cases, `x` prints the model, the parameters, the time-scaling
+#'    function if any and the first simulated values; `traj_df(x)` gives all
+#'    the data in one data frame (`id`, `t`, `X`, and `dt`, `dX` with
+#'    `increments = TRUE`) and `plot_traj(x)` plots the trajectories. See the
+#'    examples below.
 #'
 #' Use `set.seed()` before a simulation to make it reproducible.
 #'
@@ -192,7 +204,7 @@
 #' the help page of each simulation function.
 #'
 #' @references
-#' **Lévy processes and time change**
+#' **Lévy processes and time-scaled Lévy processes**
 #'
 #' Sato, K. (2001). Basic results on Lévy processes. In O. E.
 #' Barndorff-Nielsen, T. Mikosch and S. I. Resnick (eds.), *Lévy Processes:
@@ -284,26 +296,29 @@
 #' plan <- inspection_times("increasing", n = 20, n_traj = 10, tmax = 100)
 #' plot_plan(plan)
 #'
-#' # 2. Simulation of a homogeneous gamma process (a Lévy process)
+#' # 2. Simulation of a gamma process (a Lévy process)
 #' set.seed(1)
 #' x <- sim_gamma(plan, a = 0.2, b = 1)
 #'
-#' # 3. Use of the result: the same times for all the trajectories give a
-#' #    matrix (column t, then X1, ..., X10)
+#' # 3. Same times for all the trajectories: a matrix (column t, then X1, ..., X10)
 #' x
-#' x[, "X1"]
+#' x[, "t"]      # inspection times
+#' x[, "X1"]     # levels of trajectory 1
+#' x[, 2]        # the same column, by its position
 #' head(traj_df(x, increments = TRUE))
 #' plot_traj(x)
 #'
-#' # 4. Non-homogeneous gamma process with the time change A(t) = 0.02 t^1.5
+#' # 4. Time-scaled gamma process with A(t) = 0.02 t^1.5
 #' y <- sim_gamma(plan, b = 1, A = function(t) 0.02 * t^1.5)
 #' y
-#' plot_traj(y, "Non-homogeneous gamma process")
+#' plot_traj(y, "Time-scaled gamma process")
 #'
 #' # 5. Different inspection times: a list of data frames (t, X)
-#' z <- sim_wiener(list(c(0, 1, 3, 6), c(0, 2, 4, 6, 8, 10)), mu = 0.5, sigma = 1.5)
-#' z[[2]]
-#' z[[2]]$X
+#' z <- sim_gamma(list(c(0, 1, 3, 6), c(0, 2, 4, 6, 8)), a = 2, b = 3)
+#' z[[2]]        # trajectory 2: data frame with columns t and X
+#' z[[2]]$t      # its inspection times, the same as z[[2]][, 1]
+#' z[[2]]$X      # its levels, the same as z[[2]][, 2]
+#' z[[2]][, 2]
 #' @keywords package
 "_PACKAGE"
 

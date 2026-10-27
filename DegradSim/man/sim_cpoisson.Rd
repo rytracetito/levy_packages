@@ -10,7 +10,8 @@ sim_cpoisson(t, lambda, rjump = function(n) stats::rexp(n, 1), n_traj = 1)
 \item{t}{Inspection times. The times of each trajectory must start at 0 and
 be strictly increasing. Three forms are accepted:
 \itemize{
-\item a numeric vector, for instance \code{seq(0, 10, by = 0.5)}: all the
+\item a numeric vector, for instance
+\code{inspection_times("regular", n = 200, tmax = 10)$time}: all the
 trajectories share these times, and their number is \code{n_traj};
 \item a list of vectors, one per trajectory, for instance
 \code{list(c(0, 1, 3), c(0, 2, 4, 6))}: each trajectory has its own times
@@ -31,31 +32,17 @@ default \code{function(n) rexp(n, 1)} gives exponential jumps of mean 1, and
 (default 1), a positive integer.}
 }
 \value{
-An object of class \code{DegradSim}, whose form depends on the
-inspection times:
-\itemize{
-\item \strong{same times for all the trajectories} (\code{t} a vector, or a plan of
-\code{\link[=inspection_times]{inspection_times()}} with the same times for all the trajectories): a
-matrix with columns \code{t} (inspection times), \code{X1}, ..., \code{Xn} (simulated
-degradation levels of the trajectories 1 to \eqn{n}, equal to 0 at
-\code{t = 0}). The levels of the \eqn{k}-th trajectory are \code{x[, k + 1]} or
-\code{x[, "Xk"]};
-\item \strong{different times} (\code{t} a list, or a plan of \code{\link[=inspection_times]{inspection_times()}} with
-different times): a list with one data frame per trajectory, with
-columns \code{t} and \code{X}. The \eqn{k}-th trajectory is the data frame
-\code{x[[k]]}, its times are \code{x[[k]]$t} (or \code{x[[k]][, 1]}) and its levels
-\code{x[[k]]$X} (or \code{x[[k]][, 2]}).
-}
-
-The model, the parameters and, for a non-homogeneous process, the time
-change are stored as attributes. Printing the object shows them with the
-first simulated values. Use \code{\link[=traj_df]{traj_df()}} to gather the data in a single
-data frame (with the increments if needed) and \code{\link[=plot_traj]{plot_traj()}} to plot the
-trajectories.
+An object of class \code{DegradSim}: a matrix (column \code{t}, then one
+column of levels per trajectory) when all the trajectories have the same
+inspection times, otherwise a list with one data frame (\code{t}, \code{X}) per
+trajectory. The model, the parameters and the time-scaling function, if
+any, are stored as attributes. The use of the result (a trajectory, its
+times and levels, \code{\link[=traj_df]{traj_df()}}, \code{\link[=plot_traj]{plot_traj()}}) is described in the
+section Getting started of \link{DegradSim-package}.
 }
 \description{
 Simulates exactly, at given inspection times, one or several trajectories of
-a homogeneous compound Poisson process, a Lévy process: a shock model where
+a compound Poisson process, a Lévy process: a shock model where
 each shock adds a random amount of degradation.
 }
 \section{Model}{
@@ -92,9 +79,9 @@ with \code{\link[stats:Poisson]{stats::rpois()}};
 }
 
 \examples{
-# 1. One trajectory inspected every 0.5 time unit up to 10, exponential
+# 1. One trajectory with 200 regular inspections up to 10 (step 0.05), exponential
 #    jumps of mean 1 (default)
-t <- seq(0, 10, by = 0.5)
+t <- inspection_times("regular", n = 200, tmax = 10)$time
 set.seed(1)
 x <- sim_cpoisson(t, lambda = 2)
 x
@@ -120,7 +107,7 @@ x <- sim_cpoisson(t, lambda = 2, rjump = function(n) rep(1, n), n_traj = 10)
 plot_traj(x, "Poisson process")
 
 # 5. Irregular inspections, more and more frequent over time
-plan <- inspection_times("increasing", n = 20, n_traj = 5, tmax = 10)
+plan <- inspection_times("increasing", n = 50, n_traj = 5, tmax = 10)
 x <- sim_cpoisson(plan, lambda = 2)
 plot_traj(x)
 
@@ -136,7 +123,8 @@ head(traj_df(x, increments = TRUE))
 # 8. Increments over the constant step h = 1, with exponential jumps of
 #    rate 1: an increment is 0 with probability exp(-lambda h) (no shock);
 #    otherwise its density is sum_k P(N = k) dgamma(y, k, 1) / (1 - exp(-lambda h))
-x <- sim_cpoisson(seq(0, 100, by = 1), lambda = 2, n_traj = 10)
+t8 <- inspection_times("regular", n = 100, tmax = 100)$time
+x <- sim_cpoisson(t8, lambda = 2, n_traj = 10)
 dx <- traj_df(x, increments = TRUE)$dX
 dx <- dx[!is.na(dx)]
 c(zero_observed = mean(dx == 0), zero_theory = exp(-2))
