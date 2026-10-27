@@ -1,11 +1,11 @@
 #' Gamma bridge: resampling on a regular grid
 #'
-#' Resamples one or several trajectories of a homogeneous gamma process,
+#' Resamples one or several trajectories of a gamma process,
 #' observed at irregular inspection times, onto a regular time grid, by
 #' exact simulation of the gamma bridge between the known values.
 #'
 #' @section Model:
-#' The homogeneous gamma process with shape \eqn{a > 0} and rate \eqn{b > 0}
+#' The gamma process with shape \eqn{a > 0} and rate \eqn{b > 0}
 #' has \eqn{X_0 = 0}, independent increments and
 #' \eqn{X_t - X_s \sim \Gamma(a (t - s), b)} for \eqn{s < t} (shape
 #' \eqn{a (t - s)}, rate \eqn{b}). Its trajectories are increasing.

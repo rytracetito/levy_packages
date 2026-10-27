@@ -6,7 +6,7 @@
 #'
 #' @section Model:
 #' The \eqn{Meixner(a, b, d, m)} distribution, \eqn{a > 0},
-#' \eqn{-\pi < b < \pi}, \eqn{d > 0}, \eqn{m} real, has density
+#' \eqn{b \in ]-\pi, \pi[}, \eqn{d > 0}, \eqn{m} real, has density
 #' \deqn{f(x) = \frac{(2 \cos(b/2))^{2d}}{2 a \pi\, \Gamma(2d)}
 #'   \exp\Big(\frac{b (x - m)}{a}\Big) \Big|\Gamma\Big(d + i \frac{x - m}{a}\Big)\Big|^2.}
 #' The Meixner process has \eqn{X_0 = 0}, independent increments and
@@ -65,7 +65,7 @@
 #'
 #' @inheritParams gamma_bridge
 #' @param a Scale parameter, \eqn{a > 0}.
-#' @param b Skewness parameter, \eqn{-\pi < b < \pi};
+#' @param b Skewness parameter, \eqn{b \in ]-\pi, \pi[};
 #'   used only by the option 2 of the method "MultiBridge", to extend the
 #'   trajectories.
 #' @param d Shape parameter per unit of time, \eqn{d > 0}.

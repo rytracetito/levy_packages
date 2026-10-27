@@ -56,7 +56,7 @@ all the trajectories up to the last inspection time over all the
 trajectories, extending the shorter ones by increments of the process (see
 the section Method "MultiBridge").}
 
-\item{b}{Skewness parameter, \eqn{-\pi < b < \pi};
+\item{b}{Skewness parameter, \eqn{b \in ]-\pi, \pi[};
 used only by the option 2 of the method "MultiBridge", to extend the
 trajectories.}
 }
@@ -77,7 +77,7 @@ of the Meixner bridge between the known values.
 \section{Model}{
 
 The \eqn{Meixner(a, b, d, m)} distribution, \eqn{a > 0},
-\eqn{-\pi < b < \pi}, \eqn{d > 0}, \eqn{m} real, has density
+\eqn{b \in ]-\pi, \pi[}, \eqn{d > 0}, \eqn{m} real, has density
 \deqn{f(x) = \frac{(2 \cos(b/2))^{2d}}{2 a \pi\, \Gamma(2d)}
   \exp\Big(\frac{b (x - m)}{a}\Big) \Big|\Gamma\Big(d + i \frac{x - m}{a}\Big)\Big|^2.}
 The Meixner process has \eqn{X_0 = 0}, independent increments and

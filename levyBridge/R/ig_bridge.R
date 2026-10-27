@@ -1,12 +1,12 @@
 #' Inverse Gaussian bridge: resampling on a regular grid
 #'
-#' Resamples one or several trajectories of a homogeneous inverse Gaussian
+#' Resamples one or several trajectories of an inverse Gaussian
 #' process, observed at irregular inspection times, onto a regular time grid,
 #' by exact simulation of the inverse Gaussian bridge between the known
 #' values.
 #'
 #' @section Model:
-#' The homogeneous inverse Gaussian process with parameters \eqn{\mu > 0} and
+#' The inverse Gaussian process with parameters \eqn{\mu > 0} and
 #' \eqn{\eta > 0} has \eqn{X_0 = 0}, independent increments and
 #' \eqn{X_t - X_s \sim IG(\mu (t - s), \eta (t - s)^2)} (mean
 #' \eqn{\mu (t - s)}, shape \eqn{\eta (t - s)^2}). Its trajectories are
