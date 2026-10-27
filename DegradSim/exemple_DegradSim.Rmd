@@ -22,7 +22,7 @@ Installation du package depuis GitHub :
 remotes::install_github("rytracetito/levy_packages", subdir = "DegradSim")
 ```
 
-Les parties I et II utilisent les **processus de Lévy** (cas homogène, `A = NULL` par défaut). La partie III montre les **processus de Lévy non homogènes** $X_t = Y_{A(t)}$ obtenus par un changement de temps $A$ : gamma, Wiener et inverse gaussien.
+Les parties I et II utilisent les sept **processus de Lévy** du package (cas homogène, `A = NULL` par défaut). La partie III montre les **processus de Lévy non homogènes** $X_t = Y_{A(t)}$ obtenus par un changement de temps $A$ : gamma, Wiener et inverse gaussien.
 
 Paramètres utilisés :
 
@@ -33,6 +33,8 @@ Paramètres utilisés :
 | Inverse gaussien | `sim_ig` | `mu = 0.5`, `eta = 2` |
 | Variance-gamma | `sim_vg` | `theta = 0.5`, `sigma = 1.5`, `nu = 2` |
 | Meixner | `sim_meixner` | `a = 1`, `b = 0.3`, `d = 1.5`, `m = 0.2` |
+| Normal inverse gaussien | `sim_nig` | `alpha = 2`, `beta = 0.5`, `delta = 1`, `mu = 0.2` |
+| Poisson composé | `sim_cpoisson` | `lambda = 0.5`, sauts exponentiels de moyenne 1 (`rjump` par défaut) |
 
 Dans chaque cas, les trajectoires simulées sont d'abord **stockées** dans un objet `x`, puis utilisées : premières valeurs, puis graphique. Quand toutes les trajectoires ont les mêmes instants d'inspection, `x` est une matrice : une colonne `t`, puis une colonne par trajectoire (`X1`, `X2`, ...).
 
@@ -94,6 +96,24 @@ head(x)
 plot_traj(x, "Meixner homogène")
 ```
 
+### Modèle 6 : normal inverse gaussien (NIG)
+
+```{r}
+set.seed(16)
+x <- sim_nig(t1, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
+head(x)
+plot_traj(x, "NIG homogène")
+```
+
+### Modèle 7 : Poisson composé
+
+```{r}
+set.seed(17)
+x <- sim_cpoisson(t1, lambda = 0.5)
+head(x)
+plot_traj(x, "Poisson composé")
+```
+
 \newpage
 
 ## Cas 2 : inspections croissantes
@@ -146,6 +166,24 @@ set.seed(25)
 x <- sim_meixner(t2, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x)
 plot_traj(x, "Meixner homogène")
+```
+
+### Modèle 6 : normal inverse gaussien (NIG)
+
+```{r}
+set.seed(26)
+x <- sim_nig(t2, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
+head(x)
+plot_traj(x, "NIG homogène")
+```
+
+### Modèle 7 : Poisson composé
+
+```{r}
+set.seed(27)
+x <- sim_cpoisson(t2, lambda = 0.5)
+head(x)
+plot_traj(x, "Poisson composé")
 ```
 
 \newpage
@@ -202,6 +240,24 @@ head(x)
 plot_traj(x, "Meixner homogène")
 ```
 
+### Modèle 6 : normal inverse gaussien (NIG)
+
+```{r}
+set.seed(36)
+x <- sim_nig(t3, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
+head(x)
+plot_traj(x, "NIG homogène")
+```
+
+### Modèle 7 : Poisson composé
+
+```{r}
+set.seed(37)
+x <- sim_cpoisson(t3, lambda = 0.5)
+head(x)
+plot_traj(x, "Poisson composé")
+```
+
 \newpage
 
 ## Cas 4 : mixtes, beaucoup au début et à la fin
@@ -256,6 +312,24 @@ head(x)
 plot_traj(x, "Meixner homogène")
 ```
 
+### Modèle 6 : normal inverse gaussien (NIG)
+
+```{r}
+set.seed(46)
+x <- sim_nig(t4, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
+head(x)
+plot_traj(x, "NIG homogène")
+```
+
+### Modèle 7 : Poisson composé
+
+```{r}
+set.seed(47)
+x <- sim_cpoisson(t4, lambda = 0.5)
+head(x)
+plot_traj(x, "Poisson composé")
+```
+
 \newpage
 
 ## Cas 5 : mixtes, beaucoup au milieu
@@ -308,6 +382,24 @@ set.seed(55)
 x <- sim_meixner(t5, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x)
 plot_traj(x, "Meixner homogène")
+```
+
+### Modèle 6 : normal inverse gaussien (NIG)
+
+```{r}
+set.seed(56)
+x <- sim_nig(t5, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
+head(x)
+plot_traj(x, "NIG homogène")
+```
+
+### Modèle 7 : Poisson composé
+
+```{r}
+set.seed(57)
+x <- sim_cpoisson(t5, lambda = 0.5)
+head(x)
+plot_traj(x, "Poisson composé")
 ```
 
 \newpage
@@ -368,6 +460,24 @@ head(x[, 1:4])
 plot_traj(x, "Meixner homogène : 10 trajectoires")
 ```
 
+### Modèle 6 : normal inverse gaussien (NIG)
+
+```{r}
+set.seed(116)
+x <- sim_nig(p1, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
+head(x[, 1:4])
+plot_traj(x, "NIG homogène : 10 trajectoires")
+```
+
+### Modèle 7 : Poisson composé
+
+```{r}
+set.seed(117)
+x <- sim_cpoisson(p1, lambda = 0.5)
+head(x[, 1:4])
+plot_traj(x, "Poisson composé : 10 trajectoires")
+```
+
 \newpage
 
 ## Cas 2 : inspections croissantes
@@ -420,6 +530,24 @@ set.seed(125)
 x <- sim_meixner(p2, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x[, 1:4])
 plot_traj(x, "Meixner homogène : 10 trajectoires")
+```
+
+### Modèle 6 : normal inverse gaussien (NIG)
+
+```{r}
+set.seed(126)
+x <- sim_nig(p2, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
+head(x[, 1:4])
+plot_traj(x, "NIG homogène : 10 trajectoires")
+```
+
+### Modèle 7 : Poisson composé
+
+```{r}
+set.seed(127)
+x <- sim_cpoisson(p2, lambda = 0.5)
+head(x[, 1:4])
+plot_traj(x, "Poisson composé : 10 trajectoires")
 ```
 
 \newpage
@@ -476,6 +604,24 @@ head(x[, 1:4])
 plot_traj(x, "Meixner homogène : 10 trajectoires")
 ```
 
+### Modèle 6 : normal inverse gaussien (NIG)
+
+```{r}
+set.seed(136)
+x <- sim_nig(p3, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
+head(x[, 1:4])
+plot_traj(x, "NIG homogène : 10 trajectoires")
+```
+
+### Modèle 7 : Poisson composé
+
+```{r}
+set.seed(137)
+x <- sim_cpoisson(p3, lambda = 0.5)
+head(x[, 1:4])
+plot_traj(x, "Poisson composé : 10 trajectoires")
+```
+
 \newpage
 
 ## Cas 4 : mixtes, beaucoup au début et à la fin
@@ -530,6 +676,24 @@ head(x[, 1:4])
 plot_traj(x, "Meixner homogène : 10 trajectoires")
 ```
 
+### Modèle 6 : normal inverse gaussien (NIG)
+
+```{r}
+set.seed(146)
+x <- sim_nig(p4, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
+head(x[, 1:4])
+plot_traj(x, "NIG homogène : 10 trajectoires")
+```
+
+### Modèle 7 : Poisson composé
+
+```{r}
+set.seed(147)
+x <- sim_cpoisson(p4, lambda = 0.5)
+head(x[, 1:4])
+plot_traj(x, "Poisson composé : 10 trajectoires")
+```
+
 \newpage
 
 ## Cas 5 : mixtes, beaucoup au milieu
@@ -582,6 +746,24 @@ set.seed(155)
 x <- sim_meixner(p5, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x[, 1:4])
 plot_traj(x, "Meixner homogène : 10 trajectoires")
+```
+
+### Modèle 6 : normal inverse gaussien (NIG)
+
+```{r}
+set.seed(156)
+x <- sim_nig(p5, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
+head(x[, 1:4])
+plot_traj(x, "NIG homogène : 10 trajectoires")
+```
+
+### Modèle 7 : Poisson composé
+
+```{r}
+set.seed(157)
+x <- sim_cpoisson(p5, lambda = 0.5)
+head(x[, 1:4])
+plot_traj(x, "Poisson composé : 10 trajectoires")
 ```
 
 
