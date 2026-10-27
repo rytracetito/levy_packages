@@ -89,7 +89,8 @@ process), the MLE does not exist: the function gives a warning and returns
 
 With \code{ci = TRUE}, the intervals are Wald intervals. The observed Fisher
 information \eqn{J = -\nabla^2 \ell(\hat\psi)} is computed numerically by
-\code{\link[stats:optim]{stats::optimHess()}} for every model, and the standard error of
+\code{\link[stats:optim]{stats::optimHess()}}, except for the Meixner process whose Hessian is
+explicit (see \code{\link[=meixner_mle]{meixner_mle()}}), and the standard error of
 \eqn{\hat\psi_k} is \eqn{\widehat{se}_k = \sqrt{(J^{-1})_{kk}}}. With
 \eqn{z} the quantile of order \eqn{(1 + level) / 2} of the standard normal
 distribution:

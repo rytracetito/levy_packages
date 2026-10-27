@@ -30,7 +30,12 @@ confidence_intervals <- function(model, x, t, fit, level) {
   real <- names(par) %in% switch(model, wiener = "mu", vg = "theta", meixner = c("b", "m"), character(0))
 
   ll <- loglik_fun(x, t, model)
-  H <- optimHess(par, function(p) -ll(p), control = list(parscale = pmax(abs(par), 1e-8)))
+  if (model == "meixner") {
+    d <- increments(x, t)
+    H <- -meixner_hessian(d$dx, d$dt, fit[["a"]], fit[["b"]], fit[["d"]], fit[["m"]])
+  } else {
+    H <- optimHess(par, function(p) -ll(p), control = list(parscale = pmax(abs(par), 1e-8)))
+  }
   V <- tryCatch(solve(H), error = function(e) matrix(NA, length(par), length(par)))
   se <- sqrt(ifelse(diag(V) > 0, diag(V), NA))
 

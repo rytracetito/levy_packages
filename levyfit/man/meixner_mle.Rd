@@ -39,7 +39,7 @@ estimator is defined as the interior local maximum of largest likelihood.
 }
 \section{Model and data}{
 
-For \eqn{a > 0}, \eqn{-\pi < b < \pi}, \eqn{d > 0} and real \eqn{m}, the
+For \eqn{a > 0}, \eqn{b \in ]-\pi, \pi[}, \eqn{d > 0} and real \eqn{m}, the
 \eqn{Meixner(a, b, d, m)} distribution has density
 \deqn{f(x) = \frac{(2 \cos(b/2))^{2d}}{2 a \pi\, \Gamma(2d)}
   \exp\Big(\frac{b (x - m)}{a}\Big) \Big|\Gamma\Big(d + i \frac{x - m}{a}\Big)\Big|^2, \qquad x \in R.}
@@ -91,13 +91,35 @@ negative definite Hessian) of largest likelihood. Solutions with
 discarded as degenerate.
 }
 
+\section{Method of moments}{
+
+The cumulants of \eqn{X_s} are \eqn{s} times those of \eqn{X_1}, which are
+estimated per unit of time by \eqn{k_1 = S / T} and, with
+\eqn{r_j = \Delta x_j - k_1 \Delta t_j},
+\eqn{k_2 = \sum_j r_j^2 / T}, \eqn{k_3 = \sum_j r_j^3 / T},
+\eqn{k_4 = (\sum_j r_j^4 - 3 k_2^2 \sum_j \Delta t_j^2) / T}. With the
+skewness \eqn{\gamma_1 = k_3 / k_2^{3/2}} and the excess kurtosis
+\eqn{\gamma_2 = k_4 / k_2^2} of \eqn{X_1}, and since
+\eqn{\gamma_1^2 = (1 - \cos b) / d} and \eqn{\gamma_2 = (2 - \cos b) / d},
+the moment estimates are (Grigoletto and Provasi, 2009; Mazzola, 2010,
+section 3.3.1)
+\deqn{d = \frac{1}{\gamma_2 - \gamma_1^2}, \quad
+  b = \mathrm{sign}(\gamma_1) \arccos(2 - d \gamma_2), \quad
+  a = \sqrt{k_2 (1 + \cos b) / d}, \quad m = k_1 - a d \tan(b/2).}
+They exist only when \eqn{\gamma_2 > \gamma_1^2} and
+\eqn{|2 - d \gamma_2| < 1}. With equal time steps, they are the usual
+moment estimates of the Meixner distribution.
+}
+
 \section{Algorithm}{
 
 \enumerate{
 \item Compute the mean \eqn{c_1 = S / T} and the variance
 \eqn{c_2 = \sum_j (\Delta x_j - c_1 \Delta t_j)^2 / (T - \sum_j \Delta t_j^2 / T)}
 per unit of time.
-\item Draw \code{n_start} starting points: \eqn{b_0} in \eqn{(-1.5, 1.5)} and
+\item Starting points: the moment estimates (see Method of moments), as
+recommended by Grigoletto and Provasi (2009), when they exist, and
+\code{n_start} other points: \eqn{b_0} in \eqn{(-1.5, 1.5)} and
 \eqn{d_0} around \eqn{1 / \overline{\Delta t}} (the first one is
 \eqn{b_0 = 0}, \eqn{d_0 = 1 / \overline{\Delta t}}), then
 \eqn{a_0 = \sqrt{2 c_2 \cos^2(b_0/2) / d_0}} and
@@ -113,7 +135,33 @@ a warning is given if a degenerate solution had a larger likelihood.
 The parameters \eqn{a} and \eqn{d} are strongly correlated and \eqn{d} is
 poorly identified: hundreds of increments are needed for a stable
 estimation, and with few increments there is often no interior maximum, in
-which case the function returns \code{NA} with a warning.
+which case the function returns \code{NA} with a warning. Even with several
+hundred increments, \eqn{b} and \eqn{m} can be far from their true values
+although the fitted distribution is close to the true one (same mean and
+variance): different parameters give almost the same distribution. The
+convergence of the estimator is slow, and inference based on its asymptotic
+normality needs caution even for medium samples (Grigoletto and Provasi,
+2009; Mazzola, 2010, section 3.3.2).
+}
+
+\section{Hessian and confidence intervals}{
+
+The second derivatives of \eqn{\ell} are explicit (Grigoletto and Provasi,
+2009). With \eqn{\psi'_j = \psi'(s_j + i y_j)} (trigamma function of a
+complex argument), \eqn{G_j = b - 2 \Im \psi_j},
+\eqn{R_j = \Re \psi'_j} and \eqn{I_j = \Im \psi'_j}:
+\deqn{\partial^2_{aa} \ell = \sum_j \frac{1 - 2 R_j y_j^2 + 2 G_j y_j}{a^2}, \quad
+  \partial^2_{ab} \ell = -\sum_j \frac{y_j}{a}, \quad
+  \partial^2_{ad} \ell = \sum_j \frac{2 I_j y_j \Delta t_j}{a},}
+\deqn{\partial^2_{am} \ell = \sum_j \frac{\Delta t_j (G_j - 2 R_j y_j)}{a^2}, \quad
+  \partial^2_{bb} \ell = -\sum_j \frac{s_j}{2 \cos^2(b/2)}, \quad
+  \partial^2_{bd} \ell = -T \tan(b/2), \quad
+  \partial^2_{bm} \ell = -\frac{T}{a},}
+\deqn{\partial^2_{dd} \ell = \sum_j \Delta t_j^2 \big(2 R_j - 4 \psi'(2 s_j)\big), \quad
+  \partial^2_{dm} \ell = \sum_j \frac{2 I_j \Delta t_j^2}{a}, \quad
+  \partial^2_{mm} \ell = -\sum_j \frac{2 R_j \Delta t_j^2}{a^2}.}
+With \code{ci = TRUE}, the observed Fisher information is minus this Hessian at
+the estimate, instead of the numerical Hessian used by the other models.
 }
 
 \section{Confidence intervals and estimation failures}{
@@ -122,7 +170,7 @@ With \code{ci = TRUE}, the function also returns asymptotic confidence intervals
 Let \eqn{\hat\psi} be the MLE and \eqn{\ell} the log-likelihood. The observed
 Fisher information \eqn{J = -\partial^2 \ell / \partial \psi \partial \psi^\top} is
 computed at \eqn{\hat\psi} by numerical differentiation (\code{\link[stats:optim]{stats::optimHess()}}),
-and the standard errors are the square roots of the diagonal of
+except for the Meixner process, whose Hessian is explicit, and the standard errors are the square roots of the diagonal of
 \eqn{J^{-1}}. With \eqn{z} the quantile of order \eqn{(1 + level) / 2} of the
 standard normal distribution, the interval of a parameter \eqn{\psi_k} is
 \itemize{
@@ -153,11 +201,18 @@ for an increasing process, too few observations) still give an error.
 # increments are almost Gaussian and its parameters are hard to separate.
 
 # 1. One trajectory inspected every time unit up to 500
-#    (a = 1, b = 0.3, d = 1.5, m = 0.2)
+#    (a = 1, b = 0.3, d = 1.5, m = 0.2). With 500 increments, the estimates
+#    of b and m can be far from the true values although the fitted
+#    distribution is close: compare the means and variances below.
 t <- DegradSim::inspection_times("regular", n = 500, tmax = 500)$time
 set.seed(1)
 x <- DegradSim::sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2)
-meixner_mle(x)
+p <- meixner_mle(x)
+p
+
+# Mean and variance of an increment over one time unit: true, estimated
+c(true = 0.2 + 1.5 * tan(0.15), fitted = p[["m"]] + p[["a"]] * p[["d"]] * tan(p[["b"]] / 2))
+c(true = 1.5 / (2 * cos(0.15)^2), fitted = p[["a"]]^2 * p[["d"]] / (2 * cos(p[["b"]] / 2)^2))
 
 # The same trajectory given as two vectors: degradation levels, then times
 meixner_mle(x[, "X1"], t)
@@ -178,6 +233,13 @@ meixner_mle(y)
 \dontshow{\}) # examplesIf}
 }
 \references{
+Grigoletto, M. and Provasi, C. (2009). Simulation and estimation of the
+Meixner distribution. \emph{Communications in Statistics - Simulation and
+Computation}, 38(1), 58-77.
+
+Mazzola, E. (2010). \emph{Profiling Processes of Meixner Type}. PhD thesis,
+Università Commerciale Luigi Bocconi, Milan.
+
 Schoutens, W. and Teugels, J. L. (1998). Lévy processes, polynomials and
 martingales. \emph{Communications in Statistics. Stochastic Models}, 14(1-2),
 335-349.

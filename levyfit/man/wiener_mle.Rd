@@ -100,7 +100,7 @@ With \code{ci = TRUE}, the function also returns asymptotic confidence intervals
 Let \eqn{\hat\psi} be the MLE and \eqn{\ell} the log-likelihood. The observed
 Fisher information \eqn{J = -\partial^2 \ell / \partial \psi \partial \psi^\top} is
 computed at \eqn{\hat\psi} by numerical differentiation (\code{\link[stats:optim]{stats::optimHess()}}),
-and the standard errors are the square roots of the diagonal of
+except for the Meixner process, whose Hessian is explicit, and the standard errors are the square roots of the diagonal of
 \eqn{J^{-1}}. With \eqn{z} the quantile of order \eqn{(1 + level) / 2} of the
 standard normal distribution, the interval of a parameter \eqn{\psi_k} is
 \itemize{
