@@ -137,6 +137,18 @@ all.equal(unclass(y1)[, 2], unclass(y2)[, 2])
 # 7. All the simulated data in a single data frame, with the increments
 head(traj_df(x))
 head(traj_df(x, increments = TRUE))
+
+# 8. Histogram of the increments, with the density of the increments in red.
+#    Homogeneous process and constant step h = 0.5: the increments are i.i.d.
+#    with distribution Gamma(a h, b) = Gamma(1, 3)
+x <- sim_gamma(seq(0, 25, by = 0.5), a = 2, b = 3, n_traj = 20)
+dx <- traj_df(x, increments = TRUE)$dX
+dx <- dx[!is.na(dx)]
+ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
+  ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
+                          bins = 30, boundary = 0, fill = "grey80", colour = "grey40") +
+  ggplot2::stat_function(fun = function(y) dgamma(y, shape = 2 * 0.5, rate = 3), colour = "red") +
+  ggplot2::labs(x = "dX", y = "Density", title = "Increments of the gamma process")
 }
 \references{
 Kahle, W., Mercier, S. and Paroissin, C. (2016). \emph{Degradation Processes in

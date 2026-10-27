@@ -159,6 +159,24 @@ plot_traj(x, "Variance-gamma process with nu = 0.01")
 # 7. All the simulated data in a single data frame, with the increments
 head(traj_df(x))
 head(traj_df(x, increments = TRUE))
+
+# 8. Histogram of the increments, with the density of the increments in red.
+#    Homogeneous process and constant step h = 1: the increments are i.i.d.
+#    with the VG density of Madan et al. (1998), written with besselK()
+x <- sim_vg(seq(0, 50, by = 1), theta = 0.5, sigma = 1.2, nu = 0.8, n_traj = 20)
+dx <- traj_df(x, increments = TRUE)$dX
+dx <- dx[!is.na(dx)]
+dvg <- function(y, h = 1, theta = 0.5, sigma = 1.2, nu = 0.8) {
+  r <- sqrt(theta^2 + 2 * sigma^2 / nu)
+  z <- abs(y) * r / sigma^2
+  2 / (nu^(h / nu) * sqrt(2 * pi) * sigma * gamma(h / nu)) * (abs(y) / r)^(h / nu - 0.5) *
+    besselK(z, h / nu - 0.5, expon.scaled = TRUE) * exp(theta * y / sigma^2 - z)
+}
+ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
+  ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
+                          bins = 30, boundary = 0, fill = "grey80", colour = "grey40") +
+  ggplot2::stat_function(fun = dvg, colour = "red") +
+  ggplot2::labs(x = "dX", y = "Density", title = "Increments of the variance-gamma process")
 }
 \references{
 Madan, D. B., Carr, P. P. and Chang, E. C. (1998). The variance gamma

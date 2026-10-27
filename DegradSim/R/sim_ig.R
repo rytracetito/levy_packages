@@ -112,6 +112,21 @@
 #' # 7. All the simulated data in a single data frame, with the increments
 #' head(traj_df(x))
 #' head(traj_df(x, increments = TRUE))
+#'
+#' # 8. Histogram of the increments, with the density of the increments in red.
+#' #    Homogeneous process and constant step h = 0.5: the increments are i.i.d.
+#' #    with distribution IG(m, lambda), m = mu h and lambda = eta h^2
+#' x <- sim_ig(seq(0, 25, by = 0.5), mu = 0.5, eta = 2, n_traj = 20)
+#' dx <- traj_df(x, increments = TRUE)$dX
+#' dx <- dx[!is.na(dx)]
+#' m <- 0.5 * 0.5
+#' lambda <- 2 * 0.5^2
+#' dig <- function(y) sqrt(lambda / (2 * pi * y^3)) * exp(-lambda * (y - m)^2 / (2 * m^2 * y))
+#' ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
+#'   ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
+#'                           bins = 30, boundary = 0, fill = "grey80", colour = "grey40") +
+#'   ggplot2::stat_function(fun = dig, colour = "red") +
+#'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the inverse Gaussian process")
 #' @export
 sim_ig <- function(t, mu, eta, A = NULL, n_traj = 1) {
   if (missing(eta) || !is.numeric(eta) || length(eta) != 1 || !(eta > 0)) stop("eta must be a positive number")

@@ -90,6 +90,19 @@
 #' # 6. All the simulated data in a single data frame, with the increments
 #' head(traj_df(x))
 #' head(traj_df(x, increments = TRUE))
+#'
+#' # 7. Histogram of the increments, with the density of the increments in red.
+#' #    Homogeneous process and constant step h = 1: the increments are i.i.d.
+#' #    with distribution Meixner(a, b, d h, m h), density from Runuran::ud()
+#' x <- sim_meixner(seq(0, 50, by = 1), a = 1, b = 0.3, d = 1.5, m = 0.2, n_traj = 20)
+#' dx <- traj_df(x, increments = TRUE)$dX
+#' dx <- dx[!is.na(dx)]
+#' law <- Runuran::udmeixner(alpha = 1, beta = 0.3, delta = 1.5, mu = 0.2)
+#' ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
+#'   ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
+#'                           bins = 30, boundary = 0, fill = "grey80", colour = "grey40") +
+#'   ggplot2::stat_function(fun = function(y) Runuran::ud(law, y), colour = "red") +
+#'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the Meixner process")
 #' @export
 sim_meixner <- function(t, a, b, d, m, n_traj = 1) {
   if (!is.numeric(a) || length(a) != 1 || !(a > 0)) stop("a must be a positive number")
