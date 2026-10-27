@@ -1,5 +1,5 @@
 ---
-title: "Test du package levyfit : étude de Monte-Carlo"
+title: "Test du package levyfit : cas unitaires, intervalles de confiance et étude de Monte-Carlo"
 header-includes:
   - \renewcommand{\contentsname}{Sommaire}
   - \usepackage{booktabs}
@@ -26,21 +26,359 @@ remotes::install_github("rytracetito/levy_packages", subdir = "levyfit")
 remotes::install_github("rytracetito/levy_packages", subdir = "DegradSim")
 ```
 
-Tout le code de l'étude (vraies valeurs, plans, simulation, estimation, résumé des répétitions) est dans le fichier `test.mle_code.R`, placé dans le même dossier que ce rapport :
+Le code de l'étude de Monte-Carlo de la partie III (vraies valeurs, plans, simulation, estimation, résumé des répétitions) est dans le fichier `test.mle_code.R`, placé dans le même dossier que ce rapport. Il charge aussi `levyfit` et `DegradSim` :
 
 ```{r}
 source("test.mle_code.R", local = knitr::knit_global())
 ```
 
-Vraies valeurs des paramètres :
+Vraies valeurs des paramètres, utilisées dans tout le rapport :
 
 | Modèle | Paramètres |
 |---|---|
 | Gamma | `a = 1.5`, `b = 3` |
-| Wiener | `mu = 0.5`, `sigma2 = 2.25` |
+| Wiener | `mu = 0.5`, `sigma2 = 2.25` (donc `sigma = 1.5`) |
 | Inverse gaussien | `mu = 0.5`, `eta = 2` |
 | Variance-gamma | `theta = 0.5`, `sigma = 1.5`, `nu = 2` |
 | Meixner | `a = 1`, `b = 0.3`, `d = 1.5`, `m = 0.2` |
+
+Deux petites fonctions servent à présenter les résultats : `comparer()` met côte à côte la vraie valeur et l'estimation de chaque paramètre, `intervalles()` ajoute si l'intervalle de confiance contient la vraie valeur.
+
+```{r}
+comparer <- function(est, vraies) {
+  p <- names(vraies)
+  d <- data.frame(Paramètre = p, Vraie = unname(vraies),
+                  Estimée = signif(unname(est[p]), 4),
+                  `Écart relatif (%)` = round(100 * unname((est[p] - vraies) / vraies), 1),
+                  check.names = FALSE)
+  knitr::kable(d, align = "lrrr")
+}
+
+intervalles <- function(est, vraies) {
+  d <- est[est$parameter %in% names(vraies), ]
+  d$vraie <- unname(vraies[d$parameter])
+  d$contient <- ifelse(d$lower <= d$vraie & d$vraie <= d$upper, "oui", "non")
+  d <- data.frame(Paramètre = d$parameter, Vraie = d$vraie,
+                  Estimée = signif(d$estimate, 4),
+                  `Borne inf.` = signif(d$lower, 4), `Borne sup.` = signif(d$upper, 4),
+                  `Contient la vraie valeur` = d$contient, check.names = FALSE)
+  knitr::kable(d, align = "lrrrrc")
+}
+```
+
+\newpage
+
+# I - Cas unitaires
+
+On simule un processus avec des paramètres connus, on estime ces paramètres avec la fonction de `levyfit`, et on regarde si l'on retrouve les vraies valeurs. Pour chaque processus, quatre cas :
+
+1. **une trajectoire, inspections régulières** : 200 inspections au pas de 0.5, jusqu'à 100 ;
+2. **une trajectoire, inspections irrégulières** : 200 inspections de plus en plus fréquentes, jusqu'à 100 ;
+3. **plusieurs trajectoires aux mêmes instants** : 10 trajectoires de 50 inspections, jusqu'à 100 (le résultat de la simulation est une matrice) ;
+4. **plusieurs trajectoires à des instants différents** : 10 trajectoires de 30 à 39 inspections, jusqu'à 100 (le résultat est une liste).
+
+Puis un tableau de **convergence** : avec une trajectoire de plus en plus longue (inspections au pas de 1), l'estimation doit se rapprocher de la vraie valeur.
+
+Sur un seul jeu de données, l'estimation n'est jamais exactement la vraie valeur : avec quelques centaines d'accroissements, des écarts de quelques pour cent, parfois 10 à 15 %, sont normaux. Ce qui compte est que ces écarts restent modérés et diminuent quand les données augmentent, ce que montrent les tableaux de convergence. Pour la dérive \(\mu\) du Wiener, c'est surtout la durée totale observée qui compte : son écart type est \(\sigma / \sqrt{T}\).
+
+Le modèle de Meixner a besoin de plus de données et d'inspections rapprochées : ses cas utilisent un pas d'environ 1 et davantage d'accroissements (voir sa section).
+
+```{r}
+t_reg <- inspection_times("regular", n = 200, tmax = 100)$time
+t_irr <- inspection_times("increasing", n = 200, tmax = 100)$time
+t_meme <- inspection_times("regular", n = 50, tmax = 100)$time
+plan_diff <- inspection_times("increasing", n = 30:39, n_traj = 10, tmax = 100)
+
+convergence <- function(simuler, estimer, vraies, n) {
+  lignes <- lapply(n, function(k) {
+    set.seed(k)
+    e <- estimer(simuler(inspection_times("regular", n = k, tmax = k)$time))
+    data.frame(Accroissements = k, t(signif(e[names(vraies)], 4)))
+  })
+  vraie <- data.frame(Accroissements = "vraie valeur", t(vraies))
+  knitr::kable(rbind(vraie, do.call(rbind, lignes)))
+}
+```
+
+\newpage
+
+## Gamma
+
+### Cas 1 : une trajectoire, inspections régulières
+
+```{r}
+set.seed(1)
+x <- sim_gamma(t_reg, a = 1.5, b = 3)
+comparer(gamma_mle(x), vraies$gamma)
+```
+
+### Cas 2 : une trajectoire, inspections irrégulières
+
+```{r}
+set.seed(2)
+x <- sim_gamma(t_irr, a = 1.5, b = 3)
+comparer(gamma_mle(x), vraies$gamma)
+```
+
+### Cas 3 : plusieurs trajectoires aux mêmes instants
+
+```{r}
+set.seed(3)
+x <- sim_gamma(t_meme, a = 1.5, b = 3, n_traj = 10)
+comparer(gamma_mle(x), vraies$gamma)
+```
+
+### Cas 4 : plusieurs trajectoires à des instants différents
+
+```{r}
+set.seed(4)
+x <- sim_gamma(plan_diff, a = 1.5, b = 3)
+comparer(gamma_mle(x), vraies$gamma)
+```
+
+### Convergence
+
+```{r}
+convergence(function(t) sim_gamma(t, a = 1.5, b = 3), gamma_mle, vraies$gamma,
+            c(50, 500, 5000))
+```
+
+\newpage
+
+## Wiener
+
+### Cas 1 : une trajectoire, inspections régulières
+
+```{r}
+set.seed(11)
+x <- sim_wiener(t_reg, mu = 0.5, sigma = 1.5)
+comparer(wiener_mle(x), vraies$wiener)
+```
+
+### Cas 2 : une trajectoire, inspections irrégulières
+
+```{r}
+set.seed(12)
+x <- sim_wiener(t_irr, mu = 0.5, sigma = 1.5)
+comparer(wiener_mle(x), vraies$wiener)
+```
+
+### Cas 3 : plusieurs trajectoires aux mêmes instants
+
+```{r}
+set.seed(13)
+x <- sim_wiener(t_meme, mu = 0.5, sigma = 1.5, n_traj = 10)
+comparer(wiener_mle(x), vraies$wiener)
+```
+
+### Cas 4 : plusieurs trajectoires à des instants différents
+
+```{r}
+set.seed(14)
+x <- sim_wiener(plan_diff, mu = 0.5, sigma = 1.5)
+comparer(wiener_mle(x), vraies$wiener)
+```
+
+### Convergence
+
+```{r}
+convergence(function(t) sim_wiener(t, mu = 0.5, sigma = 1.5), wiener_mle, vraies$wiener,
+            c(50, 500, 5000))
+```
+
+\newpage
+
+## Inverse gaussien
+
+### Cas 1 : une trajectoire, inspections régulières
+
+```{r}
+set.seed(21)
+x <- sim_ig(t_reg, mu = 0.5, eta = 2)
+comparer(ig_mle(x), vraies$ig)
+```
+
+### Cas 2 : une trajectoire, inspections irrégulières
+
+```{r}
+set.seed(22)
+x <- sim_ig(t_irr, mu = 0.5, eta = 2)
+comparer(ig_mle(x), vraies$ig)
+```
+
+### Cas 3 : plusieurs trajectoires aux mêmes instants
+
+```{r}
+set.seed(23)
+x <- sim_ig(t_meme, mu = 0.5, eta = 2, n_traj = 10)
+comparer(ig_mle(x), vraies$ig)
+```
+
+### Cas 4 : plusieurs trajectoires à des instants différents
+
+```{r}
+set.seed(24)
+x <- sim_ig(plan_diff, mu = 0.5, eta = 2)
+comparer(ig_mle(x), vraies$ig)
+```
+
+### Convergence
+
+```{r}
+convergence(function(t) sim_ig(t, mu = 0.5, eta = 2), ig_mle, vraies$ig,
+            c(50, 500, 5000))
+```
+
+\newpage
+
+## Variance-gamma
+
+### Cas 1 : une trajectoire, inspections régulières
+
+```{r}
+set.seed(31)
+x <- sim_vg(t_reg, theta = 0.5, sigma = 1.5, nu = 2)
+comparer(vg_mle(x), vraies$vg)
+```
+
+### Cas 2 : une trajectoire, inspections irrégulières
+
+```{r}
+set.seed(32)
+x <- sim_vg(t_irr, theta = 0.5, sigma = 1.5, nu = 2)
+comparer(vg_mle(x), vraies$vg)
+```
+
+### Cas 3 : plusieurs trajectoires aux mêmes instants
+
+```{r}
+set.seed(33)
+x <- sim_vg(t_meme, theta = 0.5, sigma = 1.5, nu = 2, n_traj = 10)
+comparer(vg_mle(x), vraies$vg)
+```
+
+### Cas 4 : plusieurs trajectoires à des instants différents
+
+```{r}
+set.seed(34)
+x <- sim_vg(plan_diff, theta = 0.5, sigma = 1.5, nu = 2)
+comparer(vg_mle(x), vraies$vg)
+```
+
+### Convergence
+
+```{r}
+convergence(function(t) sim_vg(t, theta = 0.5, sigma = 1.5, nu = 2), vg_mle, vraies$vg,
+            c(50, 500, 5000))
+```
+
+\newpage
+
+## Meixner
+
+Les mêmes cas, avec des inspections espacées d'environ 1 et plus d'accroissements : 1 000 inspections jusqu'à 1 000 pour une trajectoire, 20 trajectoires d'environ 100 inspections jusqu'à 100 pour plusieurs trajectoires.
+
+Le pas compte pour ce modèle. Sur un long intervalle, un accroissement du processus de Meixner est la somme de très nombreux petits sauts, et sa loi est presque normale : la vraisemblance ne permet alors plus de séparer \(a\), \(b\), \(d\) et \(m\), et elle n'a pas de maximum intérieur (cas limite gaussien, décrit dans l'aide de `meixner_mle()`). Avec un pas de 5, environ 30 % des jeux de données sont dans ce cas ; avec un pas de 1 et assez de données, presque aucun.
+
+```{r}
+t_reg_m <- inspection_times("regular", n = 1000, tmax = 1000)$time
+t_irr_m <- inspection_times("increasing", n = 1000, tmax = 1000)$time
+t_meme_m <- inspection_times("regular", n = 100, tmax = 100)$time
+plan_diff_m <- inspection_times("regular", n = 90:109, n_traj = 20, tmax = 100)
+```
+
+### Cas 1 : une trajectoire, inspections régulières
+
+```{r}
+set.seed(41)
+x <- sim_meixner(t_reg_m, a = 1, b = 0.3, d = 1.5, m = 0.2)
+comparer(meixner_mle(x), vraies$meixner)
+```
+
+### Cas 2 : une trajectoire, inspections irrégulières
+
+```{r}
+set.seed(42)
+x <- sim_meixner(t_irr_m, a = 1, b = 0.3, d = 1.5, m = 0.2)
+comparer(meixner_mle(x), vraies$meixner)
+```
+
+### Cas 3 : plusieurs trajectoires aux mêmes instants
+
+```{r}
+set.seed(43)
+x <- sim_meixner(t_meme_m, a = 1, b = 0.3, d = 1.5, m = 0.2, n_traj = 20)
+comparer(meixner_mle(x), vraies$meixner)
+```
+
+### Cas 4 : plusieurs trajectoires à des instants différents
+
+```{r}
+set.seed(44)
+x <- sim_meixner(plan_diff_m, a = 1, b = 0.3, d = 1.5, m = 0.2)
+comparer(meixner_mle(x), vraies$meixner)
+```
+
+### Convergence
+
+Avec 200 accroissements, les estimations de \(b\), \(d\) et \(m\) sont encore loin des vraies valeurs : ces paramètres sont difficiles à séparer avec peu de données (voir l'aide de `meixner_mle()`). Elles s'en rapprochent quand les données augmentent.
+
+```{r}
+convergence(function(t) sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2), meixner_mle,
+            vraies$meixner, c(200, 2000, 20000))
+```
+
+\newpage
+
+# II - Intervalles de confiance
+
+Avec `ci = TRUE`, chaque fonction donne aussi un intervalle de confiance asymptotique à 95 % (intervalles de Wald, détaillés dans la partie III). On reprend le cas 3 (plusieurs trajectoires aux mêmes instants) de chaque processus, avec les mêmes graines.
+
+## Gamma
+
+```{r}
+set.seed(3)
+x <- sim_gamma(t_meme, a = 1.5, b = 3, n_traj = 10)
+intervalles(gamma_mle(x, ci = TRUE), vraies$gamma)
+```
+
+## Wiener
+
+```{r}
+set.seed(13)
+x <- sim_wiener(t_meme, mu = 0.5, sigma = 1.5, n_traj = 10)
+intervalles(wiener_mle(x, ci = TRUE), vraies$wiener)
+```
+
+## Inverse gaussien
+
+```{r}
+set.seed(23)
+x <- sim_ig(t_meme, mu = 0.5, eta = 2, n_traj = 10)
+intervalles(ig_mle(x, ci = TRUE), vraies$ig)
+```
+
+## Variance-gamma
+
+```{r}
+set.seed(33)
+x <- sim_vg(t_meme, theta = 0.5, sigma = 1.5, nu = 2, n_traj = 10)
+intervalles(vg_mle(x, ci = TRUE), vraies$vg)
+```
+
+## Meixner
+
+```{r}
+set.seed(43)
+x <- sim_meixner(t_meme_m, a = 1, b = 0.3, d = 1.5, m = 0.2, n_traj = 20)
+intervalles(meixner_mle(x, ci = TRUE), vraies$meixner)
+```
+
+Sur un seul jeu de données, un intervalle à 95 % peut ne pas contenir la vraie valeur (une fois sur vingt en moyenne). C'est la partie III qui vérifie, sur de nombreuses répétitions, que la proportion d'intervalles qui la contiennent est bien proche de 95 %.
+
+\newpage
+
+# III - Étude de Monte-Carlo
 
 ## Démarche
 
@@ -91,35 +429,35 @@ for (k in names(plans)) {
 
 \newpage
 
-# I - Une trajectoire
+## III.1 - Une trajectoire
 
 Chaque tableau résume `r R` répétitions (`r R_meixner` pour Meixner). Entre parenthèses : la vraie valeur.
 
-## Gamma
+### Gamma
 
 ```{r, echo = FALSE}
 tableau("gamma", "une")
 ```
 
-## Wiener
+### Wiener
 
 ```{r, echo = FALSE}
 tableau("wiener", "une")
 ```
 
-## Inverse gaussien
+### Inverse gaussien
 
 ```{r, echo = FALSE}
 tableau("ig", "une")
 ```
 
-## Variance-gamma
+### Variance-gamma
 
 ```{r, echo = FALSE}
 tableau("vg", "une")
 ```
 
-## Meixner
+### Meixner
 
 ```{r, echo = FALSE}
 tableau("meixner", "une")
@@ -127,33 +465,33 @@ tableau("meixner", "une")
 
 \newpage
 
-# II - Plusieurs trajectoires
+## III.2 - Plusieurs trajectoires
 
-## Gamma
+### Gamma
 
 ```{r, echo = FALSE}
 tableau("gamma", "plusieurs")
 ```
 
-## Wiener
+### Wiener
 
 ```{r, echo = FALSE}
 tableau("wiener", "plusieurs")
 ```
 
-## Inverse gaussien
+### Inverse gaussien
 
 ```{r, echo = FALSE}
 tableau("ig", "plusieurs")
 ```
 
-## Variance-gamma
+### Variance-gamma
 
 ```{r, echo = FALSE}
 tableau("vg", "plusieurs")
 ```
 
-## Meixner
+### Meixner
 
 ```{r, echo = FALSE}
 tableau("meixner", "plusieurs")
@@ -161,9 +499,9 @@ tableau("meixner", "plusieurs")
 
 \newpage
 
-# III - Synthèse
+## III.3 - Synthèse
 
-## Couverture des intervalles de confiance
+### Couverture des intervalles de confiance
 
 La ligne pointillée marque le niveau visé, 95 %.
 
@@ -184,7 +522,7 @@ ggplot(d2, aes(x = couverture, y = plan, colour = parameter)) +
 
 \newpage
 
-## Conclusions
+### Conclusions
 
 \begin{center}
 \begin{tabular}{>{\raggedright\arraybackslash}p{2.6cm}>{\raggedright\arraybackslash}p{6.6cm}>{\raggedright\arraybackslash}p{6.2cm}}
