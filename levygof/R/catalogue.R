@@ -56,8 +56,10 @@ catalogue <- list(
 #' **Inverse Gaussian process (`"InvGaus"`)**, increments
 #' \eqn{IG(\mu \Delta, \eta \Delta^2)}:
 #' * `"ABEV1"`, `"ABEV2"`: Allison, Betsch, Ebner and Visagie (2022)
-#'   (`gofIG`, tuning parameter 10, maximum likelihood);
-#' * `"HK1"`, `"HK2"`: Henze and Klar (2002) (`gofIG`);
+#'   (`gofIG`, tuning parameter 10, maximum likelihood), characterization of
+#'   the distribution function (see below);
+#' * `"HK1"`, `"HK2"`: Henze and Klar (2002) (`gofIG`), empirical Laplace
+#'   transform (see below);
 #' * `"KS"`, `"CvM"`, `"AD"`: Kolmogorov-Smirnov, Cramer-von Mises and
 #'   Anderson-Darling (`gofIG`);
 #' * `"VGE_ratio"`: Villasenor and Gonzalez-Estrada (2015), ratio of two
@@ -66,6 +68,48 @@ catalogue <- list(
 #' * `"VGE_gamma"`: Villasenor and Gonzalez-Estrada (2015), transformation of
 #'   the data to gamma variables of shape 1/2 and Anderson-Darling test
 #'   (`goft::ig_test`, method `"transf"`).
+#'
+#' **Tests ABEV1, ABEV2, HK1 and HK2.** Let \eqn{X_1, \dots, X_n} be the
+#' sample, \eqn{IG(m, \lambda)} the inverse Gaussian law of mean \eqn{m} and
+#' shape \eqn{\lambda}, \eqn{\hat m = \bar X} and
+#' \eqn{\hat\lambda = 1 / \overline{(1/X - 1/\bar X)}} the maximum likelihood
+#' estimators. The four tests use the scaled data
+#' \eqn{Y_j = X_j / \hat m} and \eqn{\hat\varphi = \hat\lambda / \hat m}: under
+#' H0, \eqn{Y_j} is close to \eqn{IG(1, \varphi)}, and the law of the
+#' statistic only depends on \eqn{\varphi}. Each statistic is a weighted
+#' \eqn{L^2} distance, H0 is rejected for large values, and the p-value is
+#' obtained by parametric bootstrap: `B` samples of \eqn{IG(1, \hat\varphi)}
+#' of size \eqn{n}, the statistic being computed again (with new estimates)
+#' on each one. `gofIG` gives only the p-value, so the column
+#' `critical.value` is `NA`.
+#'
+#' * `"HK2"` compares the empirical Laplace transform
+#'   \eqn{L_n(t) = \frac{1}{n} \sum_j e^{-t Y_j}} with the fitted one
+#'   \eqn{L_{\hat\varphi}(t) = \exp(\hat\varphi (1 - \sqrt{1 + 2t/\hat\varphi}))}:
+#'   \deqn{HK2 = n \int_0^\infty (L_n(t) - L_{\hat\varphi}(t))^2\, dt.}
+#' * `"HK1"` uses the differential equation
+#'   \eqn{L(t) + \sqrt{1 + 2t/\varphi}\, L'(t) = 0}, which characterizes the
+#'   Laplace transform of \eqn{IG(1, \varphi)}; the statistic measures how
+#'   far \eqn{L_n} is from satisfying it:
+#'   \deqn{HK1 \propto n \int_0^\infty \left(L_n(t) + \sqrt{1 + 2t/\hat\varphi}\, L_n'(t)\right)^2 e^{-a t}\, dt,}
+#'   with \eqn{a = 0}.
+#' * `"ABEV1"` and `"ABEV2"` use a characterization of the distribution
+#'   function: with the score
+#'   \eqn{\tau(y) = -f'(y)/f(y) = \frac{1}{2}(\varphi + 3/y - \varphi/y^2)} of
+#'   the density \eqn{f} of \eqn{IG(1, \varphi)}, a positive variable
+#'   \eqn{Y} has this law if and only if
+#'   \eqn{F(t) = E[\tau(Y) \min(Y, t)]} for all \eqn{t > 0}. With
+#'   \eqn{F_n} the empirical distribution function,
+#'   \deqn{ABEV = n \int_0^\infty \left(\frac{1}{n} \sum_j \hat\tau(Y_j) \min(Y_j, t) - F_n(t)\right)^2 w(t)\, dt,}
+#'   with the weight \eqn{w(t) = e^{-a t}} for ABEV1 and
+#'   \eqn{w(t) = e^{-a t^2}} for ABEV2, and \eqn{a = 10}.
+#'
+#' The four statistics are double sums over the sample, computed with R
+#' loops: their cost grows as \eqn{n^2}, times \eqn{B + 1} for the bootstrap.
+#' For \eqn{n = 300} and `B = 200`, one test takes about 8 seconds for HK2,
+#' 2 minutes for ABEV1 and HK1, and 7 minutes for ABEV2. With many
+#' increments (for instance the method `"ExtBridge"` of [gof.levy()]), prefer
+#' HK2 or the other tests.
 #'
 #' **Variance-gamma (`"VG"`) and Meixner (`"Meixner"`) processes**:
 #' `"KS"`, `"CvM"`, `"AD"`, `"Watson"` (Kolmogorov-Smirnov, Cramer-von Mises,
