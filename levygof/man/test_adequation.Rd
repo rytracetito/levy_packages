@@ -50,7 +50,7 @@ useful alone when the increments are already available (regular
 inspections, or increments reconstructed by the package \code{levyBridge}).
 }
 \details{
-The null hypothesis is: the increments are i.i.d. with a law of the
+The null hypothesis is: the increments are i.i.d. with a distribution of the
 family of the model (parameters unknown). Under the gamma and inverse
 Gaussian models the increments are positive with probability one: a
 negative or zero increment is impossible under H0, and all the tests then

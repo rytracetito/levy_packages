@@ -1,164 +1,144 @@
-#' Variance-gamma bridge: resampling on a regular grid
+#' Variance-gamma bridge
 #'
-#' Resamples one or several trajectories of a variance-gamma process,
-#' observed at irregular inspection times, onto a regular time grid, by
-#' exact simulation of the variance-gamma bridge between the known values.
+#' Draws the value at time \eqn{t} of a variance-gamma process known at two
+#' times \eqn{t_A < t < t_B}, from the distribution of the variance-gamma
+#' bridge. This function is used by [vg_resampling()] at each point of the
+#' grid.
 #'
 #' @section Model:
 #' The variance-gamma process with parameters \eqn{\theta}, \eqn{\sigma > 0}
-#' and \eqn{\nu > 0} is \eqn{X_s = \theta \gamma_s + \sigma W_{\gamma_s}}, where
-#' \eqn{\gamma} is a gamma process with \eqn{\gamma_s \sim \Gamma(s / \nu)}
-#' with scale \eqn{\nu} (mean \eqn{s}, variance \eqn{\nu s}) and \eqn{W} an
-#' independent standard Brownian motion. Its trajectories are not monotone.
+#' and \eqn{\nu > 0} is \eqn{X_s = \theta \gamma_s + \sigma W_{\gamma_s}}
+#' (Madan, Carr and Chang, 1998), where \eqn{\gamma} is a gamma process with
+#' \eqn{\gamma_s \sim \Gamma(s / \nu)} with scale \eqn{\nu} (mean \eqn{s},
+#' variance \eqn{\nu s}) and \eqn{W} an independent standard Brownian
+#' motion. Its trajectories are not monotone. The vector of its parameters is
+#' \eqn{\Theta = (\theta, \sigma, \nu)}: the drift \eqn{\theta} is one of the
+#' parameters, not the whole vector \eqn{\Theta}.
 #'
-#' @section Law of the bridge:
-#' Let \eqn{t_A < t < t_B}, \eqn{\tau_1 = t - t_A}, \eqn{\tau_2 = t_B - t},
-#' \eqn{T = \tau_1 + \tau_2}, \eqn{\Delta = x_B - x_A},
-#' \deqn{p = \frac{T}{\nu} - \frac{1}{2}, \qquad \kappa^2 = \frac{\theta^2 + 2 \sigma^2 / \nu}{\sigma^4}.}
+#' @section Distribution of the bridge:
 #' Given \eqn{X_{t_A} = x_A} and \eqn{X_{t_B} = x_B},
-#' \deqn{X_t = x_A + Y \Delta + \sqrt{S\, Y (1 - Y)}\ \xi,}
-#' with three independent variables
-#' \eqn{S \sim \mathrm{GIG}(p, \kappa^2, \Delta^2)} (density proportional to
-#' \eqn{s^{p - 1} \exp(-(\kappa^2 s + \Delta^2 / s) / 2)}),
-#' \eqn{Y \sim \mathrm{Beta}(\tau_1 / \nu, \tau_2 / \nu)} and
-#' \eqn{\xi \sim \mathcal{N}(0, 1)}. \eqn{S / \sigma^2} is the increment of the clock
-#' \eqn{\gamma} over \eqn{[t_A, t_B]}, \eqn{Y} the fraction of it reached at
-#' \eqn{t}, and, given the clock, \eqn{X} is a Brownian bridge. The law of the
-#' bridge depends on \eqn{(\theta, \sigma, \nu)} only through \eqn{\nu} and
-#' \eqn{\kappa}. The GIG variable is drawn with [GIGrvg::rgig()]. The case
-#' \eqn{\Delta = 0} with \eqn{p \le 0}, which has probability zero, gives
-#' \eqn{S = 0}.
+#' \deqn{X_t = x_A + (x_B - x_A)\, Y + \sqrt{S\, Y (1 - Y)}\ \xi,}
+#' where the random variables \eqn{S}, \eqn{Y} and \eqn{\xi} are independent:
+#' * \eqn{S \sim \mathrm{GIG}(p, \kappa^2, (x_B - x_A)^2)}, with density
+#'   proportional to
+#'   \eqn{s^{p - 1} \exp(-(\kappa^2 s + (x_B - x_A)^2 / s) / 2)},
+#'   \eqn{p = (t_B - t_A) / \nu - 1/2} and
+#'   \eqn{\kappa^2 = (\theta^2 + 2 \sigma^2 / \nu) / \sigma^4};
+#' * \eqn{Y \sim \mathrm{Beta}((t - t_A) / \nu, (t_B - t) / \nu)};
+#' * \eqn{\xi \sim \mathcal{N}(0, 1)}.
 #'
-#' @inheritSection gamma_bridge Resampling algorithm (method "Bridge")
-#' @inheritSection gamma_bridge Method "ExtBridge"
-#' @inheritSection gamma_bridge Method "MultiBridge"
+#' The variable \eqn{S / \sigma^2} is the increment
+#' \eqn{\gamma_{t_B} - \gamma_{t_A}} of the gamma process given the
+#' observations, and \eqn{Y} is the fraction of this increment reached at
+#' time \eqn{t}, as in the gamma bridge; given \eqn{\gamma}, the Brownian
+#' motion \eqn{W} gives the Gaussian term. The bridge uses the three
+#' parameters. The GIG variable is drawn with [GIGrvg::rgig()] (Hörmann and
+#' Leydold, 2014).
 #'
 #' @inheritParams gamma_bridge
-#' @param theta Drift of the subordinated Brownian motion, real.
-#' @param sigma Volatility of the subordinated Brownian motion,
-#'   \eqn{\sigma > 0}.
-#' @param nu Variance rate of the gamma clock, \eqn{\nu > 0}.
+#' @param theta Vector \eqn{\Theta} of the parameters of the process, a named
+#'   numeric vector `c(theta = , sigma = , nu = )` (drift, volatility of the
+#'   subordinated Brownian motion and variance rate of the gamma process),
+#'   for instance the estimate returned by `vg_mle()` of the package
+#'   `levyfit`.
 #'
 #' @inherit gamma_bridge return
 #'
 #' @references
-#' Grall-Maës, E. (2012). Use of the Kolmogorov-Smirnov test for gamma
-#' process. *Proceedings of the Institution of Mechanical Engineers, Part O:
-#' Journal of Risk and Reliability*, 226(6), 624-634.
-#' \doi{10.1177/1748006X12462522}
+#' Hörmann, W. and Leydold, J. (2014). Generating generalized inverse
+#' Gaussian random variates. *Statistics and Computing*, 24, 547-557.
+#' \doi{10.1007/s11222-013-9387-3}
 #'
 #' Madan, D. B., Carr, P. P. and Chang, E. C. (1998). The variance gamma
 #' process and option pricing. *European Finance Review*, 2(1), 79-105.
 #' \doi{10.1023/A:1009703431535}
 #'
-#' Hörmann, W. and Leydold, J. (2014). Generating generalized inverse
-#' Gaussian random variates. *Statistics and Computing*, 24, 547-557.
-#' \doi{10.1007/s11222-013-9387-3}
+#' @seealso [vg_resampling()] to resample trajectories on a regular grid;
+#'   [gamma_bridge()], [wiener_bridge()], [ig_bridge()], [meixner_bridge()].
 #'
-#' @seealso
-#' * [increments()]: the reconstructed increments;
-#' * [plot_bridge()]: observed and resampled values;
-#' * [gamma_bridge()]: bridge of the gamma process;
-#' * [wiener_bridge()]: bridge of the Wiener process;
-#' * [ig_bridge()]: bridge of the inverse Gaussian process;
-#' * [meixner_bridge()]: bridge of the Meixner process.
+#' @examples
+#' # 1. One draw of X_2, given X_1 = 3 and X_4 = 6 (theta = 0.5, sigma = 1.5, nu = 2)
+#' set.seed(1)
+#' vg_bridge(t_A = 1, x_A = 3, t_B = 4, x_B = 6, t = 2,
+#'           theta = c(theta = 0.5, sigma = 1.5, nu = 2))
+#'
+#' # 2. Many draws: distribution of X_2 given the two levels
+#' y <- vg_bridge(1, 3, 4, 6, 2, theta = c(theta = 0.5, sigma = 1.5, nu = 2), n = 10000)
+#' hist(y, breaks = 50, freq = FALSE)
+#' @examplesIf requireNamespace("levyfit", quietly = TRUE)
+#' # 3. Parameters estimated with levyfit on simulated trajectories
+#' set.seed(1)
+#' plan <- DegradSim::inspection_times("decreasing", n = 20, n_traj = 10, tmax = 40)
+#' x <- DegradSim::sim_vg(plan, theta = 0.5, sigma = 1.5, nu = 2)
+#' est <- levyfit::vg_mle(x)
+#' est
+#' vg_bridge(0, 0, 2, 1, 1, theta = est, n = 3)
+#' @export
+vg_bridge <- function(t_A, x_A, t_B, x_B, t, theta, n = 1) {
+  p <- check_theta(theta, c("theta", "sigma", "nu"), real = "theta")
+  bridge_draws(t_A, x_A, t_B, x_B, t, n, vg_draw(p), "variance-gamma")
+}
+
+#' Variance-gamma process: resampling on a regular grid
+#'
+#' Resamples one or several trajectories of a variance-gamma process onto a
+#' regular time grid: each grid point that is not an inspection time is drawn
+#' with [vg_bridge()] between the known levels around it. The grids and the
+#' resampling algorithm are described in [levyBridge-package].
+#'
+#' @inheritParams gamma_resampling
+#' @param theta Vector \eqn{\Theta} of the parameters of the process, a named
+#'   numeric vector `c(theta = , sigma = , nu = )`, for instance the estimate
+#'   returned by `vg_mle()` of the package `levyfit`. The bridge and the
+#'   option 2 of the method `"MultiBridge"` use the three parameters.
+#'
+#' @inherit gamma_resampling return
+#'
+#' @seealso [vg_bridge()] for the distribution of the bridge,
+#'   [levyBridge-package] for the grids and the algorithm, [plot_bridge()].
 #'
 #' @examples
 #' # 1. One trajectory observed at 11 irregular times (theta = 0.5, sigma = 1.5, nu = 2)
 #' t <- c(0, 1.2, 2, 3.8, 5.5, 7.1, 10.4, 12.9, 15.3, 18.7, 22.5)
-#' x <- c(0, 0.9, 0.4, 2.8, 3.1, 5.6, 7.2, 6.5, 9.8, 11.3, 12.1)
 #' set.seed(1)
-#' r <- vg_bridge(x, t, theta = 0.5, sigma = 1.5, nu = 2)
+#' x <- DegradSim::sim_vg(t, theta = 0.5, sigma = 1.5, nu = 2)
+#' r <- vg_resampling(x, theta = c(theta = 0.5, sigma = 1.5, nu = 2))
 #' r
-#'
-#' # The resampled trajectory, on the regular grid 0, 2.25, 4.5, ..., 22.5
 #' r[[1]]
-#'
-#' # Time step of the grid: t_N / N = 22.5 / 10
-#' attr(r, "teq")
-#'
-#' # 2. Reconstructed increments, the input of the goodness-of-fit tests
-#' increments(r)
-#'
-#' # 3. Observed and resampled values
 #' plot_bridge(r)
 #'
-#' # 4. Grid points equal to inspection times keep the observed values:
-#' #    here the grid is 0, 2, 4, 6, 8, 10 and 2 and 6 are inspection times
-#' t2 <- c(0, 2, 3, 6, 7, 10)
-#' x2 <- c(0, 1.4, 0.9, 3.1, 2.6, 4.8)
-#' vg_bridge(x2, t2, theta = 0.5, sigma = 1.5, nu = 2)[[1]]
-#'
-#' # 5. One trajectory given as a data frame (times, then levels)
-#' vg_bridge(data.frame(t = t2, X = x2), theta = 0.5, sigma = 1.5, nu = 2)
-#'
-#' # 6. Several trajectories, each with its own inspection times:
-#' #    one regular grid and one time step per trajectory
-#' liste <- list(data.frame(t = c(0, 1, 3, 6), X = c(0, 0.4, 2.3, 1.9)),
-#'               data.frame(t = c(0, 2, 4, 5, 9), X = c(0, 1.6, 0.8, 3.1, 4.2)))
-#' r2 <- vg_bridge(liste, theta = 0.5, sigma = 1.5, nu = 2)
-#' r2
+#' # 2. Method "ExtBridge": the grid 0, 0.1, ..., 22.5 contains all the times
+#' r2 <- vg_resampling(x, theta = c(theta = 0.5, sigma = 1.5, nu = 2), method = "ExtBridge")
 #' attr(r2, "teq")
-#' increments(r2)
-#' plot_bridge(r2, trajectory = 1:2)
+#' plot_bridge(r2)
 #'
-#' # 7. The bridge values are random: set.seed() makes them reproducible
-#' set.seed(2); y1 <- vg_bridge(x, t, theta = 0.5, sigma = 1.5, nu = 2)[[1]]$X
-#' set.seed(2); y2 <- vg_bridge(x, t, theta = 0.5, sigma = 1.5, nu = 2)[[1]]$X
-#' identical(y1, y2)
-#'
-#' # 8. Method "ExtBridge": the times have 1 decimal place, the grid
-#' #    0, 0.1, ..., 22.5 contains all of them
-#' r3 <- vg_bridge(x, t, theta = 0.5, sigma = 1.5, nu = 2, method = "ExtBridge")
+#' # 3. Three trajectories with their own inspection times, one common step
+#' plan <- DegradSim::inspection_times("decreasing", n = 10, n_traj = 3,
+#'                                     tmax = c(20, 30, 40), digits = 1)
+#' xs <- DegradSim::sim_vg(plan, theta = 0.5, sigma = 1.5, nu = 2)
+#' r3 <- vg_resampling(xs, theta = c(theta = 0.5, sigma = 1.5, nu = 2), method = "MultiBridge")
 #' attr(r3, "teq")
-#' all(t %in% r3[[1]]$t)
-#' plot_bridge(r3)
-#'
-#' # Error: the first time must be 0
-#' try(vg_bridge(x, t + 1, theta = 0.5, sigma = 1.5, nu = 2))
-#' @examplesIf requireNamespace("DegradSim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)
-#' # Method "MultiBridge": several trajectories with their own times on one common grid,
-#' # so that all the reconstructed increments have the same law
-#' liste4 <- list(data.frame(t = c(0, 3, 8), X = c(0, 1.5, 4.2)),
-#'                data.frame(t = c(0, 2, 5, 9, 12), X = c(0, 0.9, 2.8, 4.1, 6.5)),
-#'                data.frame(t = c(0, 4, 7, 11, 15), X = c(0, 2.2, 3.1, 5.6, 7.4)))
-#' r4 <- vg_bridge(liste4, theta = 0.5, sigma = 1.5, nu = 2, method = "MultiBridge")
-#' attr(r4, "teq")
-#' sapply(r4, nrow)
-#'
-#' # 9. Ten trajectories simulated with DegradSim, inspected more and more often
-#' plan <- DegradSim::inspection_times("decreasing", n = 20, n_traj = 10, tmax = 40)
-#' sims <- DegradSim::sim_vg(plan, theta = 0.5, sigma = 1.5, nu = 2)
-#'
-#' # Parameters estimated with levyfit
-#' # With the true parameters (they can be estimated with levyfit::vg_mle())
-#' r <- vg_bridge(sims, theta = 0.5, sigma = 1.5, nu = 2)
-#' r
-#' plot_bridge(r, trajectory = 1:4)
-#'
-#' # Reconstructed increments of all the trajectories
-#' d <- increments(r)
-#' head(d)
-#' # Under the model, the increments have mean theta * teq and
-#' # variance (sigma^2 + nu * theta^2) * teq
-#' c(mean(d$dx), 0.5 * d$teq[1], var(d$dx), (1.5^2 + 2 * 0.5^2) * d$teq[1])
+#' plot_bridge(r3, trajectory = 1:3)
 #' @export
-vg_bridge <- function(x, t = NULL, theta, sigma, nu, method = "Bridge", digits = NULL, common_step = FALSE,
-                      option = 1) {
-  check_par(theta = theta, positive = FALSE)
-  check_par(sigma = sigma, nu = nu)
-  psi <- (theta^2 + 2 * sigma^2 / nu) / sigma^4
-  draw <- function(t_inf, delta, t, t_sup) {
-    p <- (t_sup - t_inf) / nu - 0.5
-    s <- if (delta == 0 && p <= 0) 0 else GIGrvg::rgig(1, lambda = p, chi = delta^2, psi = psi)
+vg_resampling <- function(x, theta, method = "Bridge", digits = NULL, common_step = FALSE, option = 1) {
+  p <- check_theta(theta, c("theta", "sigma", "nu"), real = "theta")
+  sim <- function(s) {
+    g <- p[["nu"]] * exp(log_rgamma(s / p[["nu"]]))
+    p[["theta"]] * g + p[["sigma"]] * sqrt(g) * stats::rnorm(1)
+  }
+  bridge_paths(x, method, vg_draw(p), "variance-gamma", p, digits = digits, common_step = common_step,
+               option = option, sim = sim)
+}
+
+# Pont VG : GIG pour l'accroissement du temps gamma, bêta pour sa fraction en t, puis pont brownien
+vg_draw <- function(p) {
+  nu <- p[["nu"]]
+  psi <- (p[["theta"]]^2 + 2 * p[["sigma"]]^2 / nu) / p[["sigma"]]^4
+  function(t_inf, delta, t, t_sup) {
+    lambda <- (t_sup - t_inf) / nu - 0.5
+    s <- if (delta == 0 && lambda <= 0) 0 else GIGrvg::rgig(1, lambda = lambda, chi = delta^2, psi = psi)
     y <- rbeta_pair((t - t_inf) / nu, (t_sup - t) / nu)
     e <- sqrt(s * y[1] * y[2]) * stats::rnorm(1)
     c(y[1] * delta + e, y[2] * delta - e)
   }
-  sim <- function(s) {
-    g <- nu * exp(log_rgamma(s / nu))
-    theta * g + sigma * sqrt(g) * stats::rnorm(1)
-  }
-  bridge_paths(x, t, method, draw, "variance-gamma", c(theta = unname(theta), sigma = unname(sigma), nu = unname(nu)),
-               digits = digits, common_step = common_step, option = option, sim = sim)
 }

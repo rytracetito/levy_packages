@@ -21,7 +21,7 @@ catalogue <- list(
 #'
 #' @section The tests:
 #' All the tests are tests of a composite hypothesis: the increments
-#' \eqn{\Delta x_1, \dots, \Delta x_n} are i.i.d. with a law of the family of
+#' \eqn{\Delta x_1, \dots, \Delta x_n} are i.i.d. with a distribution of the family of
 #' the model, whose parameters are unknown and estimated on the sample.
 #'
 #' **Gamma process (`"HGP"`)**, increments \eqn{\Gamma(a \Delta, b)}:
@@ -38,7 +38,7 @@ catalogue <- list(
 #' For the tests HME1, BE, KS, CvM, AD and Watson, the statistic and the
 #' parametric bootstrap are those of the package `gofgamma` (the shape is
 #' estimated by `gofgamma::gamma_est`, and each bootstrap sample of the
-#' gamma law with this shape is estimated again); all the bootstrap
+#' gamma distribution with this shape is estimated again); all the bootstrap
 #' statistics are kept, which gives both the p-value and the critical value.
 #'
 #' **Wiener process (`"HWP"`)**, increments
@@ -70,12 +70,12 @@ catalogue <- list(
 #'   (`goft::ig_test`, method `"transf"`).
 #'
 #' **Tests ABEV1, ABEV2, HK1 and HK2.** Let \eqn{X_1, \dots, X_n} be the
-#' sample, \eqn{IG(m, \lambda)} the inverse Gaussian law of mean \eqn{m} and
+#' sample, \eqn{IG(m, \lambda)} the inverse Gaussian distribution of mean \eqn{m} and
 #' shape \eqn{\lambda}, \eqn{\hat m = \bar X} and
 #' \eqn{\hat\lambda = 1 / \overline{(1/X - 1/\bar X)}} the maximum likelihood
 #' estimators. The four tests use the scaled data
 #' \eqn{Y_j = X_j / \hat m} and \eqn{\hat\varphi = \hat\lambda / \hat m}: under
-#' H0, \eqn{Y_j} is close to \eqn{IG(1, \varphi)}, and the law of the
+#' H0, \eqn{Y_j} is close to \eqn{IG(1, \varphi)}, and the distribution of the
 #' statistic only depends on \eqn{\varphi}. Each statistic is a weighted
 #' \eqn{L^2} distance, H0 is rejected for large values, and the p-value is
 #' obtained by parametric bootstrap: `B` samples of \eqn{IG(1, \hat\varphi)}
@@ -97,7 +97,7 @@ catalogue <- list(
 #'   function: with the score
 #'   \eqn{\tau(y) = -f'(y)/f(y) = \frac{1}{2}(\varphi + 3/y - \varphi/y^2)} of
 #'   the density \eqn{f} of \eqn{IG(1, \varphi)}, a positive variable
-#'   \eqn{Y} has this law if and only if
+#'   \eqn{Y} has this distribution if and only if
 #'   \eqn{F(t) = E[\tau(Y) \min(Y, t)]} for all \eqn{t > 0}. With
 #'   \eqn{F_n} the empirical distribution function,
 #'   \deqn{ABEV = n \int_0^\infty \left(\frac{1}{n} \sum_j \hat\tau(Y_j) \min(Y_j, t) - F_n(t)\right)^2 w(t)\, dt,}

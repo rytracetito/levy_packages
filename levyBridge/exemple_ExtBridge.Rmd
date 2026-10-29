@@ -42,13 +42,13 @@ Le nombre de décimales \(d\) est trouvé automatiquement (argument `digits = NU
 
 Paramètres utilisés :
 
-| Processus | Pont | Paramètres du processus | Paramètres du pont |
-|---|---|---|---|
-| Gamma | `gamma_bridge` | `a = 2`, `b = 3` | `a` |
-| Wiener | `wiener_bridge` | `mu = 0.5`, `sigma = 1.5` | `sigma` |
-| Inverse gaussien | `ig_bridge` | `mu = 1`, `eta = 3` | `eta` |
-| Variance-gamma | `vg_bridge` | `theta = 0.5`, `sigma = 1.5`, `nu = 2` | `theta`, `sigma`, `nu` |
-| Meixner | `meixner_bridge` | `a = 1`, `b = 0.3`, `d = 1.5`, `m = 0.2` | `a`, `d`, `m` |
+| Processus | Pont | Rééchantillonnage | `theta` | Utilisés par le pont |
+|---|---|---|---|---|
+| Gamma | `gamma_bridge` | `gamma_resampling` | `a = 2`, `b = 3` | `a` |
+| Wiener | `wiener_bridge` | `wiener_resampling` | `mu = 0.5`, `sigma = 1.5` | `sigma` |
+| Inverse gaussien | `ig_bridge` | `ig_resampling` | `mu = 1`, `eta = 3` | `eta` |
+| Variance-gamma | `vg_bridge` | `vg_resampling` | `theta = 0.5`, `sigma = 1.5`, `nu = 2` | `theta`, `sigma`, `nu` |
+| Meixner | `meixner_bridge` | `meixner_resampling` | `a = 1`, `b = 0.3`, `d = 1.5`, `m = 0.2` | `a`, `d`, `m` |
 
 \newpage
 
@@ -67,7 +67,7 @@ Pour chaque processus, on simule la trajectoire, on applique la méthode `"ExtBr
 ```{r}
 set.seed(1)
 x <- sim_gamma(t, a = 2, b = 3)
-r <- gamma_bridge(x, a = 2, method = "ExtBridge")
+r <- gamma_resampling(x, theta = c(a = 2, b = 3), method = "ExtBridge")
 r
 attr(r, "teq")
 nrow(r[[1]])
@@ -79,7 +79,7 @@ plot_bridge(r)
 
 ```{r}
 x <- sim_wiener(t, mu = 0.5, sigma = 1.5)
-r <- wiener_bridge(x, sigma = 1.5, method = "ExtBridge")
+r <- wiener_resampling(x, theta = c(mu = 0.5, sigma = 1.5), method = "ExtBridge")
 attr(r, "teq")
 all.equal(r[[1]]$X[match(t, r[[1]]$t)], x[, "X1"])
 plot_bridge(r)
@@ -89,7 +89,7 @@ plot_bridge(r)
 
 ```{r}
 x <- sim_ig(t, mu = 1, eta = 3)
-r <- ig_bridge(x, eta = 3, method = "ExtBridge")
+r <- ig_resampling(x, theta = c(mu = 1, eta = 3), method = "ExtBridge")
 attr(r, "teq")
 all.equal(r[[1]]$X[match(t, r[[1]]$t)], x[, "X1"])
 plot_bridge(r)
@@ -99,7 +99,7 @@ plot_bridge(r)
 
 ```{r}
 x <- sim_vg(t, theta = 0.5, sigma = 1.5, nu = 2)
-r <- vg_bridge(x, theta = 0.5, sigma = 1.5, nu = 2, method = "ExtBridge")
+r <- vg_resampling(x, theta = c(theta = 0.5, sigma = 1.5, nu = 2), method = "ExtBridge")
 attr(r, "teq")
 all.equal(r[[1]]$X[match(t, r[[1]]$t)], x[, "X1"])
 plot_bridge(r)
@@ -109,7 +109,7 @@ plot_bridge(r)
 
 ```{r}
 x <- sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2)
-r <- meixner_bridge(x, a = 1, d = 1.5, m = 0.2, method = "ExtBridge")
+r <- meixner_resampling(x, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2), method = "ExtBridge")
 attr(r, "teq")
 all.equal(r[[1]]$X[match(t, r[[1]]$t)], x[, "X1"])
 plot_bridge(r)
@@ -122,8 +122,8 @@ Sur la trajectoire gamma, les deux méthodes donnent des grilles différentes : 
 ```{r}
 set.seed(1)
 x <- sim_gamma(t, a = 2, b = 3)
-r_b <- gamma_bridge(x, a = 2, method = "Bridge")
-r_e <- gamma_bridge(x, a = 2, method = "ExtBridge")
+r_b <- gamma_resampling(x, theta = c(a = 2, b = 3), method = "Bridge")
+r_e <- gamma_resampling(x, theta = c(a = 2, b = 3), method = "ExtBridge")
 data.frame(methode = c("Bridge", "ExtBridge"),
            pas = c(attr(r_b, "teq"), attr(r_e, "teq")),
            points = c(nrow(r_b[[1]]), nrow(r_e[[1]])),
@@ -135,9 +135,9 @@ Avec des inspections régulières, les deux méthodes renvoient les observations
 ```{r}
 t_reg <- seq(0, 20, by = 2)
 x_reg <- sim_gamma(t_reg, a = 2, b = 3)
-r_reg <- gamma_bridge(x_reg, a = 2, method = "ExtBridge")
+r_reg <- gamma_resampling(x_reg, theta = c(a = 2, b = 3), method = "ExtBridge")
 all.equal(r_reg[[1]]$X, x_reg[, "X1"])
-all.equal(gamma_bridge(x_reg, a = 2, method = "Bridge")[[1]]$X, x_reg[, "X1"])
+all.equal(gamma_resampling(x_reg, theta = c(a = 2, b = 3), method = "Bridge")[[1]]$X, x_reg[, "X1"])
 attr(r_reg, "teq")
 ```
 
@@ -156,17 +156,17 @@ plan <- inspection_times("decreasing", n = 10:29, n_traj = 20, tmax = 40, digits
 ```{r, fig.height = 4.2}
 set.seed(2)
 x <- sim_gamma(plan, a = 2, b = 3)
-r <- gamma_bridge(x, a = 2, method = "ExtBridge")
+r <- gamma_resampling(x, theta = c(a = 2, b = 3), method = "ExtBridge")
 r
 summary(attr(r, "teq"))
-head(increments(r))
+head(attr(r, "dx")[[1]])
 plot_bridge(r, trajectory = 1:4)
 ```
 
 ## Wiener
 
 ```{r, fig.height = 4.2}
-r <- wiener_bridge(sim_wiener(plan, mu = 0.5, sigma = 1.5), sigma = 1.5, method = "ExtBridge")
+r <- wiener_resampling(sim_wiener(plan, mu = 0.5, sigma = 1.5), theta = c(mu = 0.5, sigma = 1.5), method = "ExtBridge")
 summary(attr(r, "teq"))
 plot_bridge(r, trajectory = 1:4)
 ```
@@ -174,7 +174,7 @@ plot_bridge(r, trajectory = 1:4)
 ## Inverse gaussien
 
 ```{r, fig.height = 4.2}
-r <- ig_bridge(sim_ig(plan, mu = 1, eta = 3), eta = 3, method = "ExtBridge")
+r <- ig_resampling(sim_ig(plan, mu = 1, eta = 3), theta = c(mu = 1, eta = 3), method = "ExtBridge")
 summary(attr(r, "teq"))
 plot_bridge(r, trajectory = 1:4)
 ```
@@ -183,7 +183,7 @@ plot_bridge(r, trajectory = 1:4)
 
 ```{r, fig.height = 4.2}
 x <- sim_vg(plan, theta = 0.5, sigma = 1.5, nu = 2)
-r <- vg_bridge(x, theta = 0.5, sigma = 1.5, nu = 2, method = "ExtBridge")
+r <- vg_resampling(x, theta = c(theta = 0.5, sigma = 1.5, nu = 2), method = "ExtBridge")
 summary(attr(r, "teq"))
 plot_bridge(r, trajectory = 1:4)
 ```
@@ -192,53 +192,53 @@ plot_bridge(r, trajectory = 1:4)
 
 ```{r, fig.height = 4.2}
 x <- sim_meixner(plan, a = 1, b = 0.3, d = 1.5, m = 0.2)
-r <- meixner_bridge(x, a = 1, d = 1.5, m = 0.2, method = "ExtBridge")
+r <- meixner_resampling(x, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2), method = "ExtBridge")
 summary(attr(r, "teq"))
 plot_bridge(r, trajectory = 1:4)
 ```
 
 \newpage
 
-# III - Nombre de décimales et arrondi
+# III - Nombre de décimales et troncature
 
-Avec `digits = NULL` (valeur par défaut), le nombre de décimales \(d\) est le plus petit, entre 0 et 6, tel que tous les instants soient des multiples de \(10^{-d}\). Ici les instants ont deux décimales et le pgcd des écarts, en centièmes, vaut 5 : le pas est 0.05.
+Avec `digits = NULL` (valeur par défaut), le nombre de décimales \(d\) est le plus petit entier, cherché entre 0 et 6, tel que tous les instants soient des multiples de \(10^{-d}\). Ici les instants ont deux décimales et le pgcd des écarts, en centièmes, vaut 5 : le pas est 0.05.
 
 ```{r}
-t2 <- c(0, 0.35, 1.2, 1.85, 2.5)
-x2 <- c(0, 0.3, 1.1, 1.4, 2.2)
-attr(gamma_bridge(x2, t2, a = 2, method = "ExtBridge"), "teq")
+x2 <- data.frame(t = c(0, 0.35, 1.2, 1.85, 2.5), X = c(0, 0.3, 1.1, 1.4, 2.2))
+attr(gamma_resampling(x2, theta = c(a = 2, b = 3), method = "ExtBridge"), "teq")
 ```
 
-L'argument `digits` impose le nombre de décimales : les instants sont alors arrondis, avec un avertissement, et les instants arrondis sont ceux de la grille.
+L'argument `digits` impose le nombre de décimales : les instants sont alors tronqués (partie entière inférieure de \(10^d t\)), avec un avertissement, et les instants tronqués sont ceux de la grille.
 
 ```{r, warning = TRUE}
-r <- gamma_bridge(x2, t2, a = 2, method = "ExtBridge", digits = 1)
+r <- gamma_resampling(x2, theta = c(a = 2, b = 3), method = "ExtBridge", digits = 1)
 attr(r, "teq")
 attr(r, "observed")[[1]]
 ```
 
-Des instants tirés au hasard ne sont des multiples d'aucune puissance \(10^{-d}\) avec \(d \le 6\) : ils sont arrondis à deux décimales, avec un avertissement.
+Des instants tirés au hasard ne sont des multiples d'aucune puissance \(10^{-d}\) avec \(d \le 6\) : la fonction s'arrête et demande `digits`. Avec `digits = 2`, les instants sont tronqués à deux décimales, avec un avertissement.
 
 ```{r, warning = TRUE}
 set.seed(3)
 t3 <- c(0, sort(runif(6, 0, 10)))
 x3 <- sim_wiener(t3, mu = 0.5, sigma = 1.5)
-r <- wiener_bridge(x3, sigma = 1.5, method = "ExtBridge")
+try(wiener_resampling(x3, theta = c(mu = 0.5, sigma = 1.5), method = "ExtBridge"))
+r <- wiener_resampling(x3, theta = c(mu = 0.5, sigma = 1.5), method = "ExtBridge", digits = 2)
 round(t3, 4)
 attr(r, "observed")[[1]]$t
 attr(r, "teq")
 ```
 
-Deux instants confondus après l'arrondi donnent une erreur : il faut alors augmenter `digits`.
+Deux instants confondus après la troncature donnent une erreur : il faut alors augmenter `digits`.
 
 ```{r}
-try(gamma_bridge(c(0, 0.5, 0.9), c(0, 1.01, 1.04), a = 2, method = "ExtBridge", digits = 1))
+try(gamma_resampling(data.frame(t = c(0, 1.01, 1.04), X = c(0, 0.5, 0.9)), theta = c(a = 2, b = 3), method = "ExtBridge", digits = 1))
 ```
 
 Enfin, une grille de plus de \(10^5\) pas donne un avertissement, car le rééchantillonnage devient long : par exemple des instants à trois décimales jusqu'à 400.
 
 ```{r, warning = TRUE}
-r <- gamma_bridge(c(0, 0.4, 150), c(0, 1.234, 400), a = 2, method = "ExtBridge")
+r <- gamma_resampling(data.frame(t = c(0, 1.234, 400), X = c(0, 0.4, 150)), theta = c(a = 2, b = 3), method = "ExtBridge")
 nrow(r[[1]])
 ```
 
@@ -246,31 +246,31 @@ nrow(r[[1]])
 
 # IV - Plusieurs trajectoires : pas commun (`common_step`)
 
-Sans autre précision, chaque trajectoire reçoit son propre pas \(h\) (le pgcd de ses propres écarts). Deux trajectoires de pas différents donnent des accroissements de lois différentes (\(X_{h_1}\) et \(X_{h_2}\)) : chacune est un échantillon i.i.d., mais on ne peut pas les réunir.
+Sans autre précision, chaque trajectoire reçoit son propre pas \(h\) (le pgcd de ses propres écarts). Deux trajectoires de pas différents donnent des accroissements de lois différentes (\(X_{h_1}\) et \(X_{h_2}\)) : chacune est un échantillon i.i.d., mais les deux pas sont différents.
 
 ```{r}
 liste <- list(data.frame(t = c(0, 1, 3, 6), X = c(0, 0.8, 2.1, 4.3)),
               data.frame(t = c(0, 0.5, 1.25, 2), X = c(0, 0.4, 1.1, 1.6)))
-r_propre <- gamma_bridge(liste, a = 2, method = "ExtBridge")
+r_propre <- gamma_resampling(liste, theta = c(a = 2, b = 3), method = "ExtBridge")
 attr(r_propre, "teq")
 sapply(r_propre, nrow) - 1
 ```
 
-Avec `common_step = TRUE`, \(h\) est le pgcd de tous les écarts de toutes les trajectoires, ici 0.25 : toutes les inspections restent sur leur grille, et tous les accroissements reconstruits ont la loi de \(X_{0.25}\). Ils forment un seul échantillon i.i.d. pour toutes les trajectoires.
+Avec `common_step = TRUE`, \(h\) est le pgcd de tous les écarts de toutes les trajectoires, ici 0.25 : toutes les inspections restent sur leur grille, et tous les accroissements reconstruits ont la loi de \(X_{0.25}\). Toutes les trajectoires ont le même pas.
 
 ```{r}
-r_commun <- gamma_bridge(liste, a = 2, method = "ExtBridge", common_step = TRUE)
+r_commun <- gamma_resampling(liste, theta = c(a = 2, b = 3), method = "ExtBridge", common_step = TRUE)
 attr(r_commun, "teq")
 sapply(r_commun, nrow) - 1
 all(c(0, 1, 3, 6) %in% r_commun[[1]]$t)
-head(increments(r_commun))
+head(attr(r_commun, "dx")[[1]])
 ```
 
 Avec les 20 trajectoires de la partie II (instants à une décimale), le pas commun vaut 0.1, comme le pas propre de chaque trajectoire :
 
 ```{r}
 set.seed(2)
-r_all <- gamma_bridge(sim_gamma(plan, a = 2, b = 3), a = 2, method = "ExtBridge", common_step = TRUE)
+r_all <- gamma_resampling(sim_gamma(plan, a = 2, b = 3), theta = c(a = 2, b = 3), method = "ExtBridge", common_step = TRUE)
 unique(attr(r_all, "teq"))
 ```
 
@@ -280,5 +280,5 @@ Les accroissements reconstruits sont calculés directement par le pont, et non p
 
 ```{r}
 x_small <- sim_gamma(t, a = 0.5, b = 3)
-min(increments(gamma_bridge(x_small, a = 0.5, method = "ExtBridge"))$dx)
+min(unlist(attr(gamma_resampling(x_small, theta = c(a = 0.5, b = 3), method = "ExtBridge"), "dx")))
 ```

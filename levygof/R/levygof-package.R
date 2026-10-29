@@ -24,7 +24,7 @@
 #'
 #' 1. **Estimate** the parameters from the observed trajectories by maximum
 #'    likelihood (package `levyfit`).
-#' 2. **Law of the bridge** of the process between two observations (package
+#' 2. **Distribution of the bridge** of the process between two observations (package
 #'    `levyBridge`).
 #' 3. **Simulate the bridge** with the estimated parameters.
 #' 4. **Pseudo-sample on a regular grid**: each trajectory is resampled on a
@@ -36,7 +36,7 @@
 #'    for all the trajectories together. The grid, the step and the drawing of
 #'    the bridge of each method are detailed in the section Resampling methods
 #'    of [gof.levy()].
-#' 5. **Choose a test** for an i.i.d. sample of the law of the increments,
+#' 5. **Choose a test** for an i.i.d. sample of the distribution of the increments,
 #'    see [tests_disponibles()].
 #' 6. **Apply the test** to the reconstructed increments.
 #'
@@ -63,8 +63,6 @@
 #' process. *Proceedings of the Institution of Mechanical Engineers, Part O:
 #' Journal of Risk and Reliability*, 226(6), 624-634.
 #' \doi{10.1177/1748006X12462522}
-#'
-#' Tito, A. R. and Paroissin, C. (in preparation).
 #'
 #' @examplesIf requireNamespace("DegradSim", quietly = TRUE)
 #' # 1. A gamma trajectory (a = 2, b = 3) with irregular inspections,

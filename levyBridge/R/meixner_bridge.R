@@ -1,204 +1,166 @@
-#' Meixner bridge: resampling on a regular grid
+#' Meixner bridge
 #'
-#' Resamples one or several trajectories of a Meixner process, observed at
-#' irregular inspection times, onto a regular time grid, by exact simulation
-#' of the Meixner bridge between the known values.
+#' Draws the value at time \eqn{t} of a Meixner process known at two times
+#' \eqn{t_A < t < t_B}, from the distribution of the Meixner bridge. This
+#' function is used by [meixner_resampling()] at each point of the grid.
 #'
 #' @section Model:
 #' The \eqn{Meixner(a, b, d, m)} distribution, \eqn{a > 0},
 #' \eqn{b \in ]-\pi, \pi[}, \eqn{d > 0}, \eqn{m} real, has density
 #' \deqn{f(x) = \frac{(2 \cos(b/2))^{2d}}{2 a \pi\, \Gamma(2d)}
-#'   \exp\Big(\frac{b (x - m)}{a}\Big) \Big|\Gamma\Big(d + i \frac{x - m}{a}\Big)\Big|^2.}
-#' The Meixner process has \eqn{X_0 = 0}, independent increments and
-#' \eqn{X_t - X_s \sim Meixner(a, b, d (t - s), m (t - s))}. Its trajectories
-#' are not monotone.
+#'   \exp\Big(\frac{b (x - m)}{a}\Big) \Big|\Gamma\Big(d + i \frac{x - m}{a}\Big)\Big|^2}
+#' (Schoutens and Teugels, 1998). The Meixner process has \eqn{X_0 = 0},
+#' independent increments and
+#' \eqn{X_t - X_s \sim Meixner(a, b, d (t - s), m (t - s))}. Its
+#' trajectories are not monotone. The vector of its parameters is
+#' \eqn{\Theta = (a, b, d, m)}.
 #'
-#' @section Law of the bridge:
-#' Let \eqn{t_A < t < t_B}, \eqn{h_\alpha(y) = |\Gamma(\alpha + i y)|^2},
+#' @section Distribution of the bridge:
+#' Write \eqn{h_\alpha(y) = |\Gamma(\alpha + i y)|^2} and
 #' \deqn{\alpha_1 = d (t - t_A), \qquad \alpha_2 = d (t_B - t), \qquad
 #'   z = \frac{(x_B - x_A) - m (t_B - t_A)}{a}.}
 #' Given \eqn{X_{t_A} = x_A} and \eqn{X_{t_B} = x_B},
-#' \eqn{X_t = x_A + m (t - t_A) + a Y}, where \eqn{Y} has the density
-#' \deqn{q(y) = \frac{h_{\alpha_1}(y)\, h_{\alpha_2}(z - y)}{2 \pi B(2 \alpha_1, 2 \alpha_2)\, h_{\alpha_1 + \alpha_2}(z)}.}
-#' The law of the bridge does not depend on \eqn{b}: only \eqn{a}, \eqn{d} and
-#' \eqn{m} are needed.
+#' \eqn{X_t = x_A + m (t - t_A) + a Y}, where the random variable \eqn{Y} has
+#' the density
+#' \deqn{q(y) = \frac{h_{\alpha_1}(y)\, h_{\alpha_2}(z - y)}{2 \pi B(2 \alpha_1, 2 \alpha_2)\, h_{\alpha_1 + \alpha_2}(z)},}
+#' which is the formula of the section Bridge of a Levy process of
+#' [levyBridge-package] with Meixner densities. This distribution does not
+#' depend on \eqn{b}.
 #'
 #' @section Simulation of the bridge:
-#' \eqn{Y} is drawn exactly by acceptance-rejection with a Cauchy envelope
-#' (algorithm 6 of Tito and Paroissin). For \eqn{\alpha > 0} and \eqn{y} real,
-#' \eqn{h_\alpha(y) \le \Gamma(\alpha)^2} and
+#' The random variable \eqn{Y} is drawn exactly by acceptance-rejection
+#' (Devroye, 1986, section II.3). For \eqn{\alpha > 0} and \eqn{y} real, the
+#' product formula
+#' \eqn{h_\alpha(y) = \Gamma(\alpha)^2 \prod_{n \ge 0} (1 + y^2 / (\alpha + n)^2)^{-1}}
+#' shows that \eqn{h_\alpha(y)} decreases with \eqn{|y|} and that
 #' \eqn{h_\alpha(y) \le \Gamma(\alpha)^2 \alpha^2 / (\alpha^2 + y^2)}. With
 #' \eqn{(y_0, s) = (0, \alpha_1)} if \eqn{\alpha_1 \le \alpha_2} and
 #' \eqn{(y_0, s) = (z, \alpha_2)} otherwise, this gives, for all \eqn{y},
 #' \deqn{h_{\alpha_1}(y)\, h_{\alpha_2}(z - y) \le \Gamma(\alpha_1)^2 \Gamma(\alpha_2)^2 \frac{s^2}{s^2 + (y - y_0)^2},}
-#' a multiple of the Cauchy density of centre \eqn{y_0} and scale \eqn{s}.
-#' The algorithm repeats, with \eqn{U} and \eqn{V} independent uniform
-#' variables on \eqn{(0, 1)}:
-#' 1. \eqn{Y = y_0 + s \tan(\pi (V - 1/2))}, a draw of the Cauchy law;
-#' 2. accept \eqn{Y} if
-#'    \deqn{U\, \Gamma(\alpha_1)^2 \Gamma(\alpha_2)^2 \frac{s^2}{s^2 + (Y - y_0)^2} \le h_{\alpha_1}(Y)\, h_{\alpha_2}(z - Y),}
-#'    otherwise draw again.
-#'
-#' The number of draws follows a geometric law with parameter
+#' a bound proportional to the Cauchy density with location \eqn{y_0} and
+#' scale \eqn{s}. The probability of acceptance with this bound is
 #' \deqn{P_{acc} = \frac{2 B(2 \alpha_1, 2 \alpha_2)\, h_{\alpha_1 + \alpha_2}(z)}{s\, \Gamma(\alpha_1)^2 \Gamma(\alpha_2)^2}.}
-#' \eqn{P_{acc}} decreases quickly when \eqn{|z|} increases (for
-#' \eqn{\alpha_1 = \alpha_2 = 1}: 1/3 if \eqn{z = 0}, 0.04 if \eqn{z = 2},
-#' \eqn{5 \cdot 10^{-4}} if \eqn{z = 4}): an increment far from its mean
-#' \eqn{m (t_B - t_A)} can need many draws, as well as large values of
-#' \eqn{\alpha_1} and \eqn{\alpha_2} (down to \eqn{P_{acc} \approx 10^{-8}}
-#' for parameters estimated on ordinary trajectories).
-#'
-#' Since \eqn{P_{acc}} is known exactly, the algorithm is chosen before
-#' drawing: the Cauchy envelope when \eqn{P_{acc} \ge 0.05}, otherwise an
-#' envelope constant on cells of width 0.1 covering the region between
-#' \eqn{0} and \eqn{z} (refined near the peaks at 0 and \eqn{z} when
-#' \eqn{\alpha} is small), with Cauchy tails outside; it is valid because
-#' \eqn{h_\alpha(y)} decreases with \eqn{|y|}, and its acceptance rate stays
-#' high for all the parameters (about 0.6 ms per draw in the cases above).
-#' The choice depends only on \eqn{(\alpha_1, \alpha_2, z)}, not on the
-#' draws: \eqn{Y} keeps exactly the law \eqn{q}. The function
-#' \eqn{\log h_\alpha} is computed with [gsl::lngamma_complex()].
-#'
-#' @inheritSection gamma_bridge Resampling algorithm (method "Bridge")
-#' @inheritSection gamma_bridge Method "ExtBridge"
-#' @inheritSection gamma_bridge Method "MultiBridge"
+#' When this probability is small, a tighter bound is used, which depends only
+#' on \eqn{\alpha_1}, \eqn{\alpha_2} and \eqn{z}: the draw stays exact. The
+#' function \eqn{\log h_\alpha} is computed with [gsl::lngamma_complex()].
 #'
 #' @inheritParams gamma_bridge
-#' @param a Scale parameter, \eqn{a > 0}.
-#' @param b Skewness parameter, \eqn{b \in ]-\pi, \pi[};
-#'   used only by the option 2 of the method "MultiBridge", to extend the
-#'   trajectories.
-#' @param d Shape parameter per unit of time, \eqn{d > 0}.
-#' @param m Location parameter per unit of time, real.
+#' @param theta Vector \eqn{\Theta} of the parameters of the process, a named
+#'   numeric vector `c(a = , b = , d = , m = )` (scale, skewness, shape and
+#'   location per unit of time), for instance the estimate returned by
+#'   `meixner_mle()` of the package `levyfit`. The bridge uses only `a`, `d`
+#'   and `m`.
 #'
 #' @inherit gamma_bridge return
 #'
 #' @references
-#' Grall-Maës, E. (2012). Use of the Kolmogorov-Smirnov test for gamma
-#' process. *Proceedings of the Institution of Mechanical Engineers, Part O:
-#' Journal of Risk and Reliability*, 226(6), 624-634.
-#' \doi{10.1177/1748006X12462522}
+#' Devroye, L. (1986). *Non-Uniform Random Variate Generation*. Springer.
 #'
 #' Schoutens, W. and Teugels, J. L. (1998). Lévy processes, polynomials and
 #' martingales. *Communications in Statistics. Stochastic Models*, 14(1-2),
 #' 335-349.
 #'
-#' Devroye, L. (1986). *Non-Uniform Random Variate Generation*. Springer.
+#' @seealso [meixner_resampling()] to resample trajectories on a regular grid;
+#'   [gamma_bridge()], [wiener_bridge()], [ig_bridge()], [vg_bridge()].
 #'
-#' Tito, A. R. and Paroissin, C. (in preparation).
+#' @examples
+#' # 1. One draw of X_2, given X_1 = 3 and X_4 = 6 (a = 1, b = 0.3, d = 1.5, m = 0.2)
+#' set.seed(1)
+#' meixner_bridge(t_A = 1, x_A = 3, t_B = 4, x_B = 6, t = 2,
+#'                theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2))
 #'
-#' @seealso
-#' * [increments()]: the reconstructed increments;
-#' * [plot_bridge()]: observed and resampled values;
-#' * [gamma_bridge()]: bridge of the gamma process;
-#' * [wiener_bridge()]: bridge of the Wiener process;
-#' * [ig_bridge()]: bridge of the inverse Gaussian process;
-#' * [vg_bridge()]: bridge of the variance-gamma process.
+#' # 2. Many draws: distribution of X_2 given the two levels
+#' y <- meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2), n = 5000)
+#' hist(y, breaks = 50, freq = FALSE)
+#'
+#' # The skewness b does not change the bridge
+#' set.seed(2); y1 <- meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2), n = 5)
+#' set.seed(2); y2 <- meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = -2, d = 1.5, m = 0.2), n = 5)
+#' identical(y1, y2)
+#' @examplesIf requireNamespace("levyfit", quietly = TRUE)
+#' # 3. Parameters estimated with levyfit on simulated trajectories
+#' set.seed(1)
+#' plan <- DegradSim::inspection_times("decreasing", n = 20, n_traj = 10, tmax = 40)
+#' x <- DegradSim::sim_meixner(plan, a = 1, b = 0.3, d = 1.5, m = 0.2)
+#' est <- levyfit::meixner_mle(x)
+#' est
+#' meixner_bridge(0, 0, 2, 1, 1, theta = est, n = 3)
+#' @export
+meixner_bridge <- function(t_A, x_A, t_B, x_B, t, theta, n = 1) {
+  p <- check_meixner(theta)
+  bridge_draws(t_A, x_A, t_B, x_B, t, n, meixner_draw(p), "Meixner")
+}
+
+#' Meixner process: resampling on a regular grid
+#'
+#' Resamples one or several trajectories of a Meixner process onto a regular
+#' time grid: each grid point that is not an inspection time is drawn with
+#' [meixner_bridge()] between the known levels around it. The grids and the
+#' resampling algorithm are described in [levyBridge-package].
+#'
+#' @inheritParams gamma_resampling
+#' @param theta Vector \eqn{\Theta} of the parameters of the process, a named
+#'   numeric vector `c(a = , b = , d = , m = )`, for instance the estimate
+#'   returned by `meixner_mle()` of the package `levyfit`. The bridge uses
+#'   only `a`, `d` and `m`; `b` is used by the option 2 of the method
+#'   `"MultiBridge"`, to extend the trajectories.
+#'
+#' @inherit gamma_resampling return
+#'
+#' @seealso [meixner_bridge()] for the distribution of the bridge,
+#'   [levyBridge-package] for the grids and the algorithm, [plot_bridge()].
 #'
 #' @examples
 #' # 1. One trajectory observed at 11 irregular times (a = 1, b = 0.3, d = 1.5, m = 0.2)
 #' t <- c(0, 1.2, 2, 3.8, 5.5, 7.1, 10.4, 12.9, 15.3, 18.7, 22.5)
-#' x <- c(0, 0.9, 0.4, 2.8, 3.1, 5.6, 7.2, 6.5, 9.8, 11.3, 12.1)
 #' set.seed(1)
-#' r <- meixner_bridge(x, t, a = 1, d = 1.5, m = 0.2)
+#' x <- DegradSim::sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2)
+#' r <- meixner_resampling(x, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2))
 #' r
-#'
-#' # The resampled trajectory, on the regular grid 0, 2.25, 4.5, ..., 22.5
 #' r[[1]]
-#'
-#' # Time step of the grid: t_N / N = 22.5 / 10
-#' attr(r, "teq")
-#'
-#' # 2. Reconstructed increments, the input of the goodness-of-fit tests
-#' increments(r)
-#'
-#' # 3. Observed and resampled values
 #' plot_bridge(r)
 #'
-#' # 4. Grid points equal to inspection times keep the observed values:
-#' #    here the grid is 0, 2, 4, 6, 8, 10 and 2 and 6 are inspection times
-#' t2 <- c(0, 2, 3, 6, 7, 10)
-#' x2 <- c(0, 1.4, 0.9, 3.1, 2.6, 4.8)
-#' meixner_bridge(x2, t2, a = 1, d = 1.5, m = 0.2)[[1]]
-#'
-#' # 5. One trajectory given as a data frame (times, then levels)
-#' meixner_bridge(data.frame(t = t2, X = x2), a = 1, d = 1.5, m = 0.2)
-#'
-#' # 6. Several trajectories, each with its own inspection times:
-#' #    one regular grid and one time step per trajectory
-#' liste <- list(data.frame(t = c(0, 1, 3, 6), X = c(0, 0.4, 2.3, 1.9)),
-#'               data.frame(t = c(0, 2, 4, 5, 9), X = c(0, 1.6, 0.8, 3.1, 4.2)))
-#' r2 <- meixner_bridge(liste, a = 1, d = 1.5, m = 0.2)
-#' r2
+#' # 2. Method "ExtBridge": the grid 0, 0.1, ..., 22.5 contains all the times
+#' r2 <- meixner_resampling(x, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2), method = "ExtBridge")
 #' attr(r2, "teq")
-#' increments(r2)
-#' plot_bridge(r2, trajectory = 1:2)
+#' plot_bridge(r2)
 #'
-#' # 7. The bridge values are random: set.seed() makes them reproducible
-#' set.seed(2); y1 <- meixner_bridge(x, t, a = 1, d = 1.5, m = 0.2)[[1]]$X
-#' set.seed(2); y2 <- meixner_bridge(x, t, a = 1, d = 1.5, m = 0.2)[[1]]$X
-#' identical(y1, y2)
-#'
-#' # 8. Method "ExtBridge": the times have 1 decimal place, the grid
-#' #    0, 0.1, ..., 22.5 contains all of them
-#' r3 <- meixner_bridge(x, t, a = 1, d = 1.5, m = 0.2, method = "ExtBridge")
+#' # 3. Three trajectories with their own inspection times, one common step
+#' plan <- DegradSim::inspection_times("decreasing", n = 10, n_traj = 3,
+#'                                     tmax = c(20, 30, 40), digits = 1)
+#' xs <- DegradSim::sim_meixner(plan, a = 1, b = 0.3, d = 1.5, m = 0.2)
+#' r3 <- meixner_resampling(xs, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2), method = "MultiBridge")
 #' attr(r3, "teq")
-#' all(t %in% r3[[1]]$t)
-#' plot_bridge(r3)
-#'
-#' # Error: the first time must be 0
-#' try(meixner_bridge(x, t + 1, a = 1, d = 1.5, m = 0.2))
-#' @examplesIf requireNamespace("DegradSim", quietly = TRUE)
-#' # Method "MultiBridge": several trajectories with their own times on one common grid,
-#' # so that all the reconstructed increments have the same law
-#' liste4 <- list(data.frame(t = c(0, 3, 8), X = c(0, 1.5, 4.2)),
-#'                data.frame(t = c(0, 2, 5, 9, 12), X = c(0, 0.9, 2.8, 4.1, 6.5)),
-#'                data.frame(t = c(0, 4, 7, 11, 15), X = c(0, 2.2, 3.1, 5.6, 7.4)))
-#' r4 <- meixner_bridge(liste4, a = 1, d = 1.5, m = 0.2, method = "MultiBridge")
-#' attr(r4, "teq")
-#' sapply(r4, nrow)
-#'
-#' # 9. Ten trajectories simulated with DegradSim, inspected more and more often
-#' plan <- DegradSim::inspection_times("decreasing", n = 20, n_traj = 10, tmax = 40)
-#' sims <- DegradSim::sim_meixner(plan, a = 1, b = 0.3, d = 1.5, m = 0.2)
-#'
-#' # With the true parameters (b is not needed by the bridge)
-#' r <- meixner_bridge(sims, a = 1, d = 1.5, m = 0.2)
-#' r
-#' plot_bridge(r, trajectory = 1:4)
-#'
-#' # Reconstructed increments of all the trajectories
-#' d <- increments(r)
-#' head(d)
-#' # Under the model, the increments have mean (m + a d tan(b/2)) teq
-#' # and variance a^2 d teq / (2 cos(b/2)^2)
-#' c(mean(d$dx), (0.2 + 1.5 * tan(0.15)) * d$teq[1])
-#' c(var(d$dx), 1.5 * d$teq[1] / (2 * cos(0.15)^2))
+#' plot_bridge(r3, trajectory = 1:3)
 #' @export
-meixner_bridge <- function(x, t = NULL, a, d, m, method = "Bridge", digits = NULL, common_step = FALSE, option = 1,
-                           b = NULL) {
-  check_par(a = a, d = d)
-  check_par(m = m, positive = FALSE)
-  sim <- NULL
-  if (!is.null(b)) {
-    check_par(b = b, positive = FALSE)
-    if (abs(b) >= pi) stop("b must be in (-pi, pi)")
-    gen <- new.env()
-    sim <- function(s) {
-      key <- format(s, digits = 15)
-      if (is.null(gen[[key]])) {
-        gen[[key]] <- Runuran::pinvd.new(Runuran::udmeixner(alpha = a, beta = b, delta = d * s, mu = m * s))
-      }
-      Runuran::ur(gen[[key]], 1)
+meixner_resampling <- function(x, theta, method = "Bridge", digits = NULL, common_step = FALSE, option = 1) {
+  p <- check_meixner(theta)
+  gen <- new.env()
+  sim <- function(s) {
+    key <- format(s, digits = 15)
+    if (is.null(gen[[key]])) {
+      gen[[key]] <- Runuran::pinvd.new(Runuran::udmeixner(alpha = p[["a"]], beta = p[["b"]], delta = p[["d"]] * s,
+                                                          mu = p[["m"]] * s))
     }
+    Runuran::ur(gen[[key]], 1)
   }
-  draw <- function(t_inf, delta, t, t_sup) {
-    z <- (delta - m * (t_sup - t_inf)) / a
-    y <- rmeixner_bridge_y(d * (t - t_inf), d * (t_sup - t), z)
-    c(m * (t - t_inf) + a * y, m * (t_sup - t) + a * (z - y))
+  bridge_paths(x, method, meixner_draw(p), "Meixner", p, digits = digits, common_step = common_step,
+               option = option, sim = sim)
+}
+
+check_meixner <- function(theta) {
+  p <- check_theta(theta, c("a", "b", "d", "m"), real = c("b", "m"))
+  if (abs(p[["b"]]) >= pi) stop("b must be in (-pi, pi)", call. = FALSE)
+  p
+}
+
+# Pont de Meixner : X_t - x_A = m (t - t_A) + a Y, Y tiré exactement par rejet
+meixner_draw <- function(p) {
+  function(t_inf, delta, t, t_sup) {
+    z <- (delta - p[["m"]] * (t_sup - t_inf)) / p[["a"]]
+    y <- rmeixner_bridge_y(p[["d"]] * (t - t_inf), p[["d"]] * (t_sup - t), z)
+    c(p[["m"]] * (t - t_inf) + p[["a"]] * y, p[["m"]] * (t_sup - t) + p[["a"]] * (z - y))
   }
-  bridge_paths(x, t, method, draw, "Meixner", c(a = unname(a), d = unname(d), m = unname(m)), digits = digits,
-               common_step = common_step, option = option, sim = sim)
 }
 
 lh <- function(alpha, y) {

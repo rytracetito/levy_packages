@@ -39,7 +39,7 @@
 #' 1. draw \eqn{\Delta Z_i \sim IG(\delta \Delta t_i / \gamma, (\delta \Delta t_i)^2)}
 #'    (mean, shape) by the method of Michael, Schucany and Haas (1976), as in
 #'    [sim_ig()];
-#' 2. \eqn{\Delta X_i = \mu \Delta t_i + \beta \Delta Z_i + \sqrt{\Delta Z_i}\, \xi_i},
+#' 2. compute \eqn{\Delta X_i = \mu \Delta t_i + \beta \Delta Z_i + \sqrt{\Delta Z_i}\, \xi_i},
 #'    with \eqn{\xi_i} independent \eqn{\mathcal{N}(0, 1)}.
 #'
 #' Conditionally on \eqn{\Delta Z_i}, the increment is

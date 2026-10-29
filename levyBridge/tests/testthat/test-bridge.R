@@ -1,0 +1,50 @@
+test_that("the bridge functions return n draws between the right bounds", {
+  set.seed(1)
+  y <- gamma_bridge(1, 3, 4, 6, 2, theta = c(a = 2, b = 3), n = 100)
+  expect_length(y, 100)
+  expect_true(all(y >= 3 & y <= 6))
+  y <- ig_bridge(1, 3, 4, 6, 2, theta = c(mu = 1, eta = 3), n = 100)
+  expect_true(all(y >= 3 & y <= 6))
+  expect_length(wiener_bridge(1, 3, 4, 6, 2, theta = c(mu = 0.5, sigma = 1.5)), 1)
+  expect_length(vg_bridge(1, 3, 4, 6, 2, theta = c(theta = 0.5, sigma = 1.5, nu = 2), n = 3), 3)
+  expect_length(meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2), n = 3), 3)
+})
+
+test_that("the bridge functions follow the distribution of the bridge", {
+  set.seed(2)
+  y <- gamma_bridge(1, 3, 4, 6, 2, theta = c(a = 2, b = 3), n = 3000)
+  expect_gt(ks.test((y - 3) / 3, "pbeta", 2, 4)$p.value, 0.001)
+  y <- wiener_bridge(1, 3, 4, 6, 2, theta = c(mu = 0.5, sigma = 1.5), n = 3000)
+  expect_gt(ks.test(y, "pnorm", 4, 1.5 * sqrt(2 / 3))$p.value, 0.001)
+})
+
+test_that("the unused parameters do not change the bridge", {
+  set.seed(3); y1 <- gamma_bridge(1, 3, 4, 6, 2, theta = c(a = 2, b = 3), n = 5)
+  set.seed(3); y2 <- gamma_bridge(1, 3, 4, 6, 2, theta = c(b = 50, a = 2), n = 5)
+  expect_identical(y1, y2)
+  set.seed(4); y1 <- meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2), n = 5)
+  set.seed(4); y2 <- meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = -2, d = 1.5, m = 0.2), n = 5)
+  expect_identical(y1, y2)
+})
+
+test_that("equal levels give a constant bridge, a decrease is refused for increasing processes", {
+  expect_equal(gamma_bridge(0, 1, 2, 1, 0.5, theta = c(a = 2, b = 3), n = 3), rep(1, 3))
+  expect_equal(ig_bridge(0, 1, 2, 1, 0.5, theta = c(mu = 1, eta = 3)), 1)
+  expect_error(gamma_bridge(0, 2, 2, 1, 0.5, theta = c(a = 2, b = 3)), "increasing")
+  expect_error(ig_bridge(0, 2, 2, 1, 0.5, theta = c(mu = 1, eta = 3)), "increasing")
+  expect_length(wiener_bridge(0, 2, 2, 1, 0.5, theta = c(mu = 0.5, sigma = 1)), 1)
+})
+
+test_that("invalid times, n and theta are refused with a clear message", {
+  th <- c(a = 2, b = 3)
+  expect_error(gamma_bridge(1, 3, 4, 6, 5, theta = th), "t_A < t < t_B")
+  expect_error(gamma_bridge(1, 3, 4, 6, 1, theta = th), "t_A < t < t_B")
+  expect_error(gamma_bridge(c(1, 2), 3, 4, 6, 2, theta = th), "single finite number")
+  expect_error(gamma_bridge(1, 3, 4, 6, 2, theta = th, n = 0), "positive integer")
+  expect_error(gamma_bridge(1, 3, 4, 6, 2, theta = th, n = 1.5), "positive integer")
+  expect_error(gamma_bridge(1, 3, 4, 6, 2, theta = c(a = 2)), "must contain the parameter\\(s\\) b")
+  expect_error(gamma_bridge(1, 3, 4, 6, 2, theta = c(2, 3)), "named numeric vector")
+  expect_error(gamma_bridge(1, 3, 4, 6, 2, theta = c(a = -2, b = 3)), "a must be positive")
+  expect_error(meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = 4, d = 1.5, m = 0.2)), "b must be in")
+  expect_silent(vg_bridge(1, 3, 4, 6, 2, theta = c(theta = -0.5, sigma = 1.5, nu = 2)))
+})

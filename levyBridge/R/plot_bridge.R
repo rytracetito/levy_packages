@@ -2,14 +2,13 @@
 #'
 #' Draws, for one or several trajectories, the observed values at the
 #' inspection times and the values resampled on the regular grid by a
-#' `_bridge` function, with `ggplot2`. The plot shows how the bridge fills the
-#' gaps between the inspections.
+#' resampling function, with `ggplot2`.
 #'
-#' @param x Result of a bridge function of the package, for instance
-#'   [gamma_bridge()].
-#' @param trajectory Numbers of the trajectories to plot, for instance `1` or
-#'   `1:3` (default: the first one). With several trajectories, one panel is
-#'   drawn per trajectory.
+#' @param x An object of class `"levybridge"`, returned by a resampling
+#'   function of the package, for instance [gamma_resampling()].
+#' @param trajectory Indices of the trajectories to plot in `x`, for instance
+#'   `1` or `1:3` (default: the first one). With several trajectories, one
+#'   panel is drawn per trajectory.
 #' @param title Title of the plot, a character string; by default the name of
 #'   the bridge, for instance `"gamma bridge"`.
 #'
@@ -17,15 +16,15 @@
 #'   modified with the usual `ggplot2` functions, added with `+`: for instance
 #'   `+ ggplot2::labs(x = "Time (hours)")`.
 #'
-#' @seealso [increments()]
+#' @seealso [levyBridge-package]
 #'
 #' @examples
 #' t <- c(0, 1.2, 2, 3.8, 5.5, 7.1, 10.4, 12.9, 15.3, 18.7, 22.5)
 #' set.seed(1)
-#' x <- c(0, cumsum(rgamma(10, shape = 2 * diff(t), rate = 3)))
-#' r <- gamma_bridge(x, t, a = 2)
+#' x <- DegradSim::sim_gamma(t, a = 2, b = 3)
+#' r <- gamma_resampling(x, theta = c(a = 2, b = 3))
 #'
-#' # Observed values (red) and resampled values on the regular grid (blue)
+#' # Observed levels (red) and resampled levels on the regular grid (blue)
 #' plot_bridge(r)
 #'
 #' # Custom title and axis labels
@@ -33,12 +32,13 @@
 #'   ggplot2::labs(x = "Time (hours)", y = "Degradation (%)")
 #'
 #' # Several trajectories: one panel per trajectory
-#' liste <- list(data.frame(t = c(0, 1, 3, 6), X = c(0, 0.8, 2.1, 4.3)),
-#'               data.frame(t = c(0, 2, 4, 5, 9), X = c(0, 1.2, 2.9, 3.1, 6.2)))
-#' plot_bridge(gamma_bridge(liste, a = 2), trajectory = 1:2)
+#' plan <- DegradSim::inspection_times("decreasing", n = 10, n_traj = 3,
+#'                                     tmax = c(20, 30, 40), digits = 1)
+#' xs <- DegradSim::sim_gamma(plan, a = 2, b = 3)
+#' plot_bridge(gamma_resampling(xs, theta = c(a = 2, b = 3)), trajectory = 1:3)
 #' @export
 plot_bridge <- function(x, trajectory = 1, title = NULL) {
-  if (!inherits(x, "levybridge")) stop("x must be the result of a _bridge function")
+  if (!inherits(x, "levybridge")) stop("x must be the result of a _resampling function")
   if (!all(trajectory %in% seq_along(x))) stop("trajectory must be between 1 and ", length(x))
   if (is.null(title)) title <- paste(attr(x, "model"), "bridge")
   obs <- attr(x, "observed")

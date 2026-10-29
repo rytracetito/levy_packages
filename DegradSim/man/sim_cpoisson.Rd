@@ -73,7 +73,7 @@ then cumulated:
 \item draw the numbers of shocks \eqn{N_i \sim Poisson(\lambda \Delta t_i)}
 with \code{\link[stats:Poisson]{stats::rpois()}};
 \item draw \eqn{N_1 + \dots + N_n} jumps with \code{rjump};
-\item \eqn{\Delta X_i} is the sum of the \eqn{N_i} jumps of the interval
+\item compute the increment \eqn{\Delta X_i} as the sum of the \eqn{N_i} jumps of the interval
 \eqn{]t_{i-1}, t_i]} (0 if \eqn{N_i = 0}).
 }
 }

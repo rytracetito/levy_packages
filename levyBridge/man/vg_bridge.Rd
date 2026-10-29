@@ -2,335 +2,101 @@
 % Please edit documentation in R/vg_bridge.R
 \name{vg_bridge}
 \alias{vg_bridge}
-\title{Variance-gamma bridge: resampling on a regular grid}
+\title{Variance-gamma bridge}
 \usage{
-vg_bridge(
-  x,
-  t = NULL,
-  theta,
-  sigma,
-  nu,
-  method = "Bridge",
-  digits = NULL,
-  common_step = FALSE,
-  option = 1
-)
+vg_bridge(t_A, x_A, t_B, x_B, t, theta, n = 1)
 }
 \arguments{
-\item{x}{Degradation levels of one trajectory; or a list of data frames,
-one per trajectory, whose first column contains the inspection times and
-second column the degradation levels (for instance the result of a
-\code{DegradSim} simulation function).}
+\item{t_A, x_A}{Time and level of the known point on the left.}
 
-\item{t}{Inspection times of the trajectory, starting at 0 and strictly
-increasing. Not used when \code{x} is a list.}
+\item{t_B, x_B}{Time and level of the known point on the right,
+\eqn{t_B > t_A}.}
 
-\item{theta}{Drift of the subordinated Brownian motion, real.}
+\item{t}{Time of the draw, \eqn{t_A < t < t_B}.}
 
-\item{sigma}{Volatility of the subordinated Brownian motion,
-\eqn{\sigma > 0}.}
+\item{theta}{Vector \eqn{\Theta} of the parameters of the process, a named
+numeric vector \code{c(theta = , sigma = , nu = )} (drift, volatility of the
+subordinated Brownian motion and variance rate of the gamma process),
+for instance the estimate returned by \code{vg_mle()} of the package
+\code{levyfit}.}
 
-\item{nu}{Variance rate of the gamma clock, \eqn{\nu > 0}.}
-
-\item{method}{\code{"Bridge"} (default) for the algorithm of Grall-Maës (2012),
-with as many grid points as observations and one grid per trajectory;
-\code{"ExtBridge"} for its extension, whose grid contains all the inspection
-times (see the section Method "ExtBridge"); \code{"MultiBridge"} for several
-trajectories on one common grid (see the section Method "MultiBridge").}
-
-\item{digits}{Used only with \code{method = "ExtBridge"}: number of decimal
-places of the inspection times, which sets the time step of the grid.
-\code{NULL} (default) finds it automatically.}
-
-\item{common_step}{Used only with \code{method = "ExtBridge"} and several
-trajectories: \code{FALSE} (default) gives each trajectory its own time step
-\eqn{h}; \code{TRUE} gives all the trajectories the same time step, the
-largest one such that every inspection time of every trajectory is a grid
-point. With a common step, the reconstructed increments of all the
-trajectories have the same law under the model and can be tested
-together.}
-
-\item{option}{Used only with \code{method = "MultiBridge"}: \code{1} (default) to
-resample each trajectory up to its own last inspection, \code{2} to resample
-all the trajectories up to the last inspection time over all the
-trajectories, extending the shorter ones by increments of the process (see
-the section Method "MultiBridge").}
+\item{n}{Number of independent draws, a positive integer (default 1).}
 }
 \value{
-An object of class \code{"levybridge"}: a list with one data frame per
-trajectory, with columns \code{t} (regular grid) and \code{X} (resampled levels).
-Its attributes are \code{model}, \code{parameters}, \code{method}, \code{teq} (time step of
-the grid of each trajectory) and \code{observed} (the observed data, one data
-frame per trajectory; with the method "ExtBridge", the times are the
-rounded ones when a rounding was needed). Use \code{\link[=increments]{increments()}} for the reconstructed
-increments and \code{\link[=plot_bridge]{plot_bridge()}} to compare observed and resampled values.
+A numeric vector of \code{n} independent draws of \eqn{X_t} given
+\eqn{X_{t_A} = x_A} and \eqn{X_{t_B} = x_B}.
 }
 \description{
-Resamples one or several trajectories of a variance-gamma process,
-observed at irregular inspection times, onto a regular time grid, by
-exact simulation of the variance-gamma bridge between the known values.
+Draws the value at time \eqn{t} of a variance-gamma process known at two
+times \eqn{t_A < t < t_B}, from the distribution of the variance-gamma
+bridge. This function is used by \code{\link[=vg_resampling]{vg_resampling()}} at each point of the
+grid.
 }
 \section{Model}{
 
 The variance-gamma process with parameters \eqn{\theta}, \eqn{\sigma > 0}
-and \eqn{\nu > 0} is \eqn{X_s = \theta \gamma_s + \sigma W_{\gamma_s}}, where
-\eqn{\gamma} is a gamma process with \eqn{\gamma_s \sim \Gamma(s / \nu)}
-with scale \eqn{\nu} (mean \eqn{s}, variance \eqn{\nu s}) and \eqn{W} an
-independent standard Brownian motion. Its trajectories are not monotone.
+and \eqn{\nu > 0} is \eqn{X_s = \theta \gamma_s + \sigma W_{\gamma_s}}
+(Madan, Carr and Chang, 1998), where \eqn{\gamma} is a gamma process with
+\eqn{\gamma_s \sim \Gamma(s / \nu)} with scale \eqn{\nu} (mean \eqn{s},
+variance \eqn{\nu s}) and \eqn{W} an independent standard Brownian
+motion. Its trajectories are not monotone. The vector of its parameters is
+\eqn{\Theta = (\theta, \sigma, \nu)}: the drift \eqn{\theta} is one of the
+parameters, not the whole vector \eqn{\Theta}.
 }
 
-\section{Law of the bridge}{
+\section{Distribution of the bridge}{
 
-Let \eqn{t_A < t < t_B}, \eqn{\tau_1 = t - t_A}, \eqn{\tau_2 = t_B - t},
-\eqn{T = \tau_1 + \tau_2}, \eqn{\Delta = x_B - x_A},
-\deqn{p = \frac{T}{\nu} - \frac{1}{2}, \qquad \kappa^2 = \frac{\theta^2 + 2 \sigma^2 / \nu}{\sigma^4}.}
 Given \eqn{X_{t_A} = x_A} and \eqn{X_{t_B} = x_B},
-\deqn{X_t = x_A + Y \Delta + \sqrt{S\, Y (1 - Y)}\ \xi,}
-with three independent variables
-\eqn{S \sim \mathrm{GIG}(p, \kappa^2, \Delta^2)} (density proportional to
-\eqn{s^{p - 1} \exp(-(\kappa^2 s + \Delta^2 / s) / 2)}),
-\eqn{Y \sim \mathrm{Beta}(\tau_1 / \nu, \tau_2 / \nu)} and
-\eqn{\xi \sim \mathcal{N}(0, 1)}. \eqn{S / \sigma^2} is the increment of the clock
-\eqn{\gamma} over \eqn{[t_A, t_B]}, \eqn{Y} the fraction of it reached at
-\eqn{t}, and, given the clock, \eqn{X} is a Brownian bridge. The law of the
-bridge depends on \eqn{(\theta, \sigma, \nu)} only through \eqn{\nu} and
-\eqn{\kappa}. The GIG variable is drawn with \code{\link[GIGrvg:rgig]{GIGrvg::rgig()}}. The case
-\eqn{\Delta = 0} with \eqn{p \le 0}, which has probability zero, gives
-\eqn{S = 0}.
-}
-
-\section{Resampling algorithm (method "Bridge")}{
-
-This is the interpolation algorithm of Grall-Maës (2012), used for all the
-processes of the package. Let \eqn{0 = t_0 < t_1 < \dots < t_N} be the
-inspection times of a trajectory and \eqn{x_0, \dots, x_N} the observed
-levels. The regular grid is \eqn{t'_i = i\, \Delta t_{eq}},
-\eqn{i = 0, \dots, N}, with \eqn{\Delta t_{eq} = t_N / N}: it has as many
-points as observations and the same end points.
-\enumerate{
-\item \eqn{x'_0 = x_0} and \eqn{x'_N = x_N}.
-\item For \eqn{i = 1, \dots, N - 1}, in increasing order:
+\deqn{X_t = x_A + (x_B - x_A)\, Y + \sqrt{S\, Y (1 - Y)}\ \xi,}
+where the random variables \eqn{S}, \eqn{Y} and \eqn{\xi} are independent:
 \itemize{
-\item if \eqn{t'_i} is an inspection time, \eqn{x'_i} is the observed value;
-\item otherwise, \eqn{x'_i} is drawn from the bridge between the nearest
-known point on the left (an inspection or the grid point
-\eqn{t'_{i-1}} already drawn, whichever is closer) and the nearest
-inspection on the right.
-}
-}
-
-By the Markov property of the bridge, the vector
-\eqn{(x'_1, \dots, x'_{N-1})} follows exactly the conditional law of
-\eqn{(X_{t'_1}, \dots, X_{t'_{N-1}})} given the observations. Hence, if the
-data come from the model and the parameters are the true ones, the
-reconstructed increments \eqn{x'_i - x'_{i-1}} (see \code{\link[=increments]{increments()}}) are
-independent with the law of \eqn{X_{\Delta t_{eq}}}: they can be tested
-with an i.i.d. goodness-of-fit test. A grid point that equals an inspection
-time up to rounding errors (relative difference below \eqn{10^{-9}}) is
-set to that inspection time.
-
-\strong{Precision.} Each draw splits the increment \eqn{\Delta} of the current
-interval into a left part (up to the grid point) and a right part (up to
-the next inspection), both computed directly: here \eqn{\Delta\, Y} and
-\eqn{\Delta (1 - Y)}, with \eqn{Y = G_1 / (G_1 + G_2)},
-\eqn{G_1 \sim \Gamma(a \tau_1)}, \eqn{G_2 \sim \Gamma(a \tau_2)} drawn on
-the log scale. The reconstructed increments (\code{\link[=increments]{increments()}}) are these
-parts, not differences of levels: a very small increment keeps all its
-significant digits instead of being rounded to 0, even for very small
-shapes \eqn{a \tau}; only an increment below the smallest positive number
-(about \eqn{10^{-308}}), which needs extremely small shapes, is 0.
+\item \eqn{S \sim \mathrm{GIG}(p, \kappa^2, (x_B - x_A)^2)}, with density
+proportional to
+\eqn{s^{p - 1} \exp(-(\kappa^2 s + (x_B - x_A)^2 / s) / 2)},
+\eqn{p = (t_B - t_A) / \nu - 1/2} and
+\eqn{\kappa^2 = (\theta^2 + 2 \sigma^2 / \nu) / \sigma^4};
+\item \eqn{Y \sim \mathrm{Beta}((t - t_A) / \nu, (t_B - t) / \nu)};
+\item \eqn{\xi \sim \mathcal{N}(0, 1)}.
 }
 
-\section{Method "ExtBridge"}{
-
-Extension of the method of Grall-Maës whose regular grid contains all the
-inspection times (Tito and Paroissin). The inspection times are multiples of
-\eqn{10^{-d}}, where \eqn{d} is the number of decimal places (argument
-\code{digits}), and the time step is the largest one such that every inspection
-time is a grid point:
-\deqn{h = 10^{-d}\, \mathrm{gcd}\big(10^d t_1, \dots, 10^d t_N\big), \qquad
-  t'_k = k\, h, \quad k = 0, \dots, t_N / h.}
-The grid is then covered as in the method "Bridge": every inspection time
-keeps its observed value, and the other grid points are drawn from the
-bridge between the last known value on the left and the next inspection.
-The reconstructed increments are independent with the law of \eqn{X_h},
-and the pseudo-sample contains all the observations. The grid has
-\eqn{t_N / h \ge N} steps, with equality if and only if the inspection
-times are regular; then the method returns the observations themselves.
-
-With \code{digits = NULL} (default), \eqn{d} is the smallest number of decimal
-places, between 0 and 6, such that all the inspection times are multiples
-of \eqn{10^{-d}}. If there is none (for instance times drawn with
-\code{runif()}), the times are rounded to 2 decimal places, with a warning; give
-\code{digits} to choose another rounding. When \code{digits} is given and some times
-have more decimal places, they are rounded to \code{digits} decimal places, with
-a warning; two times equal after rounding give an error. A warning is also
-given when the grid has more than \eqn{10^5} steps, since the resampling
-then takes time. The grid and the time step are computed for each
-trajectory; with \code{common_step = TRUE}, \eqn{d} and \eqn{h} are computed
-from the inspection times of all the trajectories, so that all the grids
-have the same step.
-}
-
-\section{Method "MultiBridge"}{
-
-Version of the method "Bridge" for several trajectories, with \strong{one
-regular grid common to all the trajectories} (Tito and Paroissin). With
-the method "Bridge", each trajectory has its own time step
-\eqn{t_N / N}: the reconstructed increments of two trajectories then have
-different laws and cannot be tested together. With the method
-"MultiBridge", all the reconstructed increments have the law of \eqn{X_h}
-for the same \eqn{h}: they form a single i.i.d. sample under the model,
-and one goodness-of-fit test can be applied to all the trajectories
-together.
-
-\strong{Time step.} For \eqn{n} trajectories, the trajectory \eqn{i} being
-observed on \eqn{[0, t_{i, max}]} with \eqn{m_i} increments,
-\deqn{h = \frac{t_{1, max} + \dots + t_{n, max}}{m_1 + \dots + m_n},}
-the total observed duration divided by the total number of increments.
-The number of reconstructed increments is then about the number of
-observed increments, as with the method "Bridge"; for one trajectory,
-\eqn{h = t_N / N} is the step of the method "Bridge". The grid is
-\eqn{t'_k = k h}; as with the method "Bridge", it does not necessarily
-contain the inspection times (a grid point equal to an inspection time
-keeps the observed value).
-
-\strong{Option 1} (\code{option = 1}, default): each trajectory is resampled up to
-its own last inspection, on the grid points \eqn{k h \le t_{i, max}}. Each
-grid point is drawn from the bridge between the last known value on the
-left and the next inspection, exactly as with the method "Bridge". The end
-of the trajectory, between its last grid point and \eqn{t_{i, max}}, is not
-used. A long trajectory gives many reconstructed increments, a short one
-few (none when \eqn{t_{i, max} < h}, with a warning). Under the model, with
-the true parameters, all the reconstructed increments are independent with
-the law of \eqn{X_h}: the pooled sample is exactly i.i.d. This is the
-recommended option.
-
-\strong{Option 2} (\code{option = 2}): all the trajectories are resampled up to the
-last inspection time over all the trajectories, \eqn{\max_i t_{i, max}}, so
-that they all have the same number of grid points. Up to
-\eqn{t_{i, max}}, as in option 1; beyond, there is no observation left and
-the trajectory is extended by increments of the process drawn with the
-given parameters (not a bridge): the first one starts from the last
-observation \eqn{x_{i, N}}. This needs all the parameters of the process
-(for instance \eqn{b} for the gamma process, see the arguments). Under the
-model, with the true parameters, the pooled sample is also i.i.d. with the
-law of \eqn{X_h}; but the extended values do not come from the data: they
-follow the null model by construction and dilute the information of the
-observations, which lowers the power of a test, all the more as the
-trajectories have different durations. Use it only for trajectories of
-similar durations.
-
-\strong{When to use "MultiBridge".} For several trajectories observed at
-different times, when one test on all the trajectories together is
-wanted. With one trajectory, both options give the method "Bridge". The
-method "ExtBridge" with \code{common_step = TRUE} also gives a common step, with
-a grid that contains all the inspection times, but it can have many more
-grid points.
+The variable \eqn{S / \sigma^2} is the increment
+\eqn{\gamma_{t_B} - \gamma_{t_A}} of the gamma process given the
+observations, and \eqn{Y} is the fraction of this increment reached at
+time \eqn{t}, as in the gamma bridge; given \eqn{\gamma}, the Brownian
+motion \eqn{W} gives the Gaussian term. The bridge uses the three
+parameters. The GIG variable is drawn with \code{\link[GIGrvg:rgig]{GIGrvg::rgig()}} (Hörmann and
+Leydold, 2014).
 }
 
 \examples{
-# 1. One trajectory observed at 11 irregular times (theta = 0.5, sigma = 1.5, nu = 2)
-t <- c(0, 1.2, 2, 3.8, 5.5, 7.1, 10.4, 12.9, 15.3, 18.7, 22.5)
-x <- c(0, 0.9, 0.4, 2.8, 3.1, 5.6, 7.2, 6.5, 9.8, 11.3, 12.1)
+# 1. One draw of X_2, given X_1 = 3 and X_4 = 6 (theta = 0.5, sigma = 1.5, nu = 2)
 set.seed(1)
-r <- vg_bridge(x, t, theta = 0.5, sigma = 1.5, nu = 2)
-r
+vg_bridge(t_A = 1, x_A = 3, t_B = 4, x_B = 6, t = 2,
+          theta = c(theta = 0.5, sigma = 1.5, nu = 2))
 
-# The resampled trajectory, on the regular grid 0, 2.25, 4.5, ..., 22.5
-r[[1]]
-
-# Time step of the grid: t_N / N = 22.5 / 10
-attr(r, "teq")
-
-# 2. Reconstructed increments, the input of the goodness-of-fit tests
-increments(r)
-
-# 3. Observed and resampled values
-plot_bridge(r)
-
-# 4. Grid points equal to inspection times keep the observed values:
-#    here the grid is 0, 2, 4, 6, 8, 10 and 2 and 6 are inspection times
-t2 <- c(0, 2, 3, 6, 7, 10)
-x2 <- c(0, 1.4, 0.9, 3.1, 2.6, 4.8)
-vg_bridge(x2, t2, theta = 0.5, sigma = 1.5, nu = 2)[[1]]
-
-# 5. One trajectory given as a data frame (times, then levels)
-vg_bridge(data.frame(t = t2, X = x2), theta = 0.5, sigma = 1.5, nu = 2)
-
-# 6. Several trajectories, each with its own inspection times:
-#    one regular grid and one time step per trajectory
-liste <- list(data.frame(t = c(0, 1, 3, 6), X = c(0, 0.4, 2.3, 1.9)),
-              data.frame(t = c(0, 2, 4, 5, 9), X = c(0, 1.6, 0.8, 3.1, 4.2)))
-r2 <- vg_bridge(liste, theta = 0.5, sigma = 1.5, nu = 2)
-r2
-attr(r2, "teq")
-increments(r2)
-plot_bridge(r2, trajectory = 1:2)
-
-# 7. The bridge values are random: set.seed() makes them reproducible
-set.seed(2); y1 <- vg_bridge(x, t, theta = 0.5, sigma = 1.5, nu = 2)[[1]]$X
-set.seed(2); y2 <- vg_bridge(x, t, theta = 0.5, sigma = 1.5, nu = 2)[[1]]$X
-identical(y1, y2)
-
-# 8. Method "ExtBridge": the times have 1 decimal place, the grid
-#    0, 0.1, ..., 22.5 contains all of them
-r3 <- vg_bridge(x, t, theta = 0.5, sigma = 1.5, nu = 2, method = "ExtBridge")
-attr(r3, "teq")
-all(t \%in\% r3[[1]]$t)
-plot_bridge(r3)
-
-# Error: the first time must be 0
-try(vg_bridge(x, t + 1, theta = 0.5, sigma = 1.5, nu = 2))
-\dontshow{if (requireNamespace("DegradSim", quietly = TRUE) && requireNamespace("levyfit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
-# Method "MultiBridge": several trajectories with their own times on one common grid,
-# so that all the reconstructed increments have the same law
-liste4 <- list(data.frame(t = c(0, 3, 8), X = c(0, 1.5, 4.2)),
-               data.frame(t = c(0, 2, 5, 9, 12), X = c(0, 0.9, 2.8, 4.1, 6.5)),
-               data.frame(t = c(0, 4, 7, 11, 15), X = c(0, 2.2, 3.1, 5.6, 7.4)))
-r4 <- vg_bridge(liste4, theta = 0.5, sigma = 1.5, nu = 2, method = "MultiBridge")
-attr(r4, "teq")
-sapply(r4, nrow)
-
-# 9. Ten trajectories simulated with DegradSim, inspected more and more often
+# 2. Many draws: distribution of X_2 given the two levels
+y <- vg_bridge(1, 3, 4, 6, 2, theta = c(theta = 0.5, sigma = 1.5, nu = 2), n = 10000)
+hist(y, breaks = 50, freq = FALSE)
+\dontshow{if (requireNamespace("levyfit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+# 3. Parameters estimated with levyfit on simulated trajectories
+set.seed(1)
 plan <- DegradSim::inspection_times("decreasing", n = 20, n_traj = 10, tmax = 40)
-sims <- DegradSim::sim_vg(plan, theta = 0.5, sigma = 1.5, nu = 2)
-
-# Parameters estimated with levyfit
-# With the true parameters (they can be estimated with levyfit::vg_mle())
-r <- vg_bridge(sims, theta = 0.5, sigma = 1.5, nu = 2)
-r
-plot_bridge(r, trajectory = 1:4)
-
-# Reconstructed increments of all the trajectories
-d <- increments(r)
-head(d)
-# Under the model, the increments have mean theta * teq and
-# variance (sigma^2 + nu * theta^2) * teq
-c(mean(d$dx), 0.5 * d$teq[1], var(d$dx), (1.5^2 + 2 * 0.5^2) * d$teq[1])
+x <- DegradSim::sim_vg(plan, theta = 0.5, sigma = 1.5, nu = 2)
+est <- levyfit::vg_mle(x)
+est
+vg_bridge(0, 0, 2, 1, 1, theta = est, n = 3)
 \dontshow{\}) # examplesIf}
 }
 \references{
-Grall-Maës, E. (2012). Use of the Kolmogorov-Smirnov test for gamma
-process. \emph{Proceedings of the Institution of Mechanical Engineers, Part O:
-Journal of Risk and Reliability}, 226(6), 624-634.
-\doi{10.1177/1748006X12462522}
+Hörmann, W. and Leydold, J. (2014). Generating generalized inverse
+Gaussian random variates. \emph{Statistics and Computing}, 24, 547-557.
+\doi{10.1007/s11222-013-9387-3}
 
 Madan, D. B., Carr, P. P. and Chang, E. C. (1998). The variance gamma
 process and option pricing. \emph{European Finance Review}, 2(1), 79-105.
 \doi{10.1023/A:1009703431535}
-
-Hörmann, W. and Leydold, J. (2014). Generating generalized inverse
-Gaussian random variates. \emph{Statistics and Computing}, 24, 547-557.
-\doi{10.1007/s11222-013-9387-3}
 }
 \seealso{
-\itemize{
-\item \code{\link[=increments]{increments()}}: the reconstructed increments;
-\item \code{\link[=plot_bridge]{plot_bridge()}}: observed and resampled values;
-\item \code{\link[=gamma_bridge]{gamma_bridge()}}: bridge of the gamma process;
-\item \code{\link[=wiener_bridge]{wiener_bridge()}}: bridge of the Wiener process;
-\item \code{\link[=ig_bridge]{ig_bridge()}}: bridge of the inverse Gaussian process;
-\item \code{\link[=meixner_bridge]{meixner_bridge()}}: bridge of the Meixner process.
-}
+\code{\link[=vg_resampling]{vg_resampling()}} to resample trajectories on a regular grid;
+\code{\link[=gamma_bridge]{gamma_bridge()}}, \code{\link[=wiener_bridge]{wiener_bridge()}}, \code{\link[=ig_bridge]{ig_bridge()}}, \code{\link[=meixner_bridge]{meixner_bridge()}}.
 }

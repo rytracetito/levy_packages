@@ -4,26 +4,26 @@ h <- 2.25
 reconstruct <- function(rsim, bridge, N = 400) {
   as.vector(vapply(seq_len(N), function(k) {
     x <- c(0, cumsum(rsim(diff(plan))))
-    increments(bridge(x, plan))$dx
+    incr(bridge(x, plan))$dx
   }, numeric(length(plan) - 1)))
 }
 
 test_that("gamma bridge: increments follow Gamma(a teq, b)", {
   set.seed(1)
-  d <- reconstruct(function(dt) rgamma(length(dt), 2 * dt, 3), function(x, t) gamma_bridge(x, t, a = 2))
+  d <- reconstruct(function(dt) rgamma(length(dt), 2 * dt, 3), function(x, t) gamma_resampling(data.frame(t, x), theta = c(a = 2, b = 3)))
   expect_gt(ks.test(d, "pgamma", shape = 2 * h, rate = 3)$p.value, 0.001)
 })
 
 test_that("Brownian bridge: increments follow N(mu teq, sigma^2 teq)", {
   set.seed(2)
-  d <- reconstruct(function(dt) 0.5 * dt + 1.5 * sqrt(dt) * rnorm(length(dt)), function(x, t) wiener_bridge(x, t, sigma = 1.5))
+  d <- reconstruct(function(dt) 0.5 * dt + 1.5 * sqrt(dt) * rnorm(length(dt)), function(x, t) wiener_resampling(data.frame(t, x), theta = c(mu = 0.5, sigma = 1.5)))
   expect_gt(ks.test(d, "pnorm", mean = 0.5 * h, sd = 1.5 * sqrt(h))$p.value, 0.001)
 })
 
-test_that("inverse Gaussian bridge: one step and increments follow the exact laws", {
+test_that("inverse Gaussian bridge: one step and increments follow the exact distributions", {
   skip_if_not_installed("statmod")
   set.seed(3)
-  d <- reconstruct(function(dt) statmod::rinvgauss(length(dt), mean = dt, shape = 3 * dt^2), function(x, t) ig_bridge(x, t, eta = 3))
+  d <- reconstruct(function(dt) statmod::rinvgauss(length(dt), mean = dt, shape = 3 * dt^2), function(x, t) ig_resampling(data.frame(t, x), theta = c(mu = 1, eta = 3)))
   expect_gt(ks.test(d, statmod::pinvgauss, mean = h, shape = 3 * h^2)$p.value, 0.001)
 
   pbridge <- function(v, t1, t2, D, eta) {
@@ -32,14 +32,14 @@ test_that("inverse Gaussian bridge: one step and increments follow the exact law
     pnorm(sqrt(eta) * (T * v - t1 * D) / s) +
       (1 - 2 * t1 / T) * exp(2 * eta * t1 * t2 / D) * pnorm(sqrt(eta) * ((t1 - t2) * v - t1 * D) / s)
   }
-  v <- replicate(3000, ig_bridge(c(0, 1, 1.5), c(0, 2, 3), eta = 2)[[1]]$X[2])
+  v <- replicate(3000, ig_resampling(data.frame(c(0, 2, 3), c(0, 1, 1.5)), theta = c(mu = 1, eta = 2))[[1]]$X[2])
   expect_gt(ks.test(v, pbridge, t1 = 1.5, t2 = 0.5, D = 1, eta = 2)$p.value, 0.001)
 })
 
-test_that("variance-gamma bridge: increments follow the law of X_teq", {
+test_that("variance-gamma bridge: increments follow the distribution of X_teq", {
   set.seed(4)
   rvg <- function(dt) { g <- rgamma(length(dt), shape = dt / 2, scale = 2); 0.5 * g + 1.5 * sqrt(g) * rnorm(length(dt)) }
-  d <- reconstruct(rvg, function(x, t) vg_bridge(x, t, theta = 0.5, sigma = 1.5, nu = 2))
+  d <- reconstruct(rvg, function(x, t) vg_resampling(data.frame(t, x), theta = c(theta = 0.5, sigma = 1.5, nu = 2)))
   expect_gt(suppressWarnings(ks.test(d, rvg(rep(h, 2e5)))$p.value), 0.001)
 })
 
@@ -61,7 +61,7 @@ test_that("Meixner bridge: exact sampler and increments", {
   gens <- lapply(unique(diff(plan)), function(s) Runuran::pinvd.new(Runuran::udmeixner(1, 0.3, 1.5 * s, 0.2 * s)))
   names(gens) <- format(unique(diff(plan)))
   rmx <- function(dt) vapply(format(dt), function(k) Runuran::ur(gens[[k]], 1), 0)
-  d <- reconstruct(rmx, function(x, t) meixner_bridge(x, t, a = 1, d = 1.5, m = 0.2), N = 200)
+  d <- reconstruct(rmx, function(x, t) meixner_resampling(data.frame(t, x), theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2)), N = 200)
   g <- Runuran::pinvd.new(Runuran::udmeixner(1, 0.3, 1.5 * h, 0.2 * h))
   expect_gt(ks.test(d, function(q) Runuran::up(g, q))$p.value, 0.001)
 })

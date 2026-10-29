@@ -66,7 +66,7 @@
 #' \deqn{\ell(\theta) = \sum_{j=1}^{n} \ln f_{\Delta t_j}(\Delta x_j; \theta).}
 #' * **Closed form**: Wiener and inverse Gaussian. The MLE is explicit, with
 #'   \eqn{\hat\mu = S / T}.
-#' * **Root of one equation**: gamma. \eqn{\hat b = \hat a T / S} is explicit
+#' * **Root of one equation**: gamma. The estimator \eqn{\hat b = \hat a T / S} is explicit
 #'   and \eqn{\hat a} is the unique root of a decreasing function, found by
 #'   [stats::uniroot()] from the method of moments estimator; the result does
 #'   not depend on this starting point.

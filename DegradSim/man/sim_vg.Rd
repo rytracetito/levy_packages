@@ -26,7 +26,7 @@ degradation per unit of time.}
 \item{sigma}{Diffusion coefficient of the subordinated Brownian motion,
 \eqn{\sigma > 0} (standard deviation, not variance).}
 
-\item{nu}{Variance rate of the gamma clock, \eqn{\nu > 0}: the larger
+\item{nu}{Variance rate of the gamma process \eqn{G}, \eqn{\nu > 0}: the larger
 \eqn{\nu}, the larger the jumps; as \eqn{\nu \to 0} the process becomes a
 Wiener process.}
 
@@ -57,7 +57,7 @@ be a gamma process with
 \eqn{G_t - G_s \sim \Gamma((t - s) / \nu, \text{rate } 1 / \nu)}, so that
 \eqn{E[G_t] = t} and \eqn{Var(G_t) = \nu t}, and \eqn{B} an independent
 standard Brownian motion. The VG process is the Brownian motion with drift
-evaluated at the random clock \eqn{G}:
+evaluated at the random time \eqn{G_t} given by the gamma process \eqn{G}:
 \deqn{X_t = \theta G_t + \sigma B_{G_t}, \qquad t \ge 0.}
 It is a Levy process: \eqn{X_0 = 0}, its increments are independent and
 stationary, \eqn{E[X_t] = \theta t} and
@@ -74,17 +74,17 @@ two exact methods (argument \code{method}), which give the same distribution,
 then the increments are cumulated.
 
 \strong{Method 1, subordination} (\code{method = "subordination"}, default).
-Conditionally on the clock increment \eqn{\Delta G},
+Conditionally on the increment \eqn{\Delta G} of the gamma process,
 \eqn{X_t - X_s \sim \mathcal{N}(\theta \Delta G, \sigma^2 \Delta G)}:
 \enumerate{
 \item draw independently \eqn{\Delta G_i \sim \Gamma(\Delta t_i / \nu)} with
 scale \eqn{\nu};
-\item \eqn{\Delta X_i = \theta \Delta G_i + \sigma \sqrt{\Delta G_i}\, Z_i},
+\item compute \eqn{\Delta X_i = \theta \Delta G_i + \sigma \sqrt{\Delta G_i}\, Z_i},
 with \eqn{Z_i} independent \eqn{\mathcal{N}(0, 1)}.
 }
 
 This method follows the definition of the process and also gives the
-random clock \eqn{G}.
+gamma process \eqn{G}.
 
 \strong{Method 2, difference of two gamma processes} (\code{method = "difference"}).
 Let
@@ -102,7 +102,7 @@ which is the characteristic function of the VG increment (Madan et al.,
 \item Draw independently \eqn{\Delta G^+_i \sim \Gamma(\Delta t_i / \nu)} with
 scale \eqn{\nu \mu_+} and \eqn{\Delta G^-_i \sim \Gamma(\Delta t_i / \nu)}
 with scale \eqn{\nu \mu_-};
-\item \eqn{\Delta X_i = \Delta G^+_i - \Delta G^-_i}.
+\item compute \eqn{\Delta X_i = \Delta G^+_i - \Delta G^-_i}.
 }
 
 This method only uses gamma draws.

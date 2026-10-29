@@ -86,7 +86,7 @@ then the increments are cumulated:
 \item draw \eqn{\Delta Z_i \sim IG(\delta \Delta t_i / \gamma, (\delta \Delta t_i)^2)}
 (mean, shape) by the method of Michael, Schucany and Haas (1976), as in
 \code{\link[=sim_ig]{sim_ig()}};
-\item \eqn{\Delta X_i = \mu \Delta t_i + \beta \Delta Z_i + \sqrt{\Delta Z_i}\, \xi_i},
+\item compute \eqn{\Delta X_i = \mu \Delta t_i + \beta \Delta Z_i + \sqrt{\Delta Z_i}\, \xi_i},
 with \eqn{\xi_i} independent \eqn{\mathcal{N}(0, 1)}.
 }
 

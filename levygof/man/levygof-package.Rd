@@ -33,7 +33,7 @@ over a same time step are i.i.d. The test proceeds in six steps.
 \enumerate{
 \item \strong{Estimate} the parameters from the observed trajectories by maximum
 likelihood (package \code{levyfit}).
-\item \strong{Law of the bridge} of the process between two observations (package
+\item \strong{Distribution of the bridge} of the process between two observations (package
 \code{levyBridge}).
 \item \strong{Simulate the bridge} with the estimated parameters.
 \item \strong{Pseudo-sample on a regular grid}: each trajectory is resampled on a
@@ -45,7 +45,7 @@ trajectories, \code{"ExtBridge"} and \code{"MultiBridge"} give one i.i.d. sample
 for all the trajectories together. The grid, the step and the drawing of
 the bridge of each method are detailed in the section Resampling methods
 of \code{\link[=gof.levy]{gof.levy()}}.
-\item \strong{Choose a test} for an i.i.d. sample of the law of the increments,
+\item \strong{Choose a test} for an i.i.d. sample of the distribution of the increments,
 see \code{\link[=tests_disponibles]{tests_disponibles()}}.
 \item \strong{Apply the test} to the reconstructed increments.
 }
@@ -96,8 +96,6 @@ Grall-Maës, E. (2012). Use of the Kolmogorov-Smirnov test for gamma
 process. \emph{Proceedings of the Institution of Mechanical Engineers, Part O:
 Journal of Risk and Reliability}, 226(6), 624-634.
 \doi{10.1177/1748006X12462522}
-
-Tito, A. R. and Paroissin, C. (in preparation).
 }
 \seealso{
 Useful links:

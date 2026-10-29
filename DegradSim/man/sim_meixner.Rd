@@ -121,11 +121,11 @@ t7 <- inspection_times("regular", n = 50, tmax = 50)$time
 x <- sim_meixner(t7, a = 1, b = 0.3, d = 1.5, m = 0.2, n_traj = 20)
 dx <- traj_df(x, increments = TRUE)$dX
 dx <- dx[!is.na(dx)]
-law <- Runuran::udmeixner(alpha = 1, beta = 0.3, delta = 1.5, mu = 0.2)
+dist <- Runuran::udmeixner(alpha = 1, beta = 0.3, delta = 1.5, mu = 0.2)
 ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
   ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
                           bins = 30, boundary = 0, fill = "grey80", colour = "grey40") +
-  ggplot2::stat_function(fun = function(y) Runuran::ud(law, y), colour = "red") +
+  ggplot2::stat_function(fun = function(y) Runuran::ud(dist, y), colour = "red") +
   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the Meixner process")
 }
 \references{

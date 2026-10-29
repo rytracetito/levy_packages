@@ -1,16 +1,19 @@
-as_trajectories <- function(x, t) {
-  if (is.matrix(x)) x <- lapply(seq_len(ncol(x) - 1) + 1, function(k) data.frame(t = x[, 1], X = x[, k]))
-  if (is.data.frame(x)) x <- list(x)
-  if (is.list(x)) {
-    traj <- lapply(x, function(d) list(t = d[[1]], x = d[[2]]))
-  } else {
-    if (is.null(t)) stop("give the inspection times t, or a list of data frames")
-    traj <- list(list(t = t, x = x))
+as_trajectories <- function(x) {
+  if (is.matrix(x)) {
+    if (ncol(x) < 2) stop("the matrix x must have the times in column 1 and the levels in the next columns")
+    x <- lapply(seq_len(ncol(x) - 1) + 1, function(k) data.frame(t = x[, 1], X = x[, k]))
   }
+  if (is.data.frame(x)) x <- list(x)
+  if (!is.list(x) || length(x) == 0 || !all(vapply(x, is.data.frame, TRUE))) {
+    stop("x must be a data frame (times, levels), a list of such data frames, or a matrix (times, levels...)")
+  }
+  traj <- lapply(seq_along(x), function(k) {
+    if (ncol(x[[k]]) < 2) stop("trajectory ", k, ": the data frame must have the times in column 1 and the levels in column 2")
+    list(t = x[[k]][[1]], x = x[[k]][[2]])
+  })
   for (k in seq_along(traj)) {
     d <- traj[[k]]
     if (!is.numeric(d$t) || !is.numeric(d$x)) stop("trajectory ", k, ": times and levels must be numeric")
-    if (length(d$t) != length(d$x)) stop("trajectory ", k, ": t and x must have the same length")
     if (length(d$t) < 2) stop("trajectory ", k, ": at least two observations are needed")
     if (anyNA(d$t) || anyNA(d$x) || any(!is.finite(d$t)) || any(!is.finite(d$x))) stop("trajectory ", k, ": missing or infinite values")
     if (d$t[1] != 0) stop("trajectory ", k, ": the first inspection time must be 0")
@@ -26,6 +29,35 @@ check_par <- function(..., positive = TRUE) {
     if (!is.numeric(v) || length(v) != 1 || !is.finite(v)) stop(nm, " must be a single finite number")
     if (positive && v <= 0) stop(nm, " must be positive")
   }
+}
+
+# theta : vecteur nommé de tous les paramètres du processus ; real = paramètres réels (les autres sont > 0)
+check_theta <- function(theta, required, real = character(0)) {
+  if (!is.numeric(theta) || is.null(names(theta))) {
+    stop("theta must be a named numeric vector with the parameters ", paste(required, collapse = ", "), call. = FALSE)
+  }
+  miss <- setdiff(required, names(theta))
+  if (length(miss) > 0) stop("theta must contain the parameter(s) ", paste(miss, collapse = ", "), call. = FALSE)
+  p <- vapply(required, function(nm) unname(theta[[nm]]), 0)
+  for (nm in required) {
+    if (!is.finite(p[[nm]])) stop(nm, " must be a finite number", call. = FALSE)
+    if (!(nm %in% real) && p[[nm]] <= 0) stop(nm, " must be positive", call. = FALSE)
+  }
+  p
+}
+
+# n tirages de X_t sachant X_{t_A} = x_A et X_{t_B} = x_B ; le niveau est calculé depuis l'extrémité la plus proche
+bridge_draws <- function(t_A, x_A, t_B, x_B, t, n, draw, model, increasing = FALSE) {
+  check_par(t_A = t_A, x_A = x_A, t_B = t_B, x_B = x_B, t = t, positive = FALSE)
+  if (!(t_A < t && t < t_B)) stop("the times must satisfy t_A < t < t_B", call. = FALSE)
+  if (!is.numeric(n) || length(n) != 1 || !is.finite(n) || n < 1 || n != round(n)) {
+    stop("n must be a positive integer", call. = FALSE)
+  }
+  if (increasing && x_B < x_A) stop("the ", model, " process is increasing: x_B must not be smaller than x_A", call. = FALSE)
+  vapply(seq_len(n), function(i) {
+    d <- draw(t_A, x_B - x_A, t, t_B)
+    if (abs(d[1]) <= abs(d[2])) x_A + d[1] else x_B - d[2]
+  }, 0)
 }
 
 check_method <- function(method) {
@@ -78,14 +110,13 @@ ext_digits <- function(t, digits) {
   if (is.null(digits)) {
     d <- which(vapply(0:6, function(k) on_grid(t, k), TRUE))
     if (length(d) > 0) return(d[1] - 1)
-    warning("the inspection times are not multiples of 10^-6: they are rounded to 2 decimal places ",
-            "(choose the number of decimal places with digits)", call. = FALSE)
-    return(2)
+    stop("the inspection times have more than 6 decimal places: give the number of decimal places with digits",
+         call. = FALSE)
   }
   if (!is.numeric(digits) || length(digits) != 1 || is.na(digits) || digits < 0 || digits != round(digits)) {
     stop("digits must be a non-negative integer")
   }
-  if (!on_grid(t, digits)) warning("the inspection times are rounded to ", places(digits), call. = FALSE)
+  if (!on_grid(t, digits)) warning("the inspection times are truncated to ", places(digits), call. = FALSE)
   digits
 }
 
@@ -93,9 +124,10 @@ ext_digits <- function(t, digits) {
 ext_grids <- function(ts, digits = NULL, common = FALSE) {
   if (!common) return(lapply(ts, function(t) ext_grids(list(t), digits, TRUE)[[1]]))
   digits <- ext_digits(unlist(ts), digits)
-  ti <- lapply(ts, function(t) round(t * 10^digits))
+  # partie entière inférieure, à une erreur de calcul près (0.3 * 10 = 2.9999999999999996)
+  ti <- lapply(ts, function(t) floor(t * 10^digits + 1e-6))
   if (any(vapply(ti, function(v) any(diff(v) <= 0), TRUE))) {
-    stop("two inspection times are equal after rounding to ", places(digits), ": increase digits")
+    stop("two inspection times are equal after truncation to ", places(digits), ": increase digits")
   }
   h <- Reduce(gcd, unlist(lapply(ti, diff)))
   lapply(ti, function(v) {
@@ -169,17 +201,14 @@ rbeta_pair <- function(p, q) {
   c(1 / (1 + exp(-l)), 1 / (1 + exp(l)))
 }
 
-bridge_paths <- function(x, t, method, draw, model, parameters, increasing = FALSE, digits = NULL,
+bridge_paths <- function(x, method, draw, model, parameters, increasing = FALSE, digits = NULL,
                          common_step = FALSE, option = 1, sim = NULL) {
   method <- check_method(method)
   if (!is.logical(common_step) || length(common_step) != 1 || is.na(common_step)) stop("common_step must be TRUE or FALSE")
   if (!identical(option, 1) && !identical(option, 2) && !identical(option, 1L) && !identical(option, 2L)) {
     stop("option must be 1 or 2", call. = FALSE)
   }
-  if (method == "MultiBridge" && option == 2 && is.null(sim)) {
-    stop("option = 2 needs all the parameters of the process, to extend the trajectories", call. = FALSE)
-  }
-  traj <- as_trajectories(x, t)
+  traj <- as_trajectories(x)
   if (increasing) {
     for (k in seq_along(traj)) {
       if (any(diff(traj[[k]]$x) < 0)) stop("trajectory ", k, ": the ", model, " process is increasing, the levels must not decrease")
@@ -202,71 +231,6 @@ bridge_paths <- function(x, t, method, draw, model, parameters, increasing = FAL
   structure(lapply(res, `[[`, "path"), class = "levybridge", model = model, parameters = parameters,
             method = if (method == "MultiBridge") paste0("MultiBridge, option ", option) else method,
             teq = teq, observed = observed, dx = lapply(res, `[[`, "dx"))
-}
-
-#' Reconstructed increments
-#'
-#' Extracts the increments of the trajectories resampled on the regular grid
-#' by a `_bridge` function. Under the model, with the true parameters, these
-#' increments are independent and have the law of an increment of the process
-#' over a time step `teq` (Grall-Maës, 2012): they are the input of the
-#' goodness-of-fit tests.
-#'
-#' @param x Result of a bridge function of the package, for instance
-#'   [gamma_bridge()].
-#'
-#' @return A data frame with one row per increment and three columns:
-#'   * `id`: number of the trajectory (1, 2, ...);
-#'   * `teq`: time step of the regular grid of this trajectory, \eqn{t_N / N}
-#'     for the method "Bridge" and \eqn{h} for the method "ExtBridge";
-#'   * `dx`: reconstructed increment \eqn{x'_i - x'_{i-1}}.
-#'
-#' The increments are computed directly by the bridges, not as differences of
-#' the resampled levels: a very small increment keeps its relative precision
-#' instead of being rounded to 0 (the levels have about 16 significant
-#' digits, so an increment smaller than about \eqn{10^{-16}} times the level
-#' would be lost by a difference).
-#'
-#' @references
-#' Grall-Maës, E. (2012). Use of the Kolmogorov-Smirnov test for gamma
-#' process. *Proceedings of the Institution of Mechanical Engineers, Part O:
-#' Journal of Risk and Reliability*, 226(6), 624-634.
-#' \doi{10.1177/1748006X12462522}
-#'
-#' Tito, A. R. and Paroissin, C. (in preparation). (methods "ExtBridge" and
-#' "MultiBridge")
-#'
-#' @seealso [gamma_bridge()], [wiener_bridge()], [ig_bridge()], [vg_bridge()],
-#'   [meixner_bridge()]
-#'
-#' @examples
-#' # One gamma trajectory observed at irregular times
-#' t <- c(0, 1.2, 2, 3.8, 5.5, 7.1, 10.4, 12.9, 15.3, 18.7, 22.5)
-#' set.seed(1)
-#' x <- c(0, cumsum(rgamma(10, shape = 2 * diff(t), rate = 3)))
-#' r <- gamma_bridge(x, t, a = 2)
-#' increments(r)
-#'
-#' # Two trajectories with different times: one time step per trajectory
-#' liste <- list(data.frame(t = c(0, 1, 3, 6), X = c(0, 0.8, 2.1, 4.3)),
-#'               data.frame(t = c(0, 2, 4, 5, 9), X = c(0, 1.2, 2.9, 3.1, 6.2)))
-#' increments(gamma_bridge(liste, a = 2))
-#'
-#' # Method "MultiBridge": one common grid, so all the increments have the same
-#' # law and form one sample
-#' d <- increments(gamma_bridge(liste, a = 2, method = "MultiBridge"))
-#' d
-#' unique(d$teq)
-#'
-#' # The increments are computed directly: very small ones are not rounded to 0
-#' min(increments(gamma_bridge(x, t, a = 0.5, method = "ExtBridge"))$dx)
-#' @export
-increments <- function(x) {
-  if (!inherits(x, "levybridge")) stop("x must be the result of a _bridge function")
-  teq <- attr(x, "teq")
-  dx <- attr(x, "dx")
-  do.call(rbind, lapply(seq_along(x), function(i)
-    data.frame(id = i, teq = teq[i], dx = if (is.null(dx)) diff(x[[i]]$X) else dx[[i]])))
 }
 
 #' @export

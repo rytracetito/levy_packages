@@ -39,7 +39,7 @@ or \code{"Meixner"} (Meixner process). Upper or lower case does not matter.}
 tests of the model, see \code{\link[=tests_disponibles]{tests_disponibles()}}.}
 
 \item{method}{Resampling method of the bridges, used with irregular
-inspections only (see \code{\link[levyBridge:gamma_bridge]{levyBridge::gamma_bridge()}}):
+inspections only (see \link[levyBridge:levyBridge-package]{levyBridge::levyBridge-package}):
 \itemize{
 \item \code{"Bridge"} (default, Grall-Maës, 2012): one regular grid per
 trajectory, with as many points as observations;
@@ -97,14 +97,14 @@ The null hypothesis H0 is: the trajectories are independent trajectories
 of the Levy process \code{model}, with unknown parameters.
 \enumerate{
 \item \strong{Regular inspections} (each trajectory inspected with a constant
-time step \eqn{\Delta}): the increments are i.i.d. with the law of
+time step \eqn{\Delta}): the increments are i.i.d. with the distribution of
 \eqn{X_\Delta}; they are tested directly.
 \item \strong{Irregular inspections}: the parameters are estimated by maximum
 likelihood on all the trajectories (package \code{levyfit}), then each
 trajectory is resampled on a regular grid by exact simulation of the
 bridge of the process with these parameters (package \code{levyBridge},
 method \code{method}). Under H0 the reconstructed increments are i.i.d. with
-the law of \eqn{X_{t_{eq}}}, where \eqn{t_{eq}} is the time step of the
+the distribution of \eqn{X_{t_{eq}}}, where \eqn{t_{eq}} is the time step of the
 grid; they are tested.
 \item \strong{Gamma and inverse Gaussian models}: these processes are
 increasing. A negative or zero observed increment is impossible under
@@ -125,9 +125,9 @@ from left to right: a grid point equal to an inspection time keeps the
 observed value, and any other grid point is drawn from the bridge of the
 process between the last known value on its left (an inspection, or the
 previous grid point, already drawn) and the next inspection. By the Markov
-property, the resampled values have the law of the process given the
+property, the resampled values have the distribution of the process given the
 observations: under H0 and with the true parameters, the reconstructed
-increments are i.i.d. with the law of \eqn{X_h}, \eqn{h} being the step of
+increments are i.i.d. with the distribution of \eqn{X_h}, \eqn{h} being the step of
 the grid.
 
 \strong{\code{"Bridge"}} (Grall-Maës, 2012). Each trajectory \eqn{i} has its own grid
@@ -135,14 +135,15 @@ the grid.
 \eqn{t_{i,max}} is its last inspection time and \eqn{m_i} its number of
 increments: as many points as observations. The steps of two trajectories
 are generally different, so their reconstructed increments have different
-laws: the trajectories are tested one by one.
+distributions: the trajectories are tested one by one.
 
-\strong{\code{"ExtBridge"}}. The inspection times are multiples of \eqn{10^{-d}}
-(\eqn{d} decimal places) and the step is
-\eqn{h = 10^{-d} \mathrm{gcd}(10^d g)}, the gcd being taken over all the
-gaps \eqn{g} between consecutive inspections of all the trajectories: the
-largest step such that every inspection time of every trajectory is a
-grid point. All the observations are kept on the grid, and all the
+\strong{\code{"ExtBridge"}}. The inspection times are taken with \eqn{d} decimal
+places and the step is
+\eqn{h = 10^{-d} \mathrm{gcd}(\lfloor 10^d t \rfloor)}, the gcd being
+taken over all the inspection times \eqn{t} of all the trajectories, where
+\eqn{\lfloor u \rfloor} is the largest integer not greater than \eqn{u}:
+the largest step such that every inspection time of every trajectory is a
+grid point (see \link[levyBridge:levyBridge-package]{levyBridge::levyBridge-package}). All the observations are kept on the grid, and all the
 trajectories have the same step: one test on all of them (group \code{"all"})
 in addition to the tests per trajectory. The grid can have many more
 points than observations.
@@ -181,14 +182,14 @@ trajectories of similar durations.
 the observations on the grid. Several trajectories with one test on all of
 them: \code{"MultiBridge"} (about as many points as observations) or
 \code{"ExtBridge"} (grid containing all the inspection times, often many more
-points). See also \code{\link[levyBridge:gamma_bridge]{levyBridge::gamma_bridge()}} for the details of each
-bridge.
+points). See also \link[levyBridge:levyBridge-package]{levyBridge::levyBridge-package} for the grids and the
+bridges.
 }
 
 \section{Several trajectories}{
 
 Each trajectory is tested alone (group \code{1}, \code{2}, ...). When all the
-trajectories have the same time step, their increments have the same law
+trajectories have the same time step, their increments have the same distribution
 under H0: they form one i.i.d. sample and are also tested together (group
 \code{"all"}). This is always the case with the methods \code{"ExtBridge"} (step
 common to all the trajectories, the largest one such that every inspection
@@ -294,14 +295,11 @@ Journal of Risk and Reliability}, 226(6), 624-634.
 Stute, W., Gonzalez Manteiga, W. and Presedo Quindimil, M. (1993).
 Bootstrap based goodness-of-fit-tests. \emph{Metrika}, 40, 243-256.
 
-Tito, A. R. and Paroissin, C. (in preparation). (methods "ExtBridge" and
-"MultiBridge")
-
 The references of each test are given in \code{\link[=tests_disponibles]{tests_disponibles()}}.
 }
 \seealso{
 \code{\link[=test_adequation]{test_adequation()}} for an i.i.d. sample of increments,
 \code{\link[=tests_disponibles]{tests_disponibles()}} for the list of the tests,
 \code{\link[levyfit:gamma_mle]{levyfit::gamma_mle()}} for the estimation,
-\code{\link[levyBridge:gamma_bridge]{levyBridge::gamma_bridge()}} for the bridges.
+\link[levyBridge:levyBridge-package]{levyBridge::levyBridge-package} for the bridges.
 }

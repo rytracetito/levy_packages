@@ -28,17 +28,37 @@ remotes::install_github("rytracetito/levy_packages", subdir = "DegradSim")
 remotes::install_github("rytracetito/levy_packages", subdir = "levyfit")
 ```
 
-Une trajectoire est observée à des instants irréguliers \(0 = t_0 < \dots < t_N\). Le pont stochastique tire, sur la grille régulière \(t'_i = i\, t_N / N\), des valeurs qui suivent exactement la loi du processus sachant les observations (méthode `"Bridge"` de Grall-Maës, 2012). Sous le modèle, les accroissements reconstruits sont indépendants et de même loi : ce sont eux que l'on teste ensuite.
+Le package a deux familles de fonctions :
+
+* `x_bridge(t_A, x_A, t_B, x_B, t, theta, n)` tire \(X_t\) sachant \(X_{t_A} = x_A\) et \(X_{t_B} = x_B\), selon la loi du pont du processus ;
+* `x_resampling(x, theta, method)` rééchantillonne des trajectoires observées à des instants irréguliers \(0 = t_0 < \dots < t_N\) sur une grille régulière, ici \(t'_i = i\, t_N / N\) (méthode `"Bridge"` de Grall-Maës, 2012), en appelant `x_bridge` en chaque point de la grille.
+
+Dans les deux cas, `theta` est le vecteur nommé de tous les paramètres du processus.
 
 Paramètres utilisés :
 
-| Processus | Pont | Paramètres du processus | Paramètres du pont |
-|---|---|---|---|
-| Gamma | `gamma_bridge` | `a = 2`, `b = 3` | `a` |
-| Wiener | `wiener_bridge` | `mu = 0.5`, `sigma = 1.5` | `sigma` |
-| Inverse gaussien | `ig_bridge` | `mu = 1`, `eta = 3` | `eta` |
-| Variance-gamma | `vg_bridge` | `theta = 0.5`, `sigma = 1.5`, `nu = 2` | `theta`, `sigma`, `nu` |
-| Meixner | `meixner_bridge` | `a = 1`, `b = 0.3`, `d = 1.5`, `m = 0.2` | `a`, `d`, `m` |
+| Processus | Pont | Rééchantillonnage | `theta` | Utilisés par le pont |
+|---|---|---|---|---|
+| Gamma | `gamma_bridge` | `gamma_resampling` | `a = 2`, `b = 3` | `a` |
+| Wiener | `wiener_bridge` | `wiener_resampling` | `mu = 0.5`, `sigma = 1.5` | `sigma` |
+| Inverse gaussien | `ig_bridge` | `ig_resampling` | `mu = 1`, `eta = 3` | `eta` |
+| Variance-gamma | `vg_bridge` | `vg_resampling` | `theta = 0.5`, `sigma = 1.5`, `nu = 2` | `theta`, `sigma`, `nu` |
+| Meixner | `meixner_bridge` | `meixner_resampling` | `a = 1`, `b = 0.3`, `d = 1.5`, `m = 0.2` | `a`, `d`, `m` |
+
+# Le pont seul
+
+Tirages de \(X_2\) sachant \(X_1 = 3\) et \(X_4 = 6\) pour le processus gamma : \(X_2 = 3 + 3\,Y\) avec \(Y \sim \mathrm{Beta}(2, 4)\).
+
+```{r}
+set.seed(1)
+gamma_bridge(t_A = 1, x_A = 3, t_B = 4, x_B = 6, t = 2, theta = c(a = 2, b = 3), n = 5)
+y <- gamma_bridge(1, 3, 4, 6, 2, theta = c(a = 2, b = 3), n = 10000)
+ggplot(data.frame(y), aes(x = y)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 50, fill = "grey80", colour = "white") +
+  stat_function(fun = function(v) dbeta((v - 3) / 3, 2, 4) / 3, colour = "#2563EB", linewidth = 1) +
+  labs(x = "X_2 sachant X_1 = 3 et X_4 = 6", y = "Densité") +
+  theme_minimal()
+```
 
 \newpage
 
@@ -55,7 +75,7 @@ t <- c(0, 1.2, 2, 3.8, 5.5, 7.1, 10.4, 12.9, 15.3, 18.7, 22.5)
 ```{r}
 set.seed(1)
 x <- sim_gamma(t, a = 2, b = 3)
-r <- gamma_bridge(x, a = 2)
+r <- gamma_resampling(x, theta = c(a = 2, b = 3))
 plot_bridge(r)
 r[[1]]
 ```
@@ -64,7 +84,7 @@ r[[1]]
 
 ```{r}
 x <- sim_wiener(t, mu = 0.5, sigma = 1.5)
-r <- wiener_bridge(x, sigma = 1.5)
+r <- wiener_resampling(x, theta = c(mu = 0.5, sigma = 1.5))
 plot_bridge(r)
 r[[1]]
 ```
@@ -73,7 +93,7 @@ r[[1]]
 
 ```{r}
 x <- sim_ig(t, mu = 1, eta = 3)
-r <- ig_bridge(x, eta = 3)
+r <- ig_resampling(x, theta = c(mu = 1, eta = 3))
 plot_bridge(r)
 r[[1]]
 ```
@@ -82,7 +102,7 @@ r[[1]]
 
 ```{r}
 x <- sim_vg(t, theta = 0.5, sigma = 1.5, nu = 2)
-r <- vg_bridge(x, theta = 0.5, sigma = 1.5, nu = 2)
+r <- vg_resampling(x, theta = c(theta = 0.5, sigma = 1.5, nu = 2))
 plot_bridge(r)
 r[[1]]
 ```
@@ -91,7 +111,7 @@ r[[1]]
 
 ```{r}
 x <- sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2)
-r <- meixner_bridge(x, a = 1, d = 1.5, m = 0.2)
+r <- meixner_resampling(x, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2))
 plot_bridge(r)
 r[[1]]
 ```
@@ -110,21 +130,21 @@ plan <- inspection_times("decreasing", n = 10:29, n_traj = 20, tmax = 40)
 
 ```{r, fig.height = 4.2}
 set.seed(2)
-r <- gamma_bridge(sim_gamma(plan, a = 2, b = 3), a = 2)
+r <- gamma_resampling(sim_gamma(plan, a = 2, b = 3), theta = c(a = 2, b = 3))
 plot_bridge(r, trajectory = 1:4)
 ```
 
 ## Wiener
 
 ```{r, fig.height = 4.2}
-r <- wiener_bridge(sim_wiener(plan, mu = 0.5, sigma = 1.5), sigma = 1.5)
+r <- wiener_resampling(sim_wiener(plan, mu = 0.5, sigma = 1.5), theta = c(mu = 0.5, sigma = 1.5))
 plot_bridge(r, trajectory = 1:4)
 ```
 
 ## Inverse gaussien
 
 ```{r, fig.height = 4.2}
-r <- ig_bridge(sim_ig(plan, mu = 1, eta = 3), eta = 3)
+r <- ig_resampling(sim_ig(plan, mu = 1, eta = 3), theta = c(mu = 1, eta = 3))
 plot_bridge(r, trajectory = 1:4)
 ```
 
@@ -132,7 +152,7 @@ plot_bridge(r, trajectory = 1:4)
 
 ```{r, fig.height = 4.2}
 x <- sim_vg(plan, theta = 0.5, sigma = 1.5, nu = 2)
-r <- vg_bridge(x, theta = 0.5, sigma = 1.5, nu = 2)
+r <- vg_resampling(x, theta = c(theta = 0.5, sigma = 1.5, nu = 2))
 plot_bridge(r, trajectory = 1:4)
 ```
 
@@ -140,18 +160,18 @@ plot_bridge(r, trajectory = 1:4)
 
 ```{r, fig.height = 4.2}
 x <- sim_meixner(plan, a = 1, b = 0.3, d = 1.5, m = 0.2)
-r <- meixner_bridge(x, a = 1, d = 1.5, m = 0.2)
+r <- meixner_resampling(x, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2))
 plot_bridge(r, trajectory = 1:4)
 ```
 
 ### Avec les paramètres estimés
 
-En pratique, les vraies valeurs des paramètres sont inconnues : on les estime d'abord sur les trajectoires observées avec `levyfit`, puis on construit le pont avec ces estimations. C'est la démarche d'un test d'adéquation. Le paramètre `b` est estimé mais n'est pas utilisé par le pont.
+En pratique, les vraies valeurs des paramètres sont inconnues : on les estime d'abord sur les trajectoires observées avec `levyfit`, puis on construit le pont avec ces estimations. Le paramètre `b` est estimé mais n'est pas utilisé par le pont.
 
 ```{r, fig.height = 4.2}
 est <- meixner_mle(x)
 est
-r_est <- meixner_bridge(x, a = est[["a"]], d = est[["d"]], m = est[["m"]])
+r_est <- meixner_resampling(x, theta = est)
 r_est
 plot_bridge(r_est, trajectory = 1:4)
 ```
@@ -175,7 +195,7 @@ est
 
 ```{r, fig.height = 4.2}
 set.seed(3)
-r <- gamma_bridge(lasers, a = est[["a"]])
+r <- gamma_resampling(lasers, theta = est)
 r
 plot_bridge(r, trajectory = 1:4) + labs(x = "Temps (heures)", y = "Dégradation (%)")
 ```
@@ -183,11 +203,11 @@ plot_bridge(r, trajectory = 1:4) + labs(x = "Temps (heures)", y = "Dégradation 
 Accroissements reconstruits, sur une grille de pas \(4000 / 9 \approx 444\) heures :
 
 ```{r}
-acc <- increments(r)
+acc <- data.frame(dx = unlist(attr(r, "dx")))
 head(acc)
 ggplot(acc, aes(x = dx)) +
   geom_histogram(aes(y = after_stat(density)), bins = 25, fill = "grey80", colour = "white") +
-  stat_function(fun = dgamma, args = list(shape = est[["a"]] * acc$teq[1], rate = est[["b"]]),
+  stat_function(fun = dgamma, args = list(shape = est[["a"]] * attr(r, "teq")[1], rate = est[["b"]]),
                 colour = "#2563EB", linewidth = 1) +
   labs(x = "Accroissement sur 444 heures (%)", y = "Densité") +
   theme_minimal()

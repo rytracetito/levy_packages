@@ -84,7 +84,7 @@ The increments of a Levy process being independent, the log-likelihood is
 \itemize{
 \item \strong{Closed form}: Wiener and inverse Gaussian. The MLE is explicit, with
 \eqn{\hat\mu = S / T}.
-\item \strong{Root of one equation}: gamma. \eqn{\hat b = \hat a T / S} is explicit
+\item \strong{Root of one equation}: gamma. The estimator \eqn{\hat b = \hat a T / S} is explicit
 and \eqn{\hat a} is the unique root of a decreasing function, found by
 \code{\link[stats:uniroot]{stats::uniroot()}} from the method of moments estimator; the result does
 not depend on this starting point.

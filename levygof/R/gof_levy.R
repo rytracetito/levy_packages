@@ -26,7 +26,7 @@
 #' @param test Names of the tests to apply; `NULL` (default) applies all the
 #'   tests of the model, see [tests_disponibles()].
 #' @param method Resampling method of the bridges, used with irregular
-#'   inspections only (see [levyBridge::gamma_bridge()]):
+#'   inspections only (see [levyBridge::levyBridge-package]):
 #'   * `"Bridge"` (default, Grall-Maës, 2012): one regular grid per
 #'     trajectory, with as many points as observations;
 #'   * `"ExtBridge"`: regular grid containing all the inspection times, with a
@@ -67,14 +67,14 @@
 #' of the Levy process `model`, with unknown parameters.
 #'
 #' 1. **Regular inspections** (each trajectory inspected with a constant
-#'    time step \eqn{\Delta}): the increments are i.i.d. with the law of
+#'    time step \eqn{\Delta}): the increments are i.i.d. with the distribution of
 #'    \eqn{X_\Delta}; they are tested directly.
 #' 2. **Irregular inspections**: the parameters are estimated by maximum
 #'    likelihood on all the trajectories (package `levyfit`), then each
 #'    trajectory is resampled on a regular grid by exact simulation of the
 #'    bridge of the process with these parameters (package `levyBridge`,
 #'    method `method`). Under H0 the reconstructed increments are i.i.d. with
-#'    the law of \eqn{X_{t_{eq}}}, where \eqn{t_{eq}} is the time step of the
+#'    the distribution of \eqn{X_{t_{eq}}}, where \eqn{t_{eq}} is the time step of the
 #'    grid; they are tested.
 #' 3. **Gamma and inverse Gaussian models**: these processes are
 #'    increasing. A negative or zero observed increment is impossible under
@@ -92,9 +92,9 @@
 #' observed value, and any other grid point is drawn from the bridge of the
 #' process between the last known value on its left (an inspection, or the
 #' previous grid point, already drawn) and the next inspection. By the Markov
-#' property, the resampled values have the law of the process given the
+#' property, the resampled values have the distribution of the process given the
 #' observations: under H0 and with the true parameters, the reconstructed
-#' increments are i.i.d. with the law of \eqn{X_h}, \eqn{h} being the step of
+#' increments are i.i.d. with the distribution of \eqn{X_h}, \eqn{h} being the step of
 #' the grid.
 #'
 #' **`"Bridge"`** (Grall-Maës, 2012). Each trajectory \eqn{i} has its own grid
@@ -102,14 +102,15 @@
 #' \eqn{t_{i,max}} is its last inspection time and \eqn{m_i} its number of
 #' increments: as many points as observations. The steps of two trajectories
 #' are generally different, so their reconstructed increments have different
-#' laws: the trajectories are tested one by one.
+#' distributions: the trajectories are tested one by one.
 #'
-#' **`"ExtBridge"`**. The inspection times are multiples of \eqn{10^{-d}}
-#' (\eqn{d} decimal places) and the step is
-#' \eqn{h = 10^{-d} \mathrm{gcd}(10^d g)}, the gcd being taken over all the
-#' gaps \eqn{g} between consecutive inspections of all the trajectories: the
-#' largest step such that every inspection time of every trajectory is a
-#' grid point. All the observations are kept on the grid, and all the
+#' **`"ExtBridge"`**. The inspection times are taken with \eqn{d} decimal
+#' places and the step is
+#' \eqn{h = 10^{-d} \mathrm{gcd}(\lfloor 10^d t \rfloor)}, the gcd being
+#' taken over all the inspection times \eqn{t} of all the trajectories, where
+#' \eqn{\lfloor u \rfloor} is the largest integer not greater than \eqn{u}:
+#' the largest step such that every inspection time of every trajectory is a
+#' grid point (see [levyBridge::levyBridge-package]). All the observations are kept on the grid, and all the
 #' trajectories have the same step: one test on all of them (group `"all"`)
 #' in addition to the tests per trajectory. The grid can have many more
 #' points than observations.
@@ -146,12 +147,12 @@
 #' the observations on the grid. Several trajectories with one test on all of
 #' them: `"MultiBridge"` (about as many points as observations) or
 #' `"ExtBridge"` (grid containing all the inspection times, often many more
-#' points). See also [levyBridge::gamma_bridge()] for the details of each
-#' bridge.
+#' points). See also [levyBridge::levyBridge-package] for the grids and the
+#' bridges.
 #'
 #' @section Several trajectories:
 #' Each trajectory is tested alone (group `1`, `2`, ...). When all the
-#' trajectories have the same time step, their increments have the same law
+#' trajectories have the same time step, their increments have the same distribution
 #' under H0: they form one i.i.d. sample and are also tested together (group
 #' `"all"`). This is always the case with the methods `"ExtBridge"` (step
 #' common to all the trajectories, the largest one such that every inspection
@@ -174,15 +175,12 @@
 #' Stute, W., Gonzalez Manteiga, W. and Presedo Quindimil, M. (1993).
 #' Bootstrap based goodness-of-fit-tests. *Metrika*, 40, 243-256.
 #'
-#' Tito, A. R. and Paroissin, C. (in preparation). (methods "ExtBridge" and
-#' "MultiBridge")
-#'
 #' The references of each test are given in [tests_disponibles()].
 #'
 #' @seealso [test_adequation()] for an i.i.d. sample of increments,
 #'   [tests_disponibles()] for the list of the tests,
 #'   [levyfit::gamma_mle()] for the estimation,
-#'   [levyBridge::gamma_bridge()] for the bridges.
+#'   [levyBridge::levyBridge-package] for the bridges.
 #'
 #' @examplesIf requireNamespace("DegradSim", quietly = TRUE)
 #' set.seed(1)
@@ -286,8 +284,8 @@ gof.levy <- function(data, model, test = NULL, method = "Bridge", option = 1, al
     par <- estimate_parameters(traj, model)
     r <- bridge_trajectories(traj, model, par, method, option)
     teq <- attr(r, "teq")
-    inc <- levyBridge::increments(r)
-    pieces <- lapply(seq_along(r), function(k) list(step = teq[k], dx = inc$dx[inc$id == k]))
+    dx <- attr(r, "dx")
+    pieces <- lapply(seq_along(r), function(k) list(step = teq[k], dx = dx[[k]]))
     bridge <- lapply(seq_along(r), function(k) data.frame(t = r[[k]]$t + traj[[k]]$t0, X = r[[k]]$X))
     check_zero_increments(unlist(lapply(pieces, `[[`, "dx")), model, method)
   }
@@ -361,16 +359,11 @@ bridge_trajectories <- function(traj, model, par, method, option = 1) {
   d <- as_data_frames(traj)
   cs <- method == "ExtBridge"
   switch(model,
-    HGP     = levyBridge::gamma_bridge(d, a = par[["a"]], method = method, common_step = cs, option = option,
-                                       b = par[["b"]]),
-    HWP     = levyBridge::wiener_bridge(d, sigma = par[["sigma"]], method = method, common_step = cs, option = option,
-                                        mu = par[["mu"]]),
-    InvGaus = levyBridge::ig_bridge(d, eta = par[["eta"]], method = method, common_step = cs, option = option,
-                                    mu = par[["mu"]]),
-    VG      = levyBridge::vg_bridge(d, theta = par[["theta"]], sigma = par[["sigma"]], nu = par[["nu"]], method = method,
-                                    common_step = cs, option = option),
-    Meixner = levyBridge::meixner_bridge(d, a = par[["a"]], d = par[["d"]], m = par[["m"]], method = method,
-                                         common_step = cs, option = option, b = par[["b"]])
+    HGP     = levyBridge::gamma_resampling(d, theta = par, method = method, common_step = cs, option = option),
+    HWP     = levyBridge::wiener_resampling(d, theta = par, method = method, common_step = cs, option = option),
+    InvGaus = levyBridge::ig_resampling(d, theta = par, method = method, common_step = cs, option = option),
+    VG      = levyBridge::vg_resampling(d, theta = par, method = method, common_step = cs, option = option),
+    Meixner = levyBridge::meixner_resampling(d, theta = par, method = method, common_step = cs, option = option)
   )
 }
 

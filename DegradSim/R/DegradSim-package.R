@@ -36,7 +36,7 @@
 #' of \eqn{n} independent random variables with distribution \eqn{\mu_n}. For a
 #' Levy process, the distribution of \eqn{X_t} is infinitely divisible for
 #' every \eqn{t}; conversely, every infinitely divisible distribution is the
-#' distribution of \eqn{X_1} for a Levy process, unique in law (Sato, 2001,
+#' distribution of \eqn{X_1} for a Levy process, unique in distribution (Sato, 2001,
 #' Theorems 1.1 and 1.2).
 #'
 #' The simulation functions, with the distribution of an increment over a time

@@ -27,7 +27,7 @@ remotes::install_github("rytracetito/levy_packages", subdir = "DegradSim")
 
 ## Pourquoi MultiBridge
 
-Avec la méthode `"Bridge"` (Grall-Maës, 2012), chaque trajectoire \(i\) est rééchantillonnée sur sa propre grille, de pas \(t_{i,max} / m_i\) (dernier instant divisé par le nombre d'accroissements). Deux trajectoires ont en général deux pas différents : leurs accroissements reconstruits suivent deux lois différentes (\(X_{h_1}\) et \(X_{h_2}\)) et ne peuvent pas être réunis en un seul échantillon i.i.d. On ne peut alors faire qu'un test par trajectoire.
+Avec la méthode `"Bridge"` (Grall-Maës, 2012), chaque trajectoire \(i\) est rééchantillonnée sur sa propre grille, de pas \(t_{i,max} / m_i\) (dernier instant divisé par le nombre d'accroissements). Deux trajectoires ont en général deux pas différents : leurs accroissements reconstruits suivent deux lois différentes (\(X_{h_1}\) et \(X_{h_2}\)) et ne peuvent pas être réunis en un seul échantillon i.i.d.
 
 La méthode `"MultiBridge"` place **toutes les trajectoires sur une grille commune**, de pas
 
@@ -35,12 +35,12 @@ La méthode `"MultiBridge"` place **toutes les trajectoires sur une grille commu
 h = \frac{t_{1,max} + \dots + t_{n,max}}{m_1 + \dots + m_n},
 \]
 
-la durée totale observée divisée par le nombre total d'accroissements. Pour une seule trajectoire, \(h = t_N / N\) : c'est le pas de la méthode `"Bridge"`. La grille est \(t'_k = k\,h\) ; comme pour `"Bridge"`, elle ne contient pas forcément les instants d'inspection. Tous les accroissements reconstruits suivent alors la loi de \(X_h\) : ils forment un seul échantillon i.i.d. sous le modèle, et un seul test peut porter sur toutes les trajectoires.
+la durée totale observée divisée par le nombre total d'accroissements. Pour une seule trajectoire, \(h = t_N / N\) : c'est le pas de la méthode `"Bridge"`. La grille est \(t'_k = k\,h\) ; comme pour `"Bridge"`, elle ne contient pas forcément les instants d'inspection. Tous les accroissements reconstruits suivent alors la loi de \(X_h\) pour toutes les trajectoires.
 
 ## Les deux options
 
 * **Option 1** (`option = 1`, par défaut) : chaque trajectoire est rééchantillonnée jusqu'à sa dernière inspection, sur les points \(k h \le t_{i,max}\). Chaque point est tiré dans le pont entre la dernière valeur connue à gauche et l'inspection suivante, exactement comme avec `"Bridge"`. Le petit bout entre le dernier point de grille et \(t_{i,max}\) n'est pas utilisé. C'est l'option recommandée.
-* **Option 2** (`option = 2`) : toutes les trajectoires vont jusqu'au dernier instant global \(\max_i t_{i,max}\). Au-delà de sa dernière observation, une trajectoire est prolongée par des accroissements du processus tirés avec les paramètres donnés (ce n'est plus un pont) : il faut donc **tous** les paramètres (`b` pour gamma et Meixner, `mu` pour Wiener et inverse gaussien). Ces valeurs prolongées ne viennent pas des données : elles diluent l'information et font baisser la puissance d'un test. À réserver à des trajectoires de durées voisines.
+* **Option 2** (`option = 2`) : toutes les trajectoires vont jusqu'au dernier instant global \(\max_i t_{i,max}\). Au-delà de sa dernière observation, une trajectoire est prolongée par des accroissements du processus tirés avec les paramètres de `theta` (ce n'est plus un pont), y compris ceux que le pont n'utilise pas (`b` pour gamma et Meixner, `mu` pour Wiener et inverse gaussien). Ces valeurs prolongées ne viennent pas des données : elles diluent l'information des observations. À réserver à des trajectoires de durées voisines.
 
 \newpage
 
@@ -60,18 +60,18 @@ sapply(liste, nrow) - 1
 ## Méthode Bridge : un pas par trajectoire
 
 ```{r}
-r_b <- gamma_bridge(liste, a = 2)
+r_b <- gamma_resampling(liste, theta = c(a = 2, b = 3))
 attr(r_b, "teq")
 ```
 
-Quatre pas différents : pas de test commun possible.
+Quatre pas différents.
 
 ## MultiBridge, option 1
 
 Pas commun \(h = (8 + 12 + 45 + 58) / (2 + 4 + 10 + 16) = 3.84\) ; chaque trajectoire s'arrête à son dernier instant.
 
 ```{r}
-r1 <- gamma_bridge(liste, a = 2, method = "MultiBridge")
+r1 <- gamma_resampling(liste, theta = c(a = 2, b = 3), method = "MultiBridge")
 r1
 attr(r1, "teq")
 sapply(r1, nrow) - 1
@@ -83,7 +83,7 @@ plot_bridge(r1, trajectory = 1:4)
 Toutes les trajectoires vont jusqu'à 58 ; les trois premières sont prolongées par des accroissements gamma, ce qui demande le paramètre `b`.
 
 ```{r}
-r2 <- gamma_bridge(liste, a = 2, method = "MultiBridge", option = 2, b = 3)
+r2 <- gamma_resampling(liste, theta = c(a = 2, b = 3), method = "MultiBridge", option = 2)
 sapply(r2, nrow) - 1
 plot_bridge(r2, trajectory = 1:4)
 ```
@@ -93,20 +93,20 @@ plot_bridge(r2, trajectory = 1:4)
 `"ExtBridge"` avec `common_step = TRUE` donne aussi un pas commun, mais sa grille contient toutes les inspections : son pas est le pgcd des écarts, ici 1, et il y a beaucoup plus de points.
 
 ```{r}
-r_e <- gamma_bridge(liste, a = 2, method = "ExtBridge", common_step = TRUE)
+r_e <- gamma_resampling(liste, theta = c(a = 2, b = 3), method = "ExtBridge", common_step = TRUE)
 res <- list(Bridge = r_b, "MultiBridge 1" = r1, "MultiBridge 2" = r2, "ExtBridge commun" = r_e)
 data.frame(pas = sapply(res, function(r) paste(unique(round(attr(r, "teq"), 2)), collapse = " / ")),
            accroissements = sapply(res, function(r) sum(sapply(r, nrow) - 1)))
 ```
 
-## Un seul échantillon pour toutes les trajectoires
+## Un seul pas pour toutes les trajectoires
 
-Les accroissements reconstruits des quatre trajectoires ont tous la loi \(\Gamma(a h, b)\) :
+Les accroissements reconstruits des quatre trajectoires sont tous sur le même pas \(h\) :
 
 ```{r}
-d1 <- increments(r1)
-head(d1)
-ks.test(d1$dx, "pgamma", shape = 2 * attr(r1, "teq")[1], rate = 3)
+d1 <- attr(r1, "dx")
+lengths(d1)
+head(unlist(d1))
 ```
 
 \newpage
@@ -119,9 +119,9 @@ Les mêmes instants pour les cinq processus, avec les deux options.
 
 ```{r}
 xw <- sim_wiener(liste_t, mu = 0.5, sigma = 1.5)
-rw <- wiener_bridge(xw, sigma = 1.5, method = "MultiBridge")
+rw <- wiener_resampling(xw, theta = c(mu = 0.5, sigma = 1.5), method = "MultiBridge")
 attr(rw, "teq")
-rw2 <- wiener_bridge(xw, sigma = 1.5, method = "MultiBridge", option = 2, mu = 0.5)
+rw2 <- wiener_resampling(xw, theta = c(mu = 0.5, sigma = 1.5), method = "MultiBridge", option = 2)
 sapply(rw2, nrow) - 1
 plot_bridge(rw, trajectory = 1:4)
 ```
@@ -130,9 +130,9 @@ plot_bridge(rw, trajectory = 1:4)
 
 ```{r}
 xi <- sim_ig(liste_t, mu = 1, eta = 3)
-ri <- ig_bridge(xi, eta = 3, method = "MultiBridge")
+ri <- ig_resampling(xi, theta = c(mu = 1, eta = 3), method = "MultiBridge")
 sapply(ri, nrow) - 1
-ri2 <- ig_bridge(xi, eta = 3, method = "MultiBridge", option = 2, mu = 1)
+ri2 <- ig_resampling(xi, theta = c(mu = 1, eta = 3), method = "MultiBridge", option = 2)
 sapply(ri2, nrow) - 1
 plot_bridge(ri, trajectory = 1:4)
 ```
@@ -143,9 +143,9 @@ Le pont variance-gamma utilise déjà tous les paramètres : l'option 2 ne deman
 
 ```{r}
 xv <- sim_vg(liste_t, theta = 0.5, sigma = 1.5, nu = 2)
-rv <- vg_bridge(xv, theta = 0.5, sigma = 1.5, nu = 2, method = "MultiBridge")
+rv <- vg_resampling(xv, theta = c(theta = 0.5, sigma = 1.5, nu = 2), method = "MultiBridge")
 sapply(rv, nrow) - 1
-rv2 <- vg_bridge(xv, theta = 0.5, sigma = 1.5, nu = 2, method = "MultiBridge", option = 2)
+rv2 <- vg_resampling(xv, theta = c(theta = 0.5, sigma = 1.5, nu = 2), method = "MultiBridge", option = 2)
 sapply(rv2, nrow) - 1
 plot_bridge(rv, trajectory = 1:4)
 ```
@@ -154,9 +154,9 @@ plot_bridge(rv, trajectory = 1:4)
 
 ```{r}
 xm <- sim_meixner(liste_t, a = 1, b = 0.3, d = 1.5, m = 0.2)
-rx <- meixner_bridge(xm, a = 1, d = 1.5, m = 0.2, method = "MultiBridge")
+rx <- meixner_resampling(xm, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2), method = "MultiBridge")
 sapply(rx, nrow) - 1
-rx2 <- meixner_bridge(xm, a = 1, d = 1.5, m = 0.2, method = "MultiBridge", option = 2, b = 0.3)
+rx2 <- meixner_resampling(xm, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2), method = "MultiBridge", option = 2)
 sapply(rx2, nrow) - 1
 plot_bridge(rx, trajectory = 1:4)
 ```
@@ -173,7 +173,7 @@ h <- (8 + 12 + 45 + 58) / 32
 for (opt in 1:2) {
   dx <- unlist(replicate(500, {
     x <- sim_gamma(liste_t, a = 2, b = 3)
-    increments(gamma_bridge(x, a = 2, method = "MultiBridge", option = opt, b = 3))$dx
+    attr(gamma_resampling(x, theta = c(a = 2, b = 3), method = "MultiBridge", option = opt), "dx")
   }, simplify = FALSE))
   cat("option", opt, ":", length(dx), "accroissements, KS p =",
       round(ks.test(dx, "pgamma", shape = 2 * h, rate = 3)$p.value, 3), "\n")
@@ -191,8 +191,8 @@ Avec une trajectoire, les deux options redonnent la méthode `"Bridge"`.
 ```{r}
 t <- c(0, 1.2, 2, 3.8, 5.5, 7.1, 10.4, 12.9, 15.3, 18.7, 22.5)
 x <- sim_gamma(t, a = 2, b = 3)
-set.seed(2); a1 <- gamma_bridge(x, a = 2)[[1]]
-set.seed(2); a2 <- gamma_bridge(x, a = 2, method = "MultiBridge")[[1]]
+set.seed(2); a1 <- gamma_resampling(x, theta = c(a = 2, b = 3))[[1]]
+set.seed(2); a2 <- gamma_resampling(x, theta = c(a = 2, b = 3), method = "MultiBridge")[[1]]
 all.equal(a1, a2)
 ```
 
@@ -203,13 +203,13 @@ Avec l'option 1, une trajectoire dont le dernier instant est inférieur à \(h\)
 ```{r, warning = TRUE}
 court <- list(data.frame(t = c(0, 0.5), X = c(0, 0.2)),
               data.frame(t = c(0, 10, 20), X = c(0, 4, 9)))
-r_c <- gamma_bridge(court, a = 2, method = "MultiBridge")
+r_c <- gamma_resampling(court, theta = c(a = 2, b = 3), method = "MultiBridge")
 sapply(r_c, nrow) - 1
 ```
 
 ## Messages d'erreur
 
 ```{r}
-try(gamma_bridge(liste, a = 2, method = "MultiBridge", option = 2))
-try(gamma_bridge(liste, a = 2, method = "MultiBridge", option = 3))
+try(gamma_resampling(liste, theta = c(a = 2, b = 3), method = "MultiBridge", option = 2))
+try(gamma_resampling(liste, theta = c(a = 2, b = 3), method = "MultiBridge", option = 3))
 ```
