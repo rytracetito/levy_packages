@@ -4,7 +4,7 @@
 \alias{sim_ig}
 \title{Simulation of the inverse Gaussian process}
 \usage{
-sim_ig(t, mu, eta, A = NULL, n_traj = 1)
+sim_ig(t, mu, eta, A = NULL, method = "RWA", type = NULL, n_traj = 1)
 }
 \arguments{
 \item{t}{Inspection times. The times of each trajectory must start at 0 and
@@ -33,6 +33,15 @@ IG process).}
 function \eqn{A} of the time-scaled process (defined in
 \link{DegradSim-package}): a vectorized R function of \code{t}, for instance
 \code{function(t) 2 * t^1.5}.}
+
+\item{method}{Simulation method: \code{"RWA"} (random walk approximation,
+default), \code{"Bridge"} (bridge sampling) or \code{"Series"} (truncated series
+representation), described in the section Simulation methods of
+\link{DegradSim-package}. Only \code{"RWA"} is currently available: the other two
+give an error.}
+
+\item{type}{Used only with \code{method = "Series"}, to choose the series
+representation; \code{NULL} (default).}
 
 \item{n_traj}{Number of trajectories to simulate when \code{t} is a vector
 (default 1), a positive integer.}

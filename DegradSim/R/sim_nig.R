@@ -128,7 +128,8 @@
 #'   ggplot2::stat_function(fun = dnig, colour = "red") +
 #'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the NIG process")
 #' @export
-sim_nig <- function(t, alpha, beta, delta, mu, n_traj = 1) {
+sim_nig <- function(t, alpha, beta, delta, mu, method = "RWA", type = NULL, n_traj = 1) {
+  check_sim_method(method, type)
   if (!is.numeric(alpha) || length(alpha) != 1 || !(alpha > 0)) stop("alpha must be a positive number")
   if (!is.numeric(beta) || length(beta) != 1 || !(abs(beta) < alpha)) stop("beta must satisfy |beta| < alpha")
   if (!is.numeric(delta) || length(delta) != 1 || !(delta > 0)) stop("delta must be a positive number")

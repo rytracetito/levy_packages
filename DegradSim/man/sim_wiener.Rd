@@ -4,7 +4,7 @@
 \alias{sim_wiener}
 \title{Simulation of the Wiener process}
 \usage{
-sim_wiener(t, mu, sigma, A = NULL, n_traj = 1)
+sim_wiener(t, mu, sigma, A = NULL, method = "RWA", type = NULL, n_traj = 1)
 }
 \arguments{
 \item{t}{Inspection times. The times of each trajectory must start at 0 and
@@ -32,6 +32,15 @@ or \eqn{A(t) - A(s) = 1} (time-scaled Wiener process).}
 function \eqn{A} of the time-scaled process (defined in
 \link{DegradSim-package}): a vectorized R function of \code{t}, for instance
 \code{function(t) 2 * t^1.5}.}
+
+\item{method}{Simulation method: \code{"RWA"} (random walk approximation,
+default), \code{"Bridge"} (bridge sampling) or \code{"Series"} (truncated series
+representation), described in the section Simulation methods of
+\link{DegradSim-package}. Only \code{"RWA"} is currently available: the other two
+give an error.}
+
+\item{type}{Used only with \code{method = "Series"}, to choose the series
+representation; \code{NULL} (default).}
 
 \item{n_traj}{Number of trajectories to simulate when \code{t} is a vector
 (default 1), a positive integer.}

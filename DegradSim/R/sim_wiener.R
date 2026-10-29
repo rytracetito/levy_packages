@@ -117,7 +117,8 @@
 #'                          colour = "red") +
 #'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the Wiener process")
 #' @export
-sim_wiener <- function(t, mu, sigma, A = NULL, n_traj = 1) {
+sim_wiener <- function(t, mu, sigma, A = NULL, method = "RWA", type = NULL, n_traj = 1) {
+  check_sim_method(method, type)
   if (missing(sigma) || !is.numeric(sigma) || length(sigma) != 1 || !(sigma > 0)) stop("sigma must be a positive number")
   if (is.null(A)) {
     if (missing(mu)) stop("mu is missing: give mu (Wiener process) or A (time-scaled Wiener process)")

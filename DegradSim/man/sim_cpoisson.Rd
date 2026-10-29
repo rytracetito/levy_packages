@@ -4,7 +4,14 @@
 \alias{sim_cpoisson}
 \title{Simulation of the compound Poisson process}
 \usage{
-sim_cpoisson(t, lambda, rjump = function(n) stats::rexp(n, 1), n_traj = 1)
+sim_cpoisson(
+  t,
+  lambda,
+  rjump = function(n) stats::rexp(n, 1),
+  method = "RWA",
+  type = NULL,
+  n_traj = 1
+)
 }
 \arguments{
 \item{t}{Inspection times. The times of each trajectory must start at 0 and
@@ -27,6 +34,15 @@ shocks per unit of time.}
 \code{n} independent jumps, for instance \code{function(n) rgamma(n, 2, 3)}. The
 default \code{function(n) rexp(n, 1)} gives exponential jumps of mean 1, and
 \code{function(n) rep(1, n)} gives the Poisson process.}
+
+\item{method}{Simulation method: \code{"RWA"} (random walk approximation,
+default), \code{"Bridge"} (bridge sampling) or \code{"Series"} (truncated series
+representation), described in the section Simulation methods of
+\link{DegradSim-package}. Only \code{"RWA"} is currently available: the other two
+give an error.}
+
+\item{type}{Used only with \code{method = "Series"}, to choose the series
+representation; \code{NULL} (default).}
 
 \item{n_traj}{Number of trajectories to simulate when \code{t} is a vector
 (default 1), a positive integer.}

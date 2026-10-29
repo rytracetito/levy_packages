@@ -72,14 +72,14 @@ test_that("a constant time-scaling function gives zero increments", {
   }
 })
 
-test_that("the two VG methods give the same distribution", {
+test_that("the two VG algorithms give the same distribution", {
   set.seed(6)
   v1 <- last_values(sim_vg(tg, theta = 0.5, sigma = 1.2, nu = 0.8, n_traj = 4000))
-  v2 <- last_values(sim_vg(tg, theta = 0.5, sigma = 1.2, nu = 0.8, method = "difference", n_traj = 4000))
+  v2 <- last_values(sim_vg(tg, theta = 0.5, sigma = 1.2, nu = 0.8, increments = "difference", n_traj = 4000))
   expect_equal(mean(v2), 5, tolerance = 0.04)
   expect_equal(var(v2), (1.44 + 0.25 * 0.8) * 10, tolerance = 0.06)
   expect_gt(ks.test(v1, v2)$p.value, 0.01)
-  expect_error(sim_vg(tg, 0.5, 1.2, 0.8, method = "autre"), "method")
+  expect_error(sim_vg(tg, 0.5, 1.2, 0.8, increments = "autre"), "increments")
 })
 
 test_that("the processes have the expected shape", {
@@ -175,4 +175,24 @@ test_that("traj_df gives the time steps and increments", {
   expect_equal(d$dX[d$id == 2][-1], unname(diff(x[, "X2"])))
   y <- sim_wiener(list(c(0, 1, 2), c(0, 2, 5, 7)), 0.5, 1.5)
   expect_equal(traj_df(y, increments = TRUE)$dt, c(NA, 1, 1, NA, 2, 3, 2))
+})
+
+test_that("only the method RWA is available, type only with Series", {
+  sims <- list(function(...) sim_gamma(tg, a = 2, b = 3, ...),
+               function(...) sim_wiener(tg, mu = 0.5, sigma = 1.5, ...),
+               function(...) sim_ig(tg, mu = 0.5, eta = 2, ...),
+               function(...) sim_vg(tg, theta = 0.5, sigma = 1.2, nu = 0.8, ...),
+               function(...) sim_meixner(tg, a = 1, b = 0.3, d = 1.5, m = 0.2, ...),
+               function(...) sim_nig(tg, alpha = 2, beta = 0.5, delta = 1, mu = 0.2, ...),
+               function(...) sim_cpoisson(tg, lambda = 2, ...))
+  for (f in sims) {
+    set.seed(9); x1 <- f()
+    set.seed(9); x2 <- f(method = "RWA")
+    expect_identical(x1, x2)
+    expect_error(f(method = "Bridge"), "no other method is currently available")
+    expect_error(f(method = "Series"), "no other method is currently available")
+    expect_error(f(method = "Series", type = "Bondesson"), "no other method is currently available")
+    expect_error(f(type = "Bondesson"), "type is used only with method")
+    expect_error(f(method = "other"))
+  }
 })

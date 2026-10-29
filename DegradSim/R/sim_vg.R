@@ -20,10 +20,10 @@
 #' @section Exact simulation:
 #' Random walk approximation, described in [DegradSim-package]: each
 #' increment, over a time \eqn{\Delta t_i = t_i - t_{i-1}}, is drawn by one of
-#' two exact methods (argument `method`), which give the same distribution,
+#' two exact algorithms (argument `increments`), which give the same distribution,
 #' then the increments are cumulated.
 #'
-#' **Method 1, subordination** (`method = "subordination"`, default).
+#' **Algorithm 1, subordination** (`increments = "subordination"`, default).
 #' Conditionally on the increment \eqn{\Delta G} of the gamma process,
 #' \eqn{X_t - X_s \sim \mathcal{N}(\theta \Delta G, \sigma^2 \Delta G)}:
 #' 1. draw independently \eqn{\Delta G_i \sim \Gamma(\Delta t_i / \nu)} with
@@ -31,10 +31,10 @@
 #' 2. compute \eqn{\Delta X_i = \theta \Delta G_i + \sigma \sqrt{\Delta G_i}\, Z_i},
 #'    with \eqn{Z_i} independent \eqn{\mathcal{N}(0, 1)}.
 #'
-#' This method follows the definition of the process and also gives the
+#' This algorithm follows the definition of the process and also gives the
 #' gamma process \eqn{G}.
 #'
-#' **Method 2, difference of two gamma processes** (`method = "difference"`).
+#' **Algorithm 2, difference of two gamma processes** (`increments = "difference"`).
 #' Let
 #' \deqn{\mu_\pm = \frac{1}{2} \sqrt{\theta^2 + \frac{2 \sigma^2}{\nu}} \pm \frac{\theta}{2} > 0,}
 #' and \eqn{G_+}, \eqn{G_-} two independent gamma processes with shapes
@@ -51,7 +51,7 @@
 #'    with scale \eqn{\nu \mu_-};
 #' 2. compute \eqn{\Delta X_i = \Delta G^+_i - \Delta G^-_i}.
 #'
-#' This method only uses gamma draws.
+#' This algorithm only uses gamma draws.
 #'
 #' @inheritParams sim_gamma
 #' @param theta Drift of the subordinated Brownian motion, real: mean
@@ -61,9 +61,12 @@
 #' @param nu Variance rate of the gamma process \eqn{G}, \eqn{\nu > 0}: the larger
 #'   \eqn{\nu}, the larger the jumps; as \eqn{\nu \to 0} the process becomes a
 #'   Wiener process.
-#' @param method Simulation algorithm: `"subordination"` (default) or
-#'   `"difference"` (difference of two gamma processes). Both are exact and
-#'   give the same distribution; see the section on the exact simulation.
+#' @param increments Algorithm that draws each increment:
+#'   * `"subordination"` (default);
+#'   * `"difference"`: difference of two gamma processes.
+#'
+#'   Both are exact and give the same distribution; see the section Exact
+#'   simulation.
 #'
 #' @inherit sim_gamma return
 #'
@@ -92,7 +95,7 @@
 #' x[, "X2"]
 #'
 #' # 3. The same model simulated as a difference of two gamma processes
-#' y <- sim_vg(t, theta = 0.5, sigma = 1.2, nu = 0.8, method = "difference", n_traj = 10)
+#' y <- sim_vg(t, theta = 0.5, sigma = 1.2, nu = 0.8, increments = "difference", n_traj = 10)
 #' plot_traj(y, "Variance-gamma process, difference of two gamma processes")
 #'
 #' # 4. Irregular inspections, more and more frequent over time
@@ -132,18 +135,20 @@
 #'   ggplot2::stat_function(fun = dvg, colour = "red") +
 #'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the variance-gamma process")
 #' @export
-sim_vg <- function(t, theta, sigma, nu, method = "subordination", n_traj = 1) {
+sim_vg <- function(t, theta, sigma, nu, increments = "subordination", method = "RWA", type = NULL,
+                   n_traj = 1) {
+  check_sim_method(method, type)
   if (!is.numeric(theta) || length(theta) != 1 || !is.finite(theta)) stop("theta must be a real number")
   if (!is.numeric(sigma) || length(sigma) != 1 || !(sigma > 0)) stop("sigma must be a positive number")
   if (!is.numeric(nu) || length(nu) != 1 || !(nu > 0)) stop("nu must be a positive number")
-  if (!identical(method, "subordination") && !identical(method, "difference")) {
-    stop("method must be \"subordination\" or \"difference\"")
+  if (!identical(increments, "subordination") && !identical(increments, "difference")) {
+    stop("increments must be \"subordination\" or \"difference\"")
   }
   r <- sqrt(theta^2 + 2 * sigma^2 / nu) / 2
   one_path <- function(t) {
     dt <- diff(t)
     n <- length(dt)
-    if (method == "subordination") {
+    if (increments == "subordination") {
       dG <- stats::rgamma(n, shape = dt / nu, scale = nu)
       dX <- theta * dG + sigma * sqrt(dG) * stats::rnorm(n)
     } else {

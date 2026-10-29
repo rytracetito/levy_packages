@@ -132,7 +132,8 @@
 #'   ggplot2::labs(x = "dX", y = "Density",
 #'                 title = "Increments of the inverse Gaussian process")
 #' @export
-sim_ig <- function(t, mu, eta, A = NULL, n_traj = 1) {
+sim_ig <- function(t, mu, eta, A = NULL, method = "RWA", type = NULL, n_traj = 1) {
+  check_sim_method(method, type)
   if (missing(eta) || !is.numeric(eta) || length(eta) != 1 || !(eta > 0)) stop("eta must be a positive number")
   if (is.null(A)) {
     if (missing(mu)) stop("mu is missing: give mu (IG process) or A (time-scaled IG process)")

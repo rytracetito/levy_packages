@@ -4,7 +4,16 @@
 \alias{sim_vg}
 \title{Simulation of the variance-gamma process}
 \usage{
-sim_vg(t, theta, sigma, nu, method = "subordination", n_traj = 1)
+sim_vg(
+  t,
+  theta,
+  sigma,
+  nu,
+  increments = "subordination",
+  method = "RWA",
+  type = NULL,
+  n_traj = 1
+)
 }
 \arguments{
 \item{t}{Inspection times. The times of each trajectory must start at 0 and
@@ -30,9 +39,23 @@ degradation per unit of time.}
 \eqn{\nu}, the larger the jumps; as \eqn{\nu \to 0} the process becomes a
 Wiener process.}
 
-\item{method}{Simulation algorithm: \code{"subordination"} (default) or
-\code{"difference"} (difference of two gamma processes). Both are exact and
-give the same distribution; see the section on the exact simulation.}
+\item{increments}{Algorithm that draws each increment:
+\itemize{
+\item \code{"subordination"} (default);
+\item \code{"difference"}: difference of two gamma processes.
+}
+
+Both are exact and give the same distribution; see the section Exact
+simulation.}
+
+\item{method}{Simulation method: \code{"RWA"} (random walk approximation,
+default), \code{"Bridge"} (bridge sampling) or \code{"Series"} (truncated series
+representation), described in the section Simulation methods of
+\link{DegradSim-package}. Only \code{"RWA"} is currently available: the other two
+give an error.}
+
+\item{type}{Used only with \code{method = "Series"}, to choose the series
+representation; \code{NULL} (default).}
 
 \item{n_traj}{Number of trajectories to simulate when \code{t} is a vector
 (default 1), a positive integer.}
@@ -70,10 +93,10 @@ VG process tends to the Wiener process \eqn{\theta t + \sigma B_t}.
 
 Random walk approximation, described in \link{DegradSim-package}: each
 increment, over a time \eqn{\Delta t_i = t_i - t_{i-1}}, is drawn by one of
-two exact methods (argument \code{method}), which give the same distribution,
+two exact algorithms (argument \code{increments}), which give the same distribution,
 then the increments are cumulated.
 
-\strong{Method 1, subordination} (\code{method = "subordination"}, default).
+\strong{Algorithm 1, subordination} (\code{increments = "subordination"}, default).
 Conditionally on the increment \eqn{\Delta G} of the gamma process,
 \eqn{X_t - X_s \sim \mathcal{N}(\theta \Delta G, \sigma^2 \Delta G)}:
 \enumerate{
@@ -83,10 +106,10 @@ scale \eqn{\nu};
 with \eqn{Z_i} independent \eqn{\mathcal{N}(0, 1)}.
 }
 
-This method follows the definition of the process and also gives the
+This algorithm follows the definition of the process and also gives the
 gamma process \eqn{G}.
 
-\strong{Method 2, difference of two gamma processes} (\code{method = "difference"}).
+\strong{Algorithm 2, difference of two gamma processes} (\code{increments = "difference"}).
 Let
 \deqn{\mu_\pm = \frac{1}{2} \sqrt{\theta^2 + \frac{2 \sigma^2}{\nu}} \pm \frac{\theta}{2} > 0,}
 and \eqn{G_+}, \eqn{G_-} two independent gamma processes with shapes
@@ -105,7 +128,7 @@ with scale \eqn{\nu \mu_-};
 \item compute \eqn{\Delta X_i = \Delta G^+_i - \Delta G^-_i}.
 }
 
-This method only uses gamma draws.
+This algorithm only uses gamma draws.
 }
 
 \examples{
@@ -126,7 +149,7 @@ head(x[, 1:4])
 x[, "X2"]
 
 # 3. The same model simulated as a difference of two gamma processes
-y <- sim_vg(t, theta = 0.5, sigma = 1.2, nu = 0.8, method = "difference", n_traj = 10)
+y <- sim_vg(t, theta = 0.5, sigma = 1.2, nu = 0.8, increments = "difference", n_traj = 10)
 plot_traj(y, "Variance-gamma process, difference of two gamma processes")
 
 # 4. Irregular inspections, more and more frequent over time

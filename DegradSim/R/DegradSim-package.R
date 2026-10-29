@@ -186,11 +186,18 @@
 #' * [plot_traj()]: plot of the simulated trajectories (`ggplot2`);
 #' * [traj_df()]: simulated data as a data frame.
 #'
-#' @section Exact simulation at the inspection times (random walk approximation):
-#' All the simulated processes have independent increments with known
-#' distributions. The values at the inspection times
-#' \eqn{0 = t_0 < t_1 < \dots < t_n} are therefore simulated by the random walk
-#' approximation (RWA) of Kahle et al. (2016, algorithms 1.7 and 2.32):
+#' @section Simulation methods:
+#' The argument `method` of the `sim_` functions chooses among the three
+#' simulation methods of Kahle et al. (2016) for the Wiener process (section
+#' 1.3) and the gamma process (section 2.5). Only `"RWA"` is currently
+#' available.
+#'
+#' **Random walk approximation** (`method = "RWA"`, default). All the
+#' simulated processes have independent increments with known distributions.
+#' The values at the inspection times \eqn{0 = t_0 < t_1 < \dots < t_n} are
+#' therefore simulated by the random walk approximation (Kahle et al., 2016,
+#' section 1.3.1, algorithm 1.7, p. 6, for the Brownian motion, and section
+#' 2.5.1, algorithm 2.32, p. 81, for the gamma process):
 #' independent increments \eqn{\Delta X_i} with the distribution of
 #' \eqn{X_{t_i} - X_{t_{i-1}}} are drawn, then \eqn{X_{t_0} = 0} and
 #' \eqn{X_{t_i} = \Delta X_1 + \dots + \Delta X_i}. The vector
@@ -200,6 +207,23 @@
 #' written for the gamma process, but the same scheme applies to every process
 #' with independent increments. The way each increment is drawn is given in
 #' the help page of each simulation function.
+#'
+#' **Bridge sampling** (`method = "Bridge"`; Kahle et al., 2016, section
+#' 1.3.2, algorithm 1.9, p. 8, for the Brownian motion, and section 2.5.2,
+#' algorithm 2.34, p. 85, for the gamma process). The value at
+#' the end \eqn{T} is drawn first, then the value at the middle of
+#' \eqn{[0, T]} given the two end values, by the bridge of the process, and
+#' so on, each interval being divided in half at each step: the values at the
+#' times \eqn{i T / 2^n} have exactly the distribution of the process.
+#'
+#' **Truncated series representation** (`method = "Series"`, argument
+#' `type`). The path is approximated on the whole interval
+#' \eqn{[0, T]} by a truncated series: the Karhunen-Loève expansion of the
+#' Brownian motion (Kahle et al., 2016, section 1.3.3, p. 9, equation \[1.1\]),
+#' and, for the gamma process, compound Poisson process approximations
+#' obtained by truncating the series representations of Bondesson, of
+#' rejection and of thinning (section 2.5.3, algorithm 2.35, p. 87, based on
+#' theorem 2.31).
 #'
 #' @references
 #' **Levy processes and time-scaled Levy processes**

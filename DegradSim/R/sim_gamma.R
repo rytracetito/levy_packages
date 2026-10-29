@@ -50,6 +50,13 @@
 #'   function \eqn{A} of the time-scaled process (defined in
 #'   [DegradSim-package]): a vectorized R function of `t`, for instance
 #'   `function(t) 2 * t^1.5`.
+#' @param method Simulation method: `"RWA"` (random walk approximation,
+#'   default), `"Bridge"` (bridge sampling) or `"Series"` (truncated series
+#'   representation), described in the section Simulation methods of
+#'   [DegradSim-package]. Only `"RWA"` is currently available: the other two
+#'   give an error.
+#' @param type Used only with `method = "Series"`, to choose the series
+#'   representation; `NULL` (default).
 #' @param n_traj Number of trajectories to simulate when `t` is a vector
 #'   (default 1), a positive integer.
 #'
@@ -135,7 +142,8 @@
 #'                          colour = "red") +
 #'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the gamma process")
 #' @export
-sim_gamma <- function(t, a, b, A = NULL, n_traj = 1) {
+sim_gamma <- function(t, a, b, A = NULL, method = "RWA", type = NULL, n_traj = 1) {
+  check_sim_method(method, type)
   if (missing(b) || !is.numeric(b) || length(b) != 1 || !(b > 0)) stop("b must be a positive number")
   if (is.null(A)) {
     if (missing(a)) stop("a is missing: give a (gamma process) or A (time-scaled gamma process)")

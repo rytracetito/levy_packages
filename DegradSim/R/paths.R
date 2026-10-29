@@ -15,6 +15,13 @@ as_plans <- function(t, n_traj) {
   t
 }
 
+# Méthodes de simulation : seule "RWA" est disponible pour l'instant
+check_sim_method <- function(method, type) {
+  method <- match.arg(method, c("RWA", "Bridge", "Series"))
+  if (method != "RWA") stop("no other method is currently available: use method = \"RWA\"", call. = FALSE)
+  if (!is.null(type)) stop("type is used only with method = \"Series\"", call. = FALSE)
+}
+
 time_change <- function(A, t) {
   if (!is.function(A)) stop("A must be an R function of t, for instance function(t) t^1.5")
   if (!isTRUE(all.equal(A(0), 0))) stop("A must satisfy A(0) = 0")

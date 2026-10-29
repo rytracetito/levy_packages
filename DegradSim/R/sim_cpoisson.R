@@ -115,7 +115,9 @@
 #'   ggplot2::stat_function(fun = dpos, colour = "red") +
 #'   ggplot2::labs(x = "dX > 0", y = "Density", title = "Non-zero increments, compound Poisson")
 #' @export
-sim_cpoisson <- function(t, lambda, rjump = function(n) stats::rexp(n, 1), n_traj = 1) {
+sim_cpoisson <- function(t, lambda, rjump = function(n) stats::rexp(n, 1), method = "RWA", type = NULL,
+                         n_traj = 1) {
+  check_sim_method(method, type)
   if (!is.numeric(lambda) || length(lambda) != 1 || !(lambda > 0) || !is.finite(lambda)) {
     stop("lambda must be a positive number")
   }

@@ -105,7 +105,8 @@
 #'   ggplot2::stat_function(fun = function(y) Runuran::ud(dist, y), colour = "red") +
 #'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the Meixner process")
 #' @export
-sim_meixner <- function(t, a, b, d, m, n_traj = 1) {
+sim_meixner <- function(t, a, b, d, m, method = "RWA", type = NULL, n_traj = 1) {
+  check_sim_method(method, type)
   if (!is.numeric(a) || length(a) != 1 || !(a > 0)) stop("a must be a positive number")
   if (!is.numeric(b) || length(b) != 1 || !(abs(b) < pi)) stop("b must be in (-pi, pi)")
   if (!is.numeric(d) || length(d) != 1 || !(d > 0)) stop("d must be a positive number")

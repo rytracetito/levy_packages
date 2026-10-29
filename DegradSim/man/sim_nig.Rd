@@ -4,7 +4,7 @@
 \alias{sim_nig}
 \title{Simulation of the normal inverse Gaussian process}
 \usage{
-sim_nig(t, alpha, beta, delta, mu, n_traj = 1)
+sim_nig(t, alpha, beta, delta, mu, method = "RWA", type = NULL, n_traj = 1)
 }
 \arguments{
 \item{t}{Inspection times. The times of each trajectory must start at 0 and
@@ -29,6 +29,15 @@ gives symmetric increments, \eqn{\beta > 0} increments skewed to the right.}
 \item{delta}{Scale parameter per unit of time, \eqn{\delta > 0}.}
 
 \item{mu}{Location parameter per unit of time, real.}
+
+\item{method}{Simulation method: \code{"RWA"} (random walk approximation,
+default), \code{"Bridge"} (bridge sampling) or \code{"Series"} (truncated series
+representation), described in the section Simulation methods of
+\link{DegradSim-package}. Only \code{"RWA"} is currently available: the other two
+give an error.}
+
+\item{type}{Used only with \code{method = "Series"}, to choose the series
+representation; \code{NULL} (default).}
 
 \item{n_traj}{Number of trajectories to simulate when \code{t} is a vector
 (default 1), a positive integer.}
