@@ -4,7 +4,7 @@
 \alias{meixner_mle}
 \title{Maximum likelihood estimation for the Meixner process}
 \usage{
-meixner_mle(x, t = NULL, ci = FALSE, level = 0.95)
+meixner_mle(x, t = NULL, ci = FALSE, level = 0.95, n_start = 5)
 }
 \arguments{
 \item{x}{Degradation levels of one trajectory; or a list of data frames,
@@ -21,6 +21,9 @@ Confidence intervals of \link{levyfit-package}.}
 
 \item{level}{Confidence level of the intervals, between 0 and 1 (default
 0.95). Used only when \code{ci = TRUE}.}
+
+\item{n_start}{Number of starting points built from \eqn{\hat\mu} and
+\eqn{\hat\nu} (see Algorithm), in addition to the moment estimates.}
 }
 \value{
 A named vector with the estimates \code{a}, \code{b}, \code{d} and \code{m}.
@@ -34,7 +37,7 @@ are \code{NA}, with a warning.
 Computes the maximum likelihood estimator of the four parameters
 \eqn{(a, b, d, m)} of the Meixner process from one or several trajectories
 observed at regular or irregular inspection times. The likelihood is
-maximized by a Newton-type algorithm started at the moment estimates.
+maximized numerically from several starting points.
 }
 \section{Source and notation}{
 
@@ -103,15 +106,20 @@ these are \eqn{\Psi_j^+ = 2\, \mathrm{Re}\,\psi_j} and
 \deqn{\frac{\partial \ell}{\partial m} = \frac{1}{a} \sum_{j=1}^{n} \Delta t_j \big(2\, \mathrm{Im}\,\psi_j - b\big).}
 }
 
-\section{The estimate of b}{
+\section{Profile in b}{
 
-Setting \eqn{\partial \ell / \partial b = 0} shows that the estimate of
-\eqn{b} is a function of the estimates of the other parameters:
-\deqn{\hat b = 2 \arctan \frac{S - \hat m T}{\hat a \hat d T},}
+For fixed \eqn{(a, d, m)}, \eqn{\partial \ell / \partial b = 0} has the
+unique solution
+\deqn{\hat b(a, d, m) = 2 \arctan \frac{S - m T}{a d T},}
 which is the lemma of Grigoletto and Provasi (2009, section 4.2),
 \eqn{\hat b = 2 \tan^{-1}(\bar z / \hat d)}, written for increments over
-unequal durations. It makes the expected total increment
-\eqn{\kappa_1 T} equal to \eqn{S}.
+unequal durations. It is a maximum, since
+\eqn{\partial^2 \ell / \partial b^2 = -\sum_{j=1}^{n} s_j / (1 + \cos b) < 0}
+(Grigoletto and Provasi, 2009, appendix A). It makes the expected total
+increment \eqn{\kappa_1 T} equal to \eqn{S}. The maximization is therefore
+done in dimension 3, on the profile log-likelihood
+\eqn{\ell_p(a, d, m) = \ell(a, \hat b(a, d, m), d, m)}, as suggested by
+Grigoletto and Provasi (2009, section 4.2).
 }
 
 \section{Method of moments}{
@@ -132,8 +140,19 @@ the moment estimates are (Grigoletto and Provasi, 2009, section 4.1, with the ex
 \deqn{d = \frac{1}{\gamma_2 - \gamma_1^2}, \quad
   b = \mathrm{sign}(\gamma_1) \arccos(2 - d \gamma_2), \quad
   a = \sqrt{k_2 (1 + \cos b) / d}, \quad m = k_1 - a d \tan(b/2).}
-They exist if and only if \eqn{d > 0} and \eqn{|2 - d \gamma_2| < 1}, that
-is \eqn{\gamma_2 > \frac{3}{2} \gamma_1^2} and \eqn{\gamma_1 \ne 0}. With
+They exist if and only if \eqn{d > 0} and \eqn{-1 < 2 - d \gamma_2 \le 1},
+so that \eqn{b \in (-\pi, \pi)}. Since
+\eqn{2 - d \gamma_2 = (\gamma_2 - 2 \gamma_1^2) / (\gamma_2 - \gamma_1^2)},
+this is \eqn{\gamma_2 > \frac{3}{2} \gamma_1^2}. When \eqn{b} ranges over
+\eqn{(-\pi, \pi)}, the ratio
+\eqn{\gamma_2 / \gamma_1^2 = (2 - \cos b) / (1 - \cos b)} takes all the
+values larger than \eqn{3/2}: the condition says that the sample skewness
+and kurtosis are those of a Meixner distribution. Grigoletto and Provasi
+(2009, section 4.1) write that the estimates do not exist when the
+kurtosis \eqn{\gamma_2 + 3} is smaller than \eqn{2 \gamma_1^2 + 3}, that
+is \eqn{\gamma_2 < 2 \gamma_1^2}. The bound \eqn{2} instead of \eqn{3/2} corresponds to \eqn{|b| = \pi/2}: it
+excludes the Meixner distributions with \eqn{\pi/2 < |b| < \pi}, for which
+the estimates exist. With
 equal durations \eqn{\Delta t}, they are the estimates of Grigoletto and Provasi (2009, section 4.1)
 computed on the increments, with the variance divided by \eqn{n}, and with
 \eqn{d} and \eqn{m} divided by \eqn{\Delta t}.
@@ -141,24 +160,60 @@ computed on the increments, with the variance divided by \eqn{n}, and with
 
 \section{Algorithm}{
 
-The likelihood is maximized as recommended by Grigoletto and Provasi
-(2009, section 4.2): by a Newton-type algorithm that uses the first and
-second derivatives of \eqn{\ell} (see Likelihood and score, and Hessian),
-started at the moment estimates.
+Grigoletto and Provasi (2009, section 4.2) propose to maximize the
+likelihood by a Newton-type algorithm with the first and second
+derivatives, and note that the moment estimates can be used as starting
+points. These estimates do not always exist (see Method of
+moments). Over a long time, the Meixner process is close to a Brownian
+motion (Kawai and Masuda, 2011, section 1): with long durations
+\eqn{\Delta t_j}, the increments are close to normal, their skewness and
+excess kurtosis are close to 0, and the condition of existence may fail.
+This implementation therefore uses several starting points, and the
+first derivatives only. The additional starting points, the bounds and the
+thresholds below are choices of this implementation, without a source.
 \enumerate{
-\item Compute the moment estimates (see Method of moments). When they do not
-exist, there is no starting point: the function returns \code{NA} with a
-warning.
-\item From this starting point, maximize \eqn{\ell} with \code{\link[stats:nlminb]{stats::nlminb()}},
-which uses the exact gradient and the exact Hessian. To stay in the
-parameter space \eqn{a > 0}, \eqn{d > 0}, \eqn{b \in (-\pi, \pi)}, the
-maximization is done in \eqn{(\ln a, b, \ln d, m)}, with \eqn{b} kept in
-\eqn{(-\pi, \pi)}.
-\item The solution is a local maximum when \eqn{\ell} has a zero gradient and a
-negative definite Hessian there. If \code{\link[stats:nlminb]{stats::nlminb()}} does not converge,
-or if the Hessian at the solution is not negative definite, the function
-returns \code{NA} with a warning.
+\item Estimate the mean and the variance of the process per unit of time by
+\deqn{\hat\mu = \frac{\sum_{j=1}^{n} \Delta x_j}{\sum_{j=1}^{n} \Delta t_j} = \frac{S}{T}, \qquad
+     \hat\nu = \frac{1}{n} \sum_{j=1}^{n} \frac{(\Delta x_j - \hat\mu \Delta t_j)^2}{\Delta t_j},}
+the estimators of Kahle, Mercier and Paroissin (2016, section 1.6.1,
+equation [1.19]), given there for the Wiener process, and compute the
+mean duration \eqn{\overline{\Delta t} = T / n}.
+\item Build the starting points \eqn{(a_0, d_0, m_0)} (the value of \eqn{b}
+is always \eqn{\hat b(a, d, m)}, see Profile in b):
+\itemize{
+\item the moment estimates of \eqn{a}, \eqn{d}, \eqn{m} (see Method of
+moments), when they exist, as suggested by Grigoletto and Provasi
+(2009, section 4.2);
+\item the point \eqn{b_0 = 0}, \eqn{d_0 = 1 / \overline{\Delta t}};
+\item \code{n_start - 1} random points: \eqn{b_0} drawn uniformly on
+\eqn{(-\pi + 0.1, \pi - 0.1)}, and \eqn{d_0 = u / \overline{\Delta t}}
+with \eqn{\ln u} drawn uniformly on \eqn{(\ln 0.2, \ln 5)}.
 }
+
+For the last two kinds of points, \eqn{a_0} and \eqn{m_0} are then
+chosen so that the mean and the variance of the model are equal to
+\eqn{\hat\mu} and \eqn{\hat\nu}, that is \eqn{\kappa_1 = \hat\mu} and
+\eqn{\kappa_2 = \hat\nu}:
+\deqn{a_0 = \sqrt{\frac{\hat\nu (1 + \cos b_0)}{d_0}}, \qquad
+     m_0 = \hat\mu - a_0 d_0 \tan(b_0/2).}
+\item From each starting point, maximize \eqn{\ell_p} by L-BFGS-B
+(\code{\link[stats:optim]{stats::optim()}}) on \eqn{(\ln a, \ln d, m)}, with the exact gradient,
+and with the bounds
+\eqn{10^{-3} \sqrt{\hat\nu} \le a \le 10^{3} \sqrt{\hat\nu}},
+\eqn{10^{-3} / \max_j \Delta t_j \le d \le 10^{3} / \min_j \Delta t_j} and
+\eqn{|m - \hat\mu| \le 100 \sqrt{\hat\nu}}.
+\item Discard the solutions at the edge of the parameter space: those with
+\eqn{|\hat b| > \pi - 0.1}, with \eqn{d \max_j \Delta t_j > 1000}, or on
+one of the bounds of step 3. Among the remaining solutions, keep the one
+of largest likelihood (when several reach the same maximum, one where
+L-BFGS-B converged). When all the solutions are discarded, the function
+returns \code{NA} with a warning. A warning is also given when L-BFGS-B did
+not converge at the solution kept, or when a discarded solution has a
+larger likelihood than the solution kept.
+}
+
+Because of the random starting points, call \code{\link[=set.seed]{set.seed()}} before
+\code{meixner_mle()} to reproduce a result exactly.
 
 Grigoletto and Provasi (2009, section 4.2) find that the convergence of the estimator to its
 asymptotic normal distribution is very slow, with a speed inversely related
@@ -232,6 +287,13 @@ meixner_mle(y)
 Grigoletto, M. and Provasi, C. (2009). Simulation and estimation of the
 Meixner distribution. \emph{Communications in Statistics - Simulation and
 Computation}, 38(1), 58-77. \doi{10.1080/03610910802395679}
+
+Kahle, W., Mercier, S. and Paroissin, C. (2016). \emph{Degradation Processes in
+Reliability}. ISTE and Wiley, London. Section 1.6.1 (equation [1.19]).
+
+Kawai, R. and Masuda, H. (2011). On the local asymptotic behavior of the
+likelihood function for Meixner Levy processes under high-frequency
+sampling. \emph{Statistics and Probability Letters}, 81(4), 460-469.
 
 Schoutens, W. (2002). The Meixner process: theory and applications in
 finance. EURANDOM report 2002-004. Section 2.

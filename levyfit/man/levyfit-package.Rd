@@ -20,7 +20,7 @@ Estimation of the parameters:\tabular{llll}{
    \code{\link[=gamma_mle]{gamma_mle()}} \tab gamma \tab shape \code{a}, rate \code{b} \tab root of one equation \cr
    \code{\link[=ig_mle]{ig_mle()}} \tab inverse Gaussian \tab \code{mu}, \code{eta}, \code{eta_unbiased} \tab closed form \cr
    \code{\link[=vg_mle]{vg_mle()}} \tab variance-gamma \tab \code{theta}, \code{sigma}, \code{nu} \tab EM, then L-BFGS-B \cr
-   \code{\link[=meixner_mle]{meixner_mle()}} \tab Meixner \tab \code{a}, \code{b}, \code{d}, \code{m} \tab Newton-type, from the moments \cr
+   \code{\link[=meixner_mle]{meixner_mle()}} \tab Meixner \tab \code{a}, \code{b}, \code{d}, \code{m} \tab profile likelihood \cr
 }
 
 
@@ -94,9 +94,11 @@ not depend on this starting point.
 time given by a gamma process. The EM algorithm treats this random time
 as a hidden variable (each step is explicit or a unique root); it starts
 from the Wiener MLE and is followed by L-BFGS-B (\code{\link[stats:optim]{stats::optim()}}).
-\item Meixner: a Newton-type algorithm (\code{\link[stats:nlminb]{stats::nlminb()}}) with the exact
-gradient and Hessian, started at the moment estimates, as recommended
-by Grigoletto and Provasi (2009, section 4.2).
+\item Meixner: L-BFGS-B (\code{\link[stats:optim]{stats::optim()}}) on the likelihood profiled in
+\eqn{b} (\eqn{\hat b} is explicit for given \eqn{a}, \eqn{d}, \eqn{m}),
+with the exact gradient, from several starting points: the moment
+estimates when they exist, and points built from the empirical mean
+and variance (\code{n_start}); the solution of largest likelihood is kept.
 }
 }
 }

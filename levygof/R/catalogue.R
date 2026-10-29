@@ -118,9 +118,9 @@ catalogue <- list(
 #' [levyfit::meixner_mle()]), the distribution function is computed by
 #' numerical integration of the density, and the p-value is obtained by
 #' parametric bootstrap (Stute, Gonzalez Manteiga and Presedo Quindimil,
-#' 1993). With a small sample, the maximum likelihood estimator of the
-#' Meixner law may not exist (maximum on the boundary, towards a shifted
-#' gamma or a Gaussian law): the test is then not computed, with this message.
+#' 1993). With a small sample, [levyfit::meixner_mle()] may give no estimate
+#' (see the section Algorithm of its help): the test is then not computed,
+#' with this message.
 #'
 #' @references
 #' **Gamma distribution**

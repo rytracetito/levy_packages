@@ -273,8 +273,8 @@ vg <- DegradSim::sim_vg(t5, theta = 0.5, sigma = 1.5, nu = 1)
 gof.levy(vg, "VG", test = "AD", B = 50)
 
 # 9. Meixner model (a = 1, b = 1, d = 0.5, m = 0.2), regular and irregular
-#    inspections; with few increments the maximum likelihood estimator of
-#    the Meixner process may not exist, and the test then stops with a message
+#    inspections; with few increments meixner_mle() may give no estimate,
+#    and the test then stops with a message
 t_reg <- DegradSim::inspection_times("regular", n = 100, tmax = 100)$time
 mx <- DegradSim::sim_meixner(t_reg, a = 1, b = 1, d = 0.5, m = 0.2)
 gof.levy(mx, "Meixner", test = "AD", B = 30)

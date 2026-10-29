@@ -279,7 +279,7 @@ convergence(function(t) sim_vg(t, theta = 0.5, sigma = 1.5, nu = 2), vg_mle, vra
 
 Les mêmes cas, avec des inspections très rapprochées : 50 000 accroissements au pas de 0.01 sur une durée de 500, pour une trajectoire comme pour plusieurs (20 trajectoires de 2 500 inspections jusqu'à 25).
 
-Pour ce modèle, c'est la **finesse du pas** qui compte, plus que la durée. Sur un long intervalle, un accroissement du processus de Meixner est la somme de très nombreux petits sauts, et sa loi est presque normale : la vraisemblance ne permet plus de séparer \(a\), \(b\), \(d\) et \(m\), ou n'a même plus de maximum intérieur (cas limite gaussien, décrit dans l'aide de `meixner_mle()`). Sur un intervalle court, l'accroissement garde la forme propre au Meixner (asymétrie, queues), qui permet de séparer les paramètres. Le tableau de convergence ci-dessous le montre, à durée fixée.
+Pour ce modèle, c'est la **finesse du pas** qui compte, plus que la durée. Sur un long intervalle, un accroissement du processus de Meixner est la somme de très nombreux petits sauts, et sa loi est presque normale (sur un temps long, le processus de Meixner est proche d'un mouvement brownien, Kawai et Masuda, 2011, section 1) : la vraisemblance ne permet plus de séparer \(a\), \(b\), \(d\) et \(m\), et `meixner_mle()` peut ne trouver aucun maximum (voir la section Algorithm de son aide). Sur un intervalle court, l'accroissement garde la forme propre au Meixner (asymétrie, queues), qui permet de séparer les paramètres. Le tableau de convergence ci-dessous le montre, à durée fixée.
 
 Le cas 2 arrondit les instants à trois décimales : la simulation construit un générateur par pas distinct, et l'arrondi en laisse une quarantaine au lieu de 50 000.
 
