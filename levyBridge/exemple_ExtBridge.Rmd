@@ -27,16 +27,17 @@ remotes::install_github("rytracetito/levy_packages", subdir = "DegradSim")
 
 ## Principe
 
-Une trajectoire est observée aux instants \(0 = t_0 < t_1 < \dots < t_N\). Les deux méthodes de `levyBridge` tirent, sur une grille régulière, des valeurs qui suivent exactement la loi du processus sachant les observations ; elles ne diffèrent que par la grille.
+Une trajectoire est observée aux instants \(0 = t_0 < t_1 < \dots < t_N\). Les fonctions `x_resampling(x, theta, method)` la rééchantillonnent sur une grille régulière : chaque point de la grille qui n'est pas un instant d'inspection est tiré par la fonction de pont `x_bridge` entre les niveaux connus qui l'entourent. Les méthodes `"Bridge"`, `"ExtBridge"` et `"MultiBridge"` ne diffèrent que par la grille ; ce document compare les deux premières (`"MultiBridge"` a son propre document).
 
 * **Méthode `"Bridge"`** (Grall-Maës, 2012) : grille \(t'_k = k\, t_N / N\), avec autant de points que d'observations. Les instants d'inspection ne sont en général pas sur la grille.
-* **Méthode `"ExtBridge"`** : les instants sont des multiples de \(10^{-d}\), où \(d\) est le nombre de décimales, et le pas est le plus grand tel que tous les instants d'inspection soient sur la grille :
+* **Méthode `"ExtBridge"`** : les instants sont pris avec \(d\) décimales, et le pas est le plus grand tel que tous les instants d'inspection, tronqués à \(d\) décimales, soient sur la grille :
 \[
-h = 10^{-d}\, \mathrm{pgcd}\big(10^d t_1, \dots, 10^d t_N\big), \qquad t'_k = k\, h, \quad k = 0, \dots, t_N / h.
+h = 10^{-d}\, \mathrm{pgcd}\big(\lfloor 10^d t_1 \rfloor, \dots, \lfloor 10^d t_N \rfloor\big), \qquad t'_k = k\, h, \quad k = 0, \dots, t_N / h,
 \]
+où \(\lfloor u \rfloor\) est la partie entière inférieure de \(u\).
 Le pseudo-échantillon contient donc toutes les observations. La grille a \(t_N / h \ge N\) pas, avec égalité si et seulement si les inspections sont régulières : la méthode renvoie alors les observations elles-mêmes.
 
-Dans les deux cas, la grille est parcourue de gauche à droite : un point de grille égal à un instant d'inspection garde la valeur observée, les autres sont tirés dans le pont entre la dernière valeur connue à gauche et l'inspection suivante. Sous le modèle, les accroissements reconstruits sont indépendants, de la loi de \(X_h\).
+Dans les deux cas, la grille est parcourue de gauche à droite : un point de grille égal à un instant d'inspection garde la valeur observée, les autres sont tirés par le pont entre la dernière valeur connue à gauche et l'inspection suivante.
 
 Le nombre de décimales \(d\) est trouvé automatiquement (argument `digits = NULL`, partie III).
 
@@ -246,7 +247,7 @@ nrow(r[[1]])
 
 # IV - Plusieurs trajectoires : pas commun (`common_step`)
 
-Sans autre précision, chaque trajectoire reçoit son propre pas \(h\) (le pgcd de ses propres écarts). Deux trajectoires de pas différents donnent des accroissements de lois différentes (\(X_{h_1}\) et \(X_{h_2}\)) : chacune est un échantillon i.i.d., mais les deux pas sont différents.
+Sans autre précision, chaque trajectoire reçoit son propre pas \(h\) (le pgcd de ses propres écarts). Les deux trajectoires ont alors deux pas différents.
 
 ```{r}
 liste <- list(data.frame(t = c(0, 1, 3, 6), X = c(0, 0.8, 2.1, 4.3)),
@@ -256,7 +257,7 @@ attr(r_propre, "teq")
 sapply(r_propre, nrow) - 1
 ```
 
-Avec `common_step = TRUE`, \(h\) est le pgcd de tous les écarts de toutes les trajectoires, ici 0.25 : toutes les inspections restent sur leur grille, et tous les accroissements reconstruits ont la loi de \(X_{0.25}\). Toutes les trajectoires ont le même pas.
+Avec `common_step = TRUE`, \(h\) est le pgcd de tous les écarts de toutes les trajectoires, ici 0.25 : toutes les inspections restent sur leur grille, et toutes les trajectoires ont le même pas.
 
 ```{r}
 r_commun <- gamma_resampling(liste, theta = c(a = 2, b = 3), method = "ExtBridge", common_step = TRUE)

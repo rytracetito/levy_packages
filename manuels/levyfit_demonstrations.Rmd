@@ -1,0 +1,672 @@
+---
+title: "levyfit : toutes les démonstrations, pas à pas"
+subtitle: "Estimation par maximum de vraisemblance des processus de Wiener, gamma, inverse gaussien, variance-gamma et de Meixner"
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 2
+    number_sections: true
+header-includes:
+  - \renewcommand{\contentsname}{Sommaire}
+  - \usepackage{amsmath}
+  - \usepackage{amssymb}
+  - \usepackage{booktabs}
+  - \renewcommand{\labelitemi}{\textbullet}
+  - \newcommand{\Var}{\operatorname{Var}}
+  - \newcommand{\E}{\operatorname{E}}
+  - \renewcommand{\Re}{\operatorname{Re}}
+  - \renewcommand{\Im}{\operatorname{Im}}
+  - \newcommand{\IG}{\operatorname{IG}}
+  - \newcommand{\GIG}{\operatorname{GIG}}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+```
+
+\newpage
+
+# Comment lire ce document
+
+Ce document reprend, une par une, toutes les affirmations mathématiques des pages d'aide du package `levyfit` (version 0.1.0) et les démontre. Chaque étape d'un calcul porte, entre crochets, la raison qui la justifie : un calcul élémentaire, un lemme démontré dans ce document (section 2), ou une référence.
+
+**Les références.** Trois sortes de justifications sont utilisées, et elles sont toujours signalées.
+
+* **[V]** Référence vérifiée : le passage cité a été relu dans le PDF du dossier `Bibliographie`, et le numéro d'équation, de définition ou de section est exact. La liste complète est en section 11.
+* **[C]** Résultat classique de mathématiques, cité sans avoir été relu dans un PDF (l'ouvrage n'est pas dans la `Bibliographie`). Quand c'est possible, le résultat est démontré ici pour ne pas dépendre de cette citation.
+* **[N]** Constat numérique ou choix d'implémentation : ce n'est pas un théorème. Il est signalé comme tel, avec, pour les constats, un code R (non exécuté) qui permet de le reproduire.
+
+**Les écarts trouvés.** En refaisant les démonstrations, quelques points des pages d'aide ou de la littérature se sont révélés imprécis. Ils sont signalés par **Remarque critique** et regroupés en section 10.
+
+**Notations communes** (celles de la page d'aide `?levyfit`, section Notation).
+
+* \((\Delta t_j, \Delta x_j)\), \(j = 1, \dots, n\) : durées et accroissements entre deux inspections consécutives d'une même trajectoire, regroupés sur toutes les trajectoires ; \(n\) est le nombre total d'accroissements.
+* \(T = \sum_{j=1}^{n} \Delta t_j\) (temps total observé) et \(S = \sum_{j=1}^{n} \Delta x_j\) (dégradation totale).
+* \(r_j = \Delta x_j / \Delta t_j\) (vitesses) et \(w_j = \Delta t_j / T\) (poids), de sorte que \(\sum_{j=1}^{n} w_j = 1\).
+* \(\vartheta\) : vecteur des paramètres ; \(f_{\Delta t}(x; \vartheta)\) : densité d'un accroissement sur une durée \(\Delta t\) ; \(\ell\) : log-vraisemblance.
+* \(\psi = (\ln \Gamma)'\) (digamma) et \(\psi' = (\ln \Gamma)''\) (trigamma).
+
+\newpage
+
+# Outils communs
+
+Cette section démontre une fois pour toutes les résultats utilisés dans plusieurs chapitres.
+
+## La vraisemblance d'un processus de Lévy observé à des instants irréguliers
+
+**Proposition 2.1.** Soit \(k\) trajectoires indépendantes d'un même processus à accroissements indépendants \(X\), avec \(X_0 = 0\), la trajectoire \(i\) étant observée aux instants déterministes \(0 = t_{i,0} < t_{i,1} < \dots < t_{i,m_i}\). Si l'accroissement sur une durée \(\Delta t\) a la densité \(f_{\Delta t}(\cdot\,; \vartheta)\), alors la log-vraisemblance des niveaux observés est
+\[
+\ell(\vartheta) = \sum_{j=1}^{n} \ln f_{\Delta t_j}(\Delta x_j; \vartheta).
+\]
+
+*Démonstration.*
+
+1. Pour une trajectoire \(i\), l'application \((x_{i,1}, \dots, x_{i,m_i}) \mapsto (\Delta x_{i,1}, \dots, \Delta x_{i,m_i})\), avec \(\Delta x_{i,j} = x_{i,j} - x_{i,j-1}\) et \(x_{i,0} = 0\), est linéaire, de matrice triangulaire avec des 1 sur la diagonale. [calcul direct] Son jacobien vaut donc 1, et la densité des niveaux est égale à la densité des accroissements évaluée aux accroissements observés. [formule du changement de variables]
+2. Les accroissements d'une même trajectoire sont indépendants. [définition d'un processus à accroissements indépendants ; voir par exemple Kahle et al. (2016), définition 2.24 pour le processus gamma [V]] Leur densité jointe est donc le produit \(\prod_{j=1}^{m_i} f_{\Delta t_{i,j}}(\Delta x_{i,j}; \vartheta)\).
+3. Les trajectoires sont indépendantes [hypothèse du modèle, page d'aide `?levyfit`, section Data] : la densité jointe de toutes les données est le produit des densités des trajectoires.
+4. On prend le logarithme du produit, et on renumérote les accroissements de \(j = 1\) à \(n\), toutes trajectoires confondues. \(\square\)
+
+**Remarque.** Les instants d'inspection sont supposés déterministes (fixés à l'avance, ou indépendants du processus). C'est l'hypothèse de Kahle et al. (2016, section 1.6.1, équation [1.14]) [V] et de Wang et Xu (2010, section 2, équation (3)) [V]. C'est aussi ce qui permet d'écrire, dans tout le document, que la formule vaut que les \(\Delta t_j\) soient égaux ou non : la formule de la proposition 2.1 ne suppose rien sur les durées.
+
+## La fonction gamma et la fonction digamma
+
+On utilise \(\Gamma(x) = \int_0^\infty u^{x-1} e^{-u}\, du\) pour \(x > 0\) [définition ; Kahle et al. (2016), définition 2.1 [V]].
+
+**Lemme 2.2.** (a) \(\Gamma(x + 1) = x\, \Gamma(x)\) ; (b) \(\ln \Gamma\) est convexe sur \(]0, \infty[\), donc \(\psi\) est croissante et \(\psi' \ge 0\) ; (c) \(\psi(x + 1) = \psi(x) + 1/x\) et \(\psi'(x) = \psi'(x+1) + 1/x^2\).
+
+*Démonstration.*
+
+(a) Intégration par parties : \(\Gamma(x+1) = [-u^x e^{-u}]_0^\infty + x \int_0^\infty u^{x-1} e^{-u} du = x\, \Gamma(x)\), le crochet étant nul pour \(x > 0\).
+
+(b) Soit \(x, y > 0\) et \(\lambda \in ]0, 1[\). On écrit \(u^{\lambda x + (1-\lambda) y - 1} e^{-u} = (u^{x-1} e^{-u})^{\lambda} (u^{y-1} e^{-u})^{1-\lambda}\). L'inégalité de Hölder, avec les exposants \(1/\lambda\) et \(1/(1-\lambda)\) [C, inégalité de Hölder], donne \(\Gamma(\lambda x + (1-\lambda) y) \le \Gamma(x)^\lambda \Gamma(y)^{1-\lambda}\). En passant au logarithme, \(\ln \Gamma\) est convexe. Une fonction convexe deux fois dérivable a une dérivée seconde positive ou nulle [C], d'où \(\psi' \ge 0\) et \(\psi\) croissante. (La dérivabilité de \(\Gamma\) sous le signe somme se justifie par convergence dominée [C].)
+
+(c) On prend le logarithme de (a) puis on dérive une fois, puis deux fois. \(\square\)
+
+**Lemme 2.3** (encadrement de \(\psi\) et de \(\psi'\)). Pour \(x > 0\) :
+
+(a) \(\psi'(x) \ge \sum_{k=0}^{\infty} 1/(x+k)^2 > 1/x\) ;
+
+(b) \(\psi(x) \le \ln x\), et \(\psi(x) \ge \ln(x - 1)\) si \(x > 1\) ; donc \(\psi(x) - \ln x \to 0\) quand \(x \to \infty\) ;
+
+(c) \(x\, \psi(x) \to -1\) quand \(x \to 0^+\).
+
+*Démonstration.*
+
+(a) En itérant le lemme 2.2(c) \(N\) fois : \(\psi'(x) = \sum_{k=0}^{N-1} 1/(x+k)^2 + \psi'(x+N)\). Comme \(\psi'(x+N) \ge 0\) [lemme 2.2(b)], \(\psi'(x) \ge \sum_{k=0}^{N-1} 1/(x+k)^2\) pour tout \(N\), donc \(\psi'(x) \ge \sum_{k=0}^{\infty} 1/(x+k)^2\). Ensuite, \(u \mapsto 1/u^2\) est strictement décroissante, donc \(1/(x+k)^2 > \int_{x+k}^{x+k+1} du/u^2\) pour tout \(k\). En sommant, \(\sum_{k \ge 0} 1/(x+k)^2 > \int_x^\infty du/u^2 = 1/x\).
+
+(b) \(\psi\) est croissante [lemme 2.2(b)], donc \(\psi(x) \le \int_x^{x+1} \psi(u)\, du = \ln \Gamma(x+1) - \ln \Gamma(x) = \ln x\) [lemme 2.2(a)]. De même, pour \(x > 1\), \(\psi(x) \ge \int_{x-1}^{x} \psi(u)\, du = \ln(x-1)\). Ainsi \(\ln(1 - 1/x) \le \psi(x) - \ln x \le 0\), et le minorant tend vers 0.
+
+(c) \(\psi(x) = \psi(x+1) - 1/x\) [lemme 2.2(c)] et \(\psi(x+1) \to \psi(1)\), fini, quand \(x \to 0^+\) [continuité de \(\psi\) en 1]. Donc \(x \psi(x) = x \psi(x+1) - 1 \to -1\). \(\square\)
+
+## Inégalité de Jensen et unicité d'une racine
+
+**Lemme 2.4** (Jensen strict pour le logarithme). Si \(w_j > 0\), \(\sum_{j=1}^{n} w_j = 1\) et \(r_j > 0\), alors \(\sum_{j=1}^{n} w_j \ln r_j \le \ln \sum_{j=1}^{n} w_j r_j\), avec égalité si et seulement si tous les \(r_j\) sont égaux.
+
+*Démonstration.* Pour \(u > 0\), \(\ln u \le u - 1\), avec égalité si et seulement si \(u = 1\) [étude de \(u \mapsto u - 1 - \ln u\), de dérivée \(1 - 1/u\), minimale et nulle en 1]. Avec \(\bar r = \sum_{j=1}^{n} w_j r_j\) et \(u = r_j / \bar r\) : \(\sum_{j=1}^{n} w_j \ln (r_j/\bar r) \le \sum_{j=1}^{n} w_j (r_j/\bar r - 1) = 0\), avec égalité si et seulement si \(r_j = \bar r\) pour tout \(j\). \(\square\)
+
+**Lemme 2.5** (racine unique). Si \(g\) est continue et strictement décroissante sur \(]0, \infty[\), avec \(\lim_{0^+} g = +\infty\) et \(\lim_{+\infty} g < 0\), alors \(g\) a une racine et une seule.
+
+*Démonstration.* Il existe \(a_1\) avec \(g(a_1) > 0\) et \(a_2 > a_1\) avec \(g(a_2) < 0\) [définition des limites]. Le théorème des valeurs intermédiaires [C] donne une racine dans \(]a_1, a_2[\). Deux racines \(a < a'\) donneraient \(g(a) = g(a')\), ce qui contredit la stricte décroissance. \(\square\)
+
+## Le théorème de l'enveloppe (dérivée d'une vraisemblance profilée)
+
+**Lemme 2.6.** Soit \(\ell(\theta, \beta)\) différentiable et \(\hat\beta(\theta)\) différentiable, avec \(\partial_\beta \ell(\theta, \hat\beta(\theta)) = 0\) pour tout \(\theta\). Alors la vraisemblance profilée \(\ell_p(\theta) = \ell(\theta, \hat\beta(\theta))\) vérifie \(\ell_p'(\theta) = \partial_\theta \ell(\theta, \hat\beta(\theta))\).
+
+*Démonstration.* Dérivation d'une fonction composée : \(\ell_p'(\theta) = \partial_\theta \ell + \partial_\beta \ell \cdot \hat\beta'(\theta)\), et le second terme est nul par hypothèse. \(\square\)
+
+Ce lemme justifie deux choix du code : la fonction \(g\) du processus gamma (section 5) et le gradient de la vraisemblance profilée de Meixner, que le code calcule avec le score pris en \(\hat b\) sans dériver \(\hat b\) (section 8).
+
+## Lois du khi-deux et transformée de Laplace
+
+**Définition.** \(\chi^2_k\) est la loi de \(Z_1^2 + \dots + Z_k^2\), où les \(Z_i\) sont indépendantes de loi \(\mathcal{N}(0, 1)\).
+
+**Lemme 2.7.** (a) Si \(V \sim \chi^2_k\), sa transformée de Laplace est \(\E[e^{-uV}] = (1 + 2u)^{-k/2}\) pour \(u \ge 0\). (b) Pour \(k > 2\), \(\E[1/V] = 1/(k-2)\). (c) La loi \(\chi^2_k\) est la loi gamma de forme \(k/2\) et d'intensité \(1/2\).
+
+*Démonstration.*
+
+(a) Pour \(Z \sim \mathcal{N}(0, 1)\) : \(\E[e^{-uZ^2}] = \int (2\pi)^{-1/2} e^{-(1+2u) z^2/2} dz = (1 + 2u)^{-1/2}\) [intégrale gaussienne : \(\int e^{-c z^2/2} dz = \sqrt{2\pi/c}\)]. L'indépendance donne le produit de \(k\) facteurs.
+
+(c) La loi gamma de forme \(k/2\) et d'intensité \(1/2\) a pour transformée de Laplace \(\int_0^\infty e^{-uv} \frac{(1/2)^{k/2}}{\Gamma(k/2)} v^{k/2-1} e^{-v/2} dv = (1/2)^{k/2} (u + 1/2)^{-k/2} = (1 + 2u)^{-k/2}\) [changement de variable \(w = (u + 1/2) v\) et définition de \(\Gamma\)]. Elle coïncide avec (a), et une loi sur \([0, \infty[\) est déterminée par sa transformée de Laplace [C : unicité de la transformée de Laplace, voir Feller (1971), vol. II, chapitre XIII].
+
+(b) Avec la densité de (c) : \(\E[1/V] = \frac{(1/2)^{k/2}}{\Gamma(k/2)} \int_0^\infty v^{k/2-2} e^{-v/2} dv = \frac{(1/2)^{k/2}\, \Gamma(k/2 - 1)\, 2^{k/2-1}}{\Gamma(k/2)} = \frac{1}{2 (k/2 - 1)} = \frac{1}{k-2}\) [définition de \(\Gamma\) après changement de variable \(v = 2w\), intégrale finie si \(k/2 - 1 > 0\), puis lemme 2.2(a)]. \(\square\)
+
+**Lemme 2.8** (indépendance par la transformée de Laplace). Soit \(V \ge 0\) et \(S\) deux variables aléatoires. Si, pour tout \(u \ge 0\) et toute fonction \(h\) mesurable bornée positive, \(\E[e^{-uV} h(S)] = L(u)\, \E[h(S)]\) avec \(L(u) = (1+2u)^{-k/2}\), alors \(V \sim \chi^2_k\) et \(V\) est indépendante de \(S\).
+
+*Démonstration.* Avec \(h = 1\), \(\E[e^{-uV}] = L(u)\) : \(V \sim \chi^2_k\) [lemme 2.7 et unicité de la transformée de Laplace, C]. Soit \(A\) un ensemble avec \(P(S \in A) > 0\) et \(h = 1_A\). La loi de \(V\) sachant \(\{S \in A\}\) a pour transformée de Laplace \(\E[e^{-uV} 1_A(S)] / P(S \in A) = L(u)\) : c'est donc aussi \(\chi^2_k\) [même unicité]. Ainsi \(P(V \in B, S \in A) = P(V \in B) P(S \in A)\) pour tous \(A\), \(B\) : c'est l'indépendance. \(\square\)
+
+## La fonction de Bessel modifiée \(K_p\)
+
+On prend la définition de Fischer, Gaunt et Sarantsev (2023, annexe A) [V] :
+\[
+K_p(z) = \int_0^\infty e^{-z \cosh t} \cosh(p t)\, dt, \qquad z > 0, \ p \in \mathbb{R}.
+\]
+
+**Lemme 2.9.** (a) \(K_{-p} = K_p\) et \(K_p(z) > 0\). (b) Pour \(A, B > 0\) et \(q\) réel,
+\[
+\int_0^\infty g^{q-1} \exp\Big(-\frac{A}{g} - B g\Big)\, dg = 2 \Big(\frac{A}{B}\Big)^{q/2} K_q\big(2\sqrt{AB}\big).
+\]
+(c) \(K_{p+1}(z) = K_{p-1}(z) + \frac{2p}{z} K_p(z)\).
+
+*Démonstration.*
+
+(a) \(\cosh\) est paire et l'intégrande est strictement positif.
+
+(b) On pose \(g = \sqrt{A/B}\, e^{t}\), \(t \in \mathbb{R}\), donc \(dg = g\, dt\) et \(A/g + B g = \sqrt{AB}(e^{-t} + e^{t}) = 2\sqrt{AB} \cosh t\). L'intégrale devient \((A/B)^{q/2} \int_{-\infty}^{\infty} e^{q t} e^{-z \cosh t} dt\) avec \(z = 2\sqrt{AB}\). Comme \(\cosh\) est paire, \(\int_{-\infty}^{\infty} e^{qt} e^{-z\cosh t} dt = \int_{-\infty}^{\infty} \cosh(qt) e^{-z \cosh t} dt = 2 K_q(z)\) [la partie impaire \(\sinh(qt)\) s'intègre en 0].
+
+(c) \(K_{p+1} - K_{p-1} = \int_0^\infty e^{-z\cosh t} [\cosh((p+1)t) - \cosh((p-1)t)] dt = \int_0^\infty e^{-z\cosh t}\, 2 \sinh(pt) \sinh t\, dt\) [formule \(\cosh(u+v) - \cosh(u-v) = 2 \sinh u \sinh v\)]. Comme \(\frac{d}{dt} e^{-z\cosh t} = -z \sinh t\, e^{-z\cosh t}\), une intégration par parties donne \(\frac{2}{z}\big([-\sinh(pt) e^{-z\cosh t}]_0^\infty + p \int_0^\infty \cosh(pt) e^{-z\cosh t} dt\big) = \frac{2p}{z} K_p(z)\), le crochet étant nul. \(\square\)
+
+Le lemme 2.9(c) est la récurrence utilisée par le code de `vg_mle` quand `besselK()` déborde (page d'aide `?vg_mle`, Numerical detail).
+
+## La loi inverse gaussienne
+
+\(\IG(m, \lambda)\), de moyenne \(m > 0\) et de forme \(\lambda > 0\), a pour densité
+\(p_{m,\lambda}(x) = \sqrt{\lambda / (2\pi x^3)}\, \exp(-\lambda (x - m)^2 / (2 m^2 x))\), \(x > 0\) [Kahle et al. (2016), définition 1.13, équation [1.10] [V] ; Ye et Chen (2014), section 2.1 [V]].
+
+**Lemme 2.10.** (a) Pour \(s \ge 0\), \(\E[e^{-sX}] = \exp\big(\frac{\lambda}{m}(1 - \sqrt{1 + 2 m^2 s / \lambda})\big)\) si \(X \sim \IG(m, \lambda)\). (b) Si \(c > 0\), \(cX \sim \IG(c m, c \lambda)\). (c) Si \(X_j \sim \IG(\mu \Delta t_j, \eta \Delta t_j^2)\) sont indépendantes, \(\sum_{j=1}^{n} X_j \sim \IG(\mu T, \eta T^2)\).
+
+*Démonstration.*
+
+(a) On développe l'exposant : \(-\frac{\lambda (x-m)^2}{2m^2 x} - s x = -\frac{\lambda x}{2 m'^2} + \frac{\lambda}{m} - \frac{\lambda}{2x}\), où \(m'\) est défini par \(\frac{\lambda}{2m'^2} = \frac{\lambda}{2m^2} + s\), soit \(m' = m / \sqrt{1 + 2m^2 s/\lambda}\). L'exposant de \(p_{m',\lambda}\) est \(-\frac{\lambda x}{2m'^2} + \frac{\lambda}{m'} - \frac{\lambda}{2x}\). Donc \(e^{-sx} p_{m,\lambda}(x) = p_{m',\lambda}(x)\, e^{\lambda/m - \lambda/m'}\) ; en intégrant, et comme \(p_{m',\lambda}\) est une densité, \(\E[e^{-sX}] = e^{\lambda/m - \lambda/m'}\), ce qui est la formule annoncée.
+
+(b) La densité de \(Y = cX\) est \(p_{m,\lambda}(y/c)/c\) [changement de variable]. Or \(\frac{1}{c}\sqrt{\frac{\lambda c^3}{2\pi y^3}} = \sqrt{\frac{c\lambda}{2\pi y^3}}\) et \(\frac{\lambda (y/c - m)^2}{2 m^2 y / c} = \frac{c\lambda (y - cm)^2}{2 (cm)^2 y}\) : c'est \(p_{cm, c\lambda}(y)\).
+
+(c) Avec \(m = \mu \Delta t\) et \(\lambda = \eta \Delta t^2\) dans (a) : \(\lambda/m = \eta \Delta t / \mu\) et \(m^2/\lambda = \mu^2/\eta\) ne dépend pas de \(\Delta t\). L'exposant est donc \(\Delta t\, \frac{\eta}{\mu}(1 - \sqrt{1 + 2\mu^2 s/\eta})\), linéaire en \(\Delta t\). Par indépendance, la transformée de Laplace de la somme est le produit, d'exposant \(T \frac{\eta}{\mu}(1 - \sqrt{1 + 2\mu^2 s / \eta})\), qui est celle de \(\IG(\mu T, \eta T^2)\) [même calcul avec \(\Delta t = T\)] ; on conclut par unicité de la transformée de Laplace [C]. \(\square\)
+
+\newpage
+
+# Intervalles de confiance (page `?levyfit`, section Confidence intervals)
+
+## Ce que fait le code
+
+Avec `ci = TRUE`, le code calcule \(J = -\nabla^2 \ell(\hat\vartheta)\) (numériquement par `optimHess`, sauf pour Meixner), \(se_k = \sqrt{(J^{-1})_{kk}}\) et \(z = \Phi^{-1}((1 + \text{level})/2)\) (fonction `confidence_intervals`, fichier `R/estimate.R`).
+
+## Justifications
+
+1. **Le quantile \(z\).** Si \(Z \sim \mathcal{N}(0, 1)\), \(P(-z \le Z \le z) = \Phi(z) - \Phi(-z) = 2\Phi(z) - 1\) [symétrie de la loi normale : \(\Phi(-z) = 1 - \Phi(z)\)]. Cette probabilité vaut `level` si et seulement si \(\Phi(z) = (1 + \text{level})/2\). Pour `level = 0.95`, \(z = \Phi^{-1}(0.975) \approx 1.96\).
+2. **L'intervalle de Wald pour un paramètre réel.** Il repose sur l'approximation \((\hat\vartheta_k - \vartheta_k)/se_k \approx \mathcal{N}(0, 1)\), conséquence de la normalité asymptotique de l'EMV avec la matrice de covariance \(J^{-1}\). Alors \(P(|\hat\vartheta_k - \vartheta_k| \le z\, se_k) \approx\) `level`, ce qui donne \(\hat\vartheta_k \pm z\, se_k\).
+3. **Statut de la normalité asymptotique.**
+   * Wiener : Kahle et al. (2016, section 1.6.1, p. 24-25 et p. 27) [V] énoncent la normalité asymptotique des estimateurs (renvoi à leur référence [KAH 04]).
+   * Gamma, cas équilibré (mêmes pas pour tous) : Kahle et al. (2016, section 2.7.1.1, p. 117) [V] donnent la normalité asymptotique et la matrice de covariance limite (renvoi à [KOT 06]).
+   * Meixner : Grigoletto et Provasi (2009, section 4.2, équation (7)) [V] écrivent que les conditions de régularité « appear very difficult to prove analytically » ; Mazzola (2010, section 3.3.2, p. 78) [V] recommande la prudence.
+   * Cas général (pas inégaux, plusieurs trajectoires, VG, IG) : la normalité asymptotique de l'EMV pour des observations indépendantes non identiquement distribuées est un résultat classique sous conditions de régularité [C], **non démontré ici** pour chaque modèle. Les intervalles de `levyfit` sont donc des approximations, comme l'indique la page d'aide (« These intervals are asymptotic »).
+4. **L'intervalle pour un paramètre positif (méthode delta).** On pose \(\phi = \ln \vartheta_k\). Un développement de Taylor au premier ordre donne \(\ln \hat\vartheta_k - \ln \vartheta_k \approx (\hat\vartheta_k - \vartheta_k)/\vartheta_k\) [dérivée de \(\ln\) : \(1/\vartheta\)], d'où \(se(\ln \hat\vartheta_k) \approx se_k / \hat\vartheta_k\) [méthode delta, C : van der Vaart (1998), chapitre 3]. L'intervalle pour \(\phi\) est \(\ln \hat\vartheta_k \pm z\, se_k / \hat\vartheta_k\). Comme \(\exp\) est strictement croissante, \(\phi \in [\phi_1, \phi_2] \iff \vartheta_k \in [e^{\phi_1}, e^{\phi_2}]\), ce qui donne \([\hat\vartheta_k e^{-z se_k/\hat\vartheta_k}, \hat\vartheta_k e^{z se_k/\hat\vartheta_k}]\), dont les deux bornes sont positives puisque \(\exp > 0\).
+5. **Bornes `NA`.** Si \(J\) n'est pas définie positive, \(J^{-1}\) n'existe pas ou a un élément diagonal négatif ou nul, et \(se_k\) n'est pas défini : le code met alors `NA` (fonction `confidence_intervals`).
+
+\newpage
+
+# Processus de Wiener (`wiener_mle`)
+
+## Modèle et vraisemblance
+
+\(X_t = \mu t + \sigma B_t\), avec \(B\) un mouvement brownien standard [Kahle et al. (2016), définition 1.11, équation [1.2] [V]]. Les accroissements sont indépendants et \(X_t - X_s \sim \mathcal{N}(\mu(t-s), \sigma^2 (t-s))\) [même ouvrage, équation [1.3] [V]].
+
+**La log-vraisemblance.** Avec la densité normale \(f_{\Delta t}(x) = (2\pi\sigma^2 \Delta t)^{-1/2} \exp(-(x - \mu\Delta t)^2/(2\sigma^2\Delta t))\) et la proposition 2.1,
+\[
+\ell(\mu, \sigma^2) = -\frac{n}{2}\ln(2\pi) - \frac{1}{2}\sum_{j=1}^{n}\ln \Delta t_j - \frac{n}{2}\ln \sigma^2 - \frac{Q(\mu)}{2\sigma^2}, \qquad Q(\mu) = \sum_{j=1}^{n} \frac{(\Delta x_j - \mu \Delta t_j)^2}{\Delta t_j}.
+\]
+[On somme \(\ln f_{\Delta t_j}(\Delta x_j) = -\frac12 \ln(2\pi) - \frac12 \ln \sigma^2 - \frac12 \ln \Delta t_j - \frac{(\Delta x_j - \mu\Delta t_j)^2}{2\sigma^2 \Delta t_j}\) sur \(j = 1, \dots, n\).] C'est l'équation [1.14] de Kahle et al. (2016) [V] dans le cas \(x_0 = t_0 = 0\).
+
+## Complétion du carré
+
+**Affirmation** (page d'aide) : \(Q(\mu) = T(\mu - \hat\mu)^2 + \hat Q\), avec \(\hat\mu = S/T\) et \(\hat Q = \sum_{j=1}^{n} \Delta t_j (r_j - \hat\mu)^2\).
+
+*Démonstration.*
+
+1. On développe : \(Q(\mu) = \sum_{j=1}^{n} \frac{\Delta x_j^2}{\Delta t_j} - 2\mu \sum_{j=1}^{n} \Delta x_j + \mu^2 \sum_{j=1}^{n} \Delta t_j = \sum_{j=1}^{n} \frac{\Delta x_j^2}{\Delta t_j} - 2\mu S + \mu^2 T\).
+2. On complète le carré en \(\mu\) : \(\mu^2 T - 2\mu S = T(\mu - S/T)^2 - S^2/T\). Donc \(Q(\mu) = T(\mu - \hat\mu)^2 + \big(\sum_{j=1}^{n} \Delta x_j^2/\Delta t_j - S^2/T\big)\).
+3. On vérifie que la parenthèse vaut \(\hat Q\) : \(\sum_{j=1}^{n} \Delta t_j (r_j - \hat\mu)^2 = \sum_{j=1}^{n} \frac{\Delta x_j^2}{\Delta t_j} - 2\hat\mu S + \hat\mu^2 T = \sum_{j=1}^{n} \frac{\Delta x_j^2}{\Delta t_j} - \frac{S^2}{T}\) [car \(\Delta t_j r_j^2 = \Delta x_j^2/\Delta t_j\), \(\Delta t_j r_j = \Delta x_j\), puis \(\hat\mu = S/T\)]. En particulier \(Q(\hat\mu) = \hat Q\). \(\square\)
+
+## L'estimateur et son existence
+
+1. **Maximum en \(\mu\).** Pour \(\sigma^2\) fixé, \(\ell\) ne dépend de \(\mu\) que par \(-Q(\mu)/(2\sigma^2)\), et \(Q(\mu) \ge \hat Q\) avec égalité si et seulement si \(\mu = \hat\mu\) [section 4.2, car \(T > 0\)]. Donc \(\hat\mu = S/T\), pour tout \(\sigma^2\).
+2. **\(\hat\mu\) est une moyenne pondérée des vitesses** : \(S/T = \sum_{j=1}^{n} (\Delta t_j / T) r_j = \sum_{j=1}^{n} w_j r_j\) [\(\Delta x_j = \Delta t_j r_j\)].
+3. **Maximum en \(\sigma^2\).** Il reste \(h(v) = -\frac{n}{2}\ln v - \frac{\hat Q}{2v}\), \(v = \sigma^2 > 0\). Si \(\hat Q > 0\) : \(h'(v) = -\frac{n}{2v} + \frac{\hat Q}{2v^2} = \frac{\hat Q - n v}{2 v^2}\), positive pour \(v < \hat Q/n\) et négative après ; le maximum unique est \(\hat\sigma^2 = \hat Q/n\). C'est l'équation [1.19] de Kahle et al. (2016, p. 27) [V], où \(n \bar m\) est le nombre total d'accroissements.
+4. **Existence.** \(\hat Q = \sum_{j=1}^{n} \Delta t_j (r_j - \hat\mu)^2 = 0\) si et seulement si toutes les vitesses valent \(\hat\mu\), c'est-à-dire sont égales [somme de termes positifs, \(\Delta t_j > 0\)]. Si \(\hat Q = 0\), \(\ell(\hat\mu, v) = \text{cste} - \frac{n}{2}\ln v \to +\infty\) quand \(v \to 0\) : la vraisemblance n'est pas bornée et l'EMV n'existe pas.
+5. **Probabilité un dès que \(n \ge 2\).** \(\{r_1 = r_2\} = \{\Delta x_1 = r_2 \Delta t_1\}\). Sachant \(\Delta x_2\), indépendant de \(\Delta x_1\), c'est l'événement que \(\Delta x_1\) prenne une valeur fixée, de probabilité nulle puisque \(\Delta x_1\) a une densité. Donc \(P(\text{toutes les vitesses égales}) \le P(r_1 = r_2) = 0\).
+6. **Avec une seule trajectoire**, \(S = \sum_{j=1}^{n}(x_j - x_{j-1}) = x_n - x_0\) (somme télescopique) et \(T = t_n - t_0\) : \(\hat\mu\) ne dépend que de la première et de la dernière observation.
+
+## Lois de \(\hat\mu\) et \(\hat Q\), indépendance, biais
+
+**Affirmation** (page d'aide, section Bias) : pour \(n \ge 2\), \(\hat\mu \sim \mathcal{N}(\mu, \sigma^2/T)\), \(\hat Q/\sigma^2 \sim \chi^2_{n-1}\), et \(\hat\mu\), \(\hat Q\) sont indépendants.
+
+*Démonstration (rotation orthogonale).*
+
+1. On pose \(Z_j = (\Delta x_j - \mu \Delta t_j)/(\sigma\sqrt{\Delta t_j})\). Les \(Z_j\) sont indépendantes de loi \(\mathcal{N}(0,1)\) [indépendance des accroissements et centrage-réduction d'une variable normale].
+2. Soit \(u = (\sqrt{\Delta t_1}, \dots, \sqrt{\Delta t_n})/\sqrt{T}\). C'est un vecteur unitaire : \(\|u\|^2 = \sum_{j=1}^{n}\Delta t_j / T = 1\). On le complète en une base orthonormée [procédé de Gram-Schmidt, C] et on note \(O\) la matrice orthogonale dont la première ligne est \(u\).
+3. \(W = OZ\) a des composantes indépendantes de loi \(\mathcal{N}(0,1)\) : la densité de \(Z\), \((2\pi)^{-n/2} e^{-\|z\|^2/2}\), est inchangée par \(O\) car \(\|Oz\| = \|z\|\) et \(|\det O| = 1\) [changement de variable linéaire].
+4. \(W_1 = u \cdot Z = \sum_{j=1}^{n} (\Delta x_j - \mu\Delta t_j)/(\sigma\sqrt{T}) = (S - \mu T)/(\sigma\sqrt{T}) = \sqrt{T}(\hat\mu - \mu)/\sigma\). Donc \(\hat\mu = \mu + \sigma W_1/\sqrt{T} \sim \mathcal{N}(\mu, \sigma^2/T)\).
+5. \(\|Z\|^2 = Q(\mu)/\sigma^2\) [définition de \(Q\)], et \(Q(\mu) = T(\hat\mu - \mu)^2 + \hat Q\) [section 4.2]. Donc \(\hat Q/\sigma^2 = \|Z\|^2 - W_1^2 = \|W\|^2 - W_1^2 = \sum_{k=2}^{n} W_k^2 \sim \chi^2_{n-1}\) [définition de \(\chi^2\)].
+6. \(\hat\mu\) est fonction de \(W_1\) et \(\hat Q\) de \((W_2, \dots, W_n)\), qui sont indépendants [point 3]. \(\square\)
+
+**Conséquences.** \(\E[\hat\mu] = \mu\). \(\E[\hat\sigma^2] = \frac{\sigma^2}{n}\E[\hat Q/\sigma^2] = \frac{n-1}{n}\sigma^2\) [l'espérance d'une \(\chi^2_{n-1}\) est \(n-1\), somme de \(n-1\) carrés d'espérance 1]. Donc \(s^2 = \hat Q/(n-1) = \frac{n}{n-1}\hat\sigma^2\) est sans biais.
+
+## Information de Fisher explicite
+
+Les dérivées secondes de \(\ell\) en \((\mu, v)\), \(v = \sigma^2\), sont [dérivation directe de l'expression de \(\ell\), avec \(Q'(\mu) = -2(S - \mu T)\), \(Q'' = 2T\)] :
+\[
+\partial^2_{\mu\mu}\ell = -\frac{T}{v}, \qquad \partial^2_{\mu v}\ell = -\frac{S - \mu T}{v^2}, \qquad \partial^2_{vv}\ell = \frac{n}{2v^2} - \frac{Q(\mu)}{v^3}.
+\]
+En \((\hat\mu, \hat\sigma^2)\) : \(S - \hat\mu T = 0\) et \(Q(\hat\mu) = \hat Q = n\hat\sigma^2\), donc \(\partial^2_{vv}\ell = \frac{n}{2\hat\sigma^4} - \frac{n}{\hat\sigma^4} = -\frac{n}{2\hat\sigma^4}\). \(J\) est diagonale, d'où \(se(\hat\mu) = \hat\sigma/\sqrt{T}\) et \(se(\hat\sigma^2) = \hat\sigma^2\sqrt{2/n}\), comme l'affirme la page `?levyfit`. On retrouve la structure diagonale de la matrice d'information [1.17] de Kahle et al. (2016) [V].
+
+\newpage
+
+# Processus gamma (`gamma_mle`)
+
+## Modèle et vraisemblance
+
+\(X_t - X_s \sim \Gamma(a(t-s), b)\) (forme \(a(t-s)\), intensité \(b\)) [Kahle et al. (2016), définition 2.24 avec \(A(t) = at\), p. 68 [V]], de densité \(\frac{b^{k}}{\Gamma(k)} x^{k-1} e^{-bx}\), \(k = a\Delta t\) [même ouvrage, définition 2.1 [V]]. Donc \(\E[X_t] = at/b\) et \(\Var(X_t) = at/b^2\) [moyenne \(k/b\) et variance \(k/b^2\) de la loi gamma, obtenues par le lemme 2.2(a)].
+
+**La log-vraisemblance** [proposition 2.1, et \(\ln f = k\ln b - \ln\Gamma(k) + (k-1)\ln x - bx\)] :
+\[
+\ell(a, b) = \sum_{j=1}^{n} \big[(a\Delta t_j - 1)\ln\Delta x_j - \ln\Gamma(a\Delta t_j) + a\Delta t_j\ln b - b\Delta x_j\big].
+\]
+C'est l'équation [2.42] de Kahle et al. (2016, p. 116) [V] avec \(A_{i,j}(\theta) = a s_{i,j}\).
+
+## Famille exponentielle
+
+En regroupant, \(\ell(a, b) = a\,U - b\,S + aT\ln b - \sum_{j=1}^{n}\ln\Gamma(a\Delta t_j) - \sum_{j=1}^{n}\ln\Delta x_j\), avec \(U = \sum_{j=1}^{n}\Delta t_j \ln \Delta x_j\) [car \(\sum_j a\Delta t_j \ln\Delta x_j = aU\) et \(\sum_j a\Delta t_j \ln b = aT\ln b\)]. Les données n'interviennent, à côté des paramètres, que par \((U, S)\) ; le dernier terme ne dépend pas des paramètres. Par le critère de factorisation [C], \((U, S)\) est exhaustive. Rien n'a supposé les \(\Delta t_j\) égaux. S'ils valent tous \(\Delta t\), \(U = \Delta t \sum_{j=1}^{n}\ln\Delta x_j\).
+
+## Le profil en \(b\)
+
+1. \(\partial_b \ell = aT/b - S\) [dérivée de \(aT\ln b - bS\)]. Pour \(a\) fixé, cette dérivée est positive pour \(b < aT/S\) et négative après : \(\hat b(a) = aT/S\) est l'unique maximum. C'est l'équation [2.43a] de Kahle et al. (2016, p. 116) [V].
+2. Par le lemme 2.6, la dérivée du profil \(\ell_p(a) = \ell(a, \hat b(a))\) est \(\partial_a \ell(a, \hat b(a))\) :
+\[
+g(a) = \sum_{j=1}^{n}\big[\Delta t_j\ln\Delta x_j - \Delta t_j\psi(a\Delta t_j) + \Delta t_j\ln \hat b(a)\big] = U - \sum_{j=1}^{n}\Delta t_j\psi(a\Delta t_j) + T\ln\frac{aT}{S}.
+\]
+\(g(a) = 0\) est l'équation [2.44] de Kahle et al. (2016, p. 116) [V] (après substitution de [2.43a] dans [2.43b]).
+
+## Existence et unicité de \(\hat a\)
+
+1. **\(g\) est strictement décroissante** : \(g'(a) = -\sum_{j=1}^{n}\Delta t_j^2\psi'(a\Delta t_j) + T/a < -\sum_{j=1}^{n}\Delta t_j^2\frac{1}{a\Delta t_j} + \frac{T}{a} = 0\) [lemme 2.3(a) avec \(x = a\Delta t_j\)].
+2. **Limite en 0** : \(-\Delta t_j\psi(a\Delta t_j) = \frac{1}{a}\cdot\big(-a\Delta t_j\,\psi(a\Delta t_j)\big) \sim \frac{1}{a}\) [lemme 2.3(c)], donc \(-\sum_{j=1}^{n}\Delta t_j\psi(a\Delta t_j) \sim n/a\), alors que \(T\ln(aT/S)\) ne tend vers \(-\infty\) que comme \(T\ln a\). Comme \((n/a)/|T \ln a| \to \infty\), \(g(a) \to +\infty\).
+3. **Limite en \(+\infty\)** : \(\psi(a\Delta t_j) = \ln(a\Delta t_j) + \varepsilon_j(a)\) avec \(\varepsilon_j(a) \to 0\) [lemme 2.3(b)]. Donc
+\[
+g(a) = U - \sum_{j=1}^{n}\Delta t_j\ln\Delta t_j - T\ln a - \sum_{j=1}^{n}\Delta t_j\varepsilon_j(a) + T\ln a + T\ln\frac{T}{S} \to \sum_{j=1}^{n}\Delta t_j\ln r_j - T\ln\frac{S}{T}.
+\]
+[\(U - \sum_j \Delta t_j\ln\Delta t_j = \sum_j \Delta t_j\ln r_j\) et les \(T\ln a\) se compensent.] Avec \(S/T = \sum_{j=1}^{n} w_j r_j\), la limite est \(T\big(\sum_{j=1}^{n} w_j\ln r_j - \ln\sum_{j=1}^{n} w_j r_j\big)\), strictement négative sauf si toutes les vitesses sont égales [lemme 2.4].
+4. **Conclusion** : par le lemme 2.5, \(g\) a une racine unique \(\hat a\), et \(\hat b = \hat a T/S\). Comme \(g = \ell_p'\) est positive avant \(\hat a\) et négative après, \(\hat a\) est le maximum de \(\ell_p\), donc \((\hat a, \hat b)\) est le maximum global de \(\ell\).
+5. **Si toutes les vitesses sont égales**, la limite du point 3 est nulle et \(g\) strictement décroissante reste \(> 0\) : \(\ell_p\) croît sans fin et l'EMV n'existe pas. C'est le cas si \(n = 1\) (une seule vitesse). Pour \(n \ge 2\), cela arrive avec probabilité nulle [même argument qu'au point 5 de la section 4.3].
+
+## Le cas des pas égaux
+
+Si \(\Delta t_j = \Delta t\) pour tout \(j\), alors \(T = n\Delta t\) et \(U = \Delta t\sum_{j=1}^{n}\ln\Delta x_j\). En divisant \(g(a) = 0\) par \(n\Delta t\) :
+\[
+\frac{1}{n}\sum_{j=1}^{n}\ln\Delta x_j - \psi(a\Delta t) + \ln(a\Delta t) - \ln\Big(\frac{1}{n}\sum_{j=1}^{n}\Delta x_j\Big) = 0
+\]
+[car \(\ln\frac{aT}{S} = \ln(a\Delta t) - \ln\frac{S}{n}\)]. C'est l'équation [2.45a] de Kahle et al. (2016, p. 117) [V] avec \(\tau = \Delta t\).
+
+## Le point de départ de la recherche (méthode des moments)
+
+1. **Moyenne et variance par unité de temps.** \(\E[\Delta x_j] = r\Delta t_j\) et \(\Var(\Delta x_j) = \sigma^2\Delta t_j\), avec \(r = a/b\) et \(\sigma^2 = a/b^2\) [section 5.1].
+2. **\(\hat r = S/T\) est sans biais** : \(\E[S] = rT\).
+3. **\(\hat\sigma^2\) est sans biais.** On écrit \(e_j = \Delta x_j - r\Delta t_j\) (centrés, indépendants, \(\E[e_j^2] = \sigma^2\Delta t_j\)) et \(\hat r - r = \sum_{k=1}^{n} e_k / T\). Alors \(\Delta x_j - \hat r\Delta t_j = e_j - (\hat r - r)\Delta t_j\) et
+\[
+\sum_{j=1}^{n}(\Delta x_j - \hat r\Delta t_j)^2 = \sum_{j=1}^{n} e_j^2 - 2(\hat r - r)\sum_{j=1}^{n}\Delta t_j e_j + (\hat r - r)^2\sum_{j=1}^{n}\Delta t_j^2.
+\]
+Les espérances sont [indépendance, donc \(\E[e_j e_k] = 0\) pour \(j \ne k\)] : \(\E\sum_j e_j^2 = \sigma^2 T\) ; \(\E[(\hat r - r)\sum_j\Delta t_j e_j] = \frac{1}{T}\sum_j\Delta t_j\E[e_j^2] = \frac{\sigma^2}{T}\sum_j\Delta t_j^2\) ; \(\E[(\hat r - r)^2] = \frac{\sigma^2 T}{T^2} = \frac{\sigma^2}{T}\). Total : \(\sigma^2\big(T - \sum_{j=1}^{n}\Delta t_j^2/T\big)\). En divisant par \(T - \sum_{j=1}^{n}\Delta t_j^2/T\) (strictement positif si \(n \ge 2\), car \(\sum_j \Delta t_j^2 < (\sum_j\Delta t_j)^2\)), on obtient un estimateur sans biais.
+4. **\(a_{MM} = \hat r^2/\hat\sigma^2\)** : de \(r = a/b\) et \(\sigma^2 = a/b^2\) on tire \(a = r^2/\sigma^2\), et on remplace \(r\) et \(\sigma^2\) par leurs estimations.
+5. **La recherche converge quel que soit le départ** : la racine est unique [section 5.4], et `uniroot` est utilisé avec `extendInt = "downX"`, qui élargit l'intervalle de recherche dans le sens d'une fonction décroissante jusqu'à encadrer la racine [N : comportement documenté de `stats::uniroot`]. Ce point de départ ne fait qu'accélérer le calcul. Kahle et al. (2016, remarque 2.50, p. 124) [V] recommandent l'estimateur des moments comme point de départ.
+
+**Remarque critique.** L'estimateur des moments de Kahle et al. (2016, section 2.7.1.2, p. 118) [V] n'est pas le même : il moyenne les vitesses \(Y_{i,j}/s_{i,j}\) sans pondération et normalise les carrés par \(s_{i,j}\). Celui de `levyfit` pondère par les durées. Les deux sont des points de départ valides, puisque le résultat final n'en dépend pas.
+
+## Biais (page d'aide, section Bias)
+
+* **\(\hat a/\hat b = S/T\) est sans biais** : \(\hat a/\hat b = \hat a/(\hat aT/S) = S/T\), et \(\E[S/T] = a/b\) [point 2 de la section 5.6].
+* **« Biais d'environ 40 % avec une dizaine d'accroissements »** : constat de simulation [N], pas un théorème. Code pour le reproduire :
+
+```{r}
+library(DegradSim); library(levyfit)
+set.seed(1)
+t <- inspection_times("regular", n = 10, tmax = 10)$time
+est <- t(replicate(2000, gamma_mle(sim_gamma(t, a = 2, b = 3))))
+colMeans(est) / c(2, 3) - 1   # biais relatif de a et de b
+```
+
+## Information de Fisher explicite
+
+\(\partial^2_{aa}\ell = -\sum_{j=1}^{n}\Delta t_j^2\psi'(a\Delta t_j)\), \(\partial^2_{ab}\ell = T/b\), \(\partial^2_{bb}\ell = -aT/b^2\) [dérivation de \(\ell\), section 5.1]. Le code calcule \(J\) numériquement ; ces formules permettent de le vérifier (affirmation « numerical information agrees with its closed form » de `?levyfit`).
+
+\newpage
+
+# Processus inverse gaussien (`ig_mle`)
+
+## Modèle et paramétrisation
+
+\(X_t - X_s \sim \IG(\mu(t-s), \eta(t-s)^2)\). Avec \(m = \mu\Delta t\) et \(\lambda = \eta\Delta t^2\) dans la densité de la section 2.7 : \(\sqrt{\lambda/(2\pi x^3)} = \Delta t\sqrt{\eta/(2\pi x^3)}\) et \(\frac{\lambda(x - m)^2}{2m^2x} = \frac{\eta(x - \mu\Delta t)^2}{2\mu^2x}\), d'où la densité \(f_{\Delta t}\) de la page d'aide. La moyenne est \(\mu t\), la variance \(m^3/\lambda = \mu^3 t/\eta\) [variance \(m^3/\lambda\) de \(\IG(m, \lambda)\) : Wang et Xu (2010), équation (1) et texte [V]].
+
+**Remarque critique (paramétrisation).** Wang et Xu (2010, section 2) [V] et Ye et Chen (2014, section 2.1) [V] écrivent \(\IG(\Lambda(t) - \Lambda(s), \eta[\Lambda(t) - \Lambda(s)]^2)\). Avec \(\Lambda(t) = \mu t\), la forme vaut \(\eta\mu^2(t-s)^2\). Le \(\eta\) de `levyfit` est donc le \(\eta\mu^2\) de ces articles. Les résultats ci-dessous sont démontrés directement dans la paramétrisation de `levyfit`.
+
+## Vraisemblance
+
+Avec \(\delta = 1/\mu\), \(\frac{(x - \mu\Delta t)^2}{\mu^2 x} = \frac{(\delta x - \Delta t)^2}{x}\) [on divise numérateur et dénominateur par \(\mu^2\)]. Par la proposition 2.1 :
+\[
+\ell = c_0 + \frac{n}{2}\ln\eta - \frac{\eta}{2}\sum_{j=1}^{n}\frac{(\delta\Delta x_j - \Delta t_j)^2}{\Delta x_j}, \qquad c_0 = \sum_{j=1}^{n}\Big[\ln\Delta t_j - \frac12\ln(2\pi) - \frac32\ln\Delta x_j\Big].
+\]
+
+## Décomposition et estimateur
+
+1. **Décomposition.** \(\sum_{j=1}^{n}\frac{(\delta\Delta x_j - \Delta t_j)^2}{\Delta x_j} = \delta^2 S - 2\delta T + \sum_{j=1}^{n}\frac{\Delta t_j^2}{\Delta x_j}\) [développement]. Puis \(\delta^2 S - 2\delta T = \frac{(\delta S - T)^2}{S} - \frac{T^2}{S}\) [complétion du carré]. D'où la somme vaut \(\frac{(\delta S - T)^2}{S} + \hat Q\), \(\hat Q = \sum_{j=1}^{n}\frac{\Delta t_j^2}{\Delta x_j} - \frac{T^2}{S}\).
+2. **\(\hat Q \ge 0\), avec égalité ssi les vitesses sont égales.** Par Cauchy-Schwarz [C], \(T^2 = \big(\sum_{j=1}^{n}\sqrt{\Delta x_j}\cdot\frac{\Delta t_j}{\sqrt{\Delta x_j}}\big)^2 \le \sum_{j=1}^{n}\Delta x_j\sum_{j=1}^{n}\frac{\Delta t_j^2}{\Delta x_j} = S\sum_{j=1}^{n}\frac{\Delta t_j^2}{\Delta x_j}\), avec égalité ssi \(\Delta t_j/\sqrt{\Delta x_j}\) est proportionnel à \(\sqrt{\Delta x_j}\), c'est-à-dire \(\Delta x_j/\Delta t_j\) constant.
+3. **Maximum en \(\delta\)** pour \(\eta\) fixé : le seul terme en \(\delta\) est \(-\frac{\eta}{2}\frac{(\delta S - T)^2}{S}\), maximal en \(\delta = T/S\), soit \(\hat\mu = S/T\).
+4. **Maximum en \(\eta\)** : \(\frac{n}{2}\ln\eta - \frac{\eta}{2}\hat Q\) a pour dérivée \(\frac{n}{2\eta} - \frac{\hat Q}{2}\), qui s'annule une seule fois, en \(\hat\eta = n/\hat Q\), positive avant et négative après (si \(\hat Q > 0\)).
+5. **Existence** : si \(\hat Q = 0\), \(\ell(\hat\mu, \eta) = c_0 + \frac{n}{2}\ln\eta \to +\infty\) quand \(\eta \to \infty\). Probabilité nulle si \(n \ge 2\) [même argument qu'en section 4.3, point 5].
+
+## Lois de \(\hat\mu\) et \(\eta\hat Q\), indépendance
+
+**Affirmation** (page d'aide) : pour \(n \ge 2\), \(\hat\mu \sim \IG(\mu, \eta T)\), \(\eta\hat Q \sim \chi^2_{n-1}\), et \(\hat Q\) est indépendant de \(S\). La page d'aide présente cela comme une extension d'un résultat de Tweedie (1957) à des instants irréguliers ; voici une démonstration complète.
+
+*Démonstration.*
+
+1. **Loi de \(S\) et de \(\hat\mu\).** \(S \sim \IG(\mu T, \eta T^2)\) [lemme 2.10(c)], donc \(\hat\mu = S/T \sim \IG(\mu, \eta T)\) [lemme 2.10(b) avec \(c = 1/T\)].
+2. **Densité jointe.** Par la décomposition de la section 6.3, la densité des accroissements est
+\[
+f_\eta(\Delta x) = \prod_{j=1}^{n}\Big(\Delta t_j\sqrt{\tfrac{\eta}{2\pi}}\,\Delta x_j^{-3/2}\Big)\exp\Big(-\frac{\eta}{2}\Big[\frac{(\delta S - T)^2}{S} + \hat Q\Big]\Big).
+\]
+3. **Changement de paramètre.** Soit \(u \ge 0\) et \(\eta' = \eta(1 + 2u)\). Comme le préfacteur contient \(\eta^{n/2}\), on a
+\[
+e^{-u\eta\hat Q} f_\eta(\Delta x) = (1 + 2u)^{-n/2}\, f_{\eta'}(\Delta x)\, \exp\Big(u\eta\frac{(\delta S - T)^2}{S}\Big)
+\]
+[on vérifie l'exposant : \(-\frac{\eta}{2}\hat Q - u\eta\hat Q = -\frac{\eta'}{2}\hat Q\), et \(-\frac{\eta}{2}\frac{(\delta S-T)^2}{S} = -\frac{\eta'}{2}\frac{(\delta S-T)^2}{S} + u\eta\frac{(\delta S-T)^2}{S}\)].
+4. **Intégration.** Soit \(h\) mesurable bornée positive. En intégrant le point 3 contre \(h(S)\) :
+\[
+\E_\eta\big[e^{-u\eta\hat Q}h(S)\big] = (1 + 2u)^{-n/2}\, \E_{\eta'}\Big[h(S)\exp\Big(u\eta\frac{(\delta S - T)^2}{S}\Big)\Big].
+\]
+Sous \(\eta'\), \(S \sim \IG(\mu T, \eta' T^2)\) [point 1], de densité \(T\sqrt{\eta'/(2\pi s^3)}\exp(-\eta'(\delta s - T)^2/(2s))\). Multipliée par \(\exp(u\eta(\delta s - T)^2/s)\), elle devient \(T\sqrt{\eta'/(2\pi s^3)}\exp(-\eta(\delta s - T)^2/(2s)) = \sqrt{1 + 2u}\times\)(densité de \(S\) sous \(\eta\)). Donc
+\[
+\E_\eta\big[e^{-u\eta\hat Q}h(S)\big] = (1 + 2u)^{-(n-1)/2}\,\E_\eta[h(S)].
+\]
+5. **Conclusion** par le lemme 2.8 avec \(V = \eta\hat Q\) et \(k = n - 1\) : \(\eta\hat Q \sim \chi^2_{n-1}\), indépendant de \(S\), donc de \(\hat\mu\). \(\square\)
+
+**Lien avec la littérature.** Ye et Chen (2014, section 4.2) [V] rappellent, d'après Wang et Xu (2010), que \(b(X - a)^2/(a^2X) \sim \chi^2_1\) si \(X \sim \IG(a, b)\). Le résultat démontré ici en est la version « avec paramètre estimé » pour \(n\) accroissements de durées quelconques. Pour un échantillon i.i.d., c'est le résultat de Tweedie (1957) [C, article non disponible dans la `Bibliographie`].
+
+## Biais
+
+\(\E[\hat\mu] = \mu\) (moyenne de \(\IG(\mu, \eta T)\)). \(\hat\eta = n/\hat Q = n\eta/V\) avec \(V = \eta\hat Q \sim \chi^2_{n-1}\), donc \(\E[\hat\eta] = n\eta\,\E[1/V] = \frac{n}{n-3}\eta\) pour \(n - 1 > 2\), soit \(n > 3\) [lemme 2.7(b)]. Ainsi \(\tilde\eta = \frac{n-3}{n}\hat\eta = (n-3)/\hat Q\) est sans biais, ce qui demande \(n \ge 4\).
+
+## Information de Fisher explicite
+
+En \(\mu\) (et non \(\delta\)) : \(\partial_\mu\ell = \frac{\eta}{\mu^2}\big(\frac{S}{\mu} - T\big)\) [dérivée de \(-\frac{\eta}{2}\sum_j(\Delta x_j/\mu - \Delta t_j)^2/\Delta x_j\)]. En \(\hat\mu\) : \(\partial^2_{\mu\mu}\ell = -\eta S/\hat\mu^4 = -\eta T/\hat\mu^3\), \(\partial^2_{\mu\eta}\ell = 0\), \(\partial^2_{\eta\eta}\ell = -n/(2\eta^2)\). D'où \(se(\hat\mu) = \sqrt{\hat\mu^3/(\hat\eta T)}\) et \(se(\hat\eta) = \hat\eta\sqrt{2/n}\).
+
+\newpage
+
+# Processus variance-gamma (`vg_mle`)
+
+## Modèle
+
+\(X_s = \theta\gamma_s + \sigma W_{\gamma_s}\), où \(\gamma\) est un processus gamma avec \(\gamma_s \sim \Gamma(s/\nu, 1/\nu)\) (forme \(s/\nu\), intensité \(1/\nu\), donc moyenne \(s\) et variance \(\nu s\)), et \(W\) un mouvement brownien indépendant. C'est le modèle de subordination de Seneta (2004, équations (1)-(2)) [V]. Sachant \(\gamma_s = g\), \(X_s \sim \mathcal{N}(\theta g, \sigma^2 g)\) : c'est un mélange normal en variance et en moyenne [Fischer, Gaunt et Sarantsev (2023), section 2.4, représentation (2.18) [V]].
+
+## La densité d'un accroissement
+
+Soit \(\lambda = \Delta t/\nu\). Sur une durée \(\Delta t\), l'accroissement de \(\gamma\) suit \(\Gamma(\lambda, 1/\nu)\) [définition 2.24 de Kahle et al. [V]], donc
+\[
+f_{\Delta t}(x) = \int_0^\infty \frac{1}{\sqrt{2\pi\sigma^2 g}}e^{-\frac{(x - \theta g)^2}{2\sigma^2 g}}\,\frac{g^{\lambda-1}e^{-g/\nu}}{\nu^\lambda\Gamma(\lambda)}\,dg
+\]
+[formule des probabilités totales pour les densités]. On développe \((x - \theta g)^2/(2\sigma^2 g) = \frac{x^2}{2\sigma^2 g} - \frac{\theta x}{\sigma^2} + \frac{\theta^2 g}{2\sigma^2}\). Il reste
+\[
+f_{\Delta t}(x) = \frac{e^{\theta x/\sigma^2}}{\sqrt{2\pi}\,\sigma\,\nu^\lambda\Gamma(\lambda)}\int_0^\infty g^{\lambda - 3/2}\exp\Big(-\frac{A}{g} - Bg\Big)dg, \qquad A = \frac{x^2}{2\sigma^2}, \ B = \frac{\theta^2}{2\sigma^2} + \frac{1}{\nu} = \frac{c^2}{2\sigma^2},
+\]
+avec \(c^2 = \theta^2 + 2\sigma^2/\nu\). Le lemme 2.9(b) avec \(q = \lambda - 1/2\), \(A/B = x^2/c^2\) et \(2\sqrt{AB} = c|x|/\sigma^2 = \kappa|x|\) donne
+\[
+f_{\Delta t}(x) = \frac{2e^{\theta x/\sigma^2}}{\sqrt{2\pi}\,\sigma\,\nu^\lambda\Gamma(\lambda)}\Big(\frac{|x|}{c}\Big)^{\lambda - 1/2}K_{\lambda - 1/2}(\kappa|x|), \qquad x \ne 0,
+\]
+et \(K_{\lambda-1/2} = K_{|\lambda - 1/2|}\) [lemme 2.9(a)]. C'est la densité de la page d'aide. (Elle correspond à la paramétrisation (1.1) de Fischer, Gaunt et Sarantsev (2023) [V], aux changements de paramètres près indiqués dans leur section 2.1.)
+
+## Les trois limites du modèle (page d'aide, « When the estimator does not exist »)
+
+**Limite \(\nu \to 0\) (vers Wiener).** Pour tout \(x\), \(f_{\Delta t}(x) \to (2\pi\sigma^2\Delta t)^{-1/2}e^{-(x - \theta\Delta t)^2/(2\sigma^2\Delta t)}\).
+
+*Démonstration.* On note \(G\) l'accroissement de \(\gamma\) et \(\varphi(g) = (2\pi\sigma^2 g)^{-1/2}e^{-(x-\theta g)^2/(2\sigma^2 g)}\), de sorte que \(f_{\Delta t}(x) = \E[\varphi(G)]\). (1) \(\E[G] = \Delta t\) et \(\Var(G) = \nu\Delta t \to 0\) : \(G \to \Delta t\) en probabilité [inégalité de Bienaymé-Tchebychev]. (2) Sur \(\{G \ge \Delta t/2\}\), \(\varphi\) est continue et bornée par \((\pi\sigma^2\Delta t)^{-1/2}\) : \(\E[\varphi(G)1_{G \ge \Delta t/2}] \to \varphi(\Delta t)\) [convergence en probabilité et fonction continue bornée, C]. (3) Sur \(\{G < \Delta t/2\}\), \(\varphi(G) \le (2\pi\sigma^2)^{-1/2}G^{-1/2}\) et, par Cauchy-Schwarz, \(\E[G^{-1/2}1_{G < \Delta t/2}] \le \sqrt{\E[1/G]\,P(G < \Delta t/2)}\). Or \(\E[1/G] = \frac{1/\nu}{\Delta t/\nu - 1}\) reste borné quand \(\nu \to 0\) [calcul comme au lemme 2.7(b)] et \(P(G < \Delta t/2) \to 0\) [point 1]. \(\square\)
+
+Chaque terme de \(\ell\) converge donc vers celui du processus de Wiener de dérive \(\theta\) et de coefficient de diffusion \(\sigma\).
+
+**Limite \(\nu \to \infty\) : \(\ell \to -\infty\).** Pour \(x \ne 0\), \(f_{\Delta t}(x) \to 0\).
+
+*Démonstration.* Soit \(\varepsilon \in ]0, |x|/(2|\theta|+1)[\). (1) Pour \(g \le \varepsilon\), \(|x - \theta g| \ge |x|/2\), donc \(\varphi(g) \le (2\pi\sigma^2 g)^{-1/2}e^{-x^2/(8\sigma^2 g)} \le s(\varepsilon)\), avec \(s(\varepsilon) \to 0\) quand \(\varepsilon \to 0\) [la fonction \(g \mapsto g^{-1/2}e^{-c/g}\) tend vers 0 en \(0^+\)]. (2) Pour \(g > \varepsilon\), \(\varphi(g) \le (2\pi\sigma^2\varepsilon)^{-1/2}\). Donc \(f_{\Delta t}(x) \le s(\varepsilon) + (2\pi\sigma^2\varepsilon)^{-1/2}P(G > \varepsilon)\). (3) \(G = \nu Y\) avec \(Y \sim \Gamma(\lambda, 1)\), \(\lambda = \Delta t/\nu \to 0\), et pour \(\eta = \varepsilon/\nu < 1\) :
+\[
+P(Y > \eta) \le \frac{1}{\Gamma(\lambda)}\Big[\int_\eta^1 y^{\lambda - 1}dy + \int_1^\infty e^{-y}dy\Big] \le \frac{\lambda}{\Gamma(\lambda + 1)}\Big[\frac{1 - \eta^\lambda}{\lambda} + 1\Big]
+\]
+[\(e^{-y} \le 1\) sur \([\eta, 1]\), \(y^{\lambda-1} \le 1\) sur \([1, \infty[\), et \(\Gamma(\lambda) = \Gamma(\lambda+1)/\lambda\)]. Or \(1 - \eta^\lambda \le \lambda\ln(1/\eta) = \lambda\ln(\nu/\varepsilon)\) [\(1 - e^{-v} \le v\)] et \(\lambda\ln(\nu/\varepsilon) = \Delta t\ln(\nu/\varepsilon)/\nu \to 0\). Comme \(\Gamma(\lambda + 1) \to 1\), \(P(G > \varepsilon) \to 0\). (4) Donc \(\limsup f_{\Delta t}(x) \le s(\varepsilon)\) pour tout \(\varepsilon\) petit, d'où la limite nulle. Avec \(\Delta x_j \ne 0\) pour tout \(j\), chaque terme \(\ln f_{\Delta t_j}(\Delta x_j) \to -\infty\). \(\square\)
+
+**Limite \(\sigma \to 0\) (vers gamma).** Si \(\theta > 0\) et \(x > 0\), \(f_{\Delta t}(x) \to p(x)\), la densité de \(\theta G\), qui est \(\Gamma(\Delta t/\nu, 1/(\theta\nu))\) [changement d'échelle d'une loi gamma : forme inchangée, intensité divisée par \(\theta\)]. Par unité de temps, la forme vaut \(a = 1/\nu\) et l'intensité \(b = 1/(\theta\nu)\), comme l'écrit la page d'aide.
+
+*Démonstration.* On note \(\pi_G\) la densité de \(G\). Le changement de variable \(g = x/\theta + \sigma w\) donne \((x - \theta g)^2 = \theta^2\sigma^2 w^2\) et \(dg = \sigma\,dw\), d'où
+\[
+f_{\Delta t}(x) = \int_{w > -x/(\theta\sigma)}\frac{1}{\sqrt{2\pi g_w}}\exp\Big(-\frac{\theta^2 w^2}{2g_w}\Big)\pi_G(g_w)\,dw, \qquad g_w = \frac{x}{\theta} + \sigma w.
+\]
+(1) Pour \(w\) fixé, l'intégrande tend vers \((2\pi x/\theta)^{-1/2}e^{-\theta^3 w^2/(2x)}\pi_G(x/\theta)\) [continuité de \(\pi_G\) en \(x/\theta > 0\)], dont l'intégrale vaut \(\pi_G(x/\theta)/\theta = p(x)\) [intégrale gaussienne de variance \(x/\theta^3\)]. (2) Domination sur \(\{g_w \ge x/(2\theta)\}\), pour \(\sigma \le 1\) : l'intégrande est majoré par \((\pi x/\theta)^{-1/2}\exp(-\theta^2w^2/(2(x/\theta + |w|)))\sup_{g \ge x/(2\theta)}\pi_G(g)\), intégrable en \(w\) [le sup est fini : densité gamma continue tendant vers 0 à l'infini] ; la convergence dominée [C] s'applique. (3) La partie \(\{g < x/(2\theta)\}\) vaut, dans la variable \(g\), \(\int_0^{x/(2\theta)}\varphi(g)\pi_G(g)dg \le \sup_{g < x/(2\theta)}\varphi(g)\) avec \(\varphi(g) \le (2\pi\sigma^2 g)^{-1/2}e^{-x^2/(8\sigma^2 g)}\) [\(x - \theta g \ge x/2\)]. Pour \(\sigma\) petit, ce majorant est croissant sur \(]0, x/(2\theta)]\) [sa dérivée logarithmique \(-\frac{1}{2g} + \frac{x^2}{8\sigma^2 g^2}\) est positive pour \(g < x^2/(4\sigma^2)\)], donc il est majoré par sa valeur en \(x/(2\theta)\), de l'ordre de \(\sigma^{-1}e^{-\theta x/(4\sigma^2)} \to 0\). \(\square\)
+
+**Conséquence utilisée par le code.** Si tous les accroissements sont positifs et \(\theta > 0\), \(\ell_{VG}(\theta, \sigma, \nu) \to \ell_\Gamma(1/\nu, 1/(\theta\nu))\) quand \(\sigma \to 0\). En prenant \(\nu = 1/\hat a\) et \(\theta = \hat a/\hat b\) (de sorte que \(1/(\theta\nu) = \hat b\)), on obtient \(\sup\ell_{VG} \ge \ell_\Gamma(\hat a, \hat b)\). Le code compare donc la vraisemblance VG obtenue à \(\ell_\Gamma(\hat a, \hat b)\) ; si elle n'est pas plus grande, il conclut que le maximum est à la limite gamma (fonction `vg_est`). Cette conclusion est une règle de décision du code [N] : elle signale qu'aucun maximum intérieur meilleur que la limite n'a été trouvé, sans démontrer qu'il n'en existe pas.
+
+**« Environ un cas sur quatre avec une trajectoire de dix accroissements »** : constat de simulation [N].
+
+```{r}
+set.seed(1)
+t <- inspection_times("regular", n = 10, tmax = 20)$time
+na <- replicate(400, anyNA(suppressWarnings(vg_mle(sim_vg(t, theta = 0.5, sigma = 1.5, nu = 2)))))
+mean(na)
+```
+
+## L'algorithme EM
+
+**Vraisemblance complète.** Si l'on observait \(G_j\), la densité jointe de \((\Delta x_j, G_j)\) serait \(\varphi_j(\Delta x_j \mid G_j)\,\pi_j(G_j)\) [définition d'une densité conditionnelle], et
+\[
+\ell_c = \sum_{j=1}^{n}\Big[-\frac12\ln(2\pi\sigma^2) - \frac12\ln G_j - \frac{\Delta x_j^2/G_j - 2\theta\Delta x_j + \theta^2 G_j}{2\sigma^2} + a\Delta t_j\ln a - \ln\Gamma(a\Delta t_j) + (a\Delta t_j - 1)\ln G_j - aG_j\Big],
+\]
+avec \(a = 1/\nu\) [logarithme de la densité normale, développement de \((\Delta x - \theta G)^2/G\), et logarithme de la densité \(\Gamma(a\Delta t_j, a)\)]. Elle ne dépend des \(G_j\) que par \(G_j\), \(1/G_j\) et \(\ln G_j\). Cette structure est celle de l'algorithme ECM décrit par Fischer, Gaunt et Sarantsev (2023, section 3.3) [V].
+
+**Loi de \(G_j\) sachant \(\Delta x_j\).** Elle est proportionnelle, en \(g\), à \(\varphi(\Delta x_j \mid g)\pi(g) \propto g^{-1/2}e^{-\frac{\Delta x_j^2}{2\sigma^2 g} - \frac{\theta^2 g}{2\sigma^2}}g^{a\Delta t_j - 1}e^{-ag}\) [formule de Bayes ; les facteurs indépendants de \(g\) sont omis], soit \(g^{p_j - 1}\exp(-(\chi_j/g + \omega g)/2)\) avec \(p_j = \Delta t_j/\nu - 1/2\), \(\chi_j = \Delta x_j^2/\sigma^2\), \(\omega = \theta^2/\sigma^2 + 2/\nu\). C'est la loi \(\GIG(p_j, \chi_j, \omega)\). Fischer, Gaunt et Sarantsev (2023, section 3.3) [V] attribuent ce résultat à Embrechts.
+
+**Moments.** Par le lemme 2.9(b) avec \(A = \chi_j/2\), \(B = \omega/2\), \(2\sqrt{AB} = \sqrt{\chi_j\omega} = z_j\) et \(\sqrt{A/B} = \sqrt{\chi_j/\omega} = \rho_j\) : \(\int_0^\infty g^{p + r - 1}e^{-(\chi/g + \omega g)/2}dg = 2\rho^{p+r}K_{p+r}(z)\). En divisant par la constante de normalisation (cas \(r = 0\)) :
+\[
+\E[G_j^r] = \rho_j^r\frac{K_{p_j + r}(z_j)}{K_{p_j}(z_j)}.
+\]
+Avec \(r = 1\) et \(r = -1\), on obtient \(e^+_j\) et \(e^-_j\). Comme \(\E[\ln G] = \frac{d}{dr}\E[G^r]\big|_{r=0}\) [dérivation sous l'intégrale, justifiée par convergence dominée, C], \(l_j = \ln\rho_j + \partial_p\ln K_p(z_j)\big|_{p = p_j}\). Le code calcule cette dérivée par différence finie centrée, de pas \(10^{-5}\) [N].
+
+**Étape M pour \((\theta, \sigma^2)\).** La fonction \(Q\) (espérance de \(\ell_c\)) se sépare en une partie en \((\theta, \sigma^2)\) et une partie en \(a\) [aucun terme ne mêle les deux]. La première est \(-\frac{n}{2}\ln\sigma^2 - \frac{1}{2\sigma^2}\sum_{j=1}^{n}(\Delta x_j^2e^-_j - 2\theta\Delta x_j + \theta^2e^+_j)\) + constante.
+
+* En \(\theta\), c'est un trinôme concave (\(E^+ > 0\)), de dérivée \(\frac{1}{\sigma^2}(S - \theta E^+)\) : \(\theta = S/E^+\).
+* En \(\sigma^2\), même raisonnement qu'en section 4.3, point 3 : \(\sigma^2 = \frac1n\sum_{j=1}^{n}(\Delta x_j^2e^-_j - 2\theta\Delta x_j + \theta^2e^+_j) = \frac1n\big(\sum_{j=1}^{n}\Delta x_j^2e^-_j - \frac{S^2}{E^+}\big)\) [avec \(\theta = S/E^+\) : \(-2\theta S + \theta^2E^+ = -S^2/E^+\)].
+
+**Étape M pour \(\nu\).** La partie en \(a\) est \(\sum_{j=1}^{n}[a\Delta t_j\ln a - \ln\Gamma(a\Delta t_j) + a\Delta t_j l_j - ae^+_j]\) + constante. Sa dérivée est \(q(a)\) (formule de la page d'aide) [dérivée de \(a\ln a\) : \(\ln a + 1\)].
+
+* **\(q\) est strictement décroissante** : \(q'(a) = \sum_{j=1}^{n}[\Delta t_j/a - \Delta t_j^2\psi'(a\Delta t_j)] < 0\) [lemme 2.3(a)].
+* **\(q \to +\infty\) en 0** : comme à la section 5.4, point 2, \(-\Delta t_j\psi(a\Delta t_j) \sim 1/a\) domine \(\Delta t_j\ln a\).
+* **Limite négative en \(+\infty\)** : avec le lemme 2.3(b), \(\Delta t_j\ln a - \Delta t_j\psi(a\Delta t_j) \to -\Delta t_j\ln\Delta t_j\). La limite vaut \(\sum_{j=1}^{n}\Delta t_j\big[l_j - \ln\Delta t_j + 1 - e^+_j/\Delta t_j\big]\). Par l'inégalité de Jensen stricte pour le logarithme [lemme 2.4 sous forme d'espérance ; \(G_j\) n'est pas constant], \(l_j = \E[\ln G_j] < \ln\E[G_j] = \ln e^+_j\). Donc chaque crochet est \(< \ln u_j + 1 - u_j \le 0\), avec \(u_j = e^+_j/\Delta t_j\) [lemme 2.4 : \(\ln u \le u - 1\)].
+* Par le lemme 2.5, \(q\) a une racine unique, qui est le maximum en \(a\) (même argument de signe qu'en section 5.4).
+
+**L'EM augmente la vraisemblance à chaque itération** (page d'aide, avec renvoi à Dempster, Laird et Rubin (1977) [C, article non disponible]). Démonstration directe : on note \(k(g \mid x; \vartheta)\) la densité conditionnelle des temps cachés. Pour tout \(\vartheta\), \(\ell(\vartheta) = \ln f_c(x, g; \vartheta) - \ln k(g \mid x; \vartheta)\) [définition de la densité conditionnelle]. On prend l'espérance sous \(k(\cdot \mid x; \vartheta')\) : \(\ell(\vartheta) = Q(\vartheta \mid \vartheta') - H(\vartheta \mid \vartheta')\), avec \(H(\vartheta \mid \vartheta') = \E_{\vartheta'}[\ln k(G \mid x; \vartheta)]\). Or \(H(\vartheta \mid \vartheta') \le H(\vartheta' \mid \vartheta')\) [\(\E_{\vartheta'}[\ln(k_\vartheta/k_{\vartheta'})] \le \ln\E_{\vartheta'}[k_\vartheta/k_{\vartheta'}] = \ln 1 = 0\), par Jensen]. Si l'étape M donne \(Q(\vartheta_{new} \mid \vartheta') \ge Q(\vartheta' \mid \vartheta')\), alors \(\ell(\vartheta_{new}) \ge \ell(\vartheta')\). \(\square\)
+
+**Choix numériques, non démontrés [N].**
+
+* Le départ : EMV de Wiener pour \((\theta, \sigma)\), et \(\nu = T/n\).
+* Le critère d'arrêt : au moins 10 itérations, puis arrêt dès qu'une itération augmente \(\ell\) de moins de \(10^{-6}(|\ell| + 1)\).
+* Le seuil d'arrêt à la limite brownienne : \(\nu < \max_j\Delta t_j/300\).
+* La finition par L-BFGS-B. L'affirmation « the likelihood and the MLE are the same, much faster » est un constat numérique : L-BFGS-B et l'EM cherchent le même maximum local, mais rien ne garantit en général qu'ils atteignent le même point.
+
+## Les fonctions de Bessel en échelle logarithmique
+
+La récurrence \(K_{p+1}(z) = K_{p-1}(z) + \frac{2p}{z}K_p(z)\) est démontrée au lemme 2.9(c). Elle permet de calculer \(K_p\) pour un ordre élevé à partir d'ordres petits, en restant en logarithmes pour éviter le dépassement de capacité.
+
+\newpage
+
+# Processus de Meixner (`meixner_mle`)
+
+## Densité, fonction caractéristique et cumulants
+
+La densité de \(Meixner(a, b, d, m)\) est celle de la page d'aide [Schoutens (2002), section 2 [V] ; Grigoletto et Provasi (2009), section 2 [V]]. Sa fonction caractéristique est \(\big(\cos(b/2)/\cosh\frac{au - ib}{2}\big)^{2d}e^{imu}\) [Grigoletto et Provasi (2009), section 2 [V] ; Mazzola (2010), section 3.4 [V]].
+
+**Le processus.** Avec \(X_s \sim Meixner(a, b, ds, ms)\), la fonction caractéristique de \(X_s\) est celle de \(X_1\) à la puissance \(s\) [l'exposant \(2d\) devient \(2ds\) et \(imu\) devient \(imsu\)] : c'est la propriété d'un processus de Lévy, et les cumulants de \(X_s\) valent \(s\) fois ceux de \(X_1\) [le logarithme de la fonction caractéristique est multiplié par \(s\)].
+
+**Les cumulants** (calcul fait ici). La fonction génératrice des cumulants est \(K(v) = \ln\E[e^{vX}]\). On l'obtient en posant \(u = -iv\), car \(\cosh\frac{-iav - ib}{2} = \cos\frac{av + b}{2}\) [\(\cosh(iy) = \cos y\)] :
+\[
+K(v) = mv + 2d\big[\ln\cos(b/2) - \ln\cos((av + b)/2)\big].
+\]
+En dérivant [\((-\ln\cos x)' = \tan x\), \(\tan' = 1 + \tan^2 = \sec^2\), et chaque dérivation en \(v\) apporte un facteur \(a/2\)] :
+\[
+\kappa_1 = m + ad\tan(b/2), \quad \kappa_2 = \frac{a^2 d}{2\cos^2(b/2)}, \quad \kappa_3 = \frac{a^3 d\sin(b/2)}{2\cos^3(b/2)}, \quad \kappa_4 = \frac{a^4 d\,(1 + 2\sin^2(b/2))}{4\cos^4(b/2)}.
+\]
+[\(K''' = \frac{da^3}{2}\sec^2x\tan x\) et \(K'''' = \frac{da^4}{4}(2\sec^2x\tan^2x + \sec^4x)\) en \(x = b/2\).] On en déduit
+\[
+\gamma_1^2 = \frac{\kappa_3^2}{\kappa_2^3} = \frac{2\sin^2(b/2)}{d} = \frac{1 - \cos b}{d}, \qquad \gamma_2 = \frac{\kappa_4}{\kappa_2^2} = \frac{1 + 2\sin^2(b/2)}{d} = \frac{2 - \cos b}{d}
+\]
+[\(2\sin^2(b/2) = 1 - \cos b\)]. Ces formules concordent avec Grigoletto et Provasi (2009, équation (1)) [V] : moyenne, variance \(a^2d/(\cos b + 1)\) [car \(2\cos^2(b/2) = 1 + \cos b\)] et kurtosis \(3 + (2 - \cos b)/d\). Elles concordent aussi avec Schoutens (2002, section 2) [V] : kurtosis \(3 + (3 - 2\cos^2(b/2))/d\), qui est la même quantité.
+
+## Vraisemblance
+
+Avec \(s_j = d\Delta t_j\) et \(y_j = (\Delta x_j - m\Delta t_j)/a\), le logarithme de la densité de \(Meixner(a, b, s_j, m\Delta t_j)\) en \(\Delta x_j\) vaut \(2s_j\ln(2\cos(b/2)) - \ln(2a\pi) - \ln\Gamma(2s_j) + by_j + \ln|\Gamma(s_j + iy_j)|^2\) [logarithme terme à terme]. La proposition 2.1 donne la somme. C'est l'équation (6) de Grigoletto et Provasi (2009) [V] multipliée par \(n\), avec des pas \(\Delta t_j\) quelconques.
+
+## Le score
+
+**Dérivées de \(H(s, y) = \ln|\Gamma(s + iy)|^2\).**
+
+1. \(\Gamma(\bar z) = \overline{\Gamma(z)}\) [l'intégrale définissant \(\Gamma\) a un intégrande réel pour \(u > 0\), donc conjuguer \(z\) conjugue le résultat], d'où \(|\Gamma(z)|^2 = \Gamma(z)\Gamma(\bar z)\) et \(H = 2\Re\ln\Gamma(s + iy)\) (branche principale, holomorphe sur \(\Re z > 0\)).
+2. \(\partial_s\ln\Gamma(s + iy) = \psi(s + iy)\) et \(\partial_y\ln\Gamma(s + iy) = i\psi(s + iy)\) [dérivation d'une fonction holomorphe le long des directions réelle et imaginaire].
+3. Donc \(H_s = 2\Re\psi\), \(H_y = 2\Re(i\psi) = -2\Im\psi\), et, de même, \(H_{ss} = 2\Re\psi'\), \(H_{yy} = 2\Re(i^2\psi') = -2\Re\psi'\), \(H_{sy} = 2\Re(i\psi') = -2\Im\psi'\).
+
+**Dérivées de \(y_j\) et \(s_j\)** : \(\partial_a y_j = -y_j/a\), \(\partial_m y_j = -\Delta t_j/a\), \(\partial_d s_j = \Delta t_j\), et \(y_j\), \(s_j\) ne dépendent pas de \(b\).
+
+**Le score** [dérivation des fonctions composées, terme par terme] :
+
+* \(\partial_a\ell = \sum_{j=1}^{n}\big[-\frac1a + (b + H_y)\partial_a y_j\big] = \frac1a\sum_{j=1}^{n}(-1 - by_j + 2y_j\Im\psi_j)\) ;
+* \(\partial_b\ell = \sum_{j=1}^{n}[-s_j\tan(b/2) + y_j]\) [\(\frac{d}{db}\ln\cos(b/2) = -\frac12\tan(b/2)\), multiplié par \(2s_j\)] ;
+* \(\partial_d\ell = \sum_{j=1}^{n}\Delta t_j[2\ln(2\cos(b/2)) - 2\psi(2s_j) + 2\Re\psi_j]\) [\(\frac{d}{ds}\ln\Gamma(2s) = 2\psi(2s)\)] ;
+* \(\partial_m\ell = \sum_{j=1}^{n}(b + H_y)\partial_m y_j = \frac1a\sum_{j=1}^{n}\Delta t_j(2\Im\psi_j - b)\).
+
+Ce sont les formules de la page d'aide et de la fonction `meixner_score`.
+
+## Le profil en \(b\)
+
+1. \(\partial^2_{bb}\ell = -\sum_{j=1}^{n}\frac{s_j}{2\cos^2(b/2)} < 0\) [dérivée de \(-s_j\tan(b/2)\)] : \(\ell\) est strictement concave en \(b\).
+2. \(\partial_b\ell = 0 \iff \tan(b/2) = \frac{\sum_j y_j}{\sum_j s_j} = \frac{S - mT}{adT}\) [\(\sum_j y_j = (S - mT)/a\), \(\sum_j s_j = dT\)]. Comme \(b/2 \in ]-\pi/2, \pi/2[\) et que \(\tan\) y est une bijection sur \(\mathbb{R}\), la solution est unique : \(\hat b = 2\arctan\frac{S - mT}{adT}\). Par concavité, c'est le maximum en \(b\).
+3. En \(\hat b\), \(m + ad\tan(\hat b/2) = S/T\), donc \(\kappa_1 T = S\) (page d'aide).
+4. **Gradient du profil.** Le code calcule le gradient de \(\ell_p(a, d, m) = \ell(a, \hat b, d, m)\) avec le score pris en \(\hat b\), sans dériver \(\hat b\) : c'est exact par le lemme 2.6. Puis, comme l'optimisation porte sur \((\ln a, \ln d, m)\), \(\partial_{\ln a} = a\,\partial_a\) et \(\partial_{\ln d} = d\,\partial_d\) [dérivation composée].
+
+## La vraisemblance n'est pas bornée
+
+**Affirmation** (page d'aide) : en faisant \(a \to 0\) avec \(b = \pi - ca\), en plaçant \(m\) sur la plus petite vitesse et avec \(2d\Delta t_j < 1\), \(\ell \to +\infty\).
+
+*Démonstration.* Soit \(j_0\) l'indice de la plus petite vitesse, supposée unique (les vitesses sont distinctes avec probabilité un, section 4.3). On prend \(m = r_{j_0}\), \(d\) tel que \(2d\Delta t_{j_0} < 1\), \(c > 0\) fixé et \(b = \pi - ca\).
+
+1. **Le terme \(j_0\) tend vers \(+\infty\).** \(y_{j_0} = 0\), donc la densité en \(\Delta x_{j_0}\) vaut \(\frac{(2\cos(b/2))^{2s}}{2a\pi\Gamma(2s)}\Gamma(s)^2\), \(s = d\Delta t_{j_0}\) [\(|\Gamma(s)|^2 = \Gamma(s)^2\) pour \(s\) réel]. Or \(2\cos(b/2) = 2\sin(ca/2) \sim ca\) [\(\cos(\pi/2 - u) = \sin u \sim u\)]. Le terme est donc équivalent à \(C\,a^{2s - 1} \to +\infty\) puisque \(2s < 1\).
+2. **Les autres termes ont une limite finie.** Pour \(k \ne j_0\), \(x_k - m\Delta t_k > 0\) et \(y_k = (x_k - m\Delta t_k)/a \to +\infty\). La formule de Stirling complexe \(|\Gamma(s + iy)| \sim \sqrt{2\pi}\,|y|^{s - 1/2}e^{-\pi|y|/2}\) quand \(|y| \to \infty\) [C : DLMF, formule 5.11.9] donne, pour la densité au point \(\Delta x_k\),
+\[
+\frac{(ca)^{2s}}{2a\pi\Gamma(2s)}e^{(\pi - ca)y}\,2\pi\,y^{2s - 1}e^{-\pi y} = \frac{c^{2s}}{\Gamma(2s)}(x_k - m\Delta t_k)^{2s - 1}e^{-c(x_k - m\Delta t_k)}\,(1 + o(1))
+\]
+[\(a^{2s}\cdot a^{-1}\cdot a^{1 - 2s} = 1\), avec \(s = d\Delta t_k\)]. C'est la densité gamma \(\Gamma(2d\Delta t_k, c)\) décalée de \(m\Delta t_k\), finie et strictement positive.
+3. La somme des logarithmes tend donc vers \(+\infty\). \(\square\)
+
+Le même calcul en 1 et 2 montre que \(Meixner(a, \pi - ca, d\Delta t, m\Delta t)\) tend vers une loi gamma décalée, d'où le nom « limite gamma décalée ». Le cas \(b \to -\pi\) avec la plus grande vitesse s'en déduit par symétrie : si \(X \sim Meixner(a, b, d, m)\), alors \(-X \sim Meixner(a, -b, d, -m)\) [on remplace \(x\) par \(-x\) dans la densité et on utilise \(|\Gamma(\bar z)| = |\Gamma(z)|\)].
+
+**Conséquence.** Le maximum global n'existe pas, et l'estimateur est défini comme le meilleur maximum local intérieur. Les seuils de dégénérescence de la page d'aide, \(\pi - |b| < 0.1\) et \(d\max_j\Delta t_j > 1000\), sont des choix d'implémentation [N]. Le second se justifie heuristiquement par les cumulants : sur une durée \(\Delta t\), \(\gamma_1^2 = (1 - \cos b)/(d\Delta t)\) et \(\gamma_2 = (2 - \cos b)/(d\Delta t)\) [section 8.1, avec \(d\) remplacé par \(d\Delta t\)] tendent vers 0 quand \(d\Delta t\) grandit : les accroissements deviennent presque gaussiens.
+
+## La méthode des moments
+
+**Pour des pas inégaux** (construction de `levyfit`, justifiée ici). Avec \(\kappa_r\) les cumulants par unité de temps et \(e_j = \Delta x_j - \kappa_1\Delta t_j\) :
+
+* \(\E[e_j^2] = \kappa_2\Delta t_j\) et \(\E[e_j^3] = \kappa_3\Delta t_j\) [les cumulants d'ordre 2 et 3 sont les moments centrés d'ordre 2 et 3] ;
+* \(\E[e_j^4] = \kappa_4\Delta t_j + 3\kappa_2^2\Delta t_j^2\) [moment centré d'ordre 4 = \(\kappa_4 + 3\kappa_2^2\) ; démonstration : si \(M = e^K\) et \(K'(0) = 0\), alors \(M'' = K'' + K'^2\), \(M''' = K''' + 3K''K' + K'^3\) et \(M'''' = K'''' + 3K''^2 + (\text{termes contenant } K')\), donc \(M''''(0) = \kappa_4 + 3\kappa_2^2\)].
+
+En sommant sur \(j\) : \(\E\sum_j e_j^2 = \kappa_2T\), \(\E\sum_j e_j^3 = \kappa_3T\), \(\E\sum_j e_j^4 = \kappa_4T + 3\kappa_2^2\sum_j\Delta t_j^2\). D'où les estimateurs \(k_2\), \(k_3\), \(k_4\) de la page d'aide, en remplaçant \(\kappa_1\) par \(k_1 = S/T\) et \(\kappa_2\) par \(k_2\) dans le terme correctif. Ce sont des estimateurs convergents par substitution, **pas des estimateurs sans biais** : le remplacement de \(\kappa_1\) par \(k_1\) introduit un biais d'ordre \(1/n\). La page d'aide ne prétend pas le contraire.
+
+**Inversion.** De la section 8.1 : \(\gamma_2 - \gamma_1^2 = 1/d\), donc \(d = 1/(\gamma_2 - \gamma_1^2)\) ; \(\cos b = 2 - d\gamma_2\) ; \(b\) a le signe de \(\gamma_1\) [car \(\kappa_3\) a le signe de \(\sin(b/2)\)], d'où \(b = \mathrm{sign}(\gamma_1)\arccos(2 - d\gamma_2)\) ; \(a = \sqrt{\kappa_2(1 + \cos b)/d}\) [\(\kappa_2 = a^2d/(1 + \cos b)\)] ; \(m = \kappa_1 - ad\tan(b/2)\). Ce sont les formules de Grigoletto et Provasi (2009, section 4.1) [V] et de Mazzola (2010, section 3.3.1, p. 77-78) [V], écrites avec la kurtosis en excès \(\gamma_2\).
+
+**Condition d'existence.** Il faut \(d > 0\), soit \(\gamma_2 > \gamma_1^2\), et \(|\cos b| < 1\). Avec \(d = 1/(\gamma_2 - \gamma_1^2)\) : \(\cos b = \frac{\gamma_2 - 2\gamma_1^2}{\gamma_2 - \gamma_1^2}\). Donc \(\cos b > -1 \iff 2\gamma_2 > 3\gamma_1^2\), et \(\cos b < 1 \iff \gamma_1 \ne 0\). Les estimations existent si et seulement si \(\gamma_2 > \frac32\gamma_1^2\) et \(\gamma_1 \ne 0\). C'est exactement la condition testée par le code (`d > 0` et `abs(2 - d * g2) < 1`).
+
+**Remarque critique.** Grigoletto et Provasi (2009, section 4.1) [V] et Mazzola (2010, section 3.3.1, p. 78) [V] écrivent que les estimations n'existent pas quand \(\hat\beta_2 < 2\hat\beta_1^2 + 3\) (kurtosis non en excès), c'est-à-dire \(\gamma_2 < 2\gamma_1^2\). Le calcul ci-dessus donne le seuil \(\frac32\gamma_1^2\) : pour \(\frac32\gamma_1^2 < \gamma_2 < 2\gamma_1^2\), on trouve \(\cos b \in ]-1, 0[\), donc une valeur de \(b\) valide. Exemple : \(\gamma_1^2 = 1\) et \(\gamma_2 = 1.8\) donnent \(d = 1.25\) et \(\cos b = -0.25\). La condition publiée est donc plus restrictive que nécessaire. Le code de `levyfit` utilise la condition exacte. Le texte extrait des PDF étant parfois mal lu, il est prudent de vérifier ce passage sur la version imprimée.
+
+## Les points de départ
+
+* \(c_1 = S/T\) et \(c_2\) sont la moyenne et la variance par unité de temps, \(c_2\) étant l'estimateur sans biais de la section 5.6 (même démonstration, qui n'utilise que \(\E[\Delta x_j] = \kappa_1\Delta t_j\) et \(\Var(\Delta x_j) = \kappa_2\Delta t_j\)).
+* Pour \((b_0, d_0)\) donnés, on choisit \(a_0\) et \(m_0\) tels que \(\kappa_2 = c_2\) et \(\kappa_1 = c_1\) : \(\frac{a_0^2d_0}{2\cos^2(b_0/2)} = c_2 \iff a_0 = \sqrt{2c_2\cos^2(b_0/2)/d_0}\), puis \(m_0 = c_1 - a_0d_0\tan(b_0/2)\) [section 8.1].
+* Le tirage de \(b_0\) sur \(]-\pi + 0.1, \pi - 0.1[\), de \(\ln u\) sur \(]\ln 0.2, \ln 5[\) et le nombre `n_start` sont des choix d'implémentation [N]. La borne \(0.1\) est celle du critère de dégénérescence (section 8.5).
+
+## La hessienne
+
+On dérive le score (section 8.3) une seconde fois [dérivation composée, avec \(H_{ss} = 2R_j\), \(H_{yy} = -2R_j\), \(H_{sy} = -2I_j\), où \(R_j = \Re\psi'_j\) et \(I_j = \Im\psi'_j\), et \(G_j = b + H_y = b - 2\Im\psi_j\)]. Les calculs sont les suivants.
+
+* \(\partial^2_{aa}\) : on dérive \(-\frac1a + G_j\partial_a y_j\). On obtient \(\frac{1}{a^2} + (H_{yy}\partial_a y_j)\partial_a y_j + G_j\partial^2_{aa}y_j\), avec \(\partial^2_{aa}y_j = 2y_j/a^2\), soit \(\frac{1}{a^2}(1 - 2R_jy_j^2 + 2G_jy_j)\).
+* \(\partial^2_{ab}\) : \(\partial_b(G_j\partial_a y_j) = \partial_a y_j = -y_j/a\).
+* \(\partial^2_{ad}\) : \(H_{ys}\Delta t_j\partial_a y_j = (-2I_j)\Delta t_j(-y_j/a) = 2I_jy_j\Delta t_j/a\).
+* \(\partial^2_{am}\) : \(H_{yy}\partial_m y_j\,\partial_a y_j + G_j\partial^2_{am}y_j\), avec \(\partial^2_{am}y_j = \Delta t_j/a^2\), soit \(\frac{\Delta t_j}{a^2}(G_j - 2R_jy_j)\).
+* \(\partial^2_{bb} = -\frac{s_j}{2\cos^2(b/2)}\), \(\partial^2_{bd} = -\Delta t_j\tan(b/2)\) (somme : \(-T\tan(b/2)\)), \(\partial^2_{bm} = \partial_m y_j = -\Delta t_j/a\) (somme : \(-T/a\)).
+* \(\partial^2_{dd} = \Delta t_j(-4\Delta t_j\psi'(2s_j) + H_{ss}\Delta t_j) = \Delta t_j^2(2R_j - 4\psi'(2s_j))\).
+* \(\partial^2_{dm} = \Delta t_jH_{sy}\partial_m y_j = 2I_j\Delta t_j^2/a\) ; \(\partial^2_{mm} = H_{yy}(\partial_m y_j)^2 = -2R_j\Delta t_j^2/a^2\).
+
+En sommant sur \(j = 1, \dots, n\), on retrouve exactement les formules de la page d'aide et de la fonction `meixner_hessian`. Grigoletto et Provasi (2009, annexe A) [V, existence de l'annexe vérifiée ; les formules sont démontrées ici] donnent les dérivées dans le cas i.i.d.
+
+## Constats numériques de la page d'aide [N]
+
+Les affirmations suivantes viennent de simulations, pas de démonstrations :
+
+* il faut des centaines d'accroissements ;
+* un petit pas compte plus qu'une longue durée ;
+* 5000 accroissements de pas 0.1 suffisent, contrairement à 500 accroissements de pas 1.
+
+La lenteur de convergence et la prudence pour l'inférence asymptotique sont rapportées par Grigoletto et Provasi (2009, section 4.2) [V] et Mazzola (2010, section 3.3.2, p. 78-79) [V]. Explication heuristique : sur un long intervalle, l'asymétrie et la kurtosis en excès d'un accroissement, en \(1/(d\Delta t)\) (section 8.5), sont petites, et la loi est proche d'une loi normale, qui n'a que deux paramètres.
+
+```{r}
+set.seed(1)
+for (h in c(0.1, 1)) {
+  t <- inspection_times("regular", n = 500 / h, tmax = 500)$time
+  print(meixner_mle(sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2)))
+}
+```
+
+\newpage
+
+# Les données par leurs accroissements (`increments_data`)
+
+**Affirmation** : un accroissement plus petit qu'environ \(10^{-16}\) fois le niveau est perdu quand il est calculé comme une différence de niveaux.
+
+*Justification.* Un nombre réel en double précision a une mantisse de 53 bits : deux nombres représentables voisins de \(x\) diffèrent d'environ \(2^{-52}|x| \approx 2.2\times10^{-16}|x|\) [C : norme IEEE 754 ; en R, `.Machine$double.eps` vaut \(2^{-52}\)]. Si \(\Delta < \varepsilon|x|/2\), \(x + \Delta\) est arrondi à \(x\), et la différence \((x + \Delta) - x\) vaut 0. Donner directement \(\Delta x_j\) évite cette perte. La vraisemblance ne dépend des données que par les accroissements [proposition 2.1], donc l'estimation est la même.
+
+\newpage
+
+# Récapitulatif des écarts et des points non démontrés
+
+**Écarts trouvés en refaisant les démonstrations.**
+
+1. **Condition d'existence des estimateurs des moments de Meixner** (section 8.6) : le seuil exact est \(\gamma_2 > \frac32\gamma_1^2\) (avec \(\gamma_1 \ne 0\)), et non \(\gamma_2 > 2\gamma_1^2\) comme l'écrivent Grigoletto et Provasi (2009) et Mazzola (2010). Le code de `levyfit` est correct.
+2. **Paramétrisation IG** (section 6.1) : le \(\eta\) de `levyfit` correspond à \(\eta\mu^2\) chez Wang et Xu (2010) et Ye et Chen (2014). Ce n'est pas une erreur, mais il faut s'en souvenir en comparant des résultats.
+3. **Estimateur des moments du processus gamma** (section 5.6) : il est différent de celui de Kahle et al. (2016, section 2.7.1.2). C'est sans conséquence, puisqu'il ne sert que de point de départ.
+4. **Estimateurs des cumulants de Meixner pour des pas inégaux** (section 8.6) : ils sont convergents mais pas sans biais. La page d'aide ne dit rien de contraire, mais il vaut mieux le savoir.
+
+**Résultats admis, cités [C] mais non relus dans un PDF.**
+
+* L'inégalité de Hölder, Cauchy-Schwarz et le théorème des valeurs intermédiaires.
+* La convergence dominée et la dérivation sous l'intégrale.
+* L'unicité de la transformée de Laplace (Feller, 1971).
+* Le critère de factorisation.
+* La méthode delta (van der Vaart, 1998).
+* La normalité asymptotique de l'EMV dans le cas général.
+* La formule de Stirling complexe (DLMF 5.11.9).
+* La norme IEEE 754.
+
+**Constats numériques et choix d'implémentation [N].**
+
+* Le biais d'environ 40 % pour le processus gamma.
+* « Un cas sur quatre » pour le VG.
+* L'effet du pas de temps pour Meixner.
+* Les critères d'arrêt et les seuils (\(10^{-6}\), \(\max\Delta t/300\), \(0.1\), \(1000\), bornes de L-BFGS-B, `n_start`).
+* L'égalité des résultats de l'EM et de L-BFGS-B.
+* La règle de décision du code à la limite gamma du VG.
+
+\newpage
+
+# Références
+
+Les références marquées [V] ont été relues dans le PDF correspondant du dossier `Bibliographie` ; les passages cités ci-dessus y ont été vérifiés.
+
+* [V] Kahle, W., Mercier, S. and Paroissin, C. (2016). *Degradation Processes in Reliability*. ISTE and Wiley. Définitions 1.11, 1.13, 2.1, 2.24 ; section 1.6.1, équations [1.14], [1.17], [1.19] (p. 23-27) ; section 2.7.1.1, équations [2.41] à [2.45] (p. 116-117) ; section 2.7.1.2 (p. 117-118) ; remarque 2.50 (p. 124).
+* [V] Grigoletto, M. and Provasi, C. (2009). Simulation and estimation of the Meixner distribution. *Communications in Statistics - Simulation and Computation*, 38(1), 58-77. Version consultée : prépublication HAL peer-00514334. Section 2 et équation (1) ; section 4.1 ; section 4.2, équations (6) et (7) ; annexe A.
+* [V] Mazzola, E. (2010). *Profiling Processes of Meixner Type*. Thèse, Università Bocconi. Sections 3.3.1, 3.3.2 (p. 77-79) et 3.4.
+* [V] Schoutens, W. (2002). The Meixner process: theory and applications in finance. EURANDOM report 2002-004. Section 2 (densité et tableau des moments).
+* [V] Wang, X. and Xu, D. (2010). An inverse Gaussian process model for degradation data. *Technometrics*, 52(2), 188-197. Section 2, équations (1) et (3).
+* [V] Ye, Z.-S. and Chen, N. (2014). The inverse Gaussian process as a degradation model. *Technometrics*, 56(3), 302-311. Sections 2.1 et 4.2.
+* [V] Fischer, A., Gaunt, R. E. and Sarantsev, A. (2023). The variance-gamma distribution: a review. Paramétrisation (1.1) ; section 2.4, représentation (2.18) ; section 3.3 (algorithmes ECM) ; annexe A (définition de \(K_\nu\)).
+* [V] Seneta, E. (2004). Fitting the variance-gamma model to financial data. *Journal of Applied Probability*, 41A, 177-187. Équations (1)-(2).
+* [C] Dempster, A. P., Laird, N. M. and Rubin, D. B. (1977). Maximum likelihood from incomplete data via the EM algorithm. *JRSS B*, 39(1), 1-22. (Monotonie de l'EM, démontrée ici en section 7.4.)
+* [C] Feller, W. (1971). *An Introduction to Probability Theory and Its Applications*, vol. II, 2e édition. Wiley. Chapitre XIII (transformée de Laplace).
+* [C] van der Vaart, A. W. (1998). *Asymptotic Statistics*. Cambridge University Press. Chapitre 3 (méthode delta).
+* [C] Tweedie, M. C. K. (1957). Statistical properties of inverse Gaussian distributions. I. *The Annals of Mathematical Statistics*, 28(2), 362-377.
+* [C] Olver, F. W. J. et al. *NIST Digital Library of Mathematical Functions* (DLMF), formule 5.11.9.

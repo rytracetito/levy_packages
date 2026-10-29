@@ -91,6 +91,11 @@ hist(y, breaks = 50, freq = FALSE)
 set.seed(2); y1 <- meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2), n = 5)
 set.seed(2); y2 <- meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = -2, d = 1.5, m = 0.2), n = 5)
 identical(y1, y2)
+
+# Errors: t outside (t_A, t_B), theta without all the parameters
+try(meixner_bridge(1, 3, 4, 6, 5, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2)))
+try(meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, d = 1.5, m = 0.2)))
+try(meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = 4, d = 1.5, m = 0.2)))
 \dontshow{if (requireNamespace("levyfit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 3. Parameters estimated with levyfit on simulated trajectories
 set.seed(1)

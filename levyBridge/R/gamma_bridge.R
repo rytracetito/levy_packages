@@ -57,6 +57,10 @@
 #' # 3. Equal levels give a constant bridge; a decrease is impossible
 #' gamma_bridge(0, 1, 2, 1, 0.5, theta = c(a = 2, b = 3))
 #' try(gamma_bridge(0, 2, 2, 1, 0.5, theta = c(a = 2, b = 3)))
+#'
+#' # Errors: t outside (t_A, t_B), theta without all the parameters
+#' try(gamma_bridge(1, 3, 4, 6, 5, theta = c(a = 2, b = 3)))
+#' try(gamma_bridge(1, 3, 4, 6, 2, theta = c(a = 2)))
 #' @examplesIf requireNamespace("levyfit", quietly = TRUE)
 #' # 4. Parameters estimated with levyfit on a simulated trajectory
 #' t <- c(0, 1.2, 2, 3.8, 5.5, 7.1, 10.4, 12.9, 15.3, 18.7, 22.5)
@@ -124,7 +128,8 @@ gamma_bridge <- function(t_A, x_A, t_B, x_B, t, theta, n = 1) {
 #' t <- c(0, 1.2, 2, 3.8, 5.5, 7.1, 10.4, 12.9, 15.3, 18.7, 22.5)
 #' set.seed(1)
 #' x <- DegradSim::sim_gamma(t, a = 2, b = 3)
-#' r <- gamma_resampling(x, theta = c(a = 2, b = 3))
+#' theta <- c(a = 2, b = 3)
+#' r <- gamma_resampling(x, theta)
 #' r
 #'
 #' # The resampled trajectory, on the regular grid 0, 2.25, 4.5, ..., 22.5
@@ -132,49 +137,63 @@ gamma_bridge <- function(t_A, x_A, t_B, x_B, t, theta, n = 1) {
 #' attr(r, "teq")
 #' plot_bridge(r)
 #'
-#' # 2. A grid point equal to an inspection time keeps the observed level:
-#' #    the grid is 0, 2, 4, 6, 8, 10 and 2 and 6 are inspection times
+#' # 2. One trajectory given as a data frame (times, then levels): the grid is
+#' #    0, 2, 4, 6, 8, 10, and the inspection times 2 and 6 keep their levels
 #' x2 <- data.frame(t = c(0, 2, 3, 6, 7, 10), X = c(0, 1.4, 2.0, 4.1, 4.6, 6.8))
-#' gamma_resampling(x2, theta = c(a = 2, b = 3))[[1]]
+#' gamma_resampling(x2, theta)[[1]]
+#'
+#' # Equal observed levels give a constant bridge; a decrease is impossible
+#' gamma_resampling(data.frame(t = c(0, 1, 2.5, 3), X = c(0, 1, 1, 2)), theta)[[1]]
+#' try(gamma_resampling(data.frame(t = c(0, 1, 2, 3), X = c(0, 2, 1.5, 3)), theta))
 #'
 #' # 3. Method "ExtBridge": the times have 1 decimal place, so the grid
 #' #    0, 0.1, ..., 22.5 contains all of them
-#' r3 <- gamma_resampling(x, theta = c(a = 2, b = 3), method = "ExtBridge")
+#' r3 <- gamma_resampling(x, theta, method = "ExtBridge")
 #' attr(r3, "teq")
 #' all(t %in% r3[[1]]$t)
 #' plot_bridge(r3)
 #'
 #' # digits = 0 truncates the times to integers, with a warning
-#' attr(gamma_resampling(x, theta = c(a = 2, b = 3), method = "ExtBridge", digits = 0), "teq")
+#' attr(gamma_resampling(x, theta, method = "ExtBridge", digits = 0), "teq")
 #'
-#' # 4. Three trajectories, each with its own inspection times
+#' # 4. Five trajectories with the same inspection times (a matrix)
+#' xm <- DegradSim::sim_gamma(t, a = 2, b = 3, n_traj = 5)
+#' head(xm)
+#' r4 <- gamma_resampling(xm, theta)
+#' attr(r4, "teq")
+#' plot_bridge(r4, trajectory = 1:5)
+#'
+#' # 5. Three trajectories, each with its own inspection times (a list)
 #' plan <- DegradSim::inspection_times("decreasing", n = 10, n_traj = 3,
 #'                                     tmax = c(20, 30, 40), digits = 1)
 #' xs <- DegradSim::sim_gamma(plan, a = 2, b = 3)
 #'
-#' # One grid per trajectory
-#' attr(gamma_resampling(xs, theta = c(a = 2, b = 3)), "teq")
-#' attr(gamma_resampling(xs, theta = c(a = 2, b = 3), method = "ExtBridge"), "teq")
+#' # One grid and one step per trajectory
+#' attr(gamma_resampling(xs, theta), "teq")
+#' attr(gamma_resampling(xs, theta, method = "ExtBridge"), "teq")
 #'
 #' # The same step for all the trajectories
-#' attr(gamma_resampling(xs, theta = c(a = 2, b = 3), method = "ExtBridge", common_step = TRUE), "teq")
-#' r5 <- gamma_resampling(xs, theta = c(a = 2, b = 3), method = "MultiBridge")
+#' attr(gamma_resampling(xs, theta, method = "ExtBridge", common_step = TRUE), "teq")
+#' r5 <- gamma_resampling(xs, theta, method = "MultiBridge")
 #' attr(r5, "teq")
 #' sapply(r5, nrow)
 #' plot_bridge(r5, trajectory = 1:3)
 #'
-#' # Option 2: all the trajectories up to 40, extended with the rate b
-#' r6 <- gamma_resampling(xs, theta = c(a = 2, b = 3), method = "MultiBridge", option = 2)
+#' # Option 2: all the trajectories up to 40; beyond its last inspection, each
+#' #    one is extended by increments of the process (this uses b)
+#' r6 <- gamma_resampling(xs, theta, method = "MultiBridge", option = 2)
 #' sapply(r6, nrow)
 #'
-#' # 5. The bridge values are random: set.seed() makes them reproducible
-#' set.seed(2); y1 <- gamma_resampling(x, theta = c(a = 2, b = 3))[[1]]$X
-#' set.seed(2); y2 <- gamma_resampling(x, theta = c(a = 2, b = 3))[[1]]$X
+#' # 6. The bridge values are random: set.seed() makes them reproducible
+#' set.seed(2); y1 <- gamma_resampling(x, theta)[[1]]$X
+#' set.seed(2); y2 <- gamma_resampling(x, theta)[[1]]$X
 #' identical(y1, y2)
 #' @examplesIf requireNamespace("levyfit", quietly = TRUE)
-#' # 6. With the parameters estimated by levyfit
-#' r_est <- gamma_resampling(xs, theta = levyfit::gamma_mle(xs))
-#' attr(r_est, "parameters")
+#' # 7. With the parameters estimated by levyfit
+#' theta_hat <- levyfit::gamma_mle(xs)
+#' theta_hat
+#' r7 <- gamma_resampling(xs, theta_hat)
+#' attr(r7, "parameters")
 #' @export
 gamma_resampling <- function(x, theta, method = "Bridge", digits = NULL, common_step = FALSE, option = 1) {
   p <- check_theta(theta, c("a", "b"))

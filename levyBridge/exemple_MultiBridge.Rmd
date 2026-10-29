@@ -27,7 +27,7 @@ remotes::install_github("rytracetito/levy_packages", subdir = "DegradSim")
 
 ## Pourquoi MultiBridge
 
-Avec la méthode `"Bridge"` (Grall-Maës, 2012), chaque trajectoire \(i\) est rééchantillonnée sur sa propre grille, de pas \(t_{i,max} / m_i\) (dernier instant divisé par le nombre d'accroissements). Deux trajectoires ont en général deux pas différents : leurs accroissements reconstruits suivent deux lois différentes (\(X_{h_1}\) et \(X_{h_2}\)) et ne peuvent pas être réunis en un seul échantillon i.i.d.
+Avec la méthode `"Bridge"` (Grall-Maës, 2012), chaque trajectoire \(i\) est rééchantillonnée sur sa propre grille, de pas \(t_{i,max} / m_i\) (dernier instant divisé par le nombre d'accroissements). Deux trajectoires ont en général deux pas différents.
 
 La méthode `"MultiBridge"` place **toutes les trajectoires sur une grille commune**, de pas
 
@@ -35,7 +35,7 @@ La méthode `"MultiBridge"` place **toutes les trajectoires sur une grille commu
 h = \frac{t_{1,max} + \dots + t_{n,max}}{m_1 + \dots + m_n},
 \]
 
-la durée totale observée divisée par le nombre total d'accroissements. Pour une seule trajectoire, \(h = t_N / N\) : c'est le pas de la méthode `"Bridge"`. La grille est \(t'_k = k\,h\) ; comme pour `"Bridge"`, elle ne contient pas forcément les instants d'inspection. Tous les accroissements reconstruits suivent alors la loi de \(X_h\) pour toutes les trajectoires.
+la durée totale observée divisée par le nombre total d'accroissements. Pour une seule trajectoire, \(h = t_N / N\) : c'est le pas de la méthode `"Bridge"`. La grille est \(t'_k = k\,h\) ; comme pour `"Bridge"`, elle ne contient pas forcément les instants d'inspection. Toutes les trajectoires ont alors le même pas \(h\).
 
 ## Les deux options
 
@@ -163,9 +163,9 @@ plot_bridge(rx, trajectory = 1:4)
 
 \newpage
 
-# III - Loi des accroissements regroupés
+# III - Vérification par simulation
 
-Sous le modèle et avec les vrais paramètres, les accroissements reconstruits de toutes les trajectoires sont i.i.d. de loi \(X_h\). Vérification sur 500 répétitions du plan des quatre trajectoires (processus gamma), pour les deux options : test de Kolmogorov-Smirnov sur l'ensemble des accroissements.
+Avec les vrais paramètres, chaque accroissement reconstruit a la loi de \(X_h\), \(\Gamma(a h, b)\) pour le processus gamma. Vérification sur 500 répétitions du plan des quatre trajectoires, pour les deux options : comparaison de la loi empirique de l'ensemble des accroissements à \(\Gamma(a h, b)\) par la statistique de Kolmogorov-Smirnov.
 
 ```{r}
 set.seed(1)

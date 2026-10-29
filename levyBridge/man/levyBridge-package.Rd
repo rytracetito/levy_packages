@@ -210,7 +210,12 @@ attr(r, "teq")
 attr(r, "dx")
 plot_bridge(r)
 
-# 3. Three trajectories, each with its own inspection times (a list)
+# 3. Five trajectories with the same inspection times (a matrix)
+xm <- DegradSim::sim_gamma(t, a = 2, b = 3, n_traj = 5)
+head(xm)
+plot_bridge(gamma_resampling(xm, theta = c(a = 2, b = 3)), trajectory = 1:5)
+
+# 4. Three trajectories, each with its own inspection times (a list)
 plan <- DegradSim::inspection_times("decreasing", n = 10, n_traj = 3,
                                     tmax = c(20, 30, 40), digits = 1)
 xs <- DegradSim::sim_gamma(plan, a = 2, b = 3)

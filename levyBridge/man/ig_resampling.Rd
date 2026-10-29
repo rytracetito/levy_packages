@@ -63,23 +63,73 @@ the resampling algorithm are described in \link{levyBridge-package}.
 t <- c(0, 1.2, 2, 3.8, 5.5, 7.1, 10.4, 12.9, 15.3, 18.7, 22.5)
 set.seed(1)
 x <- DegradSim::sim_ig(t, mu = 1, eta = 3)
-r <- ig_resampling(x, theta = c(mu = 1, eta = 3))
+theta <- c(mu = 1, eta = 3)
+r <- ig_resampling(x, theta)
 r
+
+# The resampled trajectory, on the regular grid 0, 2.25, 4.5, ..., 22.5
 r[[1]]
+attr(r, "teq")
 plot_bridge(r)
 
-# 2. Method "ExtBridge": the grid 0, 0.1, ..., 22.5 contains all the times
-r2 <- ig_resampling(x, theta = c(mu = 1, eta = 3), method = "ExtBridge")
-attr(r2, "teq")
-plot_bridge(r2)
+# 2. One trajectory given as a data frame (times, then levels): the grid is
+#    0, 2, 4, 6, 8, 10, and the inspection times 2 and 6 keep their levels
+x2 <- data.frame(t = c(0, 2, 3, 6, 7, 10), X = c(0, 1.4, 2.0, 4.1, 4.6, 6.8))
+ig_resampling(x2, theta)[[1]]
 
-# 3. Three trajectories with their own inspection times, one common step
+# Equal observed levels give a constant bridge; a decrease is impossible
+ig_resampling(data.frame(t = c(0, 1, 2.5, 3), X = c(0, 1, 1, 2)), theta)[[1]]
+try(ig_resampling(data.frame(t = c(0, 1, 2, 3), X = c(0, 2, 1.5, 3)), theta))
+
+# 3. Method "ExtBridge": the times have 1 decimal place, so the grid
+#    0, 0.1, ..., 22.5 contains all of them
+r3 <- ig_resampling(x, theta, method = "ExtBridge")
+attr(r3, "teq")
+all(t \%in\% r3[[1]]$t)
+plot_bridge(r3)
+
+# digits = 0 truncates the times to integers, with a warning
+attr(ig_resampling(x, theta, method = "ExtBridge", digits = 0), "teq")
+
+# 4. Five trajectories with the same inspection times (a matrix)
+xm <- DegradSim::sim_ig(t, mu = 1, eta = 3, n_traj = 5)
+head(xm)
+r4 <- ig_resampling(xm, theta)
+attr(r4, "teq")
+plot_bridge(r4, trajectory = 1:5)
+
+# 5. Three trajectories, each with its own inspection times (a list)
 plan <- DegradSim::inspection_times("decreasing", n = 10, n_traj = 3,
                                     tmax = c(20, 30, 40), digits = 1)
 xs <- DegradSim::sim_ig(plan, mu = 1, eta = 3)
-r3 <- ig_resampling(xs, theta = c(mu = 1, eta = 3), method = "MultiBridge")
-attr(r3, "teq")
-plot_bridge(r3, trajectory = 1:3)
+
+# One grid and one step per trajectory
+attr(ig_resampling(xs, theta), "teq")
+attr(ig_resampling(xs, theta, method = "ExtBridge"), "teq")
+
+# The same step for all the trajectories
+attr(ig_resampling(xs, theta, method = "ExtBridge", common_step = TRUE), "teq")
+r5 <- ig_resampling(xs, theta, method = "MultiBridge")
+attr(r5, "teq")
+sapply(r5, nrow)
+plot_bridge(r5, trajectory = 1:3)
+
+# Option 2: all the trajectories up to 40; beyond its last inspection, each
+#    one is extended by increments of the process (this uses mu)
+r6 <- ig_resampling(xs, theta, method = "MultiBridge", option = 2)
+sapply(r6, nrow)
+
+# 6. The bridge values are random: set.seed() makes them reproducible
+set.seed(2); y1 <- ig_resampling(x, theta)[[1]]$X
+set.seed(2); y2 <- ig_resampling(x, theta)[[1]]$X
+identical(y1, y2)
+\dontshow{if (requireNamespace("levyfit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+# 7. With the parameters estimated by levyfit
+theta_hat <- levyfit::ig_mle(xs)
+theta_hat
+r7 <- ig_resampling(xs, theta_hat)
+attr(r7, "parameters")
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=ig_bridge]{ig_bridge()}} for the distribution of the bridge,

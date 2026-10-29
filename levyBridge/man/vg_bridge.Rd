@@ -77,6 +77,10 @@ vg_bridge(t_A = 1, x_A = 3, t_B = 4, x_B = 6, t = 2,
 # 2. Many draws: distribution of X_2 given the two levels
 y <- vg_bridge(1, 3, 4, 6, 2, theta = c(theta = 0.5, sigma = 1.5, nu = 2), n = 10000)
 hist(y, breaks = 50, freq = FALSE)
+
+# Errors: t outside (t_A, t_B), theta without all the parameters
+try(vg_bridge(1, 3, 4, 6, 5, theta = c(theta = 0.5, sigma = 1.5, nu = 2)))
+try(vg_bridge(1, 3, 4, 6, 2, theta = c(sigma = 1.5, nu = 2)))
 \dontshow{if (requireNamespace("levyfit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 3. Parameters estimated with levyfit on simulated trajectories
 set.seed(1)

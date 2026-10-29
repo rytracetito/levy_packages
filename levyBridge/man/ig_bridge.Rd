@@ -70,6 +70,10 @@ hist(y, breaks = 50, freq = FALSE)
 # 3. Equal levels give a constant bridge; a decrease is impossible
 ig_bridge(0, 1, 2, 1, 0.5, theta = c(mu = 1, eta = 3))
 try(ig_bridge(0, 2, 2, 1, 0.5, theta = c(mu = 1, eta = 3)))
+
+# Errors: t outside (t_A, t_B), theta without all the parameters
+try(ig_bridge(1, 3, 4, 6, 5, theta = c(mu = 1, eta = 3)))
+try(ig_bridge(1, 3, 4, 6, 2, theta = c(eta = 3)))
 \dontshow{if (requireNamespace("levyfit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 4. Parameters estimated with levyfit on a simulated trajectory
 t <- c(0, 1.2, 2, 3.8, 5.5, 7.1, 10.4, 12.9, 15.3, 18.7, 22.5)
