@@ -234,6 +234,8 @@ convergence(function(t) sim_ig(t, mu = 0.5, eta = 2), ig_mle, vraies$ig,
 
 ## Variance-gamma
 
+Sur une durée \(\Delta t\) longue devant \(\nu\), l'accroissement est presque normal : pour \(\theta = 0\), sa kurtosis vaut \(3(1 + \nu / \Delta t)\) (Madan et Seneta, 1990, section III.C), et le processus variance-gamma tend vers le processus de Wiener quand \(\nu \to 0\) (voir la section When the estimator does not exist de l'aide de `vg_mle()`). Dans les cas ci-dessous, \(\nu = 2\).
+
 ### Cas 1 : une trajectoire, inspections régulières
 
 ```{r}
@@ -396,12 +398,13 @@ On résume ensuite les \(R\) estimations de chaque paramètre. Pour un paramètr
 * \([L_r, U_r]\) l'intervalle de confiance à 95 % de cette répétition ;
 * \(S\) l'ensemble des répétitions où l'estimateur existe, et \(|S|\) leur nombre.
 
-Les répétitions en échec (\(r \notin S\)) ne servent qu'au taux d'échecs. Les quatre indicateurs des tableaux sont :
+Les répétitions en échec (\(r \notin S\)) ne servent qu'au taux d'échecs. Les cinq indicateurs des tableaux sont :
 
 * **Moyenne** des estimations :
 $$\bar\psi = \frac{1}{|S|} \sum_{r \in S} \hat\psi_r ;$$
 * **Biais** :
 $$\mathrm{Biais} = \bar\psi - \psi ;$$
+* **Médiane** des estimations \(\hat\psi_r\), \(r \in S\). Contrairement à la moyenne, elle n'est pas déplacée par quelques estimations extrêmes ;
 * **Couv. %**, la couverture, pourcentage des intervalles qui contiennent la vraie valeur (idéalement 95 %) :
 $$\mathrm{Couv.} = \frac{100}{|S|} \sum_{r \in S} \mathbf{1}\{L_r \le \psi \le U_r\} ;$$
 * **Échecs %**, pourcentage des répétitions où l'estimateur n'existe pas (les fonctions renvoient alors `NA` avec un avertissement) :
@@ -532,7 +535,7 @@ ggplot(d2, aes(x = couverture, y = plan, colour = parameter)) +
 \toprule
 Modèle & Plan d'inspection & Une ou plusieurs trajectoires \\
 \midrule
-Gamma & Aucun plan meilleur & Plusieurs : biais un peu plus petits \\
+Gamma & Aucun plan meilleur & Les deux conviennent \\
 \addlinespace
 Wiener & Aucun plan meilleur & Les deux conviennent \\
 \addlinespace
@@ -540,7 +543,7 @@ Inverse gaussien & Aucun plan meilleur & Plusieurs : biais de \texttt{eta} plus 
 \addlinespace
 Variance-gamma & Aucun plan meilleur & Les deux conviennent \\
 \addlinespace
-Meixner & Compte : le plan régulier est le moins bon (11~\% d'échecs, plus grand biais de \texttt{d}), le plan décroissant le meilleur & Une longue trajectoire : moins d'échecs \\
+Meixner & Le plan régulier échoue plus souvent (environ 10~\% contre 0 à 7~\%) et donne quelques valeurs extrêmes de \texttt{d}, qui gonflent son biais moyen ; ses médianes restent comparables à celles des autres plans & Une longue trajectoire : moins d'échecs \\
 \bottomrule
 \end{tabular}
 \end{center}

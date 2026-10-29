@@ -14,7 +14,8 @@
 #' \deqn{X_s = \theta \gamma_s + \sigma W_{\gamma_s}:}
 #' a Brownian motion with drift \eqn{\theta} and diffusion \eqn{\sigma},
 #' observed at the random time \eqn{\gamma_s} instead of the time \eqn{s}
-#' (Seneta, 2004, equations (1) and (2); Bee, Dickson and Santi, 2018,
+#' (Madan and Seneta, 1990, section III.A, equation (7), for \eqn{\theta = 0};
+#' Seneta, 2004, equations (1) and (2); Bee, Dickson and Santi, 2018,
 #' section 2, where the increments of the random time over one unit of time
 #' follow a gamma distribution with shape and rate both equal to their
 #' \eqn{\nu}, that is \eqn{1 / \nu} here). It is a Levy process that can
@@ -35,8 +36,11 @@
 #' where \eqn{K_p} is the modified Bessel function of the second kind of order
 #' \eqn{p}, defined by
 #' \eqn{K_p(x) = \int_0^\infty e^{-x \cosh t} \cosh(p t)\, dt} (Fischer et al.,
-#' 2023, appendix A), so that \eqn{K_{-p} = K_p}. For
-#' \eqn{\Delta t = 1}, this is the density (1) of Bee et al. (2018) with their
+#' 2023, appendix A), so that \eqn{K_{-p} = K_p}. Some authors call
+#' \eqn{K_p} the modified Bessel function of the third kind; Seneta (2004,
+#' section 3) points out this ambiguity of terminology. For
+#' \eqn{\Delta t = 1}, this is the density (15) of Seneta (2004) with his
+#' location \eqn{c = 0}, and the density (1) of Bee et al. (2018) with their
 #' location \eqn{\mu = 0}, their \eqn{\gamma} equal to \eqn{\theta} and their
 #' \eqn{\nu} equal to \eqn{1 / \nu}.
 #'
@@ -53,36 +57,64 @@
 #'
 #' **Why an EM algorithm.** The density contains the modified Bessel function
 #' \eqn{K_p}, whose order depends on \eqn{\nu}, and the likelihood cannot be
-#' maximized in closed form. Standard optimization algorithms applied directly
-#' to this likelihood, such as the Nelder-Mead algorithm of [stats::optim()],
-#' are very sensitive to the starting values and give highly unstable
-#' estimates (Bee et al., 2018, section 1, after Cervellera and Tucci). On the
+#' maximized in closed form. Direct maximization is likely to be
+#' computationally expensive (Madan and Seneta, 1990, section II.F), the
+#' log-likelihood can have many local optima (Belhaj Salem, Fouladirad and
+#' Deloux, 2022, section 2.2), and Seneta (2004, section 3) reports, for the
+#' model with a location parameter, a likelihood surface that appeared flat
+#' near the moment estimates. Standard optimization algorithms
+#' applied directly to this likelihood, such as the Nelder-Mead algorithm of
+#' [stats::optim()], are very sensitive to the starting values and give
+#' highly unstable estimates (Bee et al., 2018, section 1, after Cervellera
+#' and Tucci). On the
 #' other hand, the maximization would be easy if the random times were known:
 #' this is why the MLE is computed by an EM algorithm, which treats the
 #' random times as missing data (Bee et al., 2018, sections 1 and 3.2).
 #'
 #' @section When the estimator does not exist:
-#' The VG model contains two other models as limits, and the likelihood can be
-#' maximal at one of them; the function then returns `NA` with a warning that
-#' names the model to use instead.
-#' * \eqn{\nu \to 0}: with the parameters above, the cumulant generating
-#'   function of an increment (Fischer et al., 2023, equation (2.13)) is
-#'   \eqn{-(\Delta t / \nu) \ln(1 - \theta \nu u - \sigma^2 \nu u^2 / 2)}, which
-#'   tends to \eqn{\Delta t (\theta u + \sigma^2 u^2 / 2)}, the cumulant
-#'   generating function of \eqn{\mathcal{N}(\theta \Delta t, \sigma^2 \Delta t)}:
-#'   the VG process tends to the Wiener process with drift \eqn{\theta} and
-#'   diffusion \eqn{\sigma} (convergence in distribution, by Levy's continuity
-#'   theorem as in Fischer et al., 2023, section 2.5.1). Use [wiener_mle()].
+#' The VG model has two other models as limits, which are not in its
+#' parameter space (\eqn{\nu > 0}, \eqn{\sigma > 0}). The likelihood can
+#' increase towards one of these limits, without a maximum inside the
+#' parameter space: the MLE then does not exist, and the function returns
+#' `NA` with a warning that names the model to use instead.
+#' * \eqn{\nu \to 0}: with the parameters above, the characteristic function
+#'   of an increment (Fischer et al., 2023, equation (2.12)) is
+#'   \eqn{\varphi(u) = (1 - i \theta \nu u + \sigma^2 \nu u^2 / 2)^{-\Delta t / \nu}},
+#'   which tends to \eqn{\exp(\Delta t (i \theta u - \sigma^2 u^2 / 2))}, the
+#'   characteristic function of \eqn{\mathcal{N}(\theta \Delta t, \sigma^2 \Delta t)}.
+#'   By Levy's continuity theorem (van der Vaart, 1998, Theorem 2.13), each
+#'   increment converges in distribution to this normal distribution: the VG
+#'   process tends to the Wiener process with drift \eqn{\theta} and
+#'   diffusion \eqn{\sigma}. For \eqn{\theta = 0}, Seneta (2004, section 3)
+#'   gives the same limit. The function concludes that the likelihood
+#'   increases towards this limit when \eqn{\nu} falls below
+#'   \eqn{\max_j \Delta t_j / 300} during the EM algorithm, or when L-BFGS-B
+#'   stops on this bound. The value 300 is a choice of this implementation,
+#'   without a source. Its meaning: for \eqn{\theta = 0}, the kurtosis of an
+#'   increment over a duration \eqn{\Delta t} is \eqn{3 (1 + \nu / \Delta t)}
+#'   (Madan and Seneta, 1990, section III.C), so that at the threshold the
+#'   excess kurtosis of the increment over the longest duration is
+#'   \eqn{3 / 300 = 0.01}: this increment is then almost normal. Use
+#'   [wiener_mle()].
 #' * \eqn{\sigma \to 0}: when \eqn{\theta > 0}, an increment tends in
 #'   distribution to the gamma distribution with shape \eqn{\Delta t / \nu} and
 #'   rate \eqn{1 / (\theta \nu)} (Fischer et al., 2023, section 2.5.1, item 2,
 #'   with their \eqn{r} equal to \eqn{\Delta t / \nu} and their \eqn{\lambda}
 #'   equal to \eqn{1 / (\theta \nu)}): the VG process tends to the gamma
-#'   process with shape \eqn{1 / \nu} and rate \eqn{1 / (\theta \nu)}. When all
-#'   the increments are positive, the function compares the VG likelihood with
-#'   the maximum of the gamma likelihood; if the VG likelihood is not larger,
-#'   the function considers that the maximum is reached at this limit. Use
+#'   process with shape \eqn{1 / \nu} and rate \eqn{1 / (\theta \nu)}. The
+#'   density converges too: applying the limiting form (A.65) of \eqn{K_p} to
+#'   the density (1.1) of Fischer et al. (2023) shows that, as
+#'   \eqn{\sigma \to 0}, the VG density tends to this gamma density at every
+#'   \eqn{x > 0}, and to 0 at every \eqn{x < 0}. The VG likelihood therefore
+#'   tends to the gamma likelihood. When all the increments are positive, the
+#'   function compares the VG likelihood at the estimate with the maximum of
+#'   the gamma likelihood; if the VG likelihood is not larger, the function
+#'   concludes that the likelihood increases towards this limit. Use
 #'   [gamma_mle()].
+#'
+#' When a computation of the EM algorithm gives a value that is not finite,
+#' the function returns `NA` with a warning that reports this numerical
+#' failure, without naming a limit.
 #'
 #' @section EM algorithm:
 #' **The EM algorithm in general** (Bee et al., 2018, section 3.2). The data
@@ -153,8 +185,36 @@
 #'    \eqn{a \to \infty}: its unique root gives \eqn{\nu = 1 / a}.
 #' 4. Repeat steps 1 to 3 until the increase of \eqn{\ell} becomes small.
 #'
-#' **Start and end.** The algorithm starts from the Wiener MLE for
-#' \eqn{(\theta, \sigma)} and from \eqn{\nu = T / n}. The maximization is then
+#' **Start and end.** As recommended by Seneta (2004, section 3), the
+#' algorithm starts from moment estimates.
+#' * \eqn{\theta} and \eqn{\sigma}: the Wiener MLE (see [wiener_mle()]),
+#'   \eqn{\theta_0 = S / T} and
+#'   \eqn{\sigma_0^2 = \frac{1}{n} \sum_{j=1}^{n} (\Delta x_j - \theta_0 \Delta t_j)^2 / \Delta t_j},
+#'   which estimate the mean and the variance of the process per unit of
+#'   time. Seneta (2004, equations (23) and (24)) uses the same estimates for
+#'   \eqn{\theta} and \eqn{\sigma^2} when the terms in \eqn{\theta^2},
+#'   \eqn{\theta^3}, \eqn{\theta^4} are ignored (his location \eqn{c} being 0
+#'   here).
+#' * \eqn{\nu}: the kurtosis of \eqn{X_1} is \eqn{3 (1 + \nu)} when these terms
+#'   are ignored (Seneta, 2004, equation (26); exactly when \eqn{\theta = 0},
+#'   Madan and Seneta, 1990, sections II.B and II.E), so that
+#'   \eqn{\nu_0 = \hat\gamma_2 / 3}, where \eqn{\hat\gamma_2 = k_4 / k_2^2} is
+#'   the excess kurtosis of \eqn{X_1} estimated with the residuals
+#'   \eqn{e_j = \Delta x_j - \theta_0 \Delta t_j} by
+#'   \eqn{k_2 = \frac{1}{T} \sum_{j=1}^{n} e_j^2} and
+#'   \eqn{k_4 = \frac{1}{T} \big(\sum_{j=1}^{n} e_j^4 - 3 k_2^2 \sum_{j=1}^{n} \Delta t_j^2\big)}.
+#'   These estimators of the cumulants per unit of time, which take the
+#'   unequal durations into account, are an extension made in this
+#'   implementation: they use the fact that the cumulants of an increment are
+#'   proportional to its duration \eqn{\Delta t}, the logarithm of its
+#'   characteristic function (see When the estimator does not exist) being
+#'   proportional to \eqn{\Delta t}. When \eqn{\nu_0} is not larger than the threshold
+#'   \eqn{\max_j \Delta t_j / 300} (see When the estimator does not exist),
+#'   in particular when \eqn{\hat\gamma_2 \le 0}, the moment estimate is not
+#'   usable and the algorithm starts from \eqn{\nu_0 = T / n}, a choice of
+#'   this implementation, without a source.
+#'
+#' The maximization is then
 #' finished by L-BFGS-B on \eqn{(\theta, \ln \sigma, \ln \nu)}, started at the
 #' last EM iterate. If this refinement fails or does not increase the
 #' likelihood, the EM iterate is returned.
@@ -195,19 +255,27 @@
 #' Belhaj Salem, M., Fouladirad, M. and Deloux, E. (2022). Variance Gamma
 #' process as degradation model for prognosis and imperfect maintenance of
 #' centrifugal pumps. *Reliability Engineering & System Safety*, 223, 108417.
-#' \doi{10.1016/j.ress.2022.108417}
+#' \doi{10.1016/j.ress.2022.108417}. Section 2.2.
 #'
 #' Fischer, A., Gaunt, R. E. and Sarantsev, A. (2023). The variance-gamma
-#' distribution: a review. arXiv:2303.05615. Equations (1.1), (2.13) and
-#' (2.18), section 2.5.1 and appendix A.
+#' distribution: a review. arXiv:2303.05615. Equations (1.1), (2.12) and
+#' (2.18), section 2.5.1 and appendix A (limiting form (A.65)).
+#'
+#' Madan, D. B. and Seneta, E. (1990). The variance gamma (V.G.) model for
+#' share market returns. *Journal of Business*, 63(4), 511-524.
+#' \url{https://www.jstor.org/stable/2353303}. Sections II.B, II.E, II.F, III.A and III.C.
 #'
 #' Nitithumbundit, T. and Chan, J. S. K. (2015). An ECM algorithm for skewed
 #' multivariate variance gamma distribution in normal mean-variance
 #' representation. arXiv:1504.01239.
 #'
+#' van der Vaart, A. W. (1998). *Asymptotic Statistics*. Cambridge University
+#' Press. \doi{10.1017/CBO9780511802256}. Theorem 2.13.
+#'
 #' Seneta, E. (2004). Fitting the variance-gamma model to financial data.
 #' *Journal of Applied Probability*, 41A, 177-187.
-#' \doi{10.1017/S0021900200112288}. Equations (1) and (2).
+#' \doi{10.1017/S0021900200112288}. Equations (1), (2), (15) and (23) to
+#' (26), section 3.
 #'
 #' Olver, F. W. J., Lozier, D. W., Boisvert, R. F. and Clark, C. W. (eds.)
 #' (2010). *NIST Handbook of Mathematical Functions*. Cambridge University
@@ -240,8 +308,8 @@
 #' # 4. Estimates with 95 % confidence intervals
 #' vg_mle(x, ci = TRUE)
 #'
-#' # 5. Increasing data, here from a gamma process: the likelihood is maximal
-#' #    at the gamma limit (sigma = 0): warning suggesting gamma_mle(), NA estimates
+#' # 5. Increasing data, here from a gamma process: the likelihood increases
+#' #    towards the gamma limit (sigma = 0): warning suggesting gamma_mle(), NA estimates
 #' t100 <- DegradSim::inspection_times("regular", n = 100, tmax = 100)$time
 #' y <- DegradSim::sim_gamma(t100, a = 2, b = 3)
 #' vg_mle(y)
@@ -259,23 +327,29 @@ vg_est <- function(x, t = NULL) {
   m <- length(dx)
   if (m < 3) stop("at least three increments are needed to estimate three parameters")
 
-  brownian <- "nu tends to 0: the likelihood is maximal at the Brownian limit, use wiener_mle()"
+  brownian <- "nu tends to 0: the likelihood increases towards the Brownian limit, use wiener_mle()"
+  failure <- "numerical failure of the EM algorithm (a value is not finite)"
   theta <- sum(dx) / sum(dt)
   sigma <- sqrt(sum((dx - theta * dt)^2 / dt) / m)
-  nu <- mean(dt)
   nu_min <- max(dt) / 300
+  e <- dx - theta * dt
+  k2 <- sum(e^2) / sum(dt)
+  k4 <- (sum(e^4) - 3 * k2^2 * sum(dt^2)) / sum(dt)
+  nu <- k4 / k2^2 / 3
+  if (!is.finite(nu) || nu <= nu_min) nu <- mean(dt)
   ll <- vg_loglik(dx, dt, theta, sigma, nu)
 
   for (it in 1:5000) {
     g <- gig_moments(dt / nu - 0.5, dx^2 / sigma^2, theta^2 / sigma^2 + 2 / nu)
-    if (!all(is.finite(unlist(g))) || nu < nu_min) no_mle(brownian)
+    if (nu < nu_min) no_mle(brownian)
+    if (!all(is.finite(unlist(g)))) no_mle(failure)
     theta <- sum(dx) / sum(g$EG)
     sigma <- sqrt(mean(dx^2 * g$EinvG - 2 * theta * dx + theta^2 * g$EG))
     q <- function(la) sum(dt * g$ElogG - g$EG + dt * la + dt - dt * digamma(exp(la) * dt))
     if (q(log(1 / nu_min)) > 0) no_mle(brownian)
     nu <- exp(-uniroot(q, interval = c(-log(1e6 * max(dt)), log(1 / nu_min)), tol = 1e-12)$root)
     ll_new <- vg_loglik(dx, dt, theta, sigma, nu)
-    if (!is.finite(ll_new)) no_mle(brownian)
+    if (!is.finite(ll_new)) no_mle(failure)
     if (ll_new - ll < -1e-8 * abs(ll)) warning("the log-likelihood decreased: numerical problem")
     # l'EM s'arrête dès qu'il ralentit : L-BFGS-B termine la maximisation, bien plus vite près de nu = 0
     slow <- it >= 10 && ll_new - ll <= 1e-6 * (abs(ll) + 1)
@@ -301,7 +375,7 @@ vg_est <- function(x, t = NULL) {
     g <- gamma_fit(dt, dx)
     ll_gamma <- sum(dgamma(dx, shape = g[["a"]] * dt, rate = g[["b"]], log = TRUE))
     if (-nll(p) <= ll_gamma + 1e-8 * abs(ll_gamma)) {
-      no_mle("sigma tends to 0: the likelihood is maximal at the gamma limit, use gamma_mle()")
+      no_mle("sigma tends to 0: the likelihood increases towards the gamma limit, use gamma_mle()")
     }
   }
   c(theta = p[1], sigma = exp(p[2]), nu = exp(p[3]))

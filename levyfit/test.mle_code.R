@@ -86,7 +86,7 @@ resumer <- function(res) {
     e <- d$estimate[ok]
     couv <- if (all(is.na(d$lower[ok]))) NA else
       100 * mean(d$lower[ok] <= v & v <= d$upper[ok], na.rm = TRUE)
-    data.frame(k, vraie = v, moyenne = mean(e), biais = mean(e) - v,
+    data.frame(k, vraie = v, moyenne = mean(e), biais = mean(e) - v, mediane = median(e),
                couverture = couv, echecs = 100 * mean(!ok))
   }))
 }
@@ -100,10 +100,11 @@ tableau <- function(modele, config) {
   t <- data.frame(Paramètre = ifelse(duplicated(d$parameter), "",
                                      paste0(d$parameter, " (", d$vraie, ")")),
                   Plan = libelles[d$plan], Moyenne = f(d$moyenne), Biais = f(d$biais),
+                  Médiane = f(d$mediane),
                   `Couv. %` = ifelse(is.na(d$couverture), "",
                                      formatC(d$couverture, digits = 0, format = "f")),
                   `Échecs %` = formatC(d$echecs, digits = 0, format = "f"), check.names = FALSE)
   tab <- knitr::kable(t, format = "latex", booktabs = TRUE, row.names = FALSE,
-                      align = "llrrrr", linesep = c(rep("", length(plans) - 1), "\\addlinespace"))
+                      align = "llrrrrr", linesep = c(rep("", length(plans) - 1), "\\addlinespace"))
   knitr::asis_output(paste0("\\begin{small}\n", tab, "\n\\end{small}"))
 }
