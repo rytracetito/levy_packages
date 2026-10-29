@@ -16,7 +16,8 @@ The increments can also be given directly with \code{\link[=increments_data]{inc
 when \code{x} is a list.}
 
 \item{ci}{\code{FALSE} (default) for the point estimates only; \code{TRUE} to add
-asymptotic confidence intervals (see the section below).}
+asymptotic confidence intervals, computed as explained in the section
+Confidence intervals of \link{levyfit-package}.}
 
 \item{level}{Confidence level of the intervals, between 0 and 1 (default
 0.95). Used only when \code{ci = TRUE}.}
@@ -32,133 +33,158 @@ are \code{NA}, with a warning.
 }
 \description{
 Computes the maximum likelihood estimator (MLE) of the parameters
-\eqn{(\theta, \sigma, \nu)} of the variance-gamma (VG) process from one or several
-trajectories observed at possibly irregular inspection times. There is no
-closed form: the MLE is computed by an EM algorithm, whose steps are explicit
-or reduce to an equation with a unique root, followed by a quasi-Newton
-refinement.
+\eqn{(\theta, \sigma, \nu)} of the variance-gamma (VG) process from one or
+several trajectories observed at regular or irregular inspection times.
+There is no closed form: the MLE is computed by an EM algorithm, whose
+steps are explicit or reduce to an equation with a unique root, followed by
+a quasi-Newton refinement.
 }
 \section{Model and data}{
 
 Let \eqn{\gamma} be a gamma process such that \eqn{\gamma_s} has mean
-\eqn{s} and variance \eqn{\nu s} (shape \eqn{s / \nu}, scale \eqn{\nu}), and
-\eqn{W} an independent standard Brownian motion. The VG process is
-\eqn{X_s = \theta \gamma_s + \sigma W_{\gamma_s}}, a Levy process that can
-decrease. With \eqn{\lambda_s = s / \nu},
-\eqn{c = \sqrt{\theta^2 + 2 \sigma^2 / \nu}} and \eqn{\kappa = c / \sigma^2},
-\eqn{X_s} has the density
-\deqn{f_s(x) = \frac{2 e^{\theta x / \sigma^2}}{\sqrt{2\pi}\, \sigma\, \nu^{\lambda_s} \Gamma(\lambda_s)}
-  \Big(\frac{|x|}{c}\Big)^{\lambda_s - 1/2} K_{|\lambda_s - 1/2|}(\kappa |x|), \qquad x \ne 0,}
-where \eqn{K_\alpha} is the modified Bessel function of the second kind. The
-trajectories are independent and have the same law; each one is observed at
-its own inspection times. Let \eqn{(\Delta t_j, \Delta x_j)},
-\eqn{j = 1, \dots, m}, be the durations and degradation increments
-(\eqn{\Delta x_j \ne 0}) between two consecutive inspections of a same
-trajectory, gathered over all the trajectories.
+\eqn{s} and variance \eqn{\nu s} (shape \eqn{s / \nu}, rate \eqn{1 / \nu}),
+and \eqn{W} an independent standard Brownian motion. The VG process is
+\deqn{X_s = \theta \gamma_s + \sigma W_{\gamma_s}:}
+a Brownian motion with drift \eqn{\theta} and diffusion \eqn{\sigma},
+observed at the random time \eqn{\gamma_s} instead of the time \eqn{s}
+(Seneta, 2004, equations (1) and (2); Bee, Dickson and Santi, 2018,
+section 2, where the increments of the random time over one unit of time
+follow a gamma distribution with shape and rate both equal to their
+\eqn{\nu}, that is \eqn{1 / \nu} here). It is a Levy process that can
+decrease.
+
+Given the random time, an increment over a duration \eqn{\Delta t} is
+\eqn{\theta G + \sigma \sqrt{G} Z}, with \eqn{G \sim \Gamma(\Delta t / \nu, 1 / \nu)}
+and \eqn{Z \sim \mathcal{N}(0, 1)} independent. This is the representation
+(2.18) of Fischer, Gaunt and Sarantsev (2023) with \eqn{S = 2 G / \nu},
+so that the increment follows their distribution
+\eqn{VG(r, \theta_F, \sigma_F, 0)} with
+\eqn{r = 2 \Delta t / \nu}, \eqn{\theta_F = \theta \nu / 2} and
+\eqn{\sigma_F = \sigma \sqrt{\nu / 2}}. Their density (1.1) then gives, with
+\eqn{\lambda = \Delta t / \nu}, \eqn{c = \sqrt{\theta^2 + 2 \sigma^2 / \nu}}
+and \eqn{\kappa = c / \sigma^2},
+\deqn{f_{\Delta t}(x; \theta, \sigma, \nu) = \frac{2 e^{\theta x / \sigma^2}}{\sqrt{2\pi}\, \sigma\, \nu^{\lambda} \Gamma(\lambda)}
+  \Big(\frac{|x|}{c}\Big)^{\lambda - 1/2} K_{|\lambda - 1/2|}(\kappa |x|), \qquad x \ne 0,}
+where \eqn{K_p} is the modified Bessel function of the second kind of order
+\eqn{p}, defined by
+\eqn{K_p(x) = \int_0^\infty e^{-x \cosh t} \cosh(p t)\, dt} (Fischer et al.,
+2023, appendix A), so that \eqn{K_{-p} = K_p}. For
+\eqn{\Delta t = 1}, this is the density (1) of Bee et al. (2018) with their
+location \eqn{\mu = 0}, their \eqn{\gamma} equal to \eqn{\theta} and their
+\eqn{\nu} equal to \eqn{1 / \nu}.
+
+The data are the \eqn{n} increments \eqn{(\Delta t_j, \Delta x_j)},
+\eqn{j = 1, \dots, n}, with \eqn{\Delta x_j \ne 0}, pooled over the
+trajectories, with \eqn{T = \sum_{j=1}^{n} \Delta t_j} and
+\eqn{S = \sum_{j=1}^{n} \Delta x_j} (see the section Notation of
+\link{levyfit-package}).
 }
 
 \section{Likelihood}{
 
-The increments being independent,
-\eqn{\ell(\theta, \sigma, \nu) = \sum_j \ln f_{\Delta t_j}(\Delta x_j)}.
-The derivatives of \eqn{K_\alpha} with respect to its order have no closed
-form, so the score equations cannot be solved explicitly.
+The increments being independent, the log-likelihood is
+\deqn{\ell(\theta, \sigma, \nu) = \sum_{j=1}^{n} \ln f_{\Delta t_j}(\Delta x_j; \theta, \sigma, \nu),}
+which is equation (4) of Bee et al. (2018) for \eqn{\Delta t_j = 1}. As in
+their section 3.2, the likelihood is maximized by an EM algorithm that
+treats the random times as missing data.
 }
 
-\section{Boundary behaviour}{
+\section{When the estimator does not exist}{
 
-As \eqn{\nu \to 0}, \eqn{\ell(\theta, \sigma, \nu)} tends to the
-log-likelihood of the Wiener process with drift \eqn{\theta} and diffusion
-\eqn{\sigma}; as \eqn{\nu \to \infty}, \eqn{\ell \to -\infty}. The supremum
-of the likelihood can therefore be reached at the Brownian limit
-\eqn{\nu = 0}: the MLE does not always exist (about one case in four with a
-single trajectory of ten increments). The function then returns \code{NA} with a
-warning and the Wiener model, see \code{\link[=wiener_mle]{wiener_mle()}}, should be used.
-
-As \eqn{\sigma \to 0}, \eqn{X_s \to \theta \gamma_s}: if \eqn{\theta > 0},
-the VG process tends to the gamma process with shape \eqn{a = 1 / \nu} and
-rate \eqn{b = 1 / (\theta \nu)}, and when all the increments are positive
-\eqn{\ell} tends to the gamma log-likelihood. Hence
-\eqn{\sup \ell \ge \ell_\Gamma(\hat a, \hat b)}, the maximum of the gamma
-log-likelihood. When all the increments are positive and the VG estimate
-does not exceed this value, the supremum is reached at the gamma limit
-\eqn{\sigma = 0}: the function returns \code{NA} with a warning and the gamma
-model, see \code{\link[=gamma_mle]{gamma_mle()}}, should be used. This typically happens with monotone
-degradation data.
+The VG model contains two other models as limits, and the likelihood can be
+maximal at one of them; the function then returns \code{NA} with a warning that
+names the model to use instead.
+\itemize{
+\item \eqn{\nu \to 0}: with the parameters above, the cumulant generating
+function of an increment (Fischer et al., 2023, equation (2.13)) is
+\eqn{-(\Delta t / \nu) \ln(1 - \theta \nu u - \sigma^2 \nu u^2 / 2)}, which
+tends to \eqn{\Delta t (\theta u + \sigma^2 u^2 / 2)}, the cumulant
+generating function of \eqn{\mathcal{N}(\theta \Delta t, \sigma^2 \Delta t)}:
+the VG process tends to the Wiener process with drift \eqn{\theta} and
+diffusion \eqn{\sigma} (convergence in distribution, by Levy's continuity
+theorem as in Fischer et al., 2023, section 2.5.1). Use \code{\link[=wiener_mle]{wiener_mle()}}.
+\item \eqn{\sigma \to 0}: when \eqn{\theta > 0}, an increment tends in
+distribution to the gamma distribution with shape \eqn{\Delta t / \nu} and
+rate \eqn{1 / (\theta \nu)} (Fischer et al., 2023, section 2.5.1, item 2,
+with their \eqn{r} equal to \eqn{\Delta t / \nu} and their \eqn{\lambda}
+equal to \eqn{1 / (\theta \nu)}): the VG process tends to the gamma
+process with shape \eqn{1 / \nu} and rate \eqn{1 / (\theta \nu)}. When all
+the increments are positive, the function compares the VG likelihood with
+the maximum of the gamma likelihood; if the VG likelihood is not larger,
+the function considers that the maximum is reached at this limit. Use
+\code{\link[=gamma_mle]{gamma_mle()}}.
+}
 }
 
 \section{EM algorithm}{
 
-Let \eqn{G_j} be the increment of the hidden gamma time on the \eqn{j}-th
-interval. Given \eqn{\Delta x_j}, \eqn{G_j} follows a generalized inverse
-Gaussian distribution \eqn{GIG(p_j, \chi_j, \psi)} with
-\eqn{p_j = \Delta t_j / \nu - 1/2}, \eqn{\chi_j = \Delta x_j^2 / \sigma^2} and
-\eqn{\psi = \theta^2 / \sigma^2 + 2 / \nu}, whose moments
-\eqn{e^+_j = E[G_j]}, \eqn{e^-_j = E[1/G_j]} and \eqn{l_j = E[\ln G_j]} are
-ratios of Bessel functions.
+The algorithm is the one of Bee et al. (2018, section 3.2), who follow
+Nitithumbundit and Chan (2015), written here for increments over unequal
+durations and without location parameter.
+
+\strong{Idea.} Let \eqn{G_j} be the increment of the random time \eqn{\gamma}
+on the \eqn{j}-th interval, which is not observed. If the \eqn{G_j} were
+known, the estimation would be easy, since
+\deqn{\Delta x_j \mid G_j \sim \mathcal{N}(\theta G_j, \sigma^2 G_j), \qquad
+  G_j \sim \Gamma(\Delta t_j / \nu,\ 1 / \nu),}
+and the log-likelihood of the complete data \eqn{(\Delta x_j, G_j)},
+\eqn{j = 1, \dots, n}, only involves \eqn{G_j}, \eqn{1 / G_j} and
+\eqn{\ln G_j} (Bee et al., 2018, equation (5)). The EM algorithm replaces
+these three quantities by their expectations given the observed
+increments, computed at the current parameters (E step), and then
+maximizes the complete log-likelihood (M step). The likelihood increases at
+each iteration (Bee et al., 2018, section 3.2).
+
+\strong{Distribution of the hidden times.} Given \eqn{\Delta x_j}, \eqn{G_j}
+follows a generalized inverse Gaussian distribution \eqn{GIG(p_j, \chi_j, \omega)}
+(Bee et al., 2018, section 3.2, after Embrechts, 1983),
+with density proportional to \eqn{g^{p_j - 1} \exp(-(\chi_j / g + \omega g) / 2)},
+\eqn{g > 0}, where
+\deqn{p_j = \frac{\Delta t_j}{\nu} - \frac{1}{2}, \qquad
+  \chi_j = \frac{\Delta x_j^2}{\sigma^2}, \qquad
+  \omega = \frac{\theta^2}{\sigma^2} + \frac{2}{\nu}.}
+With \eqn{z_j = \sqrt{\chi_j \omega}} and \eqn{\rho_j = \sqrt{\chi_j / \omega}},
+its moments are ratios of Bessel functions (Bee et al., 2018, equations (6)
+to (8)):
+\deqn{e^+_j = E[G_j] = \rho_j \frac{K_{p_j + 1}(z_j)}{K_{p_j}(z_j)}, \qquad
+  e^-_j = E[1 / G_j] = \frac{1}{\rho_j} \frac{K_{p_j - 1}(z_j)}{K_{p_j}(z_j)},}
+\deqn{l_j = E[\ln G_j] = \ln \rho_j + \frac{\partial}{\partial p} \ln K_p(z_j) \Big|_{p = p_j},}
+the last derivative being computed numerically, as in Bee et al. (2018).
+
+\strong{Steps.}
 \enumerate{
-\item E step: compute \eqn{e^+_j}, \eqn{e^-_j}, \eqn{l_j} at the current
-parameters.
-\item M step for \eqn{(\theta, \sigma^2)}, explicit and unique: with
-\eqn{S = \sum_j \Delta x_j} and \eqn{E^+ = \sum_j e^+_j},
+\item E step: compute \eqn{e^+_j}, \eqn{e^-_j} and \eqn{l_j},
+\eqn{j = 1, \dots, n}, at the current parameters.
+\item M step for \eqn{(\theta, \sigma^2)}, explicit (Bee et al., 2018,
+equations (10) and (11) with their location \eqn{\mu = 0}): with
+\eqn{E^+ = \sum_{j=1}^{n} e^+_j},
 \deqn{\theta = \frac{S}{E^+}, \qquad
-     \sigma^2 = \frac{1}{m} \Big(\sum_j \Delta x_j^2 e^-_j - \frac{S^2}{E^+}\Big).}
-\item M step for \eqn{\nu}: with \eqn{a = 1 / \nu}, the function
-\deqn{q(a) = \sum_j \big[\Delta t_j l_j - e^+_j + \Delta t_j \ln a + \Delta t_j - \Delta t_j \psi(a \Delta t_j)\big]}
-(\eqn{\psi} the digamma function) is strictly decreasing, from
-\eqn{+\infty} to a negative limit: its unique root gives \eqn{\nu}.
-\item Repeat (at least 10 iterations) until the EM slows down, that is until
-an iteration increases \eqn{\ell} by less than \eqn{10^{-6} (|\ell| + 1)}.
+     \sigma^2 = \frac{1}{n} \Big(\sum_{j=1}^{n} \Delta x_j^2 e^-_j - \frac{S^2}{E^+}\Big).}
+\item M step for \eqn{\nu}: with \eqn{a = 1 / \nu} and \eqn{\psi} the digamma
+function, the derivative of the complete log-likelihood in \eqn{a} is
+\deqn{q(a) = \sum_{j=1}^{n} \big[\Delta t_j l_j - e^+_j + \Delta t_j \ln a + \Delta t_j - \Delta t_j\, \psi(a \Delta t_j)\big],}
+which is the derivative given in the CM-step 2a of Bee et al. (2018)
+when \eqn{\Delta t_j = 1}. Since \eqn{\psi'(x) > 1/x} (Alzer, 1997,
+Theorem 1), \eqn{q} is strictly decreasing; by the inequality (2.2) of
+Alzer (1997) it tends to \eqn{+\infty} as \eqn{a \to 0} and, by Jensen's
+inequality (\eqn{l_j < \ln e^+_j}) and \eqn{\ln u \le u - 1}, to a
+negative limit as
+\eqn{a \to \infty}: its unique root gives \eqn{\nu = 1 / a}.
+\item Repeat steps 1 to 3 until the increase of \eqn{\ell} becomes small.
 }
 
-Each iteration increases the likelihood (Dempster, Laird and Rubin, 1977),
-but the EM converges slowly when \eqn{\nu} is small (near the Brownian
-limit), where it could need thousands of iterations. The maximization is
-therefore finished by L-BFGS-B on \eqn{(\theta, \ln \sigma, \ln \nu)},
-started at the last EM iterate, with a tight convergence tolerance: the
-likelihood and the MLE are the same, much faster. If this refinement fails
-or does not increase the likelihood (for instance with data on a very small
-scale), the EM iterate is returned. Starting values: the Wiener MLE for
-\eqn{(\theta, \sigma)} and \eqn{\nu = T / m}. The algorithm stops at the
-Brownian limit when \eqn{\nu < \max_j \Delta t_j / 300}, during the EM or
-at the end of L-BFGS-B.
+\strong{Start and end.} The algorithm starts from the Wiener MLE for
+\eqn{(\theta, \sigma)} and from \eqn{\nu = T / n}. The maximization is then
+finished by L-BFGS-B on \eqn{(\theta, \ln \sigma, \ln \nu)}, started at the
+last EM iterate. If this refinement fails or does not increase the
+likelihood, the EM iterate is returned.
 
-The Bessel functions \eqn{K_p(z)} of the likelihood and of the GIG moments
-are computed on the log scale; when \code{besselK()} overflows (large order
-\eqn{p}, that is small \eqn{\nu}, and small \eqn{z}), \eqn{\ln K_p(z)} is
-computed exactly by the upward recurrence on the order
-\eqn{K_{p+1}(z) = K_{p-1}(z) + (2p/z) K_p(z)}.
-}
-
-\section{Confidence intervals and estimation failures}{
-
-With \code{ci = TRUE}, the function also returns asymptotic confidence intervals.
-Let \eqn{\hat\psi} be the MLE and \eqn{\ell} the log-likelihood. The observed
-Fisher information \eqn{J = -\partial^2 \ell / \partial \psi \partial \psi^\top} is
-computed at \eqn{\hat\psi} by numerical differentiation (\code{\link[stats:optim]{stats::optimHess()}}),
-except for the Meixner process, whose Hessian is explicit, and the standard errors are the square roots of the diagonal of
-\eqn{J^{-1}}. With \eqn{z} the quantile of order \eqn{(1 + level) / 2} of the
-standard normal distribution, the interval of a parameter \eqn{\psi_k} is
-\itemize{
-\item \eqn{\hat\psi_k \pm z\, se_k} for a real parameter (\code{mu} of the Wiener
-process, \code{theta} of the variance-gamma process, \code{b} and \code{m} of the Meixner
-process);
-\item \eqn{\hat\psi_k \exp(\pm z\, se_k / \hat\psi_k)} for a positive parameter: the
-interval \eqn{\ln \hat\psi_k \pm z\, se_k / \hat\psi_k} for \eqn{\ln \psi_k}, transformed
-back, which always stays positive.
-}
-
-These intervals are asymptotic: their coverage is close to \code{level} when the
-number of increments is large. The unbiased estimates \code{s2} (Wiener) and \code{eta_unbiased} (inverse
-Gaussian) are given without interval. When \eqn{J} is not positive definite
-(estimate close to a boundary of the parameter space), the bounds are \code{NA}.
-
-When the maximum likelihood estimator does not exist for the data (for
-instance all the speeds \eqn{\Delta x_j / \Delta t_j} equal, or a maximum at a
-boundary of the parameter space), the function does not stop: it gives a
-warning with the reason and returns \code{NA} estimates, with the reason in the
-attribute \code{"message"}. Invalid data (times not increasing, decreasing levels
-for an increasing process, too few observations) still give an error.
+\strong{Numerical detail.} The Bessel functions \eqn{K_p(z)} are computed on the
+log scale; when \code{besselK()} overflows (large order \eqn{p}, that is small
+\eqn{\nu}, and small \eqn{z}), \eqn{\ln K_p(z)} is computed exactly by the
+recurrence on the order \eqn{K_{p+1}(z) = K_{p-1}(z) + (2p/z) K_p(z)}
+(Olver et al., 2010, equation 10.29.1, with \eqn{\mathcal{Z}_\nu = e^{\nu \pi i} K_\nu}
+as defined in section 10.25(ii)).
 }
 
 \examples{
@@ -195,18 +221,36 @@ gamma_mle(y)
 \dontshow{\}) # examplesIf}
 }
 \references{
-Madan, D. B., Carr, P. P. and Chang, E. C. (1998). The variance gamma
-process and option pricing. \emph{European Finance Review}, 2(1), 79-105.
-\doi{10.1023/A:1009703431535}
+Alzer, H. (1997). On some inequalities for the gamma and psi functions.
+\emph{Mathematics of Computation}, 66(217), 373-389.
+\doi{10.1090/S0025-5718-97-00807-7}. Equation (2.2) and Theorem 1.
+
+Bee, M., Dickson, M. M. and Santi, F. (2018). Likelihood-based risk
+estimation for variance-gamma models. \emph{Statistical Methods & Applications},
+27(1), 69-89. \doi{10.1007/s10260-017-0393-z}. Sections 2 and 3.2,
+equations (1) and (4) to (11).
 
 Belhaj Salem, M., Fouladirad, M. and Deloux, E. (2022). Variance Gamma
 process as degradation model for prognosis and imperfect maintenance of
 centrifugal pumps. \emph{Reliability Engineering & System Safety}, 223, 108417.
 \doi{10.1016/j.ress.2022.108417}
 
-Dempster, A. P., Laird, N. M. and Rubin, D. B. (1977). Maximum likelihood
-from incomplete data via the EM algorithm. \emph{Journal of the Royal Statistical
-Society, Series B}, 39(1), 1-22. \doi{10.1111/j.2517-6161.1977.tb01600.x}
+Fischer, A., Gaunt, R. E. and Sarantsev, A. (2023). The variance-gamma
+distribution: a review. arXiv:2303.05615. Equations (1.1), (2.13) and
+(2.18), section 2.5.1 and appendix A.
+
+Nitithumbundit, T. and Chan, J. S. K. (2015). An ECM algorithm for skewed
+multivariate variance gamma distribution in normal mean-variance
+representation. arXiv:1504.01239.
+
+Seneta, E. (2004). Fitting the variance-gamma model to financial data.
+\emph{Journal of Applied Probability}, 41A, 177-187.
+\doi{10.1017/S0021900200112288}. Equations (1) and (2).
+
+Olver, F. W. J., Lozier, D. W., Boisvert, R. F. and Clark, C. W. (eds.)
+(2010). \emph{NIST Handbook of Mathematical Functions}. Cambridge University
+Press. Online version: \emph{NIST Digital Library of Mathematical Functions},
+\url{https://dlmf.nist.gov/10.29}, equation 10.29.1.
 }
 \seealso{
 \code{\link[=wiener_mle]{wiener_mle()}}, \code{\link[=meixner_mle]{meixner_mle()}}

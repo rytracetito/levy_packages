@@ -21,15 +21,20 @@ of an estimation function (without \code{t}).
 Builds the data of the estimation functions (\code{\link[=gamma_mle]{gamma_mle()}},
 \code{\link[=wiener_mle]{wiener_mle()}}, \code{\link[=ig_mle]{ig_mle()}}, \code{\link[=vg_mle]{vg_mle()}}, \code{\link[=meixner_mle]{meixner_mle()}}) from increments
 instead of degradation levels: the increments \eqn{\Delta x_j} over the
-durations \eqn{\Delta t_j} of one or several trajectories. The likelihood
-of these processes depends on the data only through the increments.
+durations \eqn{\Delta t_j}, \eqn{j = 1, \dots, n}, of one or several
+trajectories. The likelihood of these processes depends on the data only
+through the increments. This is the fourth form of the data accepted by the
+estimation functions, after the three forms based on the degradation levels
+(see the section Data of \link{levyfit-package}).
 }
 \details{
-Giving the increments directly keeps all their precision. Levels have about
-16 significant digits, so an increment smaller than about \eqn{10^{-16}}
-times the level is rounded to 0 when computed as a difference of levels;
-this happens for instance with the increments reconstructed by the bridges
-of the package \code{levyBridge} on a fine grid.
+Giving the increments directly keeps all their precision. In R,
+\code{.Machine$double.eps} (about \eqn{2.2 \times 10^{-16}}) is the smallest
+positive number \eqn{x} such that \eqn{1 + x \ne 1} (see \link[base:zMachine]{base::.Machine}), so
+that an increment smaller than about \eqn{10^{-16}} times the level can be
+rounded to 0 when computed as a difference of levels; this happens for
+instance with the increments reconstructed by the bridges of the package
+\code{levyBridge} on a fine grid.
 }
 \examples{
 set.seed(1)

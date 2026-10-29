@@ -1,128 +1,166 @@
 #' Maximum likelihood estimation for the Meixner process
 #'
 #' Computes the maximum likelihood estimator of the four parameters
-#' \eqn{(a, b, d, m)} of the Meixner process from one or several trajectories observed at
-#' possibly irregular inspection times. The likelihood is unbounded, so the
-#' estimator is defined as the interior local maximum of largest likelihood.
+#' \eqn{(a, b, d, m)} of the Meixner process from one or several trajectories
+#' observed at regular or irregular inspection times. The likelihood is maximized numerically from
+#' several starting points.
+#'
+#' @section Source and notation:
+#' The results on the Meixner distribution used below come from Grigoletto
+#' and Provasi (2009), written GP09, who treat an i.i.d. sample of this
+#' distribution. The distribution written here \eqn{Meixner(a, b, d, m)} is
+#' their \eqn{MXN(m, a, b, d)}: \eqn{m} is a location parameter, \eqn{a > 0} a
+#' scale parameter, and \eqn{b \in (-\pi, \pi)} and \eqn{d > 0} are shape
+#' parameters (GP09, section 2); the same notation is used by Schoutens
+#' (2002), whose Meixner process is used here. The extension of the results
+#' of GP09 to increments over unequal durations, and the algorithm, are
+#' choices of this implementation; they are marked as such.
 #'
 #' @section Model and data:
-#' For \eqn{a > 0}, \eqn{b \in ]-\pi, \pi[}, \eqn{d > 0} and real \eqn{m}, the
-#' \eqn{Meixner(a, b, d, m)} distribution has density
-#' \deqn{f(x) = \frac{(2 \cos(b/2))^{2d}}{2 a \pi\, \Gamma(2d)}
-#'   \exp\Big(\frac{b (x - m)}{a}\Big) \Big|\Gamma\Big(d + i \frac{x - m}{a}\Big)\Big|^2, \qquad x \in R.}
-#' The Meixner process is the Levy process such that
-#' \eqn{X_s \sim Meixner(a, b, d s, m s)}. Its mean and variance per unit of
-#' time are \eqn{\kappa_1 = m + a d \tan(b/2)} and
-#' \eqn{\kappa_2 = a^2 d / (2 \cos^2(b/2))}. The trajectories are independent
-#' and have the same law; each one is observed at its own inspection times. Let
-#' \eqn{(\Delta t_j, \Delta x_j)}, \eqn{j = 1, \dots, N}, be the durations and
-#' degradation increments between two consecutive inspections of a same
-#' trajectory, gathered over all the trajectories,
-#' \eqn{T = \sum_j \Delta t_j}, \eqn{S = \sum_j \Delta x_j},
-#' \eqn{s_j = d \Delta t_j} and \eqn{y_j = (\Delta x_j - m \Delta t_j) / a}.
+#' The density of \eqn{Meixner(a, b, d, m)} is (GP09, section 2)
+#' \deqn{f(x) = \frac{(2 \cos(b/2))^{2 d}}{2 a \pi\, \Gamma(2 d)}
+#'   \exp\Big(\frac{b (x - m)}{a}\Big) \Big|\Gamma\Big(d + i\, \frac{x - m}{a}\Big)\Big|^2,
+#'   \qquad x \in (-\infty, \infty),}
+#' where \eqn{i} is the imaginary unit. Its characteristic function is
+#' \eqn{e^{i m u} \big(\cos(b/2) / \cosh((a u - i b)/2)\big)^{2 d}}
+#' (Schoutens, 2002, section 2), so that the distribution is infinitely
+#' divisible. Its mean and variance are \eqn{m + a d \tan(b/2)} and
+#' \eqn{a^2 d / (1 + \cos b)} (GP09, equation (1)).
+#'
+#' The Meixner process \eqn{X} is the Levy process associated with this
+#' distribution: \eqn{X_0 = 0}, its increments are independent and
+#' stationary, and \eqn{X_s \sim Meixner(a, b, d s, m s)} (Schoutens, 2002,
+#' section 2, where the increment over \eqn{[s, s + t]} has the characteristic
+#' function of \eqn{Meixner(a, b, d, m)} raised to the power \eqn{t}): an
+#' increment over a duration
+#' \eqn{\Delta t} has the density \eqn{f_{\Delta t}} obtained by replacing
+#' \eqn{d} by \eqn{d \Delta t} and \eqn{m} by \eqn{m \Delta t} in \eqn{f}. The
+#' mean and the variance of the process per unit of time are
+#' \eqn{\kappa_1 = m + a d \tan(b/2)} and \eqn{\kappa_2 = a^2 d / (1 + \cos b)}.
+#'
+#' The data are the \eqn{n} increments \eqn{(\Delta t_j, \Delta x_j)},
+#' \eqn{j = 1, \dots, n}, pooled over the trajectories, with
+#' \eqn{T = \sum_{j=1}^{n} \Delta t_j} and \eqn{S = \sum_{j=1}^{n} \Delta x_j}
+#' (see the section Notation of [levyfit-package]). To shorten the formulas, let
+#' \deqn{s_j = d \Delta t_j, \qquad y_j = \frac{\Delta x_j - m \Delta t_j}{a}, \qquad j = 1, \dots, n;}
+#' \eqn{y_j} is the standardized value \eqn{z_j = (x_j - m)/a} of GP09
+#' (section 4.2) for an increment over \eqn{\Delta t_j}.
 #'
 #' @section Likelihood and score:
-#' The increments being independent,
-#' \deqn{\ell(a, b, d, m) = \sum_j \big[2 s_j \ln(2 \cos(b/2)) - \ln(2 a \pi) - \ln \Gamma(2 s_j)
-#'   + b y_j + \ln |\Gamma(s_j + i y_j)|^2\big].}
-#' With \eqn{\psi_j = \psi(s_j + i y_j)} (digamma function of a complex
-#' argument), the score is explicit:
-#' \eqn{\partial_a \ell = \sum_j (-1 - b y_j + 2 y_j \Im \psi_j) / a},
-#' \eqn{\partial_b \ell = \sum_j (y_j - s_j \tan(b/2))},
-#' \eqn{\partial_d \ell = \sum_j \Delta t_j (2 \ln(2 \cos(b/2)) - 2 \psi(2 s_j) + 2 \Re \psi_j)}
-#' and \eqn{\partial_m \ell = \sum_j \Delta t_j (2 \Im \psi_j - b) / a}.
+#' The increments being independent, the log-likelihood is
+#' \deqn{\ell(a, b, d, m) = \sum_{j=1}^{n} \Big[2 s_j \ln(2 \cos(b/2)) - \ln(2 a \pi) - \ln \Gamma(2 s_j)
+#'   + b y_j + \ln |\Gamma(s_j + i y_j)|^2\Big].}
+#' With equal durations \eqn{\Delta t_j = 1}, it is \eqn{n} times the average
+#' log-likelihood \eqn{\ell_n(\theta)} of GP09 (equation (6)); with unequal
+#' durations, it is its extension to the process.
+#'
+#' The first derivatives (the score) are explicit (GP09, appendix A). GP09
+#' write them with \eqn{\Psi_j^+ = \psi(d + i z_j) + \psi(d - i z_j)} and
+#' \eqn{\Psi_j^- = \psi(d + i z_j) - \psi(d - i z_j)}, \eqn{\psi} being the
+#' digamma function. Here, with \eqn{\psi_j = \psi(s_j + i y_j)} and its real
+#' and imaginary parts \eqn{\mathrm{Re}\,\psi_j} and \eqn{\mathrm{Im}\,\psi_j},
+#' these are \eqn{\Psi_j^+ = 2\, \mathrm{Re}\,\psi_j} and
+#' \eqn{i\, \Psi_j^- = -2\, \mathrm{Im}\,\psi_j}, and the score is
+#' \deqn{\frac{\partial \ell}{\partial a} = \frac{1}{a} \sum_{j=1}^{n} \big(-1 - b y_j + 2 y_j\, \mathrm{Im}\,\psi_j\big),}
+#' \deqn{\frac{\partial \ell}{\partial b} = \sum_{j=1}^{n} y_j - \tan(b/2) \sum_{j=1}^{n} s_j,}
+#' \deqn{\frac{\partial \ell}{\partial d} = \sum_{j=1}^{n} \Delta t_j \big(2 \ln(2 \cos(b/2)) - 2 \psi(2 s_j) + 2\, \mathrm{Re}\,\psi_j\big),}
+#' \deqn{\frac{\partial \ell}{\partial m} = \frac{1}{a} \sum_{j=1}^{n} \Delta t_j \big(2\, \mathrm{Im}\,\psi_j - b\big).}
 #'
 #' @section Profile in b:
-#' For fixed \eqn{(a, d, m)}, \eqn{\ell} is strictly concave in \eqn{b}, with
-#' unique maximizer
+#' For fixed \eqn{(a, d, m)}, \eqn{\partial \ell / \partial b = 0} has the
+#' unique solution
 #' \deqn{\hat b(a, d, m) = 2 \arctan \frac{S - m T}{a d T},}
-#' which matches the expected total increment \eqn{\kappa_1 T} with \eqn{S}.
-#' The maximization is therefore done in dimension 3, on the profile
-#' log-likelihood \eqn{\ell_p(a, d, m) = \ell(a, \hat b(a, d, m), d, m)}.
-#'
-#' @section The likelihood is unbounded:
-#' As \eqn{a \to 0} with \eqn{b = \pi - \lambda a}, the Meixner distribution
-#' tends to a shifted gamma distribution. Placing the shift \eqn{m} on the
-#' smallest observed speed \eqn{\Delta x_j / \Delta t_j} and taking
-#' \eqn{2 d \Delta t_j < 1} makes \eqn{\ell \to +\infty}: the global MLE never
-#' exists. The estimator is the interior local maximum (root of the score with
-#' negative definite Hessian) of largest likelihood. Solutions with
-#' \eqn{\pi - |b| < 0.1} (shifted gamma limit), with
-#' \eqn{d \max_j \Delta t_j > 1000} (Gaussian limit) or on a bound are
-#' discarded as degenerate.
+#' which is the lemma of GP09 (section 4.2), \eqn{\hat b = 2 \tan^{-1}(\bar z / \hat d)},
+#' written for increments over unequal durations. It is a maximum, since
+#' \eqn{\partial^2 \ell / \partial b^2 = -\sum_{j=1}^{n} s_j / (1 + \cos b) < 0}
+#' (GP09, appendix A). It makes the expected total increment \eqn{\kappa_1 T}
+#' equal to \eqn{S}. The maximization is therefore done in dimension 3, on the
+#' profile log-likelihood \eqn{\ell_p(a, d, m) = \ell(a, \hat b(a, d, m), d, m)},
+#' as suggested by GP09 (section 4.2).
 #'
 #' @section Method of moments:
-#' The cumulants of \eqn{X_s} are \eqn{s} times those of \eqn{X_1}, which are
-#' estimated per unit of time by \eqn{k_1 = S / T} and, with
-#' \eqn{r_j = \Delta x_j - k_1 \Delta t_j},
-#' \eqn{k_2 = \sum_j r_j^2 / T}, \eqn{k_3 = \sum_j r_j^3 / T},
-#' \eqn{k_4 = (\sum_j r_j^4 - 3 k_2^2 \sum_j \Delta t_j^2) / T}. With the
-#' skewness \eqn{\gamma_1 = k_3 / k_2^{3/2}} and the excess kurtosis
-#' \eqn{\gamma_2 = k_4 / k_2^2} of \eqn{X_1}, and since
+#' With unequal durations (extension of GP09, section 4.1), the mean and the
+#' higher cumulants of the process per unit of time are estimated by
+#' \eqn{k_1 = S / T} and, with the residuals
+#' \eqn{e_j = \Delta x_j - k_1 \Delta t_j},
+#' \deqn{k_2 = \frac{1}{T} \sum_{j=1}^{n} e_j^2, \qquad
+#'   k_3 = \frac{1}{T} \sum_{j=1}^{n} e_j^3, \qquad
+#'   k_4 = \frac{1}{T} \Big(\sum_{j=1}^{n} e_j^4 - 3 k_2^2 \sum_{j=1}^{n} \Delta t_j^2\Big).}
+#' Let \eqn{\gamma_1 = k_3 / k_2^{3/2}} and \eqn{\gamma_2 = k_4 / k_2^2} be
+#' the skewness and the excess kurtosis of \eqn{X_1}. Since the skewness of
+#' \eqn{Meixner(a, b, d, m)} is \eqn{\sin b / \sqrt{d (1 + \cos b)}} and its
+#' kurtosis \eqn{3 + (2 - \cos b) / d} (GP09, equation (1)), that is
 #' \eqn{\gamma_1^2 = (1 - \cos b) / d} and \eqn{\gamma_2 = (2 - \cos b) / d},
-#' the moment estimates are (Grigoletto and Provasi, 2009; Mazzola, 2010,
-#' section 3.3.1)
+#' the moment estimates are (GP09, section 4.1, with the excess kurtosis)
 #' \deqn{d = \frac{1}{\gamma_2 - \gamma_1^2}, \quad
 #'   b = \mathrm{sign}(\gamma_1) \arccos(2 - d \gamma_2), \quad
 #'   a = \sqrt{k_2 (1 + \cos b) / d}, \quad m = k_1 - a d \tan(b/2).}
-#' They exist only when \eqn{\gamma_2 > \gamma_1^2} and
-#' \eqn{|2 - d \gamma_2| < 1}. With equal time steps, they are the usual
-#' moment estimates of the Meixner distribution.
+#' They exist if and only if \eqn{d > 0} and \eqn{|2 - d \gamma_2| < 1}, that
+#' is \eqn{\gamma_2 > \frac{3}{2} \gamma_1^2} and \eqn{\gamma_1 \ne 0}. With
+#' equal durations \eqn{\Delta t}, they are the estimates of GP09 (section 4.1)
+#' computed on the increments, with the variance divided by \eqn{n}, and with
+#' \eqn{d} and \eqn{m} divided by \eqn{\Delta t}.
 #'
 #' @section Algorithm:
-#' 1. Compute the mean \eqn{c_1 = S / T} and the variance
-#'    \eqn{c_2 = \sum_j (\Delta x_j - c_1 \Delta t_j)^2 / (T - \sum_j \Delta t_j^2 / T)}
-#'    per unit of time.
-#' 2. Starting points: the moment estimates (see Method of moments), as
-#'    recommended by Grigoletto and Provasi (2009), when they exist, and
-#'    `n_start` other points: \eqn{b_0} in \eqn{(-1.5, 1.5)} and
-#'    \eqn{d_0} around \eqn{1 / \overline{\Delta t}} (the first one is
-#'    \eqn{b_0 = 0}, \eqn{d_0 = 1 / \overline{\Delta t}}), then
-#'    \eqn{a_0 = \sqrt{2 c_2 \cos^2(b_0/2) / d_0}} and
-#'    \eqn{m_0 = c_1 - a_0 d_0 \tan(b_0/2)}, so that the starting point matches
-#'    \eqn{c_1} and \eqn{c_2}.
-#' 3. From each start, maximize \eqn{\ell_p} by L-BFGS-B on
-#'    \eqn{(\ln a, \ln d, m)} with the exact gradient and wide bounds relative
-#'    to the scale of the data.
-#' 4. Discard the degenerate solutions and keep the one of largest likelihood;
-#'    a warning is given if a degenerate solution had a larger likelihood.
+#' GP09 (section 4.2) maximize the likelihood by a Newton-type algorithm with
+#' the first and second derivatives, started at the moment estimates. This
+#' implementation uses instead several starting points and the first
+#' derivatives only:
+#' 1. Estimate the mean and the variance of the process per unit of time by
+#'    \deqn{\hat\mu = \frac{\sum_{j=1}^{n} \Delta x_j}{\sum_{j=1}^{n} \Delta t_j} = \frac{S}{T}, \qquad
+#'      \hat\nu = \frac{1}{n} \sum_{j=1}^{n} \frac{(\Delta x_j - \hat\mu \Delta t_j)^2}{\Delta t_j},}
+#'    the estimators of Kahle, Mercier and Paroissin (2016, section 1.6.1,
+#'    equation \[1.19\]), given there for the Wiener process, and compute the
+#'    mean duration \eqn{\overline{\Delta t} = T / n}.
+#' 2. Build the starting points:
+#'    * the moment estimates (see Method of moments), when they exist, as
+#'      suggested by GP09 (section 4.2);
+#'    * the point \eqn{b_0 = 0}, \eqn{d_0 = 1 / \overline{\Delta t}};
+#'    * `n_start - 1` random points: \eqn{b_0} drawn uniformly on
+#'      \eqn{(-\pi + 0.1, \pi - 0.1)}, and \eqn{d_0 = u / \overline{\Delta t}}
+#'      with \eqn{\ln u} drawn uniformly on \eqn{(\ln 0.2, \ln 5)}.
 #'
-#' The parameters \eqn{a} and \eqn{d} are strongly correlated and \eqn{d} is
-#' poorly identified: hundreds of increments are needed for a stable
-#' estimation, and with few increments there is often no interior maximum, in
-#' which case the function returns `NA` with a warning. A small time step
-#' matters more than a long duration: over a long interval, an increment is
-#' the sum of many small jumps and its distribution is almost Gaussian, so that
-#' the four parameters can hardly be separated. For instance, over a duration
-#' of 500, 5000 increments with a step 0.1 give estimates close to the true
-#' values, while 500 increments with a step 1, or even 5000 increments with a
-#' step 1 over a duration of 5000, do not. Even with several
-#' hundred increments, \eqn{b} and \eqn{m} can be far from their true values
-#' although the fitted distribution is close to the true one (same mean and
-#' variance): different parameters give almost the same distribution. The
-#' convergence of the estimator is slow, and inference based on its asymptotic
-#' normality needs caution even for medium samples (Grigoletto and Provasi,
-#' 2009; Mazzola, 2010, section 3.3.2).
+#'    For the last two kinds of points, \eqn{a_0} and \eqn{m_0} are then
+#'    chosen so that the mean and the variance of the model are equal to
+#'    \eqn{\hat\mu} and \eqn{\hat\nu}, that is \eqn{\kappa_1 = \hat\mu} and
+#'    \eqn{\kappa_2 = \hat\nu}:
+#'    \deqn{a_0 = \sqrt{\frac{\hat\nu (1 + \cos b_0)}{d_0}}, \qquad
+#'      m_0 = \hat\mu - a_0 d_0 \tan(b_0/2).}
+#' 3. From each starting point, maximize \eqn{\ell_p} by L-BFGS-B on
+#'    \eqn{(\ln a, \ln d, m)}, with the exact gradient, and with the bounds
+#'    \eqn{10^{-3} \sqrt{\hat\nu} \le a \le 10^{3} \sqrt{\hat\nu}},
+#'    \eqn{10^{-3} / \max_j \Delta t_j \le d \le 10^{3} / \min_j \Delta t_j} and
+#'    \eqn{|m - \hat\mu| \le 100 \sqrt{\hat\nu}}.
+#' 4. Keep the solution of largest likelihood (when several starts reach the
+#'    same maximum, one where L-BFGS-B converged). When no acceptable
+#'    solution is found, the function returns `NA` with a warning.
 #'
-#' @section Hessian and confidence intervals:
-#' The second derivatives of \eqn{\ell} are explicit (Grigoletto and Provasi,
-#' 2009). With \eqn{\psi'_j = \psi'(s_j + i y_j)} (trigamma function of a
-#' complex argument), \eqn{G_j = b - 2 \Im \psi_j},
-#' \eqn{R_j = \Re \psi'_j} and \eqn{I_j = \Im \psi'_j}:
-#' \deqn{\partial^2_{aa} \ell = \sum_j \frac{1 - 2 R_j y_j^2 + 2 G_j y_j}{a^2}, \quad
-#'   \partial^2_{ab} \ell = -\sum_j \frac{y_j}{a}, \quad
-#'   \partial^2_{ad} \ell = \sum_j \frac{2 I_j y_j \Delta t_j}{a},}
-#' \deqn{\partial^2_{am} \ell = \sum_j \frac{\Delta t_j (G_j - 2 R_j y_j)}{a^2}, \quad
-#'   \partial^2_{bb} \ell = -\sum_j \frac{s_j}{2 \cos^2(b/2)}, \quad
-#'   \partial^2_{bd} \ell = -T \tan(b/2), \quad
-#'   \partial^2_{bm} \ell = -\frac{T}{a},}
-#' \deqn{\partial^2_{dd} \ell = \sum_j \Delta t_j^2 \big(2 R_j - 4 \psi'(2 s_j)\big), \quad
-#'   \partial^2_{dm} \ell = \sum_j \frac{2 I_j \Delta t_j^2}{a}, \quad
-#'   \partial^2_{mm} \ell = -\sum_j \frac{2 R_j \Delta t_j^2}{a^2}.}
+#' GP09 (section 4.2) find that the convergence of the estimator to its
+#' asymptotic normal distribution is very slow, with a speed inversely related
+#' to \eqn{d}, and that inference based on asymptotic normality must be carefully
+#' evaluated even for medium samples.
+#'
+#' @section Hessian:
+#' The second derivatives of \eqn{\ell} are explicit (GP09, appendix A, where
+#' they are written with \eqn{\Upsilon_j^\pm = \psi'(d + i z_j) \pm \psi'(d - i z_j)},
+#' \eqn{\psi'} being the trigamma function). Here, with
+#' \eqn{\psi'_j = \psi'(s_j + i y_j)},
+#' \deqn{G_j = b - 2\, \mathrm{Im}\,\psi_j, \qquad R_j = \mathrm{Re}\,\psi'_j, \qquad I_j = \mathrm{Im}\,\psi'_j,
+#'   \qquad j = 1, \dots, n,}
+#' so that \eqn{\Upsilon_j^+ = 2 R_j} and \eqn{\Upsilon_j^- = 2 i I_j}, they are
+#' \deqn{\frac{\partial^2 \ell}{\partial a^2} = \frac{1}{a^2} \sum_{j=1}^{n} \big(1 - 2 R_j y_j^2 + 2 G_j y_j\big), \qquad
+#'   \frac{\partial^2 \ell}{\partial a \partial b} = -\frac{1}{a} \sum_{j=1}^{n} y_j, \qquad
+#'   \frac{\partial^2 \ell}{\partial a \partial d} = \frac{2}{a} \sum_{j=1}^{n} I_j y_j \Delta t_j,}
+#' \deqn{\frac{\partial^2 \ell}{\partial a \partial m} = \frac{1}{a^2} \sum_{j=1}^{n} \Delta t_j \big(G_j - 2 R_j y_j\big), \qquad
+#'   \frac{\partial^2 \ell}{\partial b^2} = -\frac{1}{1 + \cos b} \sum_{j=1}^{n} s_j,}
+#' \deqn{\frac{\partial^2 \ell}{\partial b \partial d} = -T \tan(b/2), \qquad
+#'   \frac{\partial^2 \ell}{\partial b \partial m} = -\frac{T}{a}, \qquad
+#'   \frac{\partial^2 \ell}{\partial d^2} = \sum_{j=1}^{n} \Delta t_j^2 \big(2 R_j - 4 \psi'(2 s_j)\big),}
+#' \deqn{\frac{\partial^2 \ell}{\partial d \partial m} = \frac{2}{a} \sum_{j=1}^{n} I_j \Delta t_j^2, \qquad
+#'   \frac{\partial^2 \ell}{\partial m^2} = -\frac{2}{a^2} \sum_{j=1}^{n} R_j \Delta t_j^2.}
 #' With `ci = TRUE`, the observed Fisher information is minus this Hessian at
-#' the estimate, instead of the numerical Hessian used by the other models.
-#'
-#' @inheritSection wiener_mle Confidence intervals and estimation failures
+#' the estimate, as proposed by GP09 (section 4.2), instead of the numerical
+#' Hessian used by the other models.
 #'
 #' @inheritParams wiener_mle
 #' @param x Degradation levels of one trajectory; or a list of data frames,
@@ -143,25 +181,17 @@
 #' @references
 #' Grigoletto, M. and Provasi, C. (2009). Simulation and estimation of the
 #' Meixner distribution. *Communications in Statistics - Simulation and
-#' Computation*, 38(1), 58-77.
+#' Computation*, 38(1), 58-77. \doi{10.1080/03610910802395679}
 #'
-#' Mazzola, E. (2010). *Profiling Processes of Meixner Type*. PhD thesis,
-#' Università Commerciale Luigi Bocconi, Milan.
-#'
-#' Schoutens, W. and Teugels, J. L. (1998). Lévy processes, polynomials and
-#' martingales. *Communications in Statistics. Stochastic Models*, 14(1-2),
-#' 335-349.
+#' Kahle, W., Mercier, S. and Paroissin, C. (2016). *Degradation Processes in
+#' Reliability*. ISTE and Wiley, London. Section 1.6.1 (equation \[1.19\]).
 #'
 #' Schoutens, W. (2002). The Meixner process: theory and applications in
-#' finance. EURANDOM report 2002-004.
+#' finance. EURANDOM report 2002-004. Section 2.
 #'
 #' @seealso [vg_mle()]
 #'
 #' @examplesIf requireNamespace("DegradSim", quietly = TRUE)
-#' # The Meixner model needs small time steps: over long intervals its
-#' # increments are almost Gaussian and its parameters are hard to separate.
-#' # A small step matters more than a long duration.
-#'
 #' # 1. One trajectory with 5000 inspections up to 500 (step 0.1)
 #' #    (a = 1, b = 0.3, d = 1.5, m = 0.2)
 #' t <- DegradSim::inspection_times("regular", n = 5000, tmax = 500)$time
@@ -172,10 +202,9 @@
 #' # The same trajectory given as two vectors: degradation levels, then times
 #' meixner_mle(x[, "X1"], t)
 #'
-#' # 2. The same duration with a step 1 (500 increments): the estimates of b
-#' #    and m can be far from the true values although the fitted distribution
-#' #    is close: compare the means and variances of an increment over one
-#' #    time unit, true and fitted
+#' # 2. The same duration with a step 1 (500 increments); comparison of the
+#' #    mean and the variance of an increment over one time unit, true and
+#' #    fitted
 #' t1 <- DegradSim::inspection_times("regular", n = 500, tmax = 500)$time
 #' set.seed(1)
 #' x1 <- DegradSim::sim_meixner(t1, a = 1, b = 0.3, d = 1.5, m = 0.2)
@@ -192,8 +221,8 @@
 #' # 4. Estimates with 95 % confidence intervals
 #' meixner_mle(x, ci = TRUE)
 #'
-#' # 5. Few increments over long intervals: the maximum is often at the
-#' #    boundary (Gaussian or shifted gamma limit): warning and NA estimates
+#' # 5. Ten increments over long intervals: when no acceptable maximum is
+#' #    found, the function gives a warning and NA estimates
 #' t10 <- DegradSim::inspection_times("regular", n = 10, tmax = 100)$time
 #' y <- DegradSim::sim_meixner(t10, a = 1, b = 0.3, d = 1.5, m = 0.2)
 #' meixner_mle(y)
@@ -221,7 +250,7 @@ meixner_est <- function(x, t = NULL, n_start = 5) {
   }
 
   c1 <- sum(dx) / Tt
-  s0 <- sqrt(sum((dx - c1 * dt)^2) / (Tt - sum(dt^2) / Tt))
+  s0 <- sqrt(mean((dx - c1 * dt)^2 / dt))
   lower <- c(log(1e-3 * s0), log(1e-3 / max(dt)), c1 - 100 * s0)
   upper <- c(log(1e3 * s0), log(1e3 / min(dt)), c1 + 100 * s0)
   fits <- lapply(meixner_starts(dx, dt, n_start), function(st)
@@ -236,11 +265,14 @@ meixner_est <- function(x, t = NULL, n_start = 5) {
     pi - abs(b_hat(a, d, f$par[3])) < 0.1 || d * max(dt) > 1e3 ||
       any(abs(f$par - lower) < 1e-6) || any(abs(f$par - upper) < 1e-6)
   }, TRUE)
-  if (all(deg)) no_mle("no interior maximum: all solutions are at the boundary (shifted gamma or Gaussian limit)")
+  if (all(deg)) no_mle("no acceptable maximum found")
   ll <- -vapply(fits, function(f) f$value, 0)
-  best <- fits[!deg][[which.max(ll[!deg])]]
+  conv <- vapply(fits, function(f) f$convergence == 0, TRUE)
+  ll_max <- max(ll[!deg])
+  top <- which(!deg & ll >= ll_max - 1e-8 * (abs(ll_max) + 1))
+  best <- fits[[if (any(conv[top])) top[conv[top]][1] else top[1]]]
   if (any(deg) && max(ll[deg]) > -best$value) {
-    warning("a boundary solution has a larger likelihood than the interior maximum returned")
+    warning("a discarded solution has a larger likelihood than the maximum returned")
   }
   if (best$convergence != 0) warning("optim did not converge (code ", best$convergence, ")")
 
@@ -279,8 +311,8 @@ complex_digamma <- function(z) {
 meixner_starts <- function(dx, dt, n_start) {
   Tt <- sum(dt)
   c1 <- sum(dx) / Tt
-  c2 <- sum((dx - c1 * dt)^2) / (Tt - sum(dt^2) / Tt)
-  b0 <- c(0, runif(n_start - 1, -1.5, 1.5))
+  c2 <- mean((dx - c1 * dt)^2 / dt)
+  b0 <- c(0, runif(n_start - 1, -pi + 0.1, pi - 0.1))
   d0 <- c(1, exp(runif(n_start - 1, log(0.2), log(5)))) / mean(dt)
   starts <- lapply(seq_len(n_start), function(k) {
     a0 <- sqrt(2 * c2 * cos(b0[k] / 2)^2 / d0[k])

@@ -7,14 +7,14 @@
 \title{levyfit: maximum likelihood estimation for degradation processes}
 \description{
 \code{levyfit} estimates the parameters of stochastic degradation models from one
-or several degradation trajectories observed at inspection times, which can
-be irregular and differ from one trajectory to another. Each estimator is the
-maximum likelihood estimator (MLE); the help page of each function details
-the main mathematical steps of its derivation.
+or several degradation trajectories observed at regular or irregular
+inspection times. All the parameters are estimated by maximum likelihood
+(maximum likelihood estimator, MLE). The help page of each function gives
+the model, the likelihood and how the estimator is computed.
 }
 \section{Functions of the package}{
 
-Estimation of the parameters (click on a function name for its help page):\tabular{llll}{
+Estimation of the parameters:\tabular{llll}{
    Function \tab Process \tab Parameters \tab Computation \cr
    \code{\link[=wiener_mle]{wiener_mle()}} \tab Wiener with drift \tab \code{mu}, \code{sigma2}, \code{s2} \tab closed form \cr
    \code{\link[=gamma_mle]{gamma_mle()}} \tab gamma \tab shape \code{a}, rate \code{b} \tab root of one equation \cr
@@ -26,9 +26,9 @@ Estimation of the parameters (click on a function name for its help page):\tabul
 
 \code{s2} and \code{eta_unbiased} are the unbiased versions of \code{sigma2} and \code{eta}.
 Every estimation function returns the point estimates and, with
-\code{ci = TRUE}, asymptotic confidence intervals (see \code{\link[=wiener_mle]{wiener_mle()}}). When the
-estimator does not exist for the data, it gives a warning and returns \code{NA}
-estimates instead of stopping.
+\code{ci = TRUE}, asymptotic confidence intervals. \code{\link[=increments_data]{increments_data()}} gives the
+data by their increments
+instead of their levels.
 
 Inspection times following a chosen pattern, and simulated trajectories
 to try the estimators, are given by the package \code{DegradSim}
@@ -37,90 +37,134 @@ to try the estimators, are given by the package \code{DegradSim}
 
 \section{Data}{
 
-Every estimation function accepts the data in three forms:
+Every estimation function accepts the data in four forms (shown here with
+\code{\link[=gamma_mle]{gamma_mle()}}; the call is the same for all the estimation functions):
 \itemize{
-\item one trajectory: \code{f(x, t)}, with \code{x} the degradation levels and \code{t} the
-inspection times;
-\item several trajectories with the same inspection times: \code{f(x)}, with \code{x} the
-matrix returned by the \code{DegradSim} simulation functions (columns \code{t}, \code{X1},
-\code{X2}, ...);
-\item several trajectories, each with its own inspection times: \code{f(liste)},
-with \code{liste} a list of data frames, one per trajectory, whose first column
-contains the inspection times and second column the degradation levels.
+\item one trajectory: \code{gamma_mle(x, t)}, with \code{x} the degradation levels and
+\code{t} the inspection times;
+\item several trajectories with the same inspection times: \code{gamma_mle(x)},
+with \code{x} the matrix returned by the \code{DegradSim} simulation functions
+(columns \code{t}, \code{X1}, \code{X2}, ...);
+\item several trajectories, each with its own inspection times:
+\code{gamma_mle(liste)}, with \code{liste} a list of data frames, one per
+trajectory, whose first column contains the inspection times and second
+column the degradation levels;
+\item the increments themselves: \code{gamma_mle(increments_data(dx, dt))}, see
+\code{\link[=increments_data]{increments_data()}}.
 }
 
-The trajectories are assumed independent and with the same law. The
-increments are computed within each trajectory and then pooled.
+The trajectories are assumed independent and with the same distribution.
+The increments are computed within each trajectory and then pooled.
+}
+
+\section{Notation}{
+
+The same notation is used in all the help pages of the package.
+\itemize{
+\item \eqn{(\Delta t_j, \Delta x_j)}, \eqn{j = 1, \dots, n}: the durations and
+the degradation increments between two consecutive inspections of a same
+trajectory, pooled over all the trajectories, so that \eqn{n} is the
+total number of increments. The durations \eqn{\Delta t_j} can be equal
+(regular inspections) or not: all the formulas hold in both cases.
+\item \eqn{T = \sum_{j=1}^{n} \Delta t_j}, the total observed time, and
+\eqn{S = \sum_{j=1}^{n} \Delta x_j}, the total degradation.
+\item \eqn{\theta}: the vector of the parameters of the Levy process, for
+instance \eqn{\theta = (a, b)} for the gamma process.
+\item \eqn{f_{\Delta t}(x; \theta)}: the density of an increment of the
+process over a duration \eqn{\Delta t}.
+\item \eqn{\psi} and \eqn{\psi'}: the digamma and trigamma functions, the first
+and second derivatives of \eqn{\ln \Gamma}.
+}
 }
 
 \section{Computation of the estimators}{
 
-With \eqn{(\Delta t_j, \Delta x_j)}, \eqn{j = 1, \dots, m}, the durations and
-increments between two consecutive inspections, pooled over the
-trajectories, the log-likelihood of a Levy process is
-\eqn{\ell(\psi) = \sum_j \ln f_{\Delta t_j}(\Delta x_j; \psi)}.
+The increments of a Levy process being independent, the log-likelihood is
+\deqn{\ell(\theta) = \sum_{j=1}^{n} \ln f_{\Delta t_j}(\Delta x_j; \theta).}
 \itemize{
 \item \strong{Closed form}: Wiener and inverse Gaussian. The MLE is explicit, with
-\eqn{\hat\mu = S / T}, \eqn{S} the total degradation and \eqn{T} the total
-observed time.
+\eqn{\hat\mu = S / T}.
 \item \strong{Root of one equation}: gamma. \eqn{\hat b = \hat a T / S} is explicit
 and \eqn{\hat a} is the unique root of a decreasing function, found by
 \code{\link[stats:uniroot]{stats::uniroot()}} from the method of moments estimator; the result does
 not depend on this starting point.
 \item \strong{Numerical maximization}: variance-gamma and Meixner.
 \itemize{
-\item Variance-gamma: EM algorithm, the gamma clock being the hidden
-variable (each step is explicit or a unique root), started from the
-Wiener MLE, then L-BFGS-B (\code{\link[stats:optim]{stats::optim()}}) with a numerical gradient.
+\item Variance-gamma: the process is a Brownian motion observed at a random
+time given by a gamma process. The EM algorithm treats this random time
+as a hidden variable (each step is explicit or a unique root); it starts
+from the Wiener MLE and is followed by L-BFGS-B (\code{\link[stats:optim]{stats::optim()}}).
 \item Meixner: L-BFGS-B on the likelihood profiled in \eqn{b} (\eqn{\hat b} is
 explicit for given \eqn{a}, \eqn{d}, \eqn{m}), with an explicit gradient
 and several starting points (\code{n_start}) built from the empirical mean
-and variance; the best interior maximum is kept.
+and variance; the solution of largest likelihood is kept.
 }
 }
-
-When the supremum of the likelihood is reached at the boundary of the
-parameter space (for instance the Brownian limit of the variance-gamma
-process), the MLE does not exist: the function gives a warning and returns
-\code{NA}. The help page of each function details its derivation.
 }
 
 \section{Confidence intervals}{
 
-With \code{ci = TRUE}, the intervals are Wald intervals. The observed Fisher
-information \eqn{J = -\nabla^2 \ell(\hat\psi)} is computed numerically by
-\code{\link[stats:optim]{stats::optimHess()}}, except for the Meixner process whose Hessian is
-explicit (see \code{\link[=meixner_mle]{meixner_mle()}}), and the standard error of
-\eqn{\hat\psi_k} is \eqn{\widehat{se}_k = \sqrt{(J^{-1})_{kk}}}. With
-\eqn{z} the quantile of order \eqn{(1 + level) / 2} of the standard normal
-distribution:
+With \code{ci = TRUE}, the intervals are asymptotic intervals based on the
+asymptotic normality of the MLE. For i.i.d. observations, that is equal
+durations, the MLE is asymptotically normal with covariance matrix the
+inverse of the Fisher information (van der Vaart, 1998, Theorem 5.39);
+with unequal durations the increments are independent but not identically
+distributed, and the same normal approximation is used. Let
+\eqn{\hat\theta} be the MLE. The Fisher information is estimated by the
+observed information
+\eqn{J = -\partial^2 \ell / \partial \theta \partial \theta^\top} taken at
+\eqn{\hat\theta} (Grigoletto and Provasi, 2009, section 4.2), computed
+numerically by \code{\link[stats:optim]{stats::optimHess()}}, except for the Meixner process whose
+Hessian is explicit (see \code{\link[=meixner_mle]{meixner_mle()}}). The standard error of the
+\eqn{k}-th parameter is \eqn{se_k = \sqrt{(J^{-1})_{kk}}}; replacing the
+unknown standard deviation by a consistent estimate keeps the asymptotic
+level of the interval (van der Vaart, 1998, section 3.2). Let
+\eqn{z = \Phi^{-1}((1 + level) / 2)}, where \eqn{\Phi} is the distribution
+function of the standard normal distribution: \eqn{(1 + level) / 2} is the
+order of the quantile for a two-sided interval, for instance
+\eqn{z = 1.96} for \code{level = 0.95}. The interval is
 \itemize{
-\item real parameter (\code{mu} of the Wiener process, \code{theta} of the variance-gamma
-process, \code{b} and \code{m} of the Meixner process):
-\eqn{\hat\psi_k \pm z\, \widehat{se}_k};
-\item positive parameter (all the others): the interval
-\eqn{\ln \hat\psi_k \pm z\, \widehat{se}_k / \hat\psi_k} for
-\eqn{\ln \psi_k} (delta method), transformed back:
-\eqn{[\hat\psi_k e^{-z \widehat{se}_k / \hat\psi_k},\ \hat\psi_k e^{z \widehat{se}_k / \hat\psi_k}]},
-which always stays positive.
+\item \eqn{\hat\theta_k \pm z\, se_k} for a real parameter (\code{mu} of the
+Wiener process, \code{theta} of the variance-gamma process, \code{b} and \code{m} of the
+Meixner process);
+\item \eqn{[\hat\theta_k e^{-z\, se_k / \hat\theta_k},\ \hat\theta_k e^{z\, se_k / \hat\theta_k}]}
+for a positive parameter (all the others): this is the interval
+\eqn{\ln \hat\theta_k \pm z\, se_k / \hat\theta_k} for
+\eqn{\ln \theta_k}, whose standard error \eqn{se_k / \hat\theta_k} is
+given by the delta method (van der Vaart, 1998, Theorem 3.1); since
+\eqn{\ln} is monotone, this interval is transformed back into an interval
+for \eqn{\theta_k} (van der Vaart, 1998, section 3.2), which always stays
+positive.
 }
 
-For the Wiener, inverse Gaussian and gamma processes, the numerical
-information agrees with its closed form; for instance, for the Wiener
-process, \eqn{\widehat{se}(\hat\mu) = \hat\sigma / \sqrt{T}} and
-\eqn{\widehat{se}(\hat\sigma^2) = \hat\sigma^2 \sqrt{2 / m}}.
+The unbiased estimates \code{s2} (Wiener) and \code{eta_unbiased} (inverse Gaussian)
+are given without interval. When \eqn{J} is not positive definite, the
+bounds are \code{NA}.
+
+For the Wiener process, the information matrix of Kahle, Mercier and
+Paroissin (2016, equation [1.17]), written for the \eqn{n} increments,
+gives \eqn{se(\hat\mu) = \hat\sigma / \sqrt{T}} and
+\eqn{se(\hat\sigma^2) = \hat\sigma^2 \sqrt{2 / n}}.
 }
 
 \section{Parametrizations}{
 
 \itemize{
-\item Wiener: \eqn{X_t - X_s \sim \mathcal{N}(\mu (t - s), \sigma^2 (t - s))}.
-\item Gamma: \eqn{X_t - X_s \sim \Gamma(a (t - s), b)}, shape \eqn{a(t - s)} and
-\strong{rate} \eqn{b}, so that \eqn{E[X_t] = a t / b}. The scale is \eqn{1 / b}.
-\item Inverse Gaussian: \eqn{X_t - X_s \sim IG(\mu (t - s), \eta (t - s)^2)}.
+\item Wiener: \eqn{X_t - X_s \sim \mathcal{N}(\mu (t - s), \sigma^2 (t - s))}
+(Kahle et al., 2016, definition 1.11).
+\item Gamma: \eqn{X_t - X_s \sim \Gamma(a (t - s), b)}, with shape
+\eqn{a(t - s)} and rate \eqn{b} (scale \eqn{1 / b}), so that
+\eqn{E[X_t] = a t / b} (Kahle et al., 2016, definition 2.24 and
+section 2.7).
+\item Inverse Gaussian: \eqn{X_t - X_s \sim IG(\mu (t - s), \eta (t - s)^2)},
+the process of Wang and Xu (2010) with \eqn{\Lambda(t) = \mu t} (see
+\code{\link[=ig_mle]{ig_mle()}} for the correspondence of the parameters).
 \item Variance-gamma: \eqn{X_s = \theta \gamma_s + \sigma W_{\gamma_s}}, with
-\eqn{\gamma_s} of mean \eqn{s} and variance \eqn{\nu s}.
-\item Meixner: \eqn{X_s \sim Meixner(a, b, d s, m s)}.
+\eqn{\gamma_s} of mean \eqn{s} and variance \eqn{\nu s} (Seneta, 2004;
+Bee, Dickson and Santi, 2018).
+\item Meixner: \eqn{X_s \sim Meixner(a, b, d s, m s)}, the Levy process
+associated with the Meixner distribution of Grigoletto and Provasi
+(2009) (see \code{\link[=meixner_mle]{meixner_mle()}}).
 }
 }
 
@@ -143,9 +187,15 @@ gamma_mle(x, ci = TRUE)
 \dontshow{\}) # examplesIf}
 }
 \references{
+\strong{Degradation processes}: Kahle, W., Mercier, S. and Paroissin, C. (2016).
+\emph{Degradation Processes in Reliability}. ISTE and Wiley, London. Chapter 1
+(Wiener process) and chapter 2 (gamma process, in particular section 2.7 on
+the maximum likelihood and moment estimators).
+
 \strong{Gamma process}: van Noortwijk, J. M. (2009). A survey of the application
 of gamma processes in maintenance. \emph{Reliability Engineering & System
-Safety}, 94(1), 2-21. \doi{10.1016/j.ress.2007.03.019}
+Safety}, 94(1), 2-21. \doi{10.1016/j.ress.2007.03.019}. Section 3.7.1
+(maximum likelihood estimation).
 
 \strong{Wiener process}: Whitmore, G. A. (1995). Estimating degradation by a
 Wiener diffusion process subject to measurement error. \emph{Lifetime Data
@@ -155,13 +205,20 @@ Analysis}, 1, 307-319.
 Gaussian process model for degradation data. \emph{Technometrics}, 52(2),
 188-197. \doi{10.1198/TECH.2009.08197}
 
-\strong{Variance-gamma process}: Madan, D. B., Carr, P. P. and Chang, E. C.
-(1998). The variance gamma process and option pricing. \emph{European Finance
-Review}, 2(1), 79-105. \doi{10.1023/A:1009703431535}
+\strong{Variance-gamma process}: Seneta, E. (2004). Fitting the variance-gamma
+model to financial data. \emph{Journal of Applied Probability}, 41A, 177-187.
+\doi{10.1017/S0021900200112288}. Bee, M., Dickson, M. M. and Santi, F.
+(2018). Likelihood-based risk estimation for variance-gamma models.
+\emph{Statistical Methods & Applications}, 27(1), 69-89.
+\doi{10.1007/s10260-017-0393-z}
 
-\strong{Meixner process}: Schoutens, W. and Teugels, J. L. (1998). Lévy
-processes, polynomials and martingales. \emph{Communications in Statistics.
-Stochastic Models}, 14(1-2), 335-349.
+\strong{Meixner process}: Grigoletto, M. and Provasi, C. (2009). Simulation and
+estimation of the Meixner distribution. \emph{Communications in Statistics -
+Simulation and Computation}, 38(1), 58-77. \doi{10.1080/03610910802395679}
+
+\strong{Confidence intervals}: van der Vaart, A. W. (1998). \emph{Asymptotic
+Statistics}. Cambridge University Press. \doi{10.1017/CBO9780511802256}.
+Theorem 3.1, section 3.2 and Theorem 5.39.
 
 The references of each method are given in the help page of each function.
 }

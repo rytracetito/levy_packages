@@ -3,81 +3,71 @@
 #' Computes the maximum likelihood estimator (MLE) of the drift \eqn{\mu} and
 #' the variance \eqn{\sigma^2} of the Wiener process
 #' \eqn{X_t = \mu t + \sigma B_t}, where \eqn{B} is a standard Brownian motion,
-#' from one or several trajectories observed at possibly irregular inspection times. The MLE
-#' is obtained in closed form by maximizing the likelihood directly, without
-#' numerical optimization.
+#' from one or several trajectories observed at regular or irregular
+#' inspection times. The MLE is
+#' obtained in closed form, without numerical optimization.
 #'
 #' @section Model and data:
 #' The increments are independent and
-#' \eqn{X_t - X_s \sim \mathcal{N}(\mu (t - s), \sigma^2 (t - s))} for \eqn{s < t}; they
-#' can be negative. The trajectories are independent and have the same law;
-#' each one is observed at its own inspection times. Let
-#' \eqn{(\Delta t_j, \Delta x_j)}, \eqn{j = 1, \dots, m}, be the durations and
-#' degradation increments between two consecutive inspections of a same
-#' trajectory, gathered over all the trajectories, \eqn{T = \sum_j \Delta t_j},
-#' \eqn{S = \sum_j \Delta x_j} and \eqn{r_j = \Delta x_j / \Delta t_j} (speeds).
-#' The likelihood is a product over all these independent increments, so the
-#' formulas below hold for one or several trajectories.
+#' \eqn{X_t - X_s \sim \mathcal{N}(\mu (t - s), \sigma^2 (t - s))} for
+#' \eqn{s < t} (Kahle, Mercier and Paroissin, 2016, definition 1.11 and
+#' equation \[1.3\]); they can be negative. The density of an increment over a
+#' duration \eqn{\Delta t} is
+#' \deqn{f_{\Delta t}(x; \mu, \sigma^2) = \frac{1}{\sqrt{2 \pi \sigma^2 \Delta t}}
+#'   \exp\Big(-\frac{(x - \mu \Delta t)^2}{2 \sigma^2 \Delta t}\Big), \qquad x \in (-\infty, \infty).}
+#' The data are the \eqn{n} increments \eqn{(\Delta t_j, \Delta x_j)},
+#' \eqn{j = 1, \dots, n}, pooled over the trajectories, with
+#' \eqn{T = \sum_{j=1}^{n} \Delta t_j} and \eqn{S = \sum_{j=1}^{n} \Delta x_j}
+#' (see the section Notation of [levyfit-package]). The speeds are
+#' \eqn{r_j = \Delta x_j / \Delta t_j}.
 #'
 #' @section Likelihood:
-#' The increments being independent and Gaussian, the log-likelihood is
-#' \deqn{\ell(\mu, \sigma^2) = -\frac{m}{2} \ln(2\pi) - \frac{1}{2} \sum_j \ln \Delta t_j
-#'   - \frac{m}{2} \ln \sigma^2 - \frac{Q(\mu)}{2 \sigma^2},
-#'   \qquad Q(\mu) = \sum_j \frac{(\Delta x_j - \mu \Delta t_j)^2}{\Delta t_j}.}
+#' The increments being independent, the log-likelihood is (Kahle et al.,
+#' 2016, equation \[1.14\], with \eqn{x_0 = 0} and \eqn{t_0 = 0})
+#' \deqn{\ell(\mu, \sigma^2) = -\frac{n}{2} \ln(2\pi) - \frac{1}{2} \sum_{j=1}^{n} \ln \Delta t_j
+#'   - \frac{n}{2} \ln \sigma^2 - \frac{Q(\mu)}{2 \sigma^2},
+#'   \qquad Q(\mu) = \sum_{j=1}^{n} \frac{(\Delta x_j - \mu \Delta t_j)^2}{\Delta t_j}.}
 #'
 #' @section Maximum likelihood estimator:
-#' 1. Completing the square gives \eqn{Q(\mu) = T (\mu - \hat\mu)^2 + \hat Q},
-#'    with \eqn{\hat\mu = S / T} and
-#'    \eqn{\hat Q = Q(\hat\mu) = \sum_j \Delta t_j (r_j - \hat\mu)^2}.
-#' 2. For every \eqn{\sigma^2}, \eqn{\ell} is therefore maximal in \eqn{\mu} at
-#'    \eqn{\hat\mu = S / T}, the speeds averaged with weights \eqn{\Delta t_j / T}.
-#' 3. The remaining function \eqn{-\frac{m}{2} \ln \sigma^2 - \hat Q / (2 \sigma^2)}
-#'    is maximal at \eqn{\hat\sigma^2 = \hat Q / m}.
-#' 4. The MLE exists and is unique if and only if \eqn{\hat Q > 0}, that is if
-#'    the speeds \eqn{r_j} are not all equal, which has probability one as soon
-#'    as \eqn{m \ge 2}. Otherwise (in particular if \eqn{m = 1}) the likelihood
-#'    is unbounded (`NA` with a warning).
+#' Completing the square gives \eqn{Q(\mu) = T (\mu - \hat\mu)^2 + \hat Q},
+#' with
+#' \deqn{\hat\mu = \frac{S}{T}, \qquad
+#'   \hat Q = Q(\hat\mu) = \sum_{j=1}^{n} \Delta t_j (r_j - \hat\mu)^2.}
+#' For every \eqn{\sigma^2}, \eqn{\ell} is therefore maximal in \eqn{\mu} at
+#' \eqn{\hat\mu}, which is the mean of the speeds weighted by
+#' \eqn{\Delta t_j / T}. It remains to maximize
+#' \eqn{-\frac{n}{2} \ln \sigma^2 - \hat Q / (2 \sigma^2)}, which gives
+#' \eqn{\hat\sigma^2 = \hat Q / n}. These are the estimators of Kahle et al.
+#' (2016, section 1.6.1, equation \[1.19\]). The MLE exists and is unique if and only
+#' if \eqn{\hat Q > 0}, that is if the speeds \eqn{r_j} are not all equal,
+#' which has probability one as soon as \eqn{n \ge 2}. Otherwise (in
+#' particular if \eqn{n = 1}) the likelihood is unbounded and the function
+#' returns `NA` with a warning.
 #'
-#' With one trajectory, \eqn{\hat\mu} only depends on the first and last
-#' observations: the intermediate inspections only bring information on
-#' \eqn{\sigma^2}.
+#' Equation \[1.19\] also writes \eqn{\hat\mu} as the sum of the last
+#' observed levels divided by the sum of the last inspection times: with one
+#' trajectory, \eqn{\hat\mu} only depends on the first and last observations,
+#' and the intermediate inspections only bring information on \eqn{\sigma^2}.
 #'
 #' @section Bias:
-#' Writing the standardized increments as a Gaussian vector and applying an
-#' orthogonal rotation shows that, for \eqn{m \ge 2},
-#' \deqn{\hat\mu \sim \mathcal{N}(\mu, \sigma^2 / T), \qquad \hat Q / \sigma^2 \sim \chi^2_{m-1},}
-#' and that \eqn{\hat\mu} and \eqn{\hat Q} are independent. Hence
-#' \eqn{\hat\mu} is unbiased, while
-#' \eqn{E[\hat\sigma^2] = \frac{m - 1}{m} \sigma^2}: \eqn{\hat\sigma^2} is
+#' Whitmore (1995, section 3, equations (3.8a), (3.8b), (3.10a) and (3.10b))
+#' considers increments \eqn{\Delta Y \sim \mathcal{N}_n(\delta \Delta t, \sigma^2 \Psi)}
+#' with a known matrix \eqn{\Psi}; his estimators are
+#' \eqn{\hat\delta = \Delta t' \Psi^{-1} \Delta Y / (\Delta t' \Psi^{-1} \Delta t)} and
+#' \eqn{\hat\sigma^2 = (\Delta Y - \hat\delta \Delta t)' \Psi^{-1} (\Delta Y - \hat\delta \Delta t) / n},
+#' and they are independent, with
+#' \eqn{\hat\delta \sim \mathcal{N}(\delta, \sigma^2 / (\Delta t' \Psi^{-1} \Delta t))} and
+#' \eqn{n \hat\sigma^2 / \sigma^2 \sim \chi^2_{n-1}}. Here the increments are
+#' independent with variances \eqn{\sigma^2 \Delta t_j}, that is
+#' \eqn{\Psi = \mathrm{diag}(\Delta t_1, \dots, \Delta t_n)}, \eqn{\delta = \mu},
+#' \eqn{\Delta t' \Psi^{-1} \Delta t = T}, and his estimators are \eqn{\hat\mu} and
+#' \eqn{\hat\sigma^2} above. Hence, for \eqn{n \ge 2},
+#' \deqn{\hat\mu \sim \mathcal{N}(\mu, \sigma^2 / T), \qquad n \hat\sigma^2 / \sigma^2 = \hat Q / \sigma^2 \sim \chi^2_{n-1},}
+#' \eqn{\hat\mu} and \eqn{\hat\sigma^2} are independent, \eqn{\hat\mu} is
+#' unbiased and, the mean of a \eqn{\chi^2_{n-1}} variable being \eqn{n - 1},
+#' \eqn{E[\hat\sigma^2] = \frac{n - 1}{n} \sigma^2}: \eqn{\hat\sigma^2} is
 #' biased downwards. The function also returns its unbiased version
-#' \deqn{s^2 = \frac{\hat Q}{m - 1} = \frac{m}{m - 1} \hat\sigma^2.}
-#'
-#' @section Confidence intervals and estimation failures:
-#' With `ci = TRUE`, the function also returns asymptotic confidence intervals.
-#' Let \eqn{\hat\psi} be the MLE and \eqn{\ell} the log-likelihood. The observed
-#' Fisher information \eqn{J = -\partial^2 \ell / \partial \psi \partial \psi^\top} is
-#' computed at \eqn{\hat\psi} by numerical differentiation ([stats::optimHess()]),
-#' except for the Meixner process, whose Hessian is explicit, and the standard errors are the square roots of the diagonal of
-#' \eqn{J^{-1}}. With \eqn{z} the quantile of order \eqn{(1 + level) / 2} of the
-#' standard normal distribution, the interval of a parameter \eqn{\psi_k} is
-#' * \eqn{\hat\psi_k \pm z\, se_k} for a real parameter (`mu` of the Wiener
-#'   process, `theta` of the variance-gamma process, `b` and `m` of the Meixner
-#'   process);
-#' * \eqn{\hat\psi_k \exp(\pm z\, se_k / \hat\psi_k)} for a positive parameter: the
-#'   interval \eqn{\ln \hat\psi_k \pm z\, se_k / \hat\psi_k} for \eqn{\ln \psi_k}, transformed
-#'   back, which always stays positive.
-#'
-#' These intervals are asymptotic: their coverage is close to `level` when the
-#' number of increments is large. The unbiased estimates `s2` (Wiener) and `eta_unbiased` (inverse
-#' Gaussian) are given without interval. When \eqn{J} is not positive definite
-#' (estimate close to a boundary of the parameter space), the bounds are `NA`.
-#'
-#' When the maximum likelihood estimator does not exist for the data (for
-#' instance all the speeds \eqn{\Delta x_j / \Delta t_j} equal, or a maximum at a
-#' boundary of the parameter space), the function does not stop: it gives a
-#' warning with the reason and returns `NA` estimates, with the reason in the
-#' attribute `"message"`. Invalid data (times not increasing, decreasing levels
-#' for an increasing process, too few observations) still give an error.
+#' \deqn{s^2 = \frac{\hat Q}{n - 1} = \frac{n}{n - 1} \hat\sigma^2.}
 #'
 #' @param x Degradation levels of one trajectory; or a list of data frames,
 #'   one per trajectory, whose first column contains the inspection times and
@@ -86,7 +76,8 @@
 #' @param t Inspection times of the trajectory, strictly increasing. Not used
 #'   when `x` is a list.
 #' @param ci `FALSE` (default) for the point estimates only; `TRUE` to add
-#'   asymptotic confidence intervals (see the section below).
+#'   asymptotic confidence intervals, computed as explained in the section
+#'   Confidence intervals of [levyfit-package].
 #' @param level Confidence level of the intervals, between 0 and 1 (default
 #'   0.95). Used only when `ci = TRUE`.
 #'
@@ -100,12 +91,13 @@
 #'   are `NA`, with a warning.
 #'
 #' @references
+#' Kahle, W., Mercier, S. and Paroissin, C. (2016). *Degradation Processes in
+#' Reliability*. ISTE and Wiley, London. Definition 1.11, section 1.6.1
+#' (equations \[1.3\], \[1.14\], \[1.17\] and \[1.19\]).
+#'
 #' Whitmore, G. A. (1995). Estimating degradation by a Wiener diffusion process
 #' subject to measurement error. *Lifetime Data Analysis*, 1, 307-319.
-#'
-#' Ye, Z.-S. and Xie, M. (2015). Stochastic modelling and analysis of
-#' degradation for highly reliable products. *Applied Stochastic Models in
-#' Business and Industry*, 31(1), 16-32. \doi{10.1002/asmb.2063}
+#' Section 3, equations (3.8a) to (3.10b).
 #'
 #' @seealso [gamma_mle()], [ig_mle()], [vg_mle()], [meixner_mle()]
 #'

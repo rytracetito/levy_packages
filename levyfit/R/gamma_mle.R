@@ -1,62 +1,88 @@
 #' Maximum likelihood estimation for the gamma process
 #'
 #' Computes the maximum likelihood estimator (MLE) of the shape \eqn{a} and
-#' the rate \eqn{b} of the gamma process from one or several
-#' trajectories observed at possibly irregular inspection times. The MLE always exists
+#' the rate \eqn{b} of the gamma process from one or several trajectories
+#' observed at regular or irregular inspection times. The MLE always exists
 #' (with probability one), is unique, and is the root of an equation in one
 #' variable.
 #'
 #' @section Model and data:
 #' The gamma process is increasing, with independent increments
-#' \eqn{X_t - X_s \sim \Gamma(a (t - s), b)} (shape \eqn{a(t - s)}, rate
-#' \eqn{b}), so that \eqn{E[X_t] = a t / b} and \eqn{Var(X_t) = a t / b^2}.
-#' The trajectories are independent and have the same law; each one is
-#' observed at its own inspection times. Let
-#' \eqn{(\Delta t_j, \Delta x_j)}, \eqn{j = 1, \dots, m}, be the durations and
-#' degradation increments (\eqn{\Delta x_j > 0}) between two consecutive
-#' inspections of a same trajectory, gathered over all the trajectories,
-#' \eqn{T = \sum_j \Delta t_j}, \eqn{S = \sum_j \Delta x_j},
-#' \eqn{U = \sum_j \Delta t_j \ln \Delta x_j}, the speeds
-#' \eqn{r_j = \Delta x_j / \Delta t_j} and the weights
-#' \eqn{w_j = \Delta t_j / T}.
+#' \eqn{X_t - X_s \sim \Gamma(a (t - s), b)}, with shape \eqn{a(t - s)} and rate
+#' \eqn{b} (Kahle, Mercier and Paroissin, 2016, definition 2.24 with
+#' \eqn{A(t) = a t}), so that \eqn{E[X_t] = a t / b} and
+#' \eqn{Var(X_t) = a t / b^2} (Kahle et al., 2016, section 2.7). The density of
+#' an increment over a duration \eqn{\Delta t} is (Kahle et al., 2016,
+#' definition 2.1)
+#' \deqn{f_{\Delta t}(x; a, b) = \frac{b^{a \Delta t}}{\Gamma(a \Delta t)}\, x^{a \Delta t - 1} e^{-b x}, \qquad x > 0.}
+#' The data are the \eqn{n} increments \eqn{(\Delta t_j, \Delta x_j)},
+#' \eqn{j = 1, \dots, n}, with \eqn{\Delta x_j > 0}, pooled over the
+#' trajectories, with \eqn{T = \sum_{j=1}^{n} \Delta t_j} and
+#' \eqn{S = \sum_{j=1}^{n} \Delta x_j} (see the section Notation of
+#' [levyfit-package]). Let also
+#' \deqn{U = \sum_{j=1}^{n} \Delta t_j \ln \Delta x_j, \qquad
+#'   r_j = \frac{\Delta x_j}{\Delta t_j} \ \text{(speeds)}, \qquad
+#'   w_j = \frac{\Delta t_j}{T} \ \text{(weights)}.}
 #'
 #' @section Likelihood:
-#' The increments being independent, the log-likelihood is
-#' \deqn{\ell(a, b) = \sum_j \big[(a \Delta t_j - 1) \ln \Delta x_j - \ln \Gamma(a \Delta t_j)
+#' The increments being independent, the log-likelihood is (Kahle et al.,
+#' 2016, equation \[2.42\] with \eqn{\Delta A_{i,j}(\theta) = a s_{i,j}})
+#' \deqn{\ell(a, b) = \sum_{j=1}^{n} \big[(a \Delta t_j - 1) \ln \Delta x_j - \ln \Gamma(a \Delta t_j)
 #'   + a \Delta t_j \ln b - b \Delta x_j\big].}
 #' It is a two-parameter exponential family with sufficient statistic
-#' \eqn{(U, S)}.
+#' \eqn{(U, S)}, whatever the durations \eqn{\Delta t_j}, equal or not. With
+#' equal durations \eqn{\Delta t}, the increments are i.i.d.
+#' \eqn{\Gamma(a \Delta t, b)} and \eqn{(U, S)} is, up to the factor
+#' \eqn{\Delta t}, the usual sufficient statistic
+#' \eqn{(\sum_{j=1}^{n} \ln \Delta x_j, \sum_{j=1}^{n} \Delta x_j)} of an
+#' i.i.d. gamma sample.
 #'
 #' @section Maximum likelihood estimator:
-#' 1. The score in \eqn{b} is \eqn{\partial \ell / \partial b = a T / b - S}:
-#'    for a fixed \eqn{a}, \eqn{\ell} is maximal at \eqn{\hat b(a) = a T / S}.
-#' 2. The profile log-likelihood \eqn{\ell_p(a) = \ell(a, \hat b(a))} has
-#'    derivative
-#'    \deqn{g(a) = U - \sum_j \Delta t_j\, \psi(a \Delta t_j) + T \ln \frac{a T}{S},}
-#'    where \eqn{\psi} is the digamma function.
-#' 3. Since \eqn{\psi'(x) > 1/x} for \eqn{x > 0}, \eqn{g} is strictly
-#'    decreasing. Moreover \eqn{g(a) \to +\infty} as \eqn{a \to 0} and, by
-#'    Jensen's inequality,
-#'    \eqn{g(a) \to T \big(\sum_j w_j \ln r_j - \ln \sum_j w_j r_j\big) < 0}
-#'    as \eqn{a \to \infty}, unless all the speeds are equal.
-#' 4. Hence \eqn{g} has a unique root \eqn{\hat a}, and
-#'    \eqn{\hat b = \hat a T / S}. If all the speeds are equal (in particular
-#'    if \eqn{m = 1}), the MLE does not exist (`NA` with a warning); this has
-#'    probability zero when \eqn{m \ge 2}.
+#' The score in \eqn{b} is \eqn{\partial \ell / \partial b = a T / b - S}, so
+#' that, for a fixed \eqn{a}, \eqn{\ell} is maximal at
+#' \eqn{\hat b(a) = a T / S}. The profile log-likelihood
+#' \eqn{\ell_p(a) = \ell(a, \hat b(a))} has derivative
+#' \deqn{g(a) = U - \sum_{j=1}^{n} \Delta t_j\, \psi(a \Delta t_j) + T \ln \frac{a T}{S},}
+#' where \eqn{\psi} is the digamma function. The function
+#' \eqn{x \mapsto \ln x - \psi(x)} is strictly completely monotonic on
+#' \eqn{(0, \infty)} (Alzer, 1997, Theorem 1 with \eqn{\alpha = 0}), hence
+#' strictly decreasing, so that \eqn{\psi'(x) > 1/x} for \eqn{x > 0}; therefore
+#' \eqn{g'(a) = -\sum_{j=1}^{n} \Delta t_j^2 \psi'(a \Delta t_j) + T / a < 0}
+#' and \eqn{g} is continuous and strictly decreasing on \eqn{(0, \infty)}.
+#' Moreover, by the inequality
+#' \eqn{1/(2x) < \ln x - \psi(x) < 1/x}, \eqn{x > 0} (Alzer, 1997,
+#' equation (2.2)), \eqn{g(a) > g_0 + n / (2a)} with \eqn{g_0} not depending
+#' on \eqn{a}, so that \eqn{g(a) \to +\infty} as \eqn{a \to 0}, and
+#' \eqn{\psi(x) - \ln x \to 0} as \eqn{x \to \infty}, so that, by Jensen's
+#' inequality,
+#' \deqn{\lim_{a \to \infty} g(a) = T \Big(\sum_{j=1}^{n} w_j \ln r_j - \ln \sum_{j=1}^{n} w_j r_j\Big) < 0,}
+#' unless all the speeds \eqn{r_j} are equal. By the intermediate value
+#' theorem, \eqn{g} has a root \eqn{\hat a}, unique since \eqn{g} is strictly
+#' decreasing, and \eqn{\hat b = \hat a T / S}. These are the equations
+#' \[2.43\] and \[2.44\] of Kahle, Mercier and Paroissin (2016, section 2.7.1.1).
+#' With equal durations \eqn{\Delta t}, the equation \eqn{g(a) = 0} becomes
+#' equation \[2.45a\] of Kahle et al. (2016), whose common step \eqn{\delta}
+#' is \eqn{\Delta t} here:
+#' \deqn{\psi(a \Delta t) - \ln(a \Delta t) = \frac{1}{n} \sum_{j=1}^{n} \ln \Delta x_j
+#'   - \ln\Big(\frac{1}{n} \sum_{j=1}^{n} \Delta x_j\Big),}
+#' the logarithm of the ratio of the geometric and arithmetic means of the
+#' increments. If all the speeds are equal (in particular if \eqn{n = 1}), the
+#' MLE does not exist and the function returns `NA` with a warning; this has
+#' probability zero when \eqn{n \ge 2}.
 #'
-#' The root is computed by [stats::uniroot()] in \eqn{\ln a}, starting from the
-#' method of moments: with \eqn{\hat r = S / T} and
-#' \eqn{\hat\sigma^2 = \sum_j (\Delta x_j - \hat r \Delta t_j)^2 / (T - \sum_j \Delta t_j^2 / T)},
-#' \eqn{a_{MM} = \hat r^2 / \hat\sigma^2}. Since \eqn{g} is monotone, the
-#' search converges whatever the starting value.
-#'
-#' @section Bias:
-#' No unbiased version of \eqn{\hat a} and \eqn{\hat b} is available. With few
-#' increments (about ten) both are biased upwards, by about 40 percent; the
-#' bias vanishes as the number of increments grows. Their ratio
-#' \eqn{\hat a / \hat b = S / T} is unbiased.
-#'
-#' @inheritSection wiener_mle Confidence intervals and estimation failures
+#' The root is computed by [stats::uniroot()] in \eqn{\ln a}. Kahle, Mercier
+#' and Paroissin (2016, remark 2.50) recommend a moment estimator as starting
+#' point. The mean and the variance of the gamma process are \eqn{a t / b} and
+#' \eqn{a t / b^2} (Kahle et al., 2016, section 2.7), that is
+#' \eqn{\mu = a / b} and \eqn{\nu = a / b^2} per unit of time, so that
+#' \eqn{a = \mu^2 / \nu}. The search starts from
+#' \eqn{a_{MM} = \hat\mu^2 / \hat\nu}, where
+#' \deqn{\hat\mu = \frac{\sum_{j=1}^{n} \Delta x_j}{\sum_{j=1}^{n} \Delta t_j} = \frac{S}{T}, \qquad
+#'   \hat\nu = \frac{1}{n} \sum_{j=1}^{n} \frac{(\Delta x_j - \hat\mu \Delta t_j)^2}{\Delta t_j}}
+#' are the estimators of the mean and of the variance per unit of time of
+#' Kahle et al. (2016, section 1.6.1, equation \[1.19\]), given there for the
+#' Wiener process. Since the root of \eqn{g} is unique, it does not depend on
+#' this starting point, which only makes the computation faster.
 #'
 #' @inheritParams wiener_mle
 #' @param x Degradation levels of one trajectory, with strictly positive increments;
@@ -74,6 +100,15 @@
 #'   are `NA`, with a warning.
 #'
 #' @references
+#' Kahle, W., Mercier, S. and Paroissin, C. (2016). *Degradation Processes in
+#' Reliability*. ISTE and Wiley, London. Definitions 2.1 and 2.24, section
+#' 1.6.1 (equation \[1.19\]) and section 2.7 (equations \[2.42\] to \[2.45\]
+#' and remark 2.50).
+#'
+#' Alzer, H. (1997). On some inequalities for the gamma and psi functions.
+#' *Mathematics of Computation*, 66(217), 373-389.
+#' \doi{10.1090/S0025-5718-97-00807-7}. Equation (2.2) and Theorem 1.
+#'
 #' van Noortwijk, J. M. (2009). A survey of the application of gamma processes
 #' in maintenance. *Reliability Engineering & System Safety*, 94(1), 2-21.
 #' \doi{10.1016/j.ress.2007.03.019}
@@ -135,9 +170,9 @@ gamma_fit <- function(dt, dx) {
   S <- sum(dx)
   U <- sum(dt * log(dx))
 
-  r_hat <- S / Tt
-  s2 <- sum((dx - r_hat * dt)^2) / (Tt - sum(dt^2) / Tt)
-  a_mm <- r_hat^2 / s2
+  mu_hat <- S / Tt
+  nu_hat <- mean((dx - mu_hat * dt)^2 / dt)
+  a_mm <- mu_hat^2 / nu_hat
 
   g <- function(u) U - sum(dt * digamma(exp(u) * dt)) + Tt * log(exp(u) * Tt / S)
   a <- exp(uniroot(g, c(log(a_mm) - 1, log(a_mm) + 1), extendInt = "downX", tol = 1e-12)$root)

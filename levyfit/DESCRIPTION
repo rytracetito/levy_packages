@@ -8,7 +8,7 @@ Authors@R: c(
 Description: Maximum likelihood estimation of the parameters of
     degradation models based on Levy processes (Wiener, gamma, inverse
     Gaussian, variance-gamma and Meixner processes) from one or several
-    trajectories observed at possibly irregular inspection times.
+    trajectories observed at regular or irregular inspection times.
 License: GPL-3
 URL: https://github.com/rytracetito/levy_packages/tree/main/levyfit, https://github.com/rytracetito/levy_packages
 BugReports: https://github.com/rytracetito/levy_packages/issues
