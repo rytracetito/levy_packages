@@ -84,9 +84,17 @@ trajectories, with \eqn{T = \sum_{j=1}^{n} \Delta t_j} and
 
 The increments being independent, the log-likelihood is
 \deqn{\ell(\theta, \sigma, \nu) = \sum_{j=1}^{n} \ln f_{\Delta t_j}(\Delta x_j; \theta, \sigma, \nu),}
-which is equation (4) of Bee et al. (2018) for \eqn{\Delta t_j = 1}. As in
-their section 3.2, the likelihood is maximized by an EM algorithm that
-treats the random times as missing data.
+which is equation (4) of Bee et al. (2018) for \eqn{\Delta t_j = 1}.
+
+\strong{Why an EM algorithm.} The density contains the modified Bessel function
+\eqn{K_p}, whose order depends on \eqn{\nu}, and the likelihood cannot be
+maximized in closed form. Standard optimization algorithms applied directly
+to this likelihood, such as the Nelder-Mead algorithm of \code{\link[stats:optim]{stats::optim()}},
+are very sensitive to the starting values and give highly unstable
+estimates (Bee et al., 2018, section 1, after Cervellera and Tucci). On the
+other hand, the maximization would be easy if the random times were known:
+this is why the MLE is computed by an EM algorithm, which treats the
+random times as missing data (Bee et al., 2018, sections 1 and 3.2).
 }
 
 \section{When the estimator does not exist}{
@@ -118,22 +126,41 @@ the function considers that the maximum is reached at this limit. Use
 
 \section{EM algorithm}{
 
-The algorithm is the one of Bee et al. (2018, section 3.2), who follow
-Nitithumbundit and Chan (2015), written here for increments over unequal
-durations and without location parameter.
+\strong{The EM algorithm in general} (Bee et al., 2018, section 3.2). The data
+are completed by unobserved variables (the missing data), chosen so that
+the log-likelihood of the complete data is simple. Starting from initial
+values of the parameters, the algorithm repeats two steps:
+\itemize{
+\item E step (expectation): compute the expected value of the complete
+log-likelihood given the observed data, at the current value of the
+parameters;
+\item M step (maximization): maximize this expected value with respect to the
+parameters, which gives their new value.
+}
 
-\strong{Idea.} Let \eqn{G_j} be the increment of the random time \eqn{\gamma}
-on the \eqn{j}-th interval, which is not observed. If the \eqn{G_j} were
-known, the estimation would be easy, since
+The likelihood of the observed data increases at each iteration (Bee et
+al., 2018, section 3.2).
+
+\strong{Application to the VG process.} The algorithm used here is the one of
+Bee et al. (2018, section 3.2), who follow Nitithumbundit and Chan (2015),
+written for increments over unequal durations and without location
+parameter. The correspondence with the general algorithm is the following.
+\itemize{
+\item Observed data: the increments \eqn{\Delta x_j}, \eqn{j = 1, \dots, n}.
+\item Missing data: the increments \eqn{G_j} of the random time \eqn{\gamma} on
+the \eqn{j}-th interval.
+\item Complete log-likelihood: since
 \deqn{\Delta x_j \mid G_j \sim \mathcal{N}(\theta G_j, \sigma^2 G_j), \qquad
-  G_j \sim \Gamma(\Delta t_j / \nu,\ 1 / \nu),}
-and the log-likelihood of the complete data \eqn{(\Delta x_j, G_j)},
-\eqn{j = 1, \dots, n}, only involves \eqn{G_j}, \eqn{1 / G_j} and
-\eqn{\ln G_j} (Bee et al., 2018, equation (5)). The EM algorithm replaces
-these three quantities by their expectations given the observed
-increments, computed at the current parameters (E step), and then
-maximizes the complete log-likelihood (M step). The likelihood increases at
-each iteration (Bee et al., 2018, section 3.2).
+    G_j \sim \Gamma(\Delta t_j / \nu,\ 1 / \nu),}
+it is the sum of normal and gamma log-densities, and it only involves
+\eqn{G_j}, \eqn{1 / G_j} and \eqn{\ln G_j} (Bee et al., 2018, equation
+(5)).
+\item E step: compute the expectations \eqn{e^+_j}, \eqn{e^-_j} and \eqn{l_j}
+of \eqn{G_j}, \eqn{1 / G_j} and \eqn{\ln G_j} given \eqn{\Delta x_j}
+(see below).
+\item M step: update \eqn{(\theta, \sigma^2)}, then \eqn{\nu} (see Steps
+below).
+}
 
 \strong{Distribution of the hidden times.} Given \eqn{\Delta x_j}, \eqn{G_j}
 follows a generalized inverse Gaussian distribution \eqn{GIG(p_j, \chi_j, \omega)}

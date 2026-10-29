@@ -38,8 +38,10 @@ test_that("the Meixner estimate is the maximum reached from the moment estimates
   x <- c(0, cumsum(dx))
   t <- 0:500
   e <- meixner_mle(x, t)
-  e50 <- meixner_mle(x, t, n_start = 50)
-  expect_equal(e, e50, tolerance = 1e-5)
+  s <- meixner_score(dx, rep(1, 500), e[["a"]], e[["b"]], e[["d"]], e[["m"]])
+  expect_lt(max(abs(s)), 1e-3)
+  h <- meixner_hessian(dx, rep(1, 500), e[["a"]], e[["b"]], e[["d"]], e[["m"]])
+  expect_lt(max(eigen(h, symmetric = TRUE, only.values = TRUE)$values), 0)
   ll <- function(p) meixner_loglik(dx, rep(1, 500), p[1], p[2], p[3], p[4])
   expect_gt(ll(e), ll(c(1, 0.3, 1.5, 0.2)))
   ci <- meixner_mle(x, t, ci = TRUE)

@@ -15,7 +15,7 @@
 #' | [gamma_mle()] | gamma | shape `a`, rate `b` | root of one equation |
 #' | [ig_mle()] | inverse Gaussian | `mu`, `eta`, `eta_unbiased` | closed form |
 #' | [vg_mle()] | variance-gamma | `theta`, `sigma`, `nu` | EM, then L-BFGS-B |
-#' | [meixner_mle()] | Meixner | `a`, `b`, `d`, `m` | profile likelihood |
+#' | [meixner_mle()] | Meixner | `a`, `b`, `d`, `m` | Newton-type, from the moments |
 #'
 #' `s2` and `eta_unbiased` are the unbiased versions of `sigma2` and `eta`.
 #' Every estimation function returns the point estimates and, with
@@ -75,10 +75,9 @@
 #'     time given by a gamma process. The EM algorithm treats this random time
 #'     as a hidden variable (each step is explicit or a unique root); it starts
 #'     from the Wiener MLE and is followed by L-BFGS-B ([stats::optim()]).
-#'   * Meixner: L-BFGS-B on the likelihood profiled in \eqn{b} (\eqn{\hat b} is
-#'     explicit for given \eqn{a}, \eqn{d}, \eqn{m}), with an explicit gradient
-#'     and several starting points (`n_start`) built from the empirical mean
-#'     and variance; the solution of largest likelihood is kept.
+#'   * Meixner: a Newton-type algorithm ([stats::nlminb()]) with the exact
+#'     gradient and Hessian, started at the moment estimates, as recommended
+#'     by Grigoletto and Provasi (2009, section 4.2).
 #'
 #' @section Confidence intervals:
 #' With `ci = TRUE`, the intervals are asymptotic intervals based on the
@@ -192,5 +191,5 @@
 #' @keywords package
 "_PACKAGE"
 
-#' @importFrom stats dgamma dnorm integrate optim optimHess optimize qnorm runif sd uniroot
+#' @importFrom stats dgamma dnorm integrate nlminb optim optimHess optimize qnorm sd uniroot
 NULL

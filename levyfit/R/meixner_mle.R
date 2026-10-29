@@ -2,22 +2,22 @@
 #'
 #' Computes the maximum likelihood estimator of the four parameters
 #' \eqn{(a, b, d, m)} of the Meixner process from one or several trajectories
-#' observed at regular or irregular inspection times. The likelihood is maximized numerically from
-#' several starting points.
+#' observed at regular or irregular inspection times. The likelihood is
+#' maximized by a Newton-type algorithm started at the moment estimates.
 #'
 #' @section Source and notation:
 #' The results on the Meixner distribution used below come from Grigoletto
-#' and Provasi (2009), written GP09, who treat an i.i.d. sample of this
+#' and Provasi (2009), who treat an i.i.d. sample of this
 #' distribution. The distribution written here \eqn{Meixner(a, b, d, m)} is
 #' their \eqn{MXN(m, a, b, d)}: \eqn{m} is a location parameter, \eqn{a > 0} a
 #' scale parameter, and \eqn{b \in (-\pi, \pi)} and \eqn{d > 0} are shape
-#' parameters (GP09, section 2); the same notation is used by Schoutens
+#' parameters (Grigoletto and Provasi, 2009, section 2); the same notation is used by Schoutens
 #' (2002), whose Meixner process is used here. The extension of the results
-#' of GP09 to increments over unequal durations, and the algorithm, are
+#' of Grigoletto and Provasi (2009) to increments over unequal durations, and the algorithm, are
 #' choices of this implementation; they are marked as such.
 #'
 #' @section Model and data:
-#' The density of \eqn{Meixner(a, b, d, m)} is (GP09, section 2)
+#' The density of \eqn{Meixner(a, b, d, m)} is (Grigoletto and Provasi, 2009, section 2)
 #' \deqn{f(x) = \frac{(2 \cos(b/2))^{2 d}}{2 a \pi\, \Gamma(2 d)}
 #'   \exp\Big(\frac{b (x - m)}{a}\Big) \Big|\Gamma\Big(d + i\, \frac{x - m}{a}\Big)\Big|^2,
 #'   \qquad x \in (-\infty, \infty),}
@@ -25,7 +25,7 @@
 #' \eqn{e^{i m u} \big(\cos(b/2) / \cosh((a u - i b)/2)\big)^{2 d}}
 #' (Schoutens, 2002, section 2), so that the distribution is infinitely
 #' divisible. Its mean and variance are \eqn{m + a d \tan(b/2)} and
-#' \eqn{a^2 d / (1 + \cos b)} (GP09, equation (1)).
+#' \eqn{a^2 d / (1 + \cos b)} (Grigoletto and Provasi, 2009, equation (1)).
 #'
 #' The Meixner process \eqn{X} is the Levy process associated with this
 #' distribution: \eqn{X_0 = 0}, its increments are independent and
@@ -43,7 +43,7 @@
 #' \eqn{T = \sum_{j=1}^{n} \Delta t_j} and \eqn{S = \sum_{j=1}^{n} \Delta x_j}
 #' (see the section Notation of [levyfit-package]). To shorten the formulas, let
 #' \deqn{s_j = d \Delta t_j, \qquad y_j = \frac{\Delta x_j - m \Delta t_j}{a}, \qquad j = 1, \dots, n;}
-#' \eqn{y_j} is the standardized value \eqn{z_j = (x_j - m)/a} of GP09
+#' \eqn{y_j} is the standardized value \eqn{z_j = (x_j - m)/a} of Grigoletto and Provasi (2009)
 #' (section 4.2) for an increment over \eqn{\Delta t_j}.
 #'
 #' @section Likelihood and score:
@@ -51,10 +51,10 @@
 #' \deqn{\ell(a, b, d, m) = \sum_{j=1}^{n} \Big[2 s_j \ln(2 \cos(b/2)) - \ln(2 a \pi) - \ln \Gamma(2 s_j)
 #'   + b y_j + \ln |\Gamma(s_j + i y_j)|^2\Big].}
 #' With equal durations \eqn{\Delta t_j = 1}, it is \eqn{n} times the average
-#' log-likelihood \eqn{\ell_n(\theta)} of GP09 (equation (6)); with unequal
+#' log-likelihood \eqn{\ell_n(\theta)} of Grigoletto and Provasi (2009, equation (6)); with unequal
 #' durations, it is its extension to the process.
 #'
-#' The first derivatives (the score) are explicit (GP09, appendix A). GP09
+#' The first derivatives (the score) are explicit (Grigoletto and Provasi, 2009, appendix A). Grigoletto and Provasi (2009)
 #' write them with \eqn{\Psi_j^+ = \psi(d + i z_j) + \psi(d - i z_j)} and
 #' \eqn{\Psi_j^- = \psi(d + i z_j) - \psi(d - i z_j)}, \eqn{\psi} being the
 #' digamma function. Here, with \eqn{\psi_j = \psi(s_j + i y_j)} and its real
@@ -66,20 +66,17 @@
 #' \deqn{\frac{\partial \ell}{\partial d} = \sum_{j=1}^{n} \Delta t_j \big(2 \ln(2 \cos(b/2)) - 2 \psi(2 s_j) + 2\, \mathrm{Re}\,\psi_j\big),}
 #' \deqn{\frac{\partial \ell}{\partial m} = \frac{1}{a} \sum_{j=1}^{n} \Delta t_j \big(2\, \mathrm{Im}\,\psi_j - b\big).}
 #'
-#' @section Profile in b:
-#' For fixed \eqn{(a, d, m)}, \eqn{\partial \ell / \partial b = 0} has the
-#' unique solution
-#' \deqn{\hat b(a, d, m) = 2 \arctan \frac{S - m T}{a d T},}
-#' which is the lemma of GP09 (section 4.2), \eqn{\hat b = 2 \tan^{-1}(\bar z / \hat d)},
-#' written for increments over unequal durations. It is a maximum, since
-#' \eqn{\partial^2 \ell / \partial b^2 = -\sum_{j=1}^{n} s_j / (1 + \cos b) < 0}
-#' (GP09, appendix A). It makes the expected total increment \eqn{\kappa_1 T}
-#' equal to \eqn{S}. The maximization is therefore done in dimension 3, on the
-#' profile log-likelihood \eqn{\ell_p(a, d, m) = \ell(a, \hat b(a, d, m), d, m)},
-#' as suggested by GP09 (section 4.2).
+#' @section The estimate of b:
+#' Setting \eqn{\partial \ell / \partial b = 0} shows that the estimate of
+#' \eqn{b} is a function of the estimates of the other parameters:
+#' \deqn{\hat b = 2 \arctan \frac{S - \hat m T}{\hat a \hat d T},}
+#' which is the lemma of Grigoletto and Provasi (2009, section 4.2),
+#' \eqn{\hat b = 2 \tan^{-1}(\bar z / \hat d)}, written for increments over
+#' unequal durations. It makes the expected total increment
+#' \eqn{\kappa_1 T} equal to \eqn{S}.
 #'
 #' @section Method of moments:
-#' With unequal durations (extension of GP09, section 4.1), the mean and the
+#' With unequal durations (extension of Grigoletto and Provasi, 2009, section 4.1), the mean and the
 #' higher cumulants of the process per unit of time are estimated by
 #' \eqn{k_1 = S / T} and, with the residuals
 #' \eqn{e_j = \Delta x_j - k_1 \Delta t_j},
@@ -89,59 +86,43 @@
 #' Let \eqn{\gamma_1 = k_3 / k_2^{3/2}} and \eqn{\gamma_2 = k_4 / k_2^2} be
 #' the skewness and the excess kurtosis of \eqn{X_1}. Since the skewness of
 #' \eqn{Meixner(a, b, d, m)} is \eqn{\sin b / \sqrt{d (1 + \cos b)}} and its
-#' kurtosis \eqn{3 + (2 - \cos b) / d} (GP09, equation (1)), that is
+#' kurtosis \eqn{3 + (2 - \cos b) / d} (Grigoletto and Provasi, 2009, equation (1)), that is
 #' \eqn{\gamma_1^2 = (1 - \cos b) / d} and \eqn{\gamma_2 = (2 - \cos b) / d},
-#' the moment estimates are (GP09, section 4.1, with the excess kurtosis)
+#' the moment estimates are (Grigoletto and Provasi, 2009, section 4.1, with the excess kurtosis)
 #' \deqn{d = \frac{1}{\gamma_2 - \gamma_1^2}, \quad
 #'   b = \mathrm{sign}(\gamma_1) \arccos(2 - d \gamma_2), \quad
 #'   a = \sqrt{k_2 (1 + \cos b) / d}, \quad m = k_1 - a d \tan(b/2).}
 #' They exist if and only if \eqn{d > 0} and \eqn{|2 - d \gamma_2| < 1}, that
 #' is \eqn{\gamma_2 > \frac{3}{2} \gamma_1^2} and \eqn{\gamma_1 \ne 0}. With
-#' equal durations \eqn{\Delta t}, they are the estimates of GP09 (section 4.1)
+#' equal durations \eqn{\Delta t}, they are the estimates of Grigoletto and Provasi (2009, section 4.1)
 #' computed on the increments, with the variance divided by \eqn{n}, and with
 #' \eqn{d} and \eqn{m} divided by \eqn{\Delta t}.
 #'
 #' @section Algorithm:
-#' GP09 (section 4.2) maximize the likelihood by a Newton-type algorithm with
-#' the first and second derivatives, started at the moment estimates. This
-#' implementation uses instead several starting points and the first
-#' derivatives only:
-#' 1. Estimate the mean and the variance of the process per unit of time by
-#'    \deqn{\hat\mu = \frac{\sum_{j=1}^{n} \Delta x_j}{\sum_{j=1}^{n} \Delta t_j} = \frac{S}{T}, \qquad
-#'      \hat\nu = \frac{1}{n} \sum_{j=1}^{n} \frac{(\Delta x_j - \hat\mu \Delta t_j)^2}{\Delta t_j},}
-#'    the estimators of Kahle, Mercier and Paroissin (2016, section 1.6.1,
-#'    equation \[1.19\]), given there for the Wiener process, and compute the
-#'    mean duration \eqn{\overline{\Delta t} = T / n}.
-#' 2. Build the starting points:
-#'    * the moment estimates (see Method of moments), when they exist, as
-#'      suggested by GP09 (section 4.2);
-#'    * the point \eqn{b_0 = 0}, \eqn{d_0 = 1 / \overline{\Delta t}};
-#'    * `n_start - 1` random points: \eqn{b_0} drawn uniformly on
-#'      \eqn{(-\pi + 0.1, \pi - 0.1)}, and \eqn{d_0 = u / \overline{\Delta t}}
-#'      with \eqn{\ln u} drawn uniformly on \eqn{(\ln 0.2, \ln 5)}.
+#' The likelihood is maximized as recommended by Grigoletto and Provasi
+#' (2009, section 4.2): by a Newton-type algorithm that uses the first and
+#' second derivatives of \eqn{\ell} (see Likelihood and score, and Hessian),
+#' started at the moment estimates.
+#' 1. Compute the moment estimates (see Method of moments). When they do not
+#'    exist, there is no starting point: the function returns `NA` with a
+#'    warning.
+#' 2. From this starting point, maximize \eqn{\ell} with [stats::nlminb()],
+#'    which uses the exact gradient and the exact Hessian. To stay in the
+#'    parameter space \eqn{a > 0}, \eqn{d > 0}, \eqn{b \in (-\pi, \pi)}, the
+#'    maximization is done in \eqn{(\ln a, b, \ln d, m)}, with \eqn{b} kept in
+#'    \eqn{(-\pi, \pi)}.
+#' 3. The solution is a local maximum when \eqn{\ell} has a zero gradient and a
+#'    negative definite Hessian there. If [stats::nlminb()] does not converge,
+#'    or if the Hessian at the solution is not negative definite, the function
+#'    returns `NA` with a warning.
 #'
-#'    For the last two kinds of points, \eqn{a_0} and \eqn{m_0} are then
-#'    chosen so that the mean and the variance of the model are equal to
-#'    \eqn{\hat\mu} and \eqn{\hat\nu}, that is \eqn{\kappa_1 = \hat\mu} and
-#'    \eqn{\kappa_2 = \hat\nu}:
-#'    \deqn{a_0 = \sqrt{\frac{\hat\nu (1 + \cos b_0)}{d_0}}, \qquad
-#'      m_0 = \hat\mu - a_0 d_0 \tan(b_0/2).}
-#' 3. From each starting point, maximize \eqn{\ell_p} by L-BFGS-B on
-#'    \eqn{(\ln a, \ln d, m)}, with the exact gradient, and with the bounds
-#'    \eqn{10^{-3} \sqrt{\hat\nu} \le a \le 10^{3} \sqrt{\hat\nu}},
-#'    \eqn{10^{-3} / \max_j \Delta t_j \le d \le 10^{3} / \min_j \Delta t_j} and
-#'    \eqn{|m - \hat\mu| \le 100 \sqrt{\hat\nu}}.
-#' 4. Keep the solution of largest likelihood (when several starts reach the
-#'    same maximum, one where L-BFGS-B converged). When no acceptable
-#'    solution is found, the function returns `NA` with a warning.
-#'
-#' GP09 (section 4.2) find that the convergence of the estimator to its
+#' Grigoletto and Provasi (2009, section 4.2) find that the convergence of the estimator to its
 #' asymptotic normal distribution is very slow, with a speed inversely related
 #' to \eqn{d}, and that inference based on asymptotic normality must be carefully
 #' evaluated even for medium samples.
 #'
 #' @section Hessian:
-#' The second derivatives of \eqn{\ell} are explicit (GP09, appendix A, where
+#' The second derivatives of \eqn{\ell} are explicit (Grigoletto and Provasi, 2009, appendix A, where
 #' they are written with \eqn{\Upsilon_j^\pm = \psi'(d + i z_j) \pm \psi'(d - i z_j)},
 #' \eqn{\psi'} being the trigamma function). Here, with
 #' \eqn{\psi'_j = \psi'(s_j + i y_j)},
@@ -159,7 +140,7 @@
 #' \deqn{\frac{\partial^2 \ell}{\partial d \partial m} = \frac{2}{a} \sum_{j=1}^{n} I_j \Delta t_j^2, \qquad
 #'   \frac{\partial^2 \ell}{\partial m^2} = -\frac{2}{a^2} \sum_{j=1}^{n} R_j \Delta t_j^2.}
 #' With `ci = TRUE`, the observed Fisher information is minus this Hessian at
-#' the estimate, as proposed by GP09 (section 4.2), instead of the numerical
+#' the estimate, as proposed by Grigoletto and Provasi (2009, section 4.2), instead of the numerical
 #' Hessian used by the other models.
 #'
 #' @inheritParams wiener_mle
@@ -169,7 +150,6 @@
 #'   The increments can also be given directly with [increments_data()].
 #' @param t Inspection times of the trajectory, strictly increasing. Not used
 #'   when `x` is a list.
-#' @param n_start Number of starting points.
 #'
 #' @return A named vector with the estimates `a`, `b`, `d` and `m`.
 #'
@@ -182,9 +162,6 @@
 #' Grigoletto, M. and Provasi, C. (2009). Simulation and estimation of the
 #' Meixner distribution. *Communications in Statistics - Simulation and
 #' Computation*, 38(1), 58-77. \doi{10.1080/03610910802395679}
-#'
-#' Kahle, W., Mercier, S. and Paroissin, C. (2016). *Degradation Processes in
-#' Reliability*. ISTE and Wiley, London. Section 1.6.1 (equation \[1.19\]).
 #'
 #' Schoutens, W. (2002). The Meixner process: theory and applications in
 #' finance. EURANDOM report 2002-004. Section 2.
@@ -227,57 +204,52 @@
 #' y <- DegradSim::sim_meixner(t10, a = 1, b = 0.3, d = 1.5, m = 0.2)
 #' meixner_mle(y)
 #' @export
-meixner_mle <- function(x, t = NULL, ci = FALSE, level = 0.95, n_start = 5) {
-  estimate("meixner", x, t, ci, level, n_start = n_start)
+meixner_mle <- function(x, t = NULL, ci = FALSE, level = 0.95) {
+  estimate("meixner", x, t, ci, level)
 }
 
-meixner_est <- function(x, t = NULL, n_start = 5) {
+meixner_est <- function(x, t = NULL) {
   d <- increments(x, t)
   dt <- d$dt
   dx <- d$dx
   if (length(dx) < 4) stop("at least four increments are needed to estimate four parameters")
-  Tt <- sum(dt)
 
-  b_hat <- function(a, d, m) 2 * atan(sum((dx - m * dt) / a) / (d * Tt))
-  nlp <- function(p) {
-    a <- exp(p[1]); d <- exp(p[2])
-    -meixner_loglik(dx, dt, a, b_hat(a, d, p[3]), d, p[3])
+  mom <- meixner_moments(dx, dt)
+  if (is.null(mom)) no_mle("the moment estimates, used as starting point, do not exist")
+
+  theta <- function(p) c(a = exp(p[1]), b = p[2], d = exp(p[3]), m = p[4])
+  nll <- function(p) {
+    q <- theta(p)
+    v <- -meixner_loglik(dx, dt, q[["a"]], q[["b"]], q[["d"]], q[["m"]])
+    if (is.finite(v)) v else Inf
   }
-  grp <- function(p) {
-    a <- exp(p[1]); d <- exp(p[2])
-    g <- meixner_score(dx, dt, a, b_hat(a, d, p[3]), d, p[3])
-    -c(a * g[["a"]], d * g[["d"]], g[["m"]])
+  ngr <- function(p) {
+    q <- theta(p)
+    s <- meixner_score(dx, dt, q[["a"]], q[["b"]], q[["d"]], q[["m"]])
+    -c(q[["a"]] * s[["a"]], s[["b"]], q[["d"]] * s[["d"]], s[["m"]])
+  }
+  nhe <- function(p) {
+    q <- theta(p)
+    s <- meixner_score(dx, dt, q[["a"]], q[["b"]], q[["d"]], q[["m"]])
+    j <- c(q[["a"]], 1, q[["d"]], 1)
+    h <- meixner_hessian(dx, dt, q[["a"]], q[["b"]], q[["d"]], q[["m"]]) * outer(j, j)
+    h[1, 1] <- h[1, 1] + q[["a"]] * s[["a"]]
+    h[3, 3] <- h[3, 3] + q[["d"]] * s[["d"]]
+    -h
   }
 
-  c1 <- sum(dx) / Tt
-  s0 <- sqrt(mean((dx - c1 * dt)^2 / dt))
-  lower <- c(log(1e-3 * s0), log(1e-3 / max(dt)), c1 - 100 * s0)
-  upper <- c(log(1e3 * s0), log(1e3 / min(dt)), c1 + 100 * s0)
-  fits <- lapply(meixner_starts(dx, dt, n_start), function(st)
-    tryCatch(optim(st, nlp, grp, method = "L-BFGS-B", lower = lower, upper = upper,
-                   control = list(factr = 1e4, maxit = 2000)),
-             error = function(e) NULL))
-  fits <- Filter(Negate(is.null), fits)
-  if (length(fits) == 0) no_mle("the optimization failed from all starting points")
+  start <- c(log(mom[["a"]]), mom[["b"]], log(mom[["d"]]), mom[["m"]])
+  fit <- tryCatch(nlminb(start, nll, ngr, nhe, lower = c(-Inf, -pi, -Inf, -Inf), upper = c(Inf, pi, Inf, Inf),
+                         control = list(eval.max = 1000, iter.max = 500)),
+                  error = function(e) NULL)
+  if (is.null(fit) || fit$convergence != 0) no_mle("the Newton-type algorithm did not converge")
 
-  deg <- vapply(fits, function(f) {
-    a <- exp(f$par[1]); d <- exp(f$par[2])
-    pi - abs(b_hat(a, d, f$par[3])) < 0.1 || d * max(dt) > 1e3 ||
-      any(abs(f$par - lower) < 1e-6) || any(abs(f$par - upper) < 1e-6)
-  }, TRUE)
-  if (all(deg)) no_mle("no acceptable maximum found")
-  ll <- -vapply(fits, function(f) f$value, 0)
-  conv <- vapply(fits, function(f) f$convergence == 0, TRUE)
-  ll_max <- max(ll[!deg])
-  top <- which(!deg & ll >= ll_max - 1e-8 * (abs(ll_max) + 1))
-  best <- fits[[if (any(conv[top])) top[conv[top]][1] else top[1]]]
-  if (any(deg) && max(ll[deg]) > -best$value) {
-    warning("a discarded solution has a larger likelihood than the maximum returned")
+  q <- theta(fit$par)
+  h <- meixner_hessian(dx, dt, q[["a"]], q[["b"]], q[["d"]], q[["m"]])
+  if (any(!is.finite(h)) || max(eigen(h, symmetric = TRUE, only.values = TRUE)$values) >= 0) {
+    no_mle("the solution is not a local maximum (Hessian not negative definite)")
   }
-  if (best$convergence != 0) warning("optim did not converge (code ", best$convergence, ")")
-
-  a <- exp(best$par[1]); d <- exp(best$par[2]); m <- best$par[3]
-  c(a = a, b = b_hat(a, d, m), d = d, m = m)
+  q
 }
 
 meixner_loglik <- function(dx, dt, a, b, d, m) {
@@ -306,20 +278,6 @@ complex_digamma <- function(z) {
   w <- z + n
   w2 <- 1 / w^2
   log(w) - 1 / (2 * w) - w2 * (1 / 12 - w2 * (1 / 120 - w2 * (1 / 252 - w2 * (1 / 240 - w2 / 132)))) - s
-}
-
-meixner_starts <- function(dx, dt, n_start) {
-  Tt <- sum(dt)
-  c1 <- sum(dx) / Tt
-  c2 <- mean((dx - c1 * dt)^2 / dt)
-  b0 <- c(0, runif(n_start - 1, -pi + 0.1, pi - 0.1))
-  d0 <- c(1, exp(runif(n_start - 1, log(0.2), log(5)))) / mean(dt)
-  starts <- lapply(seq_len(n_start), function(k) {
-    a0 <- sqrt(2 * c2 * cos(b0[k] / 2)^2 / d0[k])
-    c(log(a0), log(d0[k]), c1 - a0 * d0[k] * tan(b0[k] / 2))
-  })
-  mom <- meixner_moments(dx, dt)
-  if (is.null(mom)) starts else c(list(c(log(mom[["a"]]), log(mom[["d"]]), mom[["m"]])), starts)
 }
 
 meixner_moments <- function(dx, dt) {
