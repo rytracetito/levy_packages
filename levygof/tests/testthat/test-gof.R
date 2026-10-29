@@ -86,6 +86,17 @@ test_that("the method ExtBridge keeps all the observations", {
   expect_equal(r$bridge[[1]]$X[match(round(t, 6), round(r$bridge[[1]]$t, 6))], x)
 })
 
+test_that("ExtBridge with times of many decimal places needs digits", {
+  set.seed(7)
+  t <- c(0, sort(runif(15, 0, 30)))
+  x <- c(0, cumsum(rgamma(15, 2 * diff(t), 3)))
+  expect_error(gof.levy(data.frame(t, x), "HGP", test = "VGE", method = "ExtBridge", B = 20), "digits")
+  expect_warning(r <- gof.levy(data.frame(t, x), "HGP", test = "VGE", method = "ExtBridge", B = 20, digits = 1),
+                 "truncated to 1 decimal")
+  expect_equal(r$method, "ExtBridge")
+  expect_equal(r$steps, 0.1)
+})
+
 test_that("bad data are refused", {
   expect_error(gof.levy(1:10, "HGP"), "data must be")
   expect_error(gof.levy(data.frame(t = c(0, 2, 1, 3, 4), x = 1:5), "HGP"), "strictly increasing")

@@ -50,14 +50,25 @@ Given \eqn{X_{t_A} = x_A} and \eqn{X_{t_B} = x_B},
 \deqn{X_t = x_A + (x_B - x_A)\, Y + \sqrt{S\, Y (1 - Y)}\ \xi,}
 where the random variables \eqn{S}, \eqn{Y} and \eqn{\xi} are independent:
 \itemize{
-\item the variable \eqn{S} follows the GIG distribution with density
-proportional to
+\item the variable \eqn{S} follows the distribution
+\eqn{\mathrm{GIG}(p, \kappa^2, (x_B - x_A)^2)} in the notation of Peña and
+Jauch (2025), with density proportional to
 \deqn{s^{p - 1} \exp\big(-(\kappa^2 s + (x_B - x_A)^2 / s) / 2\big), \qquad s > 0,}
 where \eqn{p = (t_B - t_A) / \nu - 1/2} and
 \eqn{\kappa^2 = (\theta^2 + 2 \sigma^2 / \nu) / \sigma^4};
 \item \eqn{Y \sim \mathrm{Beta}((t - t_A) / \nu, (t_B - t) / \nu)};
 \item \eqn{\xi \sim \mathcal{N}(0, 1)}.
 }
+
+This representation is given by Hoyle (2010, section 2.7.2): equations
+(2.83) to (2.87) for the standard variance-gamma process, whose parameter
+\eqn{m} is \eqn{1 / \nu} here, and equation (2.77), which writes the bridge
+of any variance-gamma process as a scaled bridge of the standard one.
+
+When \eqn{x_B = x_A}, the last parameter of the GIG distribution is 0: the
+variable \eqn{S} then has the gamma distribution with shape \eqn{p} and
+rate \eqn{\kappa^2 / 2} if \eqn{p > 0}; if \eqn{p \le 0}, this case has
+probability zero and the package takes \eqn{S = 0}.
 
 The variable \eqn{S / \sigma^2} is the increment
 \eqn{\gamma_{t_B} - \gamma_{t_A}} of the gamma process given the
@@ -95,6 +106,13 @@ vg_bridge(0, 0, 2, 1, 1, theta = est, n = 3)
 Hörmann, W. and Leydold, J. (2014). Generating generalized inverse
 Gaussian random variates. \emph{Statistics and Computing}, 24, 547-557.
 \doi{10.1007/s11222-013-9387-3}
+
+Hoyle, E. (2010). \emph{Information-Based Models for Finance and Insurance}.
+PhD thesis, Imperial College London. arXiv:1010.0829.
+
+Peña, V. and Jauch, M. (2025). Properties of the generalized inverse
+Gaussian with applications to Monte Carlo simulation and distribution
+function evaluation. arXiv:2401.00749.
 
 Madan, D. B., Carr, P. P. and Chang, E. C. (1998). The variance gamma
 process and option pricing. \emph{European Finance Review}, 2(1), 79-105.

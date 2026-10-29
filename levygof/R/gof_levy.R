@@ -43,6 +43,13 @@
 #' @param alpha Level of the tests, strictly between 0 and 1.
 #' @param B Number of bootstrap replications of the tests that use a
 #'   parametric bootstrap.
+#' @param digits Used only with `method = "ExtBridge"`: number of decimal
+#'   places of the inspection times (measured from the first inspection),
+#'   which sets the step of the grid. `NULL` (default) takes the number of
+#'   decimal places of the times, between 0 and 6; for times with more
+#'   decimal places, for instance drawn at random, give `digits`: the times
+#'   are then truncated to `digits` decimal places, with a warning. See the
+#'   section Resampling methods of [levyBridge::levyBridge-package].
 #'
 #' @return An object of class `"gof.levy"`, printed by `print()`: a list
 #'   with
@@ -208,6 +215,13 @@
 #' x4 <- DegradSim::sim_gamma(t2, a = 2, b = 3)
 #' gof.levy(x4, "HGP", test = "AD", method = "ExtBridge", B = 100)
 #'
+#' # 3c. Times drawn at random have many decimal places: "ExtBridge" needs
+#' #     digits, and the times are truncated to 1 decimal place (with a warning)
+#' t6 <- c(0, cumsum(runif(20, 1, 3)))
+#' x6 <- DegradSim::sim_gamma(t6, a = 10, b = 5)
+#' try(gof.levy(x6, "HGP", test = "AD", method = "ExtBridge", B = 100))
+#' gof.levy(x6, "HGP", test = "AD", method = "ExtBridge", B = 100, digits = 1)
+#'
 #' # 4. Wiener model on the same data, at level 10 %
 #' gof.levy(x2, "hwp", alpha = 0.1)
 #'
@@ -259,10 +273,11 @@
 #'
 #' t3 <- DegradSim::inspection_times("dec-inc", n = 60, tmax = 120, digits = 1)$time
 #' mx3 <- DegradSim::sim_meixner(t3, a = 1, b = 1, d = 0.5, m = 0.2)
-#' gof.levy(mx3, "Meixner", test = "AD", B = 30)
+#' try(gof.levy(mx3, "Meixner", test = "AD", B = 30))
 #' }
 #' @export
-gof.levy <- function(data, model, test = NULL, method = "Bridge", option = 1, alpha = 0.05, B = 200) {
+gof.levy <- function(data, model, test = NULL, method = "Bridge", option = 1, alpha = 0.05, B = 200,
+                     digits = NULL) {
   model <- model_name(model)
   test <- test_names(test, model)
   check_alpha_B(alpha, B)
@@ -284,7 +299,7 @@ gof.levy <- function(data, model, test = NULL, method = "Bridge", option = 1, al
     pieces <- lapply(seq_along(traj), function(k) list(step = diff(traj[[k]]$t)[1], dx = dx_obs[[k]]))
   } else {
     par <- estimate_parameters(traj, model)
-    r <- bridge_trajectories(traj, model, par, method, option)
+    r <- bridge_trajectories(traj, model, par, method, option, digits)
     teq <- attr(r, "teq")
     dx <- attr(r, "dx")
     pieces <- lapply(seq_along(r), function(k) list(step = teq[k], dx = dx[[k]]))
@@ -357,15 +372,20 @@ estimate_parameters <- function(traj, model) {
 
 # Avec ExtBridge, pas commun à toutes les trajectoires ; MultiBridge a toujours une grille commune.
 # Tous les paramètres sont transmis : l'option 2 de MultiBridge en a besoin pour prolonger les trajectoires.
-bridge_trajectories <- function(traj, model, par, method, option = 1) {
+bridge_trajectories <- function(traj, model, par, method, option = 1, digits = NULL) {
   d <- as_data_frames(traj)
   cs <- method == "ExtBridge"
   switch(model,
-    HGP     = levyBridge::gamma_resampling(d, theta = par, method = method, common_step = cs, option = option),
-    HWP     = levyBridge::wiener_resampling(d, theta = par, method = method, common_step = cs, option = option),
-    InvGaus = levyBridge::ig_resampling(d, theta = par, method = method, common_step = cs, option = option),
-    VG      = levyBridge::vg_resampling(d, theta = par, method = method, common_step = cs, option = option),
-    Meixner = levyBridge::meixner_resampling(d, theta = par, method = method, common_step = cs, option = option)
+    HGP     = levyBridge::gamma_resampling(d, theta = par, method = method, digits = digits,
+                                           common_step = cs, option = option),
+    HWP     = levyBridge::wiener_resampling(d, theta = par, method = method, digits = digits,
+                                            common_step = cs, option = option),
+    InvGaus = levyBridge::ig_resampling(d, theta = par, method = method, digits = digits,
+                                        common_step = cs, option = option),
+    VG      = levyBridge::vg_resampling(d, theta = par, method = method, digits = digits,
+                                        common_step = cs, option = option),
+    Meixner = levyBridge::meixner_resampling(d, theta = par, method = method, digits = digits,
+                                             common_step = cs, option = option)
   )
 }
 

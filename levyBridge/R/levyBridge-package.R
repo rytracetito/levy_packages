@@ -80,11 +80,7 @@
 #'   inspection time on the right.
 #'
 #' This is the interpolation algorithm of Grall-Maës (2012), proposed for the
-#' gamma process and used here for all the processes. Since a Levy process is
-#' a Markov process, the value at \eqn{t'_k} given the observations and the
-#' levels already drawn depends only on the two known points around
-#' \eqn{t'_k}: the resampled levels follow the conditional distribution of
-#' the process at the grid points given the observations.
+#' gamma process and used here for all the processes.
 #'
 #' A grid point that differs from an inspection time only by a rounding
 #' error of the computer (relative difference below \eqn{10^{-9}}) is set to

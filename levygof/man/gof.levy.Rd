@@ -11,7 +11,8 @@ gof.levy(
   method = "Bridge",
   option = 1,
   alpha = 0.05,
-  B = 200
+  B = 200,
+  digits = NULL
 )
 }
 \arguments{
@@ -61,6 +62,14 @@ the power; option 1 is recommended). See the section Resampling methods.}
 
 \item{B}{Number of bootstrap replications of the tests that use a
 parametric bootstrap.}
+
+\item{digits}{Used only with \code{method = "ExtBridge"}: number of decimal
+places of the inspection times (measured from the first inspection),
+which sets the step of the grid. \code{NULL} (default) takes the number of
+decimal places of the times, between 0 and 6; for times with more
+decimal places, for instance drawn at random, give \code{digits}: the times
+are then truncated to \code{digits} decimal places, with a warning. See the
+section Resampling methods of \link[levyBridge:levyBridge-package]{levyBridge::levyBridge-package}.}
 }
 \value{
 An object of class \code{"gof.levy"}, printed by \code{print()}: a list
@@ -233,6 +242,13 @@ gof.levy(x2, "HGP", test = c("KS", "AD"), method = "ExtBridge", B = 100)
 x4 <- DegradSim::sim_gamma(t2, a = 2, b = 3)
 gof.levy(x4, "HGP", test = "AD", method = "ExtBridge", B = 100)
 
+# 3c. Times drawn at random have many decimal places: "ExtBridge" needs
+#     digits, and the times are truncated to 1 decimal place (with a warning)
+t6 <- c(0, cumsum(runif(20, 1, 3)))
+x6 <- DegradSim::sim_gamma(t6, a = 10, b = 5)
+try(gof.levy(x6, "HGP", test = "AD", method = "ExtBridge", B = 100))
+gof.levy(x6, "HGP", test = "AD", method = "ExtBridge", B = 100, digits = 1)
+
 # 4. Wiener model on the same data, at level 10 \%
 gof.levy(x2, "hwp", alpha = 0.1)
 
@@ -284,7 +300,7 @@ gof.levy(mx, "Meixner", test = "AD", B = 30)
 
 t3 <- DegradSim::inspection_times("dec-inc", n = 60, tmax = 120, digits = 1)$time
 mx3 <- DegradSim::sim_meixner(t3, a = 1, b = 1, d = 0.5, m = 0.2)
-gof.levy(mx3, "Meixner", test = "AD", B = 30)
+try(gof.levy(mx3, "Meixner", test = "AD", B = 30))
 }
 \dontshow{\}) # examplesIf}
 }
