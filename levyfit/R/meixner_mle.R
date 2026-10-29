@@ -126,12 +126,21 @@
 #' This implementation therefore uses several starting points, and the
 #' first derivatives only. The additional starting points, the bounds and the
 #' thresholds below are choices of this implementation, without a source.
-#' 1. Estimate the mean and the variance of the process per unit of time by
-#'    \deqn{\hat\mu = \frac{\sum_{j=1}^{n} \Delta x_j}{\sum_{j=1}^{n} \Delta t_j} = \frac{S}{T}, \qquad
-#'      \hat\nu = \frac{1}{n} \sum_{j=1}^{n} \frac{(\Delta x_j - \hat\mu \Delta t_j)^2}{\Delta t_j},}
-#'    the estimators of Kahle, Mercier and Paroissin (2016, section 1.6.1,
-#'    equation \[1.19\]), given there for the Wiener process, and compute the
-#'    mean duration \eqn{\overline{\Delta t} = T / n}.
+#' 1. To build the additional starting points of step 2, estimate the mean
+#'    \eqn{\kappa_1} and the variance \eqn{\kappa_2} of the process per unit of
+#'    time (see Model and data) by
+#'    \deqn{\hat\kappa_1 = \frac{\sum_{j=1}^{n} \Delta x_j}{\sum_{j=1}^{n} \Delta t_j} = \frac{S}{T}, \qquad
+#'      \hat\kappa_2 = \frac{1}{n} \sum_{j=1}^{n} \frac{(\Delta x_j - \hat\kappa_1 \Delta t_j)^2}{\Delta t_j},}
+#'    and compute the mean duration \eqn{\overline{\Delta t} = T / n}. For the
+#'    Wiener process, \eqn{\hat\kappa_1} and \eqn{\hat\kappa_2} are the maximum
+#'    likelihood estimators of the drift and of the variance of Kahle, Mercier
+#'    and Paroissin (2016, section 1.6.1, equation \[1.19\]). They only use the
+#'    mean and the variance of the increments, which are
+#'    \eqn{E[\Delta x_j] = \kappa_1 \Delta t_j} and
+#'    \eqn{Var(\Delta x_j) = \kappa_2 \Delta t_j} for the Meixner process too
+#'    (see Model and data); a direct computation then gives
+#'    \eqn{E[\hat\kappa_1] = \kappa_1} and
+#'    \eqn{E[\hat\kappa_2] = (1 - 1/n) \kappa_2}.
 #' 2. Build the starting points \eqn{(a_0, d_0, m_0)} (the value of \eqn{b}
 #'    is always \eqn{\hat b(a, d, m)}, see Profile in b):
 #'    * the moment estimates of \eqn{a}, \eqn{d}, \eqn{m} (see Method of
@@ -144,16 +153,16 @@
 #'
 #'    For the last two kinds of points, \eqn{a_0} and \eqn{m_0} are then
 #'    chosen so that the mean and the variance of the model are equal to
-#'    \eqn{\hat\mu} and \eqn{\hat\nu}, that is \eqn{\kappa_1 = \hat\mu} and
-#'    \eqn{\kappa_2 = \hat\nu}:
-#'    \deqn{a_0 = \sqrt{\frac{\hat\nu (1 + \cos b_0)}{d_0}}, \qquad
-#'      m_0 = \hat\mu - a_0 d_0 \tan(b_0/2).}
+#'    their estimates, that is \eqn{\kappa_1 = \hat\kappa_1} and
+#'    \eqn{\kappa_2 = \hat\kappa_2}:
+#'    \deqn{a_0 = \sqrt{\frac{\hat\kappa_2 (1 + \cos b_0)}{d_0}}, \qquad
+#'      m_0 = \hat\kappa_1 - a_0 d_0 \tan(b_0/2).}
 #' 3. From each starting point, maximize \eqn{\ell_p} by L-BFGS-B
 #'    ([stats::optim()]) on \eqn{(\ln a, \ln d, m)}, with the exact gradient,
 #'    and with the bounds
-#'    \eqn{10^{-3} \sqrt{\hat\nu} \le a \le 10^{3} \sqrt{\hat\nu}},
+#'    \eqn{10^{-3} \sqrt{\hat\kappa_2} \le a \le 10^{3} \sqrt{\hat\kappa_2}},
 #'    \eqn{10^{-3} / \max_j \Delta t_j \le d \le 10^{3} / \min_j \Delta t_j} and
-#'    \eqn{|m - \hat\mu| \le 100 \sqrt{\hat\nu}}.
+#'    \eqn{|m - \hat\kappa_1| \le 100 \sqrt{\hat\kappa_2}}.
 #' 4. Discard the solutions at the edge of the parameter space: those with
 #'    \eqn{|\hat b| > \pi - 0.1}, with \eqn{d \max_j \Delta t_j > 1000}, or on
 #'    one of the bounds of step 3. Among the remaining solutions, keep the one
@@ -200,8 +209,8 @@
 #'   The increments can also be given directly with [increments_data()].
 #' @param t Inspection times of the trajectory, strictly increasing. Not used
 #'   when `x` is a list.
-#' @param n_start Number of starting points built from \eqn{\hat\mu} and
-#'   \eqn{\hat\nu} (see Algorithm), in addition to the moment estimates.
+#' @param n_start Number of starting points built from \eqn{\hat\kappa_1} and
+#'   \eqn{\hat\kappa_2} (see Algorithm), in addition to the moment estimates.
 #'
 #' @return A named vector with the estimates `a`, `b`, `d` and `m`.
 #'
