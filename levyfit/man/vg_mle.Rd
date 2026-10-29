@@ -10,7 +10,8 @@ vg_mle(x, t = NULL, ci = FALSE, level = 0.95)
 \item{x}{Degradation levels of one trajectory, with non-zero increments;
 or a list of data frames, one per trajectory, whose first column contains
 the inspection times and second column the degradation levels.
-The increments can also be given directly with \code{\link[=increments_data]{increments_data()}}.}
+The increments can also be given directly, with the function
+\code{\link[=increments_data]{increments_data()}}.}
 
 \item{t}{Inspection times of the trajectory, strictly increasing. Not used
 when \code{x} is a list.}

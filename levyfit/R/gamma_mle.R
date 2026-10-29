@@ -88,7 +88,8 @@
 #' @param x Degradation levels of one trajectory, with strictly positive increments;
 #'   or a list of data frames, one per trajectory, whose first column contains
 #'   the inspection times and second column the degradation levels.
-#'   The increments can also be given directly with [increments_data()].
+#'   The increments can also be given directly, with the function
+#'   [increments_data()].
 #' @param t Inspection times of the trajectory, strictly increasing. Not used
 #'   when `x` is a list.
 #'

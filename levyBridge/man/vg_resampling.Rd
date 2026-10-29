@@ -22,8 +22,8 @@ the other columns the levels, one column per trajectory. The results of
 the simulation functions of \code{DegradSim} are accepted. See the section
 Data of \link{levyBridge-package}.}
 
-\item{theta}{Vector \eqn{\Theta} of the parameters of the process, a named
-numeric vector \code{c(theta = , sigma = , nu = )}, for instance the estimate
+\item{theta}{Vector \eqn{\Theta = (\theta, \sigma, \nu)} of the parameters of the process,
+a numeric vector named \code{theta}, \code{sigma} and \code{nu}, for instance the estimate
 returned by \code{vg_mle()} of the package \code{levyfit}. The bridge and the
 option 2 of the method \code{"MultiBridge"} use the three parameters.}
 

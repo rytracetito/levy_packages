@@ -14,8 +14,8 @@ wiener_bridge(t_A, x_A, t_B, x_B, t, theta, n = 1)
 
 \item{t}{Time of the draw, \eqn{t_A < t < t_B}.}
 
-\item{theta}{Vector \eqn{\Theta} of the parameters of the process, a named
-numeric vector \code{c(mu = , sigma = )}, with the volatility \eqn{\sigma}
+\item{theta}{Vector \eqn{\Theta = (\mu, \sigma)} of the parameters of the process,
+a numeric vector named \code{mu} and \code{sigma}, with the volatility \eqn{\sigma}
 (not the variance). The function \code{wiener_mle()} of the package \code{levyfit}
 returns \code{mu} and \code{sigma2}: use
 \code{c(mu = est[["mu"]], sigma = sqrt(est[["sigma2"]]))}. The bridge uses
@@ -77,6 +77,8 @@ wiener_bridge(1.2, x[2, 2], 2, x[3, 2], 1.5, theta = theta, n = 3)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=wiener_resampling]{wiener_resampling()}} to resample trajectories on a regular grid;
-\code{\link[=gamma_bridge]{gamma_bridge()}}, \code{\link[=ig_bridge]{ig_bridge()}}, \code{\link[=vg_bridge]{vg_bridge()}}, \code{\link[=meixner_bridge]{meixner_bridge()}}.
+\itemize{
+\item \code{\link[=wiener_resampling]{wiener_resampling()}}: resampling of trajectories on a regular grid;
+\item \code{\link[=gamma_bridge]{gamma_bridge()}}, \code{\link[=ig_bridge]{ig_bridge()}}, \code{\link[=vg_bridge]{vg_bridge()}}, \code{\link[=meixner_bridge]{meixner_bridge()}}: the bridges of the other processes.
+}
 }

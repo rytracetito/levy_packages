@@ -73,8 +73,9 @@
 #' in maintenance. *Reliability Engineering & System Safety*, 94(1), 2-21.
 #' \doi{10.1016/j.ress.2007.03.019}
 #'
-#' @seealso [sim_ig()] and [sim_wiener()] for the other time-scaled processes,
-#'   [plot_traj()], [traj_df()], [inspection_times()], [plot_plan()]
+#' @seealso
+#' * [sim_ig()], [sim_wiener()]: the other time-scaled processes;
+#' * [plot_traj()], [traj_df()], [inspection_times()], [plot_plan()].
 #'
 #' @examples
 #' # 1. One trajectory with 200 regular inspections up to 10 (step 0.05)
@@ -130,7 +131,8 @@
 #' ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
 #'   ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
 #'                           bins = 30, boundary = 0, fill = "grey80", colour = "grey40") +
-#'   ggplot2::stat_function(fun = function(y) dgamma(y, shape = 2 * 0.5, rate = 3), colour = "red") +
+#'   ggplot2::stat_function(fun = function(y) dgamma(y, shape = 2 * 0.5, rate = 3),
+#'                          colour = "red") +
 #'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the gamma process")
 #' @export
 sim_gamma <- function(t, a, b, A = NULL, n_traj = 1) {

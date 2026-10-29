@@ -22,8 +22,8 @@ the other columns the levels, one column per trajectory. The results of
 the simulation functions of \code{DegradSim} are accepted. See the section
 Data of \link{levyBridge-package}.}
 
-\item{theta}{Vector \eqn{\Theta} of the parameters of the process, a named
-numeric vector \code{c(mu = , sigma = )}, with the volatility \eqn{\sigma}
+\item{theta}{Vector \eqn{\Theta = (\mu, \sigma)} of the parameters of the process,
+a numeric vector named \code{mu} and \code{sigma}, with the volatility \eqn{\sigma}
 (not the variance, see \code{\link[=wiener_bridge]{wiener_bridge()}}). The bridge uses only \code{sigma};
 \code{mu} is used by the option 2 of the method \code{"MultiBridge"}, to extend the
 trajectories.}

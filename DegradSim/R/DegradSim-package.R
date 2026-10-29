@@ -45,11 +45,11 @@
 #' | Function | Process | Parameters | \eqn{X_t - X_s} |
 #' |---|---|---|---|
 #' | [sim_gamma()] | gamma | `a`, `b` | \eqn{\Gamma(a \Delta t, b)} |
-#' | [sim_wiener()] | Wiener with drift | `mu`, `sigma` | \eqn{\mathcal{N}(\mu \Delta t, \sigma^2 \Delta t)} |
+#' | [sim_wiener()] | Wiener | `mu`, `sigma` | \eqn{\mathcal{N}(\mu \Delta t, \sigma^2 \Delta t)} |
 #' | [sim_ig()] | inverse Gaussian | `mu`, `eta` | \eqn{IG(\mu \Delta t, \eta \Delta t^2)} |
 #' | [sim_vg()] | variance-gamma | `theta`, `sigma`, `nu` | \eqn{\theta G_{\Delta t} + \sigma B_{G_{\Delta t}}} |
 #' | [sim_meixner()] | Meixner | `a`, `b`, `d`, `m` | \eqn{Meixner(a, b, d \Delta t, m \Delta t)} |
-#' | [sim_nig()] | normal inverse Gaussian | `alpha`, `beta`, `delta`, `mu` | \eqn{NIG(\alpha, \beta, \delta \Delta t, \mu \Delta t)} |
+#' | [sim_nig()] | NIG | `alpha`, `beta`, `delta`, `mu` | \eqn{NIG(\alpha, \beta, \delta \Delta t, \mu \Delta t)} |
 #' | [sim_cpoisson()] | compound Poisson | `lambda`, `rjump` | sum of \eqn{Poisson(\lambda \Delta t)} jumps |
 #'
 #' For the variance-gamma process, \eqn{B} is a standard Brownian motion and
@@ -96,10 +96,11 @@
 #' process in the sense of Sato (2001, p. 3), that is a process satisfying
 #' the conditions 1, 2, 4 and 5 above.
 #'
-#' **The time-scaling function in the package.** \eqn{A} is given as the
-#' argument `A` of [sim_gamma()], [sim_wiener()] and [sim_ig()], a vectorized R
-#' function of `t` (`A(t)` returns one value per time), for instance
-#' `function(t) 2 * t^1.5`. Each of these functions checks that
+#' **The time-scaling function in the package.** The function \eqn{A} is
+#' given as the argument `A` of the functions [sim_gamma()], [sim_wiener()]
+#' and [sim_ig()]. It is a vectorized R function of `t`: `A(t)` returns one
+#' value per time, for instance with `function(t) 2 * t^1.5`. Each of these
+#' functions checks that
 #' \eqn{A(0) = 0} and that \eqn{A} is finite and non-decreasing at the
 #' inspection times, and raises an error otherwise. The conditions
 #' "right-continuous with left limits" and \eqn{A(t) \to +\infty} cannot be
@@ -135,9 +136,8 @@
 #' A simulation always follows the same three steps.
 #' 1. **Choose the inspection times** `t`. Three forms are accepted by every
 #'    `sim_` function:
-#'    * a numeric vector, for instance
-#'      `inspection_times("regular", n = 200, tmax = 10)$time` (200 regular
-#'      inspections, step 0.05): all the trajectories share these times, and
+#'    * a numeric vector, for instance the component `time` of the result of
+#'      [inspection_times()]: all the trajectories share these times, and
 #'      their number is given by `n_traj`;
 #'    * a list of numeric vectors, one per trajectory, for instance
 #'      `list(c(0, 1, 3), c(0, 2, 4, 6))`;
@@ -151,8 +151,8 @@
 #'    result of [inspection_times()], and an error explains which condition
 #'    fails.
 #' 2. **Simulate** with the function of the chosen process and its
-#'    parameters, for instance `sim_gamma(t, a = 2, b = 3)` for a gamma
-#'    process. For a time-scaled Levy process, give the time-scaling function
+#'    parameters; for a gamma process, for instance,
+#'    `sim_gamma(t, a = 2, b = 3)`. For a time-scaled Levy process, give the time-scaling function
 #'    `A` (see the section Time-scaled Levy processes) instead of the fixed
 #'    parameter, for instance `sim_gamma(t, b = 3, A = function(t) 2 * t^1.5)`.
 #' 3. **Store and use the result** `x`, an object of class `DegradSim`. Its
@@ -283,7 +283,8 @@
 #'
 #' Michael, J. R., Schucany, W. R. and Haas, R. W. (1976). Generating random
 #' variates using transformations with multiple roots. *The American
-#' Statistician*, 30(2), 88-90. \doi{10.1080/00031305.1976.10479147}
+#' Statistician*, 30(2), 88-90.\cr
+#' \doi{10.1080/00031305.1976.10479147}
 #'
 #' Hörmann, W. and Leydold, J. (2003). Continuous random variate generation by
 #' fast numerical inversion. *ACM Transactions on Modeling and Computer

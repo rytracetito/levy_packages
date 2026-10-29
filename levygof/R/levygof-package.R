@@ -1,9 +1,14 @@
 #' levygof: goodness-of-fit tests for Levy degradation processes
 #'
 #' `levygof` tests whether degradation trajectories come from a parametric
-#' Levy process: gamma (`"HGP"`), Wiener (`"HWP"`), inverse Gaussian
-#' (`"InvGaus"`), variance-gamma (`"VG"`) or Meixner (`"Meixner"`), with
-#' unknown parameters. The main function is [gof.levy()].
+#' Levy process with unknown parameters:
+#' * gamma (`"HGP"`);
+#' * Wiener (`"HWP"`);
+#' * inverse Gaussian (`"InvGaus"`);
+#' * variance-gamma (`"VG"`);
+#' * Meixner (`"Meixner"`).
+#'
+#' The main function is [gof.levy()].
 #'
 #' @section Functions of the package:
 #' Click on a function name for its help page:
@@ -36,13 +41,14 @@
 #'    for all the trajectories together. The grid, the step and the drawing of
 #'    the bridge of each method are detailed in the section Resampling methods
 #'    of [gof.levy()].
-#' 5. **Choose a test** for an i.i.d. sample of the distribution of the increments,
-#'    see [tests_disponibles()].
+#' 5. **Choose a test** for an i.i.d. sample of the distribution of the
+#'    increments (list of the tests: [tests_disponibles()]).
 #' 6. **Apply the test** to the reconstructed increments.
 #'
 #' With regular inspections the observed increments are already i.i.d.:
-#' steps 1 to 4 are skipped. [gof.levy()] does all the steps;
-#' [test_adequation()] does steps 5 and 6 for a sample of increments.
+#' steps 1 to 4 are skipped. The function [gof.levy()] does all the steps,
+#' and the function [test_adequation()] does steps 5 and 6 for a sample of
+#' increments.
 #'
 #' @section Data:
 #' [gof.levy()] accepts the formats of `levyfit` and `levyBridge`: a data

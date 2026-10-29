@@ -19,10 +19,10 @@
 #' Given \eqn{X_{t_A} = x_A} and \eqn{X_{t_B} = x_B},
 #' \deqn{X_t = x_A + (x_B - x_A)\, Y + \sqrt{S\, Y (1 - Y)}\ \xi,}
 #' where the random variables \eqn{S}, \eqn{Y} and \eqn{\xi} are independent:
-#' * \eqn{S \sim \mathrm{GIG}(p, \kappa^2, (x_B - x_A)^2)}, with density
+#' * the variable \eqn{S} follows the GIG distribution with density
 #'   proportional to
-#'   \eqn{s^{p - 1} \exp(-(\kappa^2 s + (x_B - x_A)^2 / s) / 2)},
-#'   \eqn{p = (t_B - t_A) / \nu - 1/2} and
+#'   \deqn{s^{p - 1} \exp\big(-(\kappa^2 s + (x_B - x_A)^2 / s) / 2\big), \qquad s > 0,}
+#'   where \eqn{p = (t_B - t_A) / \nu - 1/2} and
 #'   \eqn{\kappa^2 = (\theta^2 + 2 \sigma^2 / \nu) / \sigma^4};
 #' * \eqn{Y \sim \mathrm{Beta}((t - t_A) / \nu, (t_B - t) / \nu)};
 #' * \eqn{\xi \sim \mathcal{N}(0, 1)}.
@@ -36,8 +36,8 @@
 #' Leydold, 2014).
 #'
 #' @inheritParams gamma_bridge
-#' @param theta Vector \eqn{\Theta} of the parameters of the process, a named
-#'   numeric vector `c(theta = , sigma = , nu = )` (drift, volatility of the
+#' @param theta Vector \eqn{\Theta = (\theta, \sigma, \nu)} of the parameters of the process,
+#'   a numeric vector named `theta`, `sigma` and `nu` (drift, volatility of the
 #'   subordinated Brownian motion and variance rate of the gamma process),
 #'   for instance the estimate returned by `vg_mle()` of the package
 #'   `levyfit`.
@@ -53,8 +53,9 @@
 #' process and option pricing. *European Finance Review*, 2(1), 79-105.
 #' \doi{10.1023/A:1009703431535}
 #'
-#' @seealso [vg_resampling()] to resample trajectories on a regular grid;
-#'   [gamma_bridge()], [wiener_bridge()], [ig_bridge()], [meixner_bridge()].
+#' @seealso
+#' * [vg_resampling()]: resampling of trajectories on a regular grid;
+#' * [gamma_bridge()], [wiener_bridge()], [ig_bridge()], [meixner_bridge()]: the bridges of the other processes.
 #'
 #' @examples
 #' # 1. One draw of X_2, given X_1 = 3 and X_4 = 6 (theta = 0.5, sigma = 1.5, nu = 2)
@@ -91,8 +92,8 @@ vg_bridge <- function(t_A, x_A, t_B, x_B, t, theta, n = 1) {
 #' resampling algorithm are described in [levyBridge-package].
 #'
 #' @inheritParams gamma_resampling
-#' @param theta Vector \eqn{\Theta} of the parameters of the process, a named
-#'   numeric vector `c(theta = , sigma = , nu = )`, for instance the estimate
+#' @param theta Vector \eqn{\Theta = (\theta, \sigma, \nu)} of the parameters of the process,
+#'   a numeric vector named `theta`, `sigma` and `nu`, for instance the estimate
 #'   returned by `vg_mle()` of the package `levyfit`. The bridge and the
 #'   option 2 of the method `"MultiBridge"` use the three parameters.
 #'

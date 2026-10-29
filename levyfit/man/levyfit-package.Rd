@@ -49,7 +49,7 @@ with \code{x} the matrix returned by the \code{DegradSim} simulation functions
 \code{gamma_mle(liste)}, with \code{liste} a list of data frames, one per
 trajectory, whose first column contains the inspection times and second
 column the degradation levels;
-\item the increments themselves: \code{gamma_mle(increments_data(dx, dt))}, see
+\item the increments themselves, given with the function
 \code{\link[=increments_data]{increments_data()}}.
 }
 
@@ -215,7 +215,8 @@ model to financial data. \emph{Journal of Applied Probability}, 41A, 177-187.
 
 \strong{Meixner process}: Grigoletto, M. and Provasi, C. (2009). Simulation and
 estimation of the Meixner distribution. \emph{Communications in Statistics -
-Simulation and Computation}, 38(1), 58-77. \doi{10.1080/03610910802395679}
+Simulation and Computation}, 38(1), 58-77.\cr
+\doi{10.1080/03610910802395679}
 
 \strong{Confidence intervals}: van der Vaart, A. W. (1998). \emph{Asymptotic
 Statistics}. Cambridge University Press. \doi{10.1017/CBO9780511802256}.

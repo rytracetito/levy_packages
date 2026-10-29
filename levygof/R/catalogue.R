@@ -29,8 +29,8 @@ catalogue <- list(
 #'   (statistic `gofgamma::HME1`, tuning parameter 1);
 #' * `"BE"`: Betsch and Ebner (2019), characterization by a fixed point
 #'   (statistic `gofgamma::BE`, tuning parameter 1);
-#' * `"VGE"`: Villasenor and Gonzalez-Estrada (2015), ratio of two
-#'   variance estimators (`goft::gamma_test`), with a p-value by
+#' * `"VGE"`: test of Villasenor and Gonzalez-Estrada (2015), ratio of two
+#'   variance estimators (function `goft::gamma_test`), with a p-value by
 #'   parametric bootstrap;
 #' * `"KS"`, `"CvM"`, `"AD"`, `"Watson"`: Kolmogorov-Smirnov,
 #'   Cramer-von Mises, Anderson-Darling and Watson (`gofgamma`).
@@ -44,8 +44,8 @@ catalogue <- list(
 #' **Wiener process (`"HWP"`)**, increments
 #' \eqn{\mathcal{N}(\mu \Delta, \sigma^2 \Delta)}: tests of normality with estimated
 #' mean and variance.
-#' * `"AD"`, `"CvM"`, `"Lilliefors"`: Anderson-Darling, Cramer-von Mises and
-#'   Lilliefors tests (`nortest`). The Lilliefors test is the
+#' * `"AD"`, `"CvM"` and `"Lilliefors"`: Anderson-Darling, Cramer-von
+#'   Mises and Lilliefors tests (package `nortest`). The Lilliefors test is the
 #'   Kolmogorov-Smirnov test with estimated mean and variance: `"KS"` is also
 #'   accepted for it, and the result is labelled `"Lilliefors"`;
 #' * `"SW"`: Shapiro-Wilk (`stats::shapiro.test`);
@@ -112,10 +112,11 @@ catalogue <- list(
 #' HK2 or the other tests.
 #'
 #' **Variance-gamma (`"VG"`) and Meixner (`"Meixner"`) processes**:
-#' `"KS"`, `"CvM"`, `"AD"`, `"Watson"` (Kolmogorov-Smirnov, Cramer-von Mises,
-#' Anderson-Darling and Watson statistics, Stephens, 1986). The parameters are
-#' estimated by maximum likelihood ([levyfit::vg_mle()],
-#' [levyfit::meixner_mle()]), the distribution function is computed by
+#' `"KS"`, `"CvM"`, `"AD"` and `"Watson"`, the Kolmogorov-Smirnov,
+#' Cramer-von Mises, Anderson-Darling and Watson statistics (Stephens,
+#' 1986). The parameters are
+#' estimated by maximum likelihood with the package `levyfit` (functions
+#' [levyfit::vg_mle()] and [levyfit::meixner_mle()]); the distribution function is computed by
 #' numerical integration of the density, and the p-value is obtained by
 #' parametric bootstrap (Stute, Gonzalez Manteiga and Presedo Quindimil,
 #' 1993). With a small sample, [levyfit::meixner_mle()] may give no estimate

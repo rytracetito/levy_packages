@@ -14,8 +14,8 @@ gamma_bridge(t_A, x_A, t_B, x_B, t, theta, n = 1)
 
 \item{t}{Time of the draw, \eqn{t_A < t < t_B}.}
 
-\item{theta}{Vector \eqn{\Theta} of the parameters of the process, a named
-numeric vector \code{c(a = , b = )}, for instance the estimate returned by
+\item{theta}{Vector \eqn{\Theta = (a, b)} of the parameters of the process,
+a numeric vector named \code{a} and \code{b}, for instance the estimate returned by
 \code{gamma_mle()} of the package \code{levyfit}. The bridge uses only \code{a}.}
 
 \item{n}{Number of independent draws, a positive integer (default 1).}
@@ -86,6 +86,8 @@ Journal of Risk and Reliability}, 226(6), 624-634.
 \doi{10.1177/1748006X12462522}
 }
 \seealso{
-\code{\link[=gamma_resampling]{gamma_resampling()}} to resample trajectories on a regular grid;
-\code{\link[=wiener_bridge]{wiener_bridge()}}, \code{\link[=ig_bridge]{ig_bridge()}}, \code{\link[=vg_bridge]{vg_bridge()}}, \code{\link[=meixner_bridge]{meixner_bridge()}}.
+\itemize{
+\item \code{\link[=gamma_resampling]{gamma_resampling()}}: resampling of trajectories on a regular grid;
+\item \code{\link[=wiener_bridge]{wiener_bridge()}}, \code{\link[=ig_bridge]{ig_bridge()}}, \code{\link[=vg_bridge]{vg_bridge()}}, \code{\link[=meixner_bridge]{meixner_bridge()}}: the bridges of the other processes.
+}
 }

@@ -29,8 +29,8 @@
 #' and Webber (2003, sections 3.3 and 3.4).
 #'
 #' @inheritParams gamma_bridge
-#' @param theta Vector \eqn{\Theta} of the parameters of the process, a named
-#'   numeric vector `c(mu = , eta = )`, for instance the estimate returned by
+#' @param theta Vector \eqn{\Theta = (\mu, \eta)} of the parameters of the process,
+#'   a numeric vector named `mu` and `eta`, for instance the estimate returned by
 #'   `ig_mle()` of the package `levyfit`. The bridge uses only `eta`.
 #'
 #' @inherit gamma_bridge return
@@ -38,15 +38,16 @@
 #' @references
 #' Michael, J. R., Schucany, W. R. and Haas, R. W. (1976). Generating random
 #' variates using transformations with multiple roots. *The American
-#' Statistician*, 30(2), 88-90.
+#' Statistician*, 30(2), 88-90.\cr
 #' \doi{10.1080/00031305.1976.10479147}
 #'
 #' Ribeiro, C. and Webber, N. (2003). A Monte Carlo method for the normal
 #' inverse Gaussian option valuation model using an inverse Gaussian bridge.
 #' *Computing in Economics and Finance 2003*, 5.
 #'
-#' @seealso [ig_resampling()] to resample trajectories on a regular grid;
-#'   [gamma_bridge()], [wiener_bridge()], [vg_bridge()], [meixner_bridge()].
+#' @seealso
+#' * [ig_resampling()]: resampling of trajectories on a regular grid;
+#' * [gamma_bridge()], [wiener_bridge()], [vg_bridge()], [meixner_bridge()]: the bridges of the other processes.
 #'
 #' @examples
 #' # 1. One draw of X_2, given X_1 = 3 and X_4 = 6 (mu = 1, eta = 3)
@@ -85,8 +86,8 @@ ig_bridge <- function(t_A, x_A, t_B, x_B, t, theta, n = 1) {
 #' the resampling algorithm are described in [levyBridge-package].
 #'
 #' @inheritParams gamma_resampling
-#' @param theta Vector \eqn{\Theta} of the parameters of the process, a named
-#'   numeric vector `c(mu = , eta = )`, for instance the estimate returned by
+#' @param theta Vector \eqn{\Theta = (\mu, \eta)} of the parameters of the process,
+#'   a numeric vector named `mu` and `eta`, for instance the estimate returned by
 #'   `ig_mle()` of the package `levyfit`. The bridge uses only `eta`; `mu` is
 #'   used by the option 2 of the method `"MultiBridge"`, to extend the
 #'   trajectories.

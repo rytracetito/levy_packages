@@ -138,7 +138,8 @@ dx <- dx[!is.na(dx)]
 ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
   ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
                           bins = 30, boundary = 0, fill = "grey80", colour = "grey40") +
-  ggplot2::stat_function(fun = function(y) dnorm(y, 0.5 * 0.5, 1.5 * sqrt(0.5)), colour = "red") +
+  ggplot2::stat_function(fun = function(y) dnorm(y, 0.5 * 0.5, 1.5 * sqrt(0.5)),
+                         colour = "red") +
   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the Wiener process")
 }
 \references{
@@ -153,6 +154,8 @@ Whitmore, G. A. (1995). Estimating degradation by a Wiener diffusion process
 subject to measurement error. \emph{Lifetime Data Analysis}, 1, 307-319.
 }
 \seealso{
-\code{\link[=sim_gamma]{sim_gamma()}} and \code{\link[=sim_ig]{sim_ig()}} for the other time-scaled processes,
-\code{\link[=plot_traj]{plot_traj()}}, \code{\link[=traj_df]{traj_df()}}, \code{\link[=inspection_times]{inspection_times()}}, \code{\link[=plot_plan]{plot_plan()}}
+\itemize{
+\item \code{\link[=sim_gamma]{sim_gamma()}}, \code{\link[=sim_ig]{sim_ig()}}: the other time-scaled processes;
+\item \code{\link[=plot_traj]{plot_traj()}}, \code{\link[=traj_df]{traj_df()}}, \code{\link[=inspection_times]{inspection_times()}}, \code{\link[=plot_plan]{plot_plan()}}.
+}
 }

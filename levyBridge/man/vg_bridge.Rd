@@ -14,8 +14,8 @@ vg_bridge(t_A, x_A, t_B, x_B, t, theta, n = 1)
 
 \item{t}{Time of the draw, \eqn{t_A < t < t_B}.}
 
-\item{theta}{Vector \eqn{\Theta} of the parameters of the process, a named
-numeric vector \code{c(theta = , sigma = , nu = )} (drift, volatility of the
+\item{theta}{Vector \eqn{\Theta = (\theta, \sigma, \nu)} of the parameters of the process,
+a numeric vector named \code{theta}, \code{sigma} and \code{nu} (drift, volatility of the
 subordinated Brownian motion and variance rate of the gamma process),
 for instance the estimate returned by \code{vg_mle()} of the package
 \code{levyfit}.}
@@ -50,10 +50,10 @@ Given \eqn{X_{t_A} = x_A} and \eqn{X_{t_B} = x_B},
 \deqn{X_t = x_A + (x_B - x_A)\, Y + \sqrt{S\, Y (1 - Y)}\ \xi,}
 where the random variables \eqn{S}, \eqn{Y} and \eqn{\xi} are independent:
 \itemize{
-\item \eqn{S \sim \mathrm{GIG}(p, \kappa^2, (x_B - x_A)^2)}, with density
+\item the variable \eqn{S} follows the GIG distribution with density
 proportional to
-\eqn{s^{p - 1} \exp(-(\kappa^2 s + (x_B - x_A)^2 / s) / 2)},
-\eqn{p = (t_B - t_A) / \nu - 1/2} and
+\deqn{s^{p - 1} \exp\big(-(\kappa^2 s + (x_B - x_A)^2 / s) / 2\big), \qquad s > 0,}
+where \eqn{p = (t_B - t_A) / \nu - 1/2} and
 \eqn{\kappa^2 = (\theta^2 + 2 \sigma^2 / \nu) / \sigma^4};
 \item \eqn{Y \sim \mathrm{Beta}((t - t_A) / \nu, (t_B - t) / \nu)};
 \item \eqn{\xi \sim \mathcal{N}(0, 1)}.
@@ -101,6 +101,8 @@ process and option pricing. \emph{European Finance Review}, 2(1), 79-105.
 \doi{10.1023/A:1009703431535}
 }
 \seealso{
-\code{\link[=vg_resampling]{vg_resampling()}} to resample trajectories on a regular grid;
-\code{\link[=gamma_bridge]{gamma_bridge()}}, \code{\link[=wiener_bridge]{wiener_bridge()}}, \code{\link[=ig_bridge]{ig_bridge()}}, \code{\link[=meixner_bridge]{meixner_bridge()}}.
+\itemize{
+\item \code{\link[=vg_resampling]{vg_resampling()}}: resampling of trajectories on a regular grid;
+\item \code{\link[=gamma_bridge]{gamma_bridge()}}, \code{\link[=wiener_bridge]{wiener_bridge()}}, \code{\link[=ig_bridge]{ig_bridge()}}, \code{\link[=meixner_bridge]{meixner_bridge()}}: the bridges of the other processes.
+}
 }

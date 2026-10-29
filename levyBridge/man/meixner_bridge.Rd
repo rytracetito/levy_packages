@@ -14,8 +14,8 @@ meixner_bridge(t_A, x_A, t_B, x_B, t, theta, n = 1)
 
 \item{t}{Time of the draw, \eqn{t_A < t < t_B}.}
 
-\item{theta}{Vector \eqn{\Theta} of the parameters of the process, a named
-numeric vector \code{c(a = , b = , d = , m = )} (scale, skewness, shape and
+\item{theta}{Vector \eqn{\Theta = (a, b, d, m)} of the parameters of the process,
+a numeric vector named \code{a}, \code{b}, \code{d} and \code{m} (scale, skewness, shape and
 location per unit of time), for instance the estimate returned by
 \code{meixner_mle()} of the package \code{levyfit}. The bridge uses only \code{a}, \code{d}
 and \code{m}.}
@@ -88,8 +88,10 @@ y <- meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2), 
 hist(y, breaks = 50, freq = FALSE)
 
 # The skewness b does not change the bridge
-set.seed(2); y1 <- meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2), n = 5)
-set.seed(2); y2 <- meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = -2, d = 1.5, m = 0.2), n = 5)
+set.seed(2)
+y1 <- meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2), n = 5)
+set.seed(2)
+y2 <- meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = -2, d = 1.5, m = 0.2), n = 5)
 identical(y1, y2)
 
 # Errors: t outside (t_A, t_B), theta without all the parameters
@@ -114,6 +116,8 @@ martingales. \emph{Communications in Statistics. Stochastic Models}, 14(1-2),
 335-349.
 }
 \seealso{
-\code{\link[=meixner_resampling]{meixner_resampling()}} to resample trajectories on a regular grid;
-\code{\link[=gamma_bridge]{gamma_bridge()}}, \code{\link[=wiener_bridge]{wiener_bridge()}}, \code{\link[=ig_bridge]{ig_bridge()}}, \code{\link[=vg_bridge]{vg_bridge()}}.
+\itemize{
+\item \code{\link[=meixner_resampling]{meixner_resampling()}}: resampling of trajectories on a regular grid;
+\item \code{\link[=gamma_bridge]{gamma_bridge()}}, \code{\link[=wiener_bridge]{wiener_bridge()}}, \code{\link[=ig_bridge]{ig_bridge()}}, \code{\link[=vg_bridge]{vg_bridge()}}: the bridges of the other processes.
+}
 }

@@ -53,8 +53,8 @@
 #' Whitmore (1995, section 3, equations (3.8a), (3.8b), (3.10a) and (3.10b))
 #' considers increments \eqn{\Delta Y \sim \mathcal{N}_n(\delta \Delta t, \sigma^2 \Psi)}
 #' with a known matrix \eqn{\Psi}; his estimators are
-#' \eqn{\hat\delta = \Delta t' \Psi^{-1} \Delta Y / (\Delta t' \Psi^{-1} \Delta t)} and
-#' \eqn{\hat\sigma^2 = (\Delta Y - \hat\delta \Delta t)' \Psi^{-1} (\Delta Y - \hat\delta \Delta t) / n},
+#' \deqn{\hat\delta = \frac{\Delta t' \Psi^{-1} \Delta Y}{\Delta t' \Psi^{-1} \Delta t}, \qquad
+#'   \hat\sigma^2 = \frac{(\Delta Y - \hat\delta \Delta t)' \Psi^{-1} (\Delta Y - \hat\delta \Delta t)}{n},}
 #' and they are independent, with
 #' \eqn{\hat\delta \sim \mathcal{N}(\delta, \sigma^2 / (\Delta t' \Psi^{-1} \Delta t))} and
 #' \eqn{n \hat\sigma^2 / \sigma^2 \sim \chi^2_{n-1}}. Here the increments are
@@ -72,7 +72,8 @@
 #' @param x Degradation levels of one trajectory; or a list of data frames,
 #'   one per trajectory, whose first column contains the inspection times and
 #'   second column the degradation levels.
-#'   The increments can also be given directly with [increments_data()].
+#'   The increments can also be given directly, with the function
+#'   [increments_data()].
 #' @param t Inspection times of the trajectory, strictly increasing. Not used
 #'   when `x` is a list.
 #' @param ci `FALSE` (default) for the point estimates only; `TRUE` to add

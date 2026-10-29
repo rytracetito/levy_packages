@@ -151,7 +151,8 @@ ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
   ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
                           bins = 30, boundary = 0, fill = "grey80", colour = "grey40") +
   ggplot2::stat_function(fun = dig, colour = "red") +
-  ggplot2::labs(x = "dX", y = "Density", title = "Increments of the inverse Gaussian process")
+  ggplot2::labs(x = "dX", y = "Density",
+                title = "Increments of the inverse Gaussian process")
 }
 \references{
 Cha, J. H. and Mercier, S. (2019). Transformed Lévy processes as
@@ -160,14 +161,16 @@ state-dependent wear models. \emph{Advances in Applied Probability}, 51(2),
 
 Michael, J. R., Schucany, W. R. and Haas, R. W. (1976). Generating random
 variates using transformations with multiple roots. \emph{The American
-Statistician}, 30(2), 88-90. \doi{10.1080/00031305.1976.10479147}
+Statistician}, 30(2), 88-90.\cr
+\doi{10.1080/00031305.1976.10479147}
 
 Wang, X. and Xu, D. (2010). An inverse Gaussian process model for
 degradation data. \emph{Technometrics}, 52(2), 188-197.
 \doi{10.1198/TECH.2009.08197}
 }
 \seealso{
-\code{\link[=sim_gamma]{sim_gamma()}} and \code{\link[=sim_wiener]{sim_wiener()}} for the other time-scaled
-processes, \code{\link[=plot_traj]{plot_traj()}}, \code{\link[=traj_df]{traj_df()}}, \code{\link[=inspection_times]{inspection_times()}},
-\code{\link[=plot_plan]{plot_plan()}}
+\itemize{
+\item \code{\link[=sim_gamma]{sim_gamma()}}, \code{\link[=sim_wiener]{sim_wiener()}}: the other time-scaled processes;
+\item \code{\link[=plot_traj]{plot_traj()}}, \code{\link[=traj_df]{traj_df()}}, \code{\link[=inspection_times]{inspection_times()}}, \code{\link[=plot_plan]{plot_plan()}}.
+}
 }

@@ -45,8 +45,8 @@
 #' function \eqn{\log h_\alpha} is computed with [gsl::lngamma_complex()].
 #'
 #' @inheritParams gamma_bridge
-#' @param theta Vector \eqn{\Theta} of the parameters of the process, a named
-#'   numeric vector `c(a = , b = , d = , m = )` (scale, skewness, shape and
+#' @param theta Vector \eqn{\Theta = (a, b, d, m)} of the parameters of the process,
+#'   a numeric vector named `a`, `b`, `d` and `m` (scale, skewness, shape and
 #'   location per unit of time), for instance the estimate returned by
 #'   `meixner_mle()` of the package `levyfit`. The bridge uses only `a`, `d`
 #'   and `m`.
@@ -60,8 +60,9 @@
 #' martingales. *Communications in Statistics. Stochastic Models*, 14(1-2),
 #' 335-349.
 #'
-#' @seealso [meixner_resampling()] to resample trajectories on a regular grid;
-#'   [gamma_bridge()], [wiener_bridge()], [ig_bridge()], [vg_bridge()].
+#' @seealso
+#' * [meixner_resampling()]: resampling of trajectories on a regular grid;
+#' * [gamma_bridge()], [wiener_bridge()], [ig_bridge()], [vg_bridge()]: the bridges of the other processes.
 #'
 #' @examples
 #' # 1. One draw of X_2, given X_1 = 3 and X_4 = 6 (a = 1, b = 0.3, d = 1.5, m = 0.2)
@@ -74,8 +75,10 @@
 #' hist(y, breaks = 50, freq = FALSE)
 #'
 #' # The skewness b does not change the bridge
-#' set.seed(2); y1 <- meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2), n = 5)
-#' set.seed(2); y2 <- meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = -2, d = 1.5, m = 0.2), n = 5)
+#' set.seed(2)
+#' y1 <- meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2), n = 5)
+#' set.seed(2)
+#' y2 <- meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = -2, d = 1.5, m = 0.2), n = 5)
 #' identical(y1, y2)
 #'
 #' # Errors: t outside (t_A, t_B), theta without all the parameters
@@ -104,8 +107,8 @@ meixner_bridge <- function(t_A, x_A, t_B, x_B, t, theta, n = 1) {
 #' resampling algorithm are described in [levyBridge-package].
 #'
 #' @inheritParams gamma_resampling
-#' @param theta Vector \eqn{\Theta} of the parameters of the process, a named
-#'   numeric vector `c(a = , b = , d = , m = )`, for instance the estimate
+#' @param theta Vector \eqn{\Theta = (a, b, d, m)} of the parameters of the process,
+#'   a numeric vector named `a`, `b`, `d` and `m`, for instance the estimate
 #'   returned by `meixner_mle()` of the package `levyfit`. The bridge uses
 #'   only `a`, `d` and `m`; `b` is used by the option 2 of the method
 #'   `"MultiBridge"`, to extend the trajectories.

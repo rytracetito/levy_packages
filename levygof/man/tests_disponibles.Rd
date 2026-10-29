@@ -32,8 +32,8 @@ the model, whose parameters are unknown and estimated on the sample.
 (statistic \code{gofgamma::HME1}, tuning parameter 1);
 \item \code{"BE"}: Betsch and Ebner (2019), characterization by a fixed point
 (statistic \code{gofgamma::BE}, tuning parameter 1);
-\item \code{"VGE"}: Villasenor and Gonzalez-Estrada (2015), ratio of two
-variance estimators (\code{goft::gamma_test}), with a p-value by
+\item \code{"VGE"}: test of Villasenor and Gonzalez-Estrada (2015), ratio of two
+variance estimators (function \code{goft::gamma_test}), with a p-value by
 parametric bootstrap;
 \item \code{"KS"}, \code{"CvM"}, \code{"AD"}, \code{"Watson"}: Kolmogorov-Smirnov,
 Cramer-von Mises, Anderson-Darling and Watson (\code{gofgamma}).
@@ -49,8 +49,8 @@ statistics are kept, which gives both the p-value and the critical value.
 \eqn{\mathcal{N}(\mu \Delta, \sigma^2 \Delta)}: tests of normality with estimated
 mean and variance.
 \itemize{
-\item \code{"AD"}, \code{"CvM"}, \code{"Lilliefors"}: Anderson-Darling, Cramer-von Mises and
-Lilliefors tests (\code{nortest}). The Lilliefors test is the
+\item \code{"AD"}, \code{"CvM"} and \code{"Lilliefors"}: Anderson-Darling, Cramer-von
+Mises and Lilliefors tests (package \code{nortest}). The Lilliefors test is the
 Kolmogorov-Smirnov test with estimated mean and variance: \code{"KS"} is also
 accepted for it, and the result is labelled \code{"Lilliefors"};
 \item \code{"SW"}: Shapiro-Wilk (\code{stats::shapiro.test});
@@ -121,10 +121,11 @@ increments (for instance the method \code{"ExtBridge"} of \code{\link[=gof.levy]
 HK2 or the other tests.
 
 \strong{Variance-gamma (\code{"VG"}) and Meixner (\code{"Meixner"}) processes}:
-\code{"KS"}, \code{"CvM"}, \code{"AD"}, \code{"Watson"} (Kolmogorov-Smirnov, Cramer-von Mises,
-Anderson-Darling and Watson statistics, Stephens, 1986). The parameters are
-estimated by maximum likelihood (\code{\link[levyfit:vg_mle]{levyfit::vg_mle()}},
-\code{\link[levyfit:meixner_mle]{levyfit::meixner_mle()}}), the distribution function is computed by
+\code{"KS"}, \code{"CvM"}, \code{"AD"} and \code{"Watson"}, the Kolmogorov-Smirnov,
+Cramer-von Mises, Anderson-Darling and Watson statistics (Stephens,
+1986). The parameters are
+estimated by maximum likelihood with the package \code{levyfit} (functions
+\code{\link[levyfit:vg_mle]{levyfit::vg_mle()}} and \code{\link[levyfit:meixner_mle]{levyfit::meixner_mle()}}); the distribution function is computed by
 numerical integration of the density, and the p-value is obtained by
 parametric bootstrap (Stute, Gonzalez Manteiga and Presedo Quindimil,
 1993). With a small sample, \code{\link[levyfit:meixner_mle]{levyfit::meixner_mle()}} may give no estimate

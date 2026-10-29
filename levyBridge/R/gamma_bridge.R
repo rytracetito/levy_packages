@@ -22,8 +22,8 @@
 #' @param t_B,x_B Time and level of the known point on the right,
 #'   \eqn{t_B > t_A}.
 #' @param t Time of the draw, \eqn{t_A < t < t_B}.
-#' @param theta Vector \eqn{\Theta} of the parameters of the process, a named
-#'   numeric vector `c(a = , b = )`, for instance the estimate returned by
+#' @param theta Vector \eqn{\Theta = (a, b)} of the parameters of the process,
+#'   a numeric vector named `a` and `b`, for instance the estimate returned by
 #'   `gamma_mle()` of the package `levyfit`. The bridge uses only `a`.
 #' @param n Number of independent draws, a positive integer (default 1).
 #'
@@ -36,8 +36,9 @@
 #' Journal of Risk and Reliability*, 226(6), 624-634.
 #' \doi{10.1177/1748006X12462522}
 #'
-#' @seealso [gamma_resampling()] to resample trajectories on a regular grid;
-#'   [wiener_bridge()], [ig_bridge()], [vg_bridge()], [meixner_bridge()].
+#' @seealso
+#' * [gamma_resampling()]: resampling of trajectories on a regular grid;
+#' * [wiener_bridge()], [ig_bridge()], [vg_bridge()], [meixner_bridge()]: the bridges of the other processes.
 #'
 #' @examples
 #' # 1. One draw of X_2, given X_1 = 3 and X_4 = 6 (a = 2, b = 3)
@@ -89,8 +90,8 @@ gamma_bridge <- function(t_A, x_A, t_B, x_B, t, theta, n = 1) {
 #'   the other columns the levels, one column per trajectory. The results of
 #'   the simulation functions of `DegradSim` are accepted. See the section
 #'   Data of [levyBridge-package].
-#' @param theta Vector \eqn{\Theta} of the parameters of the process, a named
-#'   numeric vector `c(a = , b = )`, for instance the estimate returned by
+#' @param theta Vector \eqn{\Theta = (a, b)} of the parameters of the process,
+#'   a numeric vector named `a` and `b`, for instance the estimate returned by
 #'   `gamma_mle()` of the package `levyfit`. The bridge uses only `a`; `b` is
 #'   used by the option 2 of the method `"MultiBridge"`, to extend the
 #'   trajectories.

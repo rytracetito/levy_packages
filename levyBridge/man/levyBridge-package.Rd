@@ -34,13 +34,23 @@ Let \eqn{X} be a Levy process such that \eqn{X_s} has the density
 \eqn{X_{t_B} = x_B}, the value \eqn{X_t} has the density
 \deqn{f_{t | t_A, t_B}(x) = \frac{f_{t - t_A}(x - x_A)\, f_{t_B - t}(x_B - x)}{f_{t_B - t_A}(x_B - x_A)}}
 (Hoyle, Hughston and Macrina, 2011). The bridge functions draw exactly
-from this distribution:\tabular{llllll}{
-   Process \tab Bridge \tab Resampling \tab \eqn{\Theta} (\code{theta}) \tab Used by the bridge \tab Simulation of the bridge \cr
-   gamma \tab \code{\link[=gamma_bridge]{gamma_bridge()}} \tab \code{\link[=gamma_resampling]{gamma_resampling()}} \tab \code{a}, \code{b} \tab \code{a} \tab beta variable \cr
-   Wiener \tab \code{\link[=wiener_bridge]{wiener_bridge()}} \tab \code{\link[=wiener_resampling]{wiener_resampling()}} \tab \code{mu}, \code{sigma} \tab \code{sigma} \tab Gaussian variable \cr
-   inverse Gaussian \tab \code{\link[=ig_bridge]{ig_bridge()}} \tab \code{\link[=ig_resampling]{ig_resampling()}} \tab \code{mu}, \code{eta} \tab \code{eta} \tab IG or scaled inverse IG \cr
-   variance-gamma \tab \code{\link[=vg_bridge]{vg_bridge()}} \tab \code{\link[=vg_resampling]{vg_resampling()}} \tab \code{theta}, \code{sigma}, \code{nu} \tab all \tab GIG, beta, Gaussian \cr
-   Meixner \tab \code{\link[=meixner_bridge]{meixner_bridge()}} \tab \code{\link[=meixner_resampling]{meixner_resampling()}} \tab \code{a}, \code{b}, \code{d}, \code{m} \tab \code{a}, \code{d}, \code{m} \tab acceptance-rejection \cr
+from this distribution. The functions of each process are:\tabular{lll}{
+   Process \tab Bridge \tab Resampling \cr
+   gamma \tab \code{\link[=gamma_bridge]{gamma_bridge()}} \tab \code{\link[=gamma_resampling]{gamma_resampling()}} \cr
+   Wiener \tab \code{\link[=wiener_bridge]{wiener_bridge()}} \tab \code{\link[=wiener_resampling]{wiener_resampling()}} \cr
+   inverse Gaussian \tab \code{\link[=ig_bridge]{ig_bridge()}} \tab \code{\link[=ig_resampling]{ig_resampling()}} \cr
+   variance-gamma \tab \code{\link[=vg_bridge]{vg_bridge()}} \tab \code{\link[=vg_resampling]{vg_resampling()}} \cr
+   Meixner \tab \code{\link[=meixner_bridge]{meixner_bridge()}} \tab \code{\link[=meixner_resampling]{meixner_resampling()}} \cr
+}
+
+
+and the parameters in \eqn{\Theta} (argument \code{theta}) are:\tabular{lll}{
+   Process \tab \code{theta} \tab Used by the bridge \cr
+   gamma \tab \code{a}, \code{b} \tab \code{a} \cr
+   Wiener \tab \code{mu}, \code{sigma} \tab \code{sigma} \cr
+   inverse Gaussian \tab \code{mu}, \code{eta} \tab \code{eta} \cr
+   variance-gamma \tab \code{theta}, \code{sigma}, \code{nu} \tab all \cr
+   Meixner \tab \code{a}, \code{b}, \code{d}, \code{m} \tab \code{a}, \code{d}, \code{m} \cr
 }
 
 
@@ -188,8 +198,8 @@ truncation was needed);
 }
 
 Printing \code{res} shows the model, the parameters, the steps and the first
-resampled levels; \code{\link[=plot_bridge]{plot_bridge()}} compares the observed and resampled
-levels. The bridge values are random: use \code{set.seed()} before a
+resampled levels. The function \code{\link[=plot_bridge]{plot_bridge()}} compares the observed and
+resampled levels. The bridge values are random: use \code{set.seed()} before a
 resampling to make it reproducible.
 }
 

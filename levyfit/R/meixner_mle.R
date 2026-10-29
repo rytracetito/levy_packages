@@ -206,7 +206,8 @@
 #' @param x Degradation levels of one trajectory; or a list of data frames,
 #'   one per trajectory, whose first column contains the inspection times and
 #'   second column the degradation levels.
-#'   The increments can also be given directly with [increments_data()].
+#'   The increments can also be given directly, with the function
+#'   [increments_data()].
 #' @param t Inspection times of the trajectory, strictly increasing. Not used
 #'   when `x` is a list.
 #' @param n_start Number of starting points built from \eqn{\hat\kappa_1} and
@@ -222,7 +223,8 @@
 #' @references
 #' Grigoletto, M. and Provasi, C. (2009). Simulation and estimation of the
 #' Meixner distribution. *Communications in Statistics - Simulation and
-#' Computation*, 38(1), 58-77. \doi{10.1080/03610910802395679}
+#' Computation*, 38(1), 58-77.\cr
+#' \doi{10.1080/03610910802395679}
 #'
 #' Kahle, W., Mercier, S. and Paroissin, C. (2016). *Degradation Processes in
 #' Reliability*. ISTE and Wiley, London. Section 1.6.1 (equation \[1.19\]).

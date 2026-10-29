@@ -139,11 +139,12 @@ distributions: the trajectories are tested one by one.
 
 \strong{\code{"ExtBridge"}}. The inspection times are taken with \eqn{d} decimal
 places and the step is
-\eqn{h = 10^{-d} \mathrm{gcd}(\lfloor 10^d t \rfloor)}, the gcd being
-taken over all the inspection times \eqn{t} of all the trajectories, where
-\eqn{\lfloor u \rfloor} is the largest integer not greater than \eqn{u}:
-the largest step such that every inspection time of every trajectory is a
-grid point (see \link[levyBridge:levyBridge-package]{levyBridge::levyBridge-package}). All the observations are kept on the grid, and all the
+\deqn{h = 10^{-d}\, \mathrm{gcd}\big(\lfloor 10^d t \rfloor\big),}
+the gcd being taken over all the inspection times \eqn{t} of all the
+trajectories, where \eqn{\lfloor u \rfloor} is the largest integer not
+greater than \eqn{u}. It is the largest step such that every inspection
+time of every trajectory is a grid point (see the help page
+\link[levyBridge:levyBridge-package]{levyBridge::levyBridge-package}). All the observations are kept on the grid, and all the
 trajectories have the same step: one test on all of them (group \code{"all"})
 in addition to the tests per trajectory. The grid can have many more
 points than observations.
@@ -242,7 +243,8 @@ gof.levy(x3, "HGP", test = "KS")
 
 # 6. Three Wiener trajectories (mu = 0.5, sigma = 1.5) with their own
 #    inspection times, up to 40, 50 and 60 (a list): one test per trajectory
-plan <- DegradSim::inspection_times("dec-inc", n = 20, n_traj = 3, tmax = c(40, 50, 60), digits = 1)
+plan <- DegradSim::inspection_times("dec-inc", n = 20, n_traj = 3,
+                                    tmax = c(40, 50, 60), digits = 1)
 liste <- DegradSim::sim_wiener(plan, mu = 0.5, sigma = 1.5)
 gof.levy(liste, "HWP", test = c("SW", "AD"))
 

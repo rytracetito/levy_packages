@@ -24,15 +24,25 @@
 #' \eqn{X_{t_B} = x_B}, the value \eqn{X_t} has the density
 #' \deqn{f_{t | t_A, t_B}(x) = \frac{f_{t - t_A}(x - x_A)\, f_{t_B - t}(x_B - x)}{f_{t_B - t_A}(x_B - x_A)}}
 #' (Hoyle, Hughston and Macrina, 2011). The bridge functions draw exactly
-#' from this distribution:
+#' from this distribution. The functions of each process are:
 #'
-#' | Process | Bridge | Resampling | \eqn{\Theta} (`theta`) | Used by the bridge | Simulation of the bridge |
-#' |---|---|---|---|---|---|
-#' | gamma | [gamma_bridge()] | [gamma_resampling()] | `a`, `b` | `a` | beta variable |
-#' | Wiener | [wiener_bridge()] | [wiener_resampling()] | `mu`, `sigma` | `sigma` | Gaussian variable |
-#' | inverse Gaussian | [ig_bridge()] | [ig_resampling()] | `mu`, `eta` | `eta` | IG or scaled inverse IG |
-#' | variance-gamma | [vg_bridge()] | [vg_resampling()] | `theta`, `sigma`, `nu` | all | GIG, beta, Gaussian |
-#' | Meixner | [meixner_bridge()] | [meixner_resampling()] | `a`, `b`, `d`, `m` | `a`, `d`, `m` | acceptance-rejection |
+#' | Process | Bridge | Resampling |
+#' |---|---|---|
+#' | gamma | [gamma_bridge()] | [gamma_resampling()] |
+#' | Wiener | [wiener_bridge()] | [wiener_resampling()] |
+#' | inverse Gaussian | [ig_bridge()] | [ig_resampling()] |
+#' | variance-gamma | [vg_bridge()] | [vg_resampling()] |
+#' | Meixner | [meixner_bridge()] | [meixner_resampling()] |
+#'
+#' and the parameters in \eqn{\Theta} (argument `theta`) are:
+#'
+#' | Process | `theta` | Used by the bridge |
+#' |---|---|---|
+#' | gamma | `a`, `b` | `a` |
+#' | Wiener | `mu`, `sigma` | `sigma` |
+#' | inverse Gaussian | `mu`, `eta` | `eta` |
+#' | variance-gamma | `theta`, `sigma`, `nu` | all |
+#' | Meixner | `a`, `b`, `d`, `m` | `a`, `d`, `m` |
 #'
 #' The distribution of the bridge does not always depend on all the
 #' parameters: the parameters that it does not use are ignored by the bridge
@@ -160,8 +170,8 @@
 #'   `attr(res, "method")` recall the call.
 #'
 #' Printing `res` shows the model, the parameters, the steps and the first
-#' resampled levels; [plot_bridge()] compares the observed and resampled
-#' levels. The bridge values are random: use `set.seed()` before a
+#' resampled levels. The function [plot_bridge()] compares the observed and
+#' resampled levels. The bridge values are random: use `set.seed()` before a
 #' resampling to make it reproducible.
 #'
 #' @references

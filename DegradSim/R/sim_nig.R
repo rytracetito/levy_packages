@@ -12,10 +12,10 @@
 #'   \qquad x \in \mathbb{R},}
 #' where \eqn{\gamma = \sqrt{\alpha^2 - \beta^2}} and \eqn{K_1} is the modified
 #' Bessel function of the second kind (Barndorff-Nielsen, 1997). It is
-#' infinitely divisible: the sum of independent
-#' \eqn{NIG(\alpha, \beta, \delta_1, \mu_1)} and
-#' \eqn{NIG(\alpha, \beta, \delta_2, \mu_2)} variables has the
-#' \eqn{NIG(\alpha, \beta, \delta_1 + \delta_2, \mu_1 + \mu_2)} distribution.
+#' infinitely divisible: for independent
+#' \eqn{Y_1 \sim NIG(\alpha, \beta, \delta_1, \mu_1)} and
+#' \eqn{Y_2 \sim NIG(\alpha, \beta, \delta_2, \mu_2)},
+#' \deqn{Y_1 + Y_2 \sim NIG(\alpha, \beta, \delta_1 + \delta_2, \mu_1 + \mu_2).}
 #'
 #' The NIG process satisfies \eqn{X_0 = 0}, has independent increments, and for
 #' \eqn{0 \le s < t},
@@ -67,7 +67,8 @@
 #'
 #' Michael, J. R., Schucany, W. R. and Haas, R. W. (1976). Generating random
 #' variates using transformations with multiple roots. *The American
-#' Statistician*, 30(2), 88-90. \doi{10.1080/00031305.1976.10479147}
+#' Statistician*, 30(2), 88-90.\cr
+#' \doi{10.1080/00031305.1976.10479147}
 #'
 #' @seealso [sim_vg()], [plot_traj()], [traj_df()], [inspection_times()],
 #'   [plot_plan()]
@@ -95,7 +96,8 @@
 #' plot_traj(x)
 #'
 #' # 4. Different inspection times for each trajectory: a list of data frames
-#' x <- sim_nig(list(c(0, 1, 3, 6), c(0, 2, 4, 6, 8, 10)), alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
+#' x <- sim_nig(list(c(0, 1, 3, 6), c(0, 2, 4, 6, 8, 10)),
+#'              alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 #' x[[2]]
 #' x[[2]]$X
 #'

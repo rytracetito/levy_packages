@@ -7,9 +7,17 @@
 \title{levygof: goodness-of-fit tests for Levy degradation processes}
 \description{
 \code{levygof} tests whether degradation trajectories come from a parametric
-Levy process: gamma (\code{"HGP"}), Wiener (\code{"HWP"}), inverse Gaussian
-(\code{"InvGaus"}), variance-gamma (\code{"VG"}) or Meixner (\code{"Meixner"}), with
-unknown parameters. The main function is \code{\link[=gof.levy]{gof.levy()}}.
+Levy process with unknown parameters:
+\itemize{
+\item gamma (\code{"HGP"});
+\item Wiener (\code{"HWP"});
+\item inverse Gaussian (\code{"InvGaus"});
+\item variance-gamma (\code{"VG"});
+\item Meixner (\code{"Meixner"}).
+}
+}
+\details{
+The main function is \code{\link[=gof.levy]{gof.levy()}}.
 }
 \section{Functions of the package}{
 
@@ -45,14 +53,15 @@ trajectories, \code{"ExtBridge"} and \code{"MultiBridge"} give one i.i.d. sample
 for all the trajectories together. The grid, the step and the drawing of
 the bridge of each method are detailed in the section Resampling methods
 of \code{\link[=gof.levy]{gof.levy()}}.
-\item \strong{Choose a test} for an i.i.d. sample of the distribution of the increments,
-see \code{\link[=tests_disponibles]{tests_disponibles()}}.
+\item \strong{Choose a test} for an i.i.d. sample of the distribution of the
+increments (list of the tests: \code{\link[=tests_disponibles]{tests_disponibles()}}).
 \item \strong{Apply the test} to the reconstructed increments.
 }
 
 With regular inspections the observed increments are already i.i.d.:
-steps 1 to 4 are skipped. \code{\link[=gof.levy]{gof.levy()}} does all the steps;
-\code{\link[=test_adequation]{test_adequation()}} does steps 5 and 6 for a sample of increments.
+steps 1 to 4 are skipped. The function \code{\link[=gof.levy]{gof.levy()}} does all the steps,
+and the function \code{\link[=test_adequation]{test_adequation()}} does steps 5 and 6 for a sample of
+increments.
 }
 
 \section{Data}{

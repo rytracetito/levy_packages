@@ -14,9 +14,12 @@ inspection_times(
 )
 }
 \arguments{
-\item{pattern}{Name of the pattern, \code{"regular"} (default), \code{"decreasing"},
-\code{"increasing"}, \code{"dec-inc"} or \code{"inc-dec"} (see Details), or a strictly
-increasing R function on \eqn{[0, 1]}.}
+\item{pattern}{Pattern of the inspection times (see Details):
+\itemize{
+\item \code{"regular"} (default), \code{"decreasing"} or \code{"increasing"};
+\item \code{"dec-inc"} or \code{"inc-dec"};
+\item or a strictly increasing R function on \eqn{[0, 1]}.
+}}
 
 \item{n}{Number of inspections after time 0, a positive integer. A single
 value gives the same number of inspections to all the trajectories; a
@@ -144,7 +147,8 @@ inspection_times(sqrt, n = 10, digits = 0)
 #     inspections around a point that moves to the right when w increases
 #     (0 < w < 1)
 w <- 0.8
-inspection_times(function(x) w * log(1 + 10 * x) - (1 - w) * log(11 - 10 * x), n = 20, digits = 1)
+f <- function(x) w * log(1 + 10 * x) - (1 - w) * log(11 - 10 * x)
+inspection_times(f, n = 20, digits = 1)
 
 # 12. Plot the inspection times, one row per trajectory, then simulate
 plan <- inspection_times("inc-dec", n = c(10, 20, 30), n_traj = 3, tmax = 100)

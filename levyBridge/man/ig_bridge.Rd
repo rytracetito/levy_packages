@@ -14,8 +14,8 @@ ig_bridge(t_A, x_A, t_B, x_B, t, theta, n = 1)
 
 \item{t}{Time of the draw, \eqn{t_A < t < t_B}.}
 
-\item{theta}{Vector \eqn{\Theta} of the parameters of the process, a named
-numeric vector \code{c(mu = , eta = )}, for instance the estimate returned by
+\item{theta}{Vector \eqn{\Theta = (\mu, \eta)} of the parameters of the process,
+a numeric vector named \code{mu} and \code{eta}, for instance the estimate returned by
 \code{ig_mle()} of the package \code{levyfit}. The bridge uses only \code{eta}.}
 
 \item{n}{Number of independent draws, a positive integer (default 1).}
@@ -85,7 +85,7 @@ ig_bridge(1.2, x[2, 2], 2, x[3, 2], 1.5, theta = est, n = 3)
 \references{
 Michael, J. R., Schucany, W. R. and Haas, R. W. (1976). Generating random
 variates using transformations with multiple roots. \emph{The American
-Statistician}, 30(2), 88-90.
+Statistician}, 30(2), 88-90.\cr
 \doi{10.1080/00031305.1976.10479147}
 
 Ribeiro, C. and Webber, N. (2003). A Monte Carlo method for the normal
@@ -93,6 +93,8 @@ inverse Gaussian option valuation model using an inverse Gaussian bridge.
 \emph{Computing in Economics and Finance 2003}, 5.
 }
 \seealso{
-\code{\link[=ig_resampling]{ig_resampling()}} to resample trajectories on a regular grid;
-\code{\link[=gamma_bridge]{gamma_bridge()}}, \code{\link[=wiener_bridge]{wiener_bridge()}}, \code{\link[=vg_bridge]{vg_bridge()}}, \code{\link[=meixner_bridge]{meixner_bridge()}}.
+\itemize{
+\item \code{\link[=ig_resampling]{ig_resampling()}}: resampling of trajectories on a regular grid;
+\item \code{\link[=gamma_bridge]{gamma_bridge()}}, \code{\link[=wiener_bridge]{wiener_bridge()}}, \code{\link[=vg_bridge]{vg_bridge()}}, \code{\link[=meixner_bridge]{meixner_bridge()}}: the bridges of the other processes.
+}
 }

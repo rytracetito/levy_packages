@@ -10,7 +10,8 @@ meixner_mle(x, t = NULL, ci = FALSE, level = 0.95, n_start = 5)
 \item{x}{Degradation levels of one trajectory; or a list of data frames,
 one per trajectory, whose first column contains the inspection times and
 second column the degradation levels.
-The increments can also be given directly with \code{\link[=increments_data]{increments_data()}}.}
+The increments can also be given directly, with the function
+\code{\link[=increments_data]{increments_data()}}.}
 
 \item{t}{Inspection times of the trajectory, strictly increasing. Not used
 when \code{x} is a list.}
@@ -295,7 +296,8 @@ meixner_mle(y)
 \references{
 Grigoletto, M. and Provasi, C. (2009). Simulation and estimation of the
 Meixner distribution. \emph{Communications in Statistics - Simulation and
-Computation}, 38(1), 58-77. \doi{10.1080/03610910802395679}
+Computation}, 38(1), 58-77.\cr
+\doi{10.1080/03610910802395679}
 
 Kahle, W., Mercier, S. and Paroissin, C. (2016). \emph{Degradation Processes in
 Reliability}. ISTE and Wiley, London. Section 1.6.1 (equation [1.19]).

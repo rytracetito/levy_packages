@@ -55,8 +55,9 @@
 #' Whitmore, G. A. (1995). Estimating degradation by a Wiener diffusion process
 #' subject to measurement error. *Lifetime Data Analysis*, 1, 307-319.
 #'
-#' @seealso [sim_gamma()] and [sim_ig()] for the other time-scaled processes,
-#'   [plot_traj()], [traj_df()], [inspection_times()], [plot_plan()]
+#' @seealso
+#' * [sim_gamma()], [sim_ig()]: the other time-scaled processes;
+#' * [plot_traj()], [traj_df()], [inspection_times()], [plot_plan()].
 #'
 #' @examples
 #' # 1. One trajectory with 200 regular inspections up to 10 (step 0.05)
@@ -112,7 +113,8 @@
 #' ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
 #'   ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
 #'                           bins = 30, boundary = 0, fill = "grey80", colour = "grey40") +
-#'   ggplot2::stat_function(fun = function(y) dnorm(y, 0.5 * 0.5, 1.5 * sqrt(0.5)), colour = "red") +
+#'   ggplot2::stat_function(fun = function(y) dnorm(y, 0.5 * 0.5, 1.5 * sqrt(0.5)),
+#'                          colour = "red") +
 #'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the Wiener process")
 #' @export
 sim_wiener <- function(t, mu, sigma, A = NULL, n_traj = 1) {

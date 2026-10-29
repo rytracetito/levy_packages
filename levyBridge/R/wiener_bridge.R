@@ -20,8 +20,8 @@
 #' depend on the drift \eqn{\mu}.
 #'
 #' @inheritParams gamma_bridge
-#' @param theta Vector \eqn{\Theta} of the parameters of the process, a named
-#'   numeric vector `c(mu = , sigma = )`, with the volatility \eqn{\sigma}
+#' @param theta Vector \eqn{\Theta = (\mu, \sigma)} of the parameters of the process,
+#'   a numeric vector named `mu` and `sigma`, with the volatility \eqn{\sigma}
 #'   (not the variance). The function `wiener_mle()` of the package `levyfit`
 #'   returns `mu` and `sigma2`: use
 #'   `c(mu = est[["mu"]], sigma = sqrt(est[["sigma2"]]))`. The bridge uses
@@ -29,8 +29,9 @@
 #'
 #' @inherit gamma_bridge return
 #'
-#' @seealso [wiener_resampling()] to resample trajectories on a regular grid;
-#'   [gamma_bridge()], [ig_bridge()], [vg_bridge()], [meixner_bridge()].
+#' @seealso
+#' * [wiener_resampling()]: resampling of trajectories on a regular grid;
+#' * [gamma_bridge()], [ig_bridge()], [vg_bridge()], [meixner_bridge()]: the bridges of the other processes.
 #'
 #' @examples
 #' # 1. One draw of X_2, given X_1 = 3 and X_4 = 6 (mu = 0.5, sigma = 1.5)
@@ -69,8 +70,8 @@ wiener_bridge <- function(t_A, x_A, t_B, x_B, t, theta, n = 1) {
 #' and the resampling algorithm are described in [levyBridge-package].
 #'
 #' @inheritParams gamma_resampling
-#' @param theta Vector \eqn{\Theta} of the parameters of the process, a named
-#'   numeric vector `c(mu = , sigma = )`, with the volatility \eqn{\sigma}
+#' @param theta Vector \eqn{\Theta = (\mu, \sigma)} of the parameters of the process,
+#'   a numeric vector named `mu` and `sigma`, with the volatility \eqn{\sigma}
 #'   (not the variance, see [wiener_bridge()]). The bridge uses only `sigma`;
 #'   `mu` is used by the option 2 of the method `"MultiBridge"`, to extend the
 #'   trajectories.

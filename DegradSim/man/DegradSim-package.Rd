@@ -55,11 +55,11 @@ The simulation functions, with the distribution of an increment over a time
 \eqn{\Delta t = t - s}:\tabular{llll}{
    Function \tab Process \tab Parameters \tab \eqn{X_t - X_s} \cr
    \code{\link[=sim_gamma]{sim_gamma()}} \tab gamma \tab \code{a}, \code{b} \tab \eqn{\Gamma(a \Delta t, b)} \cr
-   \code{\link[=sim_wiener]{sim_wiener()}} \tab Wiener with drift \tab \code{mu}, \code{sigma} \tab \eqn{\mathcal{N}(\mu \Delta t, \sigma^2 \Delta t)} \cr
+   \code{\link[=sim_wiener]{sim_wiener()}} \tab Wiener \tab \code{mu}, \code{sigma} \tab \eqn{\mathcal{N}(\mu \Delta t, \sigma^2 \Delta t)} \cr
    \code{\link[=sim_ig]{sim_ig()}} \tab inverse Gaussian \tab \code{mu}, \code{eta} \tab \eqn{IG(\mu \Delta t, \eta \Delta t^2)} \cr
    \code{\link[=sim_vg]{sim_vg()}} \tab variance-gamma \tab \code{theta}, \code{sigma}, \code{nu} \tab \eqn{\theta G_{\Delta t} + \sigma B_{G_{\Delta t}}} \cr
    \code{\link[=sim_meixner]{sim_meixner()}} \tab Meixner \tab \code{a}, \code{b}, \code{d}, \code{m} \tab \eqn{Meixner(a, b, d \Delta t, m \Delta t)} \cr
-   \code{\link[=sim_nig]{sim_nig()}} \tab normal inverse Gaussian \tab \code{alpha}, \code{beta}, \code{delta}, \code{mu} \tab \eqn{NIG(\alpha, \beta, \delta \Delta t, \mu \Delta t)} \cr
+   \code{\link[=sim_nig]{sim_nig()}} \tab NIG \tab \code{alpha}, \code{beta}, \code{delta}, \code{mu} \tab \eqn{NIG(\alpha, \beta, \delta \Delta t, \mu \Delta t)} \cr
    \code{\link[=sim_cpoisson]{sim_cpoisson()}} \tab compound Poisson \tab \code{lambda}, \code{rjump} \tab sum of \eqn{Poisson(\lambda \Delta t)} jumps \cr
 }
 
@@ -114,10 +114,11 @@ continuous, \eqn{X} is also stochastically continuous: it is an additive
 process in the sense of Sato (2001, p. 3), that is a process satisfying
 the conditions 1, 2, 4 and 5 above.
 
-\strong{The time-scaling function in the package.} \eqn{A} is given as the
-argument \code{A} of \code{\link[=sim_gamma]{sim_gamma()}}, \code{\link[=sim_wiener]{sim_wiener()}} and \code{\link[=sim_ig]{sim_ig()}}, a vectorized R
-function of \code{t} (\code{A(t)} returns one value per time), for instance
-\code{function(t) 2 * t^1.5}. Each of these functions checks that
+\strong{The time-scaling function in the package.} The function \eqn{A} is
+given as the argument \code{A} of the functions \code{\link[=sim_gamma]{sim_gamma()}}, \code{\link[=sim_wiener]{sim_wiener()}}
+and \code{\link[=sim_ig]{sim_ig()}}. It is a vectorized R function of \code{t}: \code{A(t)} returns one
+value per time, for instance with \code{function(t) 2 * t^1.5}. Each of these
+functions checks that
 \eqn{A(0) = 0} and that \eqn{A} is finite and non-decreasing at the
 inspection times, and raises an error otherwise. The conditions
 "right-continuous with left limits" and \eqn{A(t) \to +\infty} cannot be
@@ -157,9 +158,8 @@ A simulation always follows the same three steps.
 \item \strong{Choose the inspection times} \code{t}. Three forms are accepted by every
 \code{sim_} function:
 \itemize{
-\item a numeric vector, for instance
-\code{inspection_times("regular", n = 200, tmax = 10)$time} (200 regular
-inspections, step 0.05): all the trajectories share these times, and
+\item a numeric vector, for instance the component \code{time} of the result of
+\code{\link[=inspection_times]{inspection_times()}}: all the trajectories share these times, and
 their number is given by \code{n_traj};
 \item a list of numeric vectors, one per trajectory, for instance
 \code{list(c(0, 1, 3), c(0, 2, 4, 6))};
@@ -174,8 +174,8 @@ These conditions are checked by every \code{sim_} function, also for the
 result of \code{\link[=inspection_times]{inspection_times()}}, and an error explains which condition
 fails.
 \item \strong{Simulate} with the function of the chosen process and its
-parameters, for instance \code{sim_gamma(t, a = 2, b = 3)} for a gamma
-process. For a time-scaled Levy process, give the time-scaling function
+parameters; for a gamma process, for instance,
+\code{sim_gamma(t, a = 2, b = 3)}. For a time-scaled Levy process, give the time-scaling function
 \code{A} (see the section Time-scaled Levy processes) instead of the fixed
 parameter, for instance \code{sim_gamma(t, b = 3, A = function(t) 2 * t^1.5)}.
 \item \strong{Store and use the result} \code{x}, an object of class \code{DegradSim}. Its
@@ -343,7 +343,8 @@ Processes}. Chapman and Hall, New York.
 
 Michael, J. R., Schucany, W. R. and Haas, R. W. (1976). Generating random
 variates using transformations with multiple roots. \emph{The American
-Statistician}, 30(2), 88-90. \doi{10.1080/00031305.1976.10479147}
+Statistician}, 30(2), 88-90.\cr
+\doi{10.1080/00031305.1976.10479147}
 
 Hörmann, W. and Leydold, J. (2003). Continuous random variate generation by
 fast numerical inversion. \emph{ACM Transactions on Modeling and Computer

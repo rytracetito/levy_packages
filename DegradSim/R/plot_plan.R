@@ -7,8 +7,8 @@
 #'
 #' @param t Inspection times, in one of the three forms accepted by the `sim_`
 #'   functions:
-#'   * a numeric vector, for one trajectory, for instance
-#'     `inspection_times("regular", n = 20, tmax = 10)$time`;
+#'   * a numeric vector, for one trajectory, for instance the component
+#'     `time` of the result of [inspection_times()];
 #'   * a list of numeric vectors, one per trajectory, for instance
 #'     `list(c(0, 1, 3), c(0, 2, 4, 6))`;
 #'   * the result of [inspection_times()], one plan per trajectory.

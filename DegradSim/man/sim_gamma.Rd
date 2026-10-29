@@ -134,7 +134,8 @@ dx <- dx[!is.na(dx)]
 ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
   ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
                           bins = 30, boundary = 0, fill = "grey80", colour = "grey40") +
-  ggplot2::stat_function(fun = function(y) dgamma(y, shape = 2 * 0.5, rate = 3), colour = "red") +
+  ggplot2::stat_function(fun = function(y) dgamma(y, shape = 2 * 0.5, rate = 3),
+                         colour = "red") +
   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the gamma process")
 }
 \references{
@@ -150,6 +151,8 @@ in maintenance. \emph{Reliability Engineering & System Safety}, 94(1), 2-21.
 \doi{10.1016/j.ress.2007.03.019}
 }
 \seealso{
-\code{\link[=sim_ig]{sim_ig()}} and \code{\link[=sim_wiener]{sim_wiener()}} for the other time-scaled processes,
-\code{\link[=plot_traj]{plot_traj()}}, \code{\link[=traj_df]{traj_df()}}, \code{\link[=inspection_times]{inspection_times()}}, \code{\link[=plot_plan]{plot_plan()}}
+\itemize{
+\item \code{\link[=sim_ig]{sim_ig()}}, \code{\link[=sim_wiener]{sim_wiener()}}: the other time-scaled processes;
+\item \code{\link[=plot_traj]{plot_traj()}}, \code{\link[=traj_df]{traj_df()}}, \code{\link[=inspection_times]{inspection_times()}}, \code{\link[=plot_plan]{plot_plan()}}.
+}
 }

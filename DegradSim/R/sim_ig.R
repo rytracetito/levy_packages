@@ -59,15 +59,16 @@
 #'
 #' Michael, J. R., Schucany, W. R. and Haas, R. W. (1976). Generating random
 #' variates using transformations with multiple roots. *The American
-#' Statistician*, 30(2), 88-90. \doi{10.1080/00031305.1976.10479147}
+#' Statistician*, 30(2), 88-90.\cr
+#' \doi{10.1080/00031305.1976.10479147}
 #'
 #' Wang, X. and Xu, D. (2010). An inverse Gaussian process model for
 #' degradation data. *Technometrics*, 52(2), 188-197.
 #' \doi{10.1198/TECH.2009.08197}
 #'
-#' @seealso [sim_gamma()] and [sim_wiener()] for the other time-scaled
-#'   processes, [plot_traj()], [traj_df()], [inspection_times()],
-#'   [plot_plan()]
+#' @seealso
+#' * [sim_gamma()], [sim_wiener()]: the other time-scaled processes;
+#' * [plot_traj()], [traj_df()], [inspection_times()], [plot_plan()].
 #'
 #' @examples
 #' # 1. One trajectory with 200 regular inspections up to 10 (step 0.05)
@@ -128,7 +129,8 @@
 #'   ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
 #'                           bins = 30, boundary = 0, fill = "grey80", colour = "grey40") +
 #'   ggplot2::stat_function(fun = dig, colour = "red") +
-#'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the inverse Gaussian process")
+#'   ggplot2::labs(x = "dX", y = "Density",
+#'                 title = "Increments of the inverse Gaussian process")
 #' @export
 sim_ig <- function(t, mu, eta, A = NULL, n_traj = 1) {
   if (missing(eta) || !is.numeric(eta) || length(eta) != 1 || !(eta > 0)) stop("eta must be a positive number")
