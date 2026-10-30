@@ -254,8 +254,24 @@
 #' m2 <- DegradSim::sim_gamma(t, a = 2, b = 3, n_traj = 3)
 #' gof.levy(m2, "HGP", test = "VGE", B = 50)
 #'
+#' # 8. Data from another process: H0 is rejected. In 100 simulations of each
+#' #    case below, the tests rejected H0 in about 90 % to 100 % of the cases.
+#' t100 <- DegradSim::inspection_times("regular", n = 100, tmax = 100)$time
+#'
+#' # Very skewed gamma data (a = 0.5, b = 1) tested as a Wiener process
+#' g <- DegradSim::sim_gamma(t100, a = 0.5, b = 1)
+#' gof.levy(g, "HWP", test = c("SW", "AD", "JB"))
+#'
+#' # Heavy-tailed variance-gamma data (nu = 2) tested as a Wiener process
+#' v <- DegradSim::sim_vg(t100, theta = 0.5, sigma = 1.5, nu = 2)
+#' gof.levy(v, "HWP", test = c("SW", "AD", "JB"))
+#'
+#' # Inverse Gaussian data (mu = 1, eta = 0.5) tested as a gamma process
+#' w <- DegradSim::sim_ig(t100, mu = 1, eta = 0.5)
+#' gof.levy(w, "HGP", test = c("KS", "AD"), B = 100)
+#'
 #' \donttest{
-#' # 8. Inverse Gaussian (mu = 1, eta = 3) and variance-gamma
+#' # 9. Inverse Gaussian (mu = 1, eta = 3) and variance-gamma
 #' #    (theta = 0.5, sigma = 1.5, nu = 1) models (slower)
 #' ig <- DegradSim::sim_ig(t2, mu = 1, eta = 3)
 #' gof.levy(ig, "InvGaus", test = c("KS", "AD", "HK2"), B = 100)
@@ -264,7 +280,7 @@
 #' vg <- DegradSim::sim_vg(t5, theta = 0.5, sigma = 1.5, nu = 1)
 #' gof.levy(vg, "VG", test = "AD", B = 50)
 #'
-#' # 9. Meixner model (a = 1, b = 1, d = 0.5, m = 0.2), regular and irregular
+#' # 10. Meixner model (a = 1, b = 1, d = 0.5, m = 0.2), regular and irregular
 #' #    inspections; with few increments meixner_mle() may give no estimate,
 #' #    and the test then stops with a message
 #' t_reg <- DegradSim::inspection_times("regular", n = 100, tmax = 100)$time

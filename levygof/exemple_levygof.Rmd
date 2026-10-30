@@ -153,6 +153,38 @@ gof.levy(xg, "InvGaus", test = c("KS", "AD"), B = 100)
 gof.levy(xg, "HWP", test = c("SW", "AD"))
 ```
 
+D'autres données qui ne viennent pas du modèle testé, avec 100 inspections régulières de pas 1 :
+
+* une trajectoire variance-gamma à queues lourdes (\(\nu = 2\)), testée comme un processus de Wiener : la kurtosis d'un accroissement vaut \(3(1 + \nu / \Delta t) = 9\) (Madan et Seneta, 1990, section III.C), contre 3 pour la loi normale ;
+* une trajectoire inverse gaussienne (\(\mu = 1\), \(\eta = 0.5\)), testée comme un processus gamma.
+
+```{r}
+t100 <- inspection_times("regular", n = 100, tmax = 100)$time
+set.seed(7)
+v <- sim_vg(t100, theta = 0.5, sigma = 1.5, nu = 2)
+gof.levy(v, "HWP", test = c("SW", "AD", "JB"))
+w <- sim_ig(t100, mu = 1, eta = 0.5)
+gof.levy(w, "HGP", test = c("KS", "AD"), B = 100)
+```
+
+Pour vérifier que ces rejets ne sont pas dus au hasard d'une seule trajectoire, chaque cas est simulé 100 fois ; le tableau donne la proportion de rejets de \(H_0\) au niveau 5 % (puissance estimée).
+
+```{r}
+taux <- function(simuler, modele, tests, B = 200) {
+  rejet <- replicate(100, gof.levy(simuler(), modele, test = tests, B = B)$results$decision == "reject H0")
+  setNames(rowMeans(matrix(rejet, nrow = length(tests))), tests)
+}
+set.seed(10)
+rbind(
+  "gamma (a = 0.5, b = 1) testé comme Wiener" =
+    taux(function() sim_gamma(t100, a = 0.5, b = 1), "HWP", c("SW", "AD")),
+  "VG (nu = 2) testé comme Wiener" =
+    taux(function() sim_vg(t100, theta = 0.5, sigma = 1.5, nu = 2), "HWP", c("SW", "AD")),
+  "IG (mu = 1, eta = 0.5) testé comme gamma" =
+    taux(function() sim_ig(t100, mu = 1, eta = 0.5), "HGP", c("KS", "AD"), B = 100)
+)
+```
+
 \newpage
 
 # II - Plusieurs trajectoires
