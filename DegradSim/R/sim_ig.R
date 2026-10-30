@@ -71,8 +71,8 @@
 #' * [plot_traj()], [traj_df()], [inspection_times()], [plot_plan()].
 #'
 #' @examples
-#' # 1. One trajectory with 200 regular inspections up to 10 (step 0.05)
-#' t <- inspection_times("regular", n = 200, tmax = 10)$time
+#' # 1. One trajectory with 55 regular inspections up to 10 (step 10/55)
+#' t <- inspection_times("regular", n = 55, tmax = 10)$time
 #' set.seed(1)
 #' x <- sim_ig(t, mu = 0.5, eta = 2)
 #' x
@@ -85,7 +85,6 @@
 #' # Same times for all the trajectories: a matrix with the column t,
 #' # then one column per trajectory (X1, X2, ...)
 #' head(x[, 1:4])
-#' x[, "X2"]
 #'
 #' # 3. Irregular inspections, less and less frequent over time
 #' plan <- inspection_times("increasing", n = 50, n_traj = 5, tmax = 10)

@@ -10,9 +10,9 @@ sim_gamma(t, a, b, A = NULL, method = "RWA", type = NULL, n_traj = 1)
 \item{t}{Inspection times. The times of each trajectory must start at 0 and
 be strictly increasing. Three forms are accepted:
 \itemize{
-\item a numeric vector, for instance
-\code{inspection_times("regular", n = 200, tmax = 10)$time}: all the
-trajectories share these times, and their number is \code{n_traj};
+\item a numeric vector: all the trajectories share these times, and their
+number is \code{n_traj}. The column \code{time} of the result of
+\code{\link[=inspection_times]{inspection_times()}} can be used;
 \item a list of vectors, one per trajectory, for instance
 \code{list(c(0, 1, 3), c(0, 2, 4, 6))}: each trajectory has its own times
 (\code{n_traj} is then ignored);
@@ -90,8 +90,8 @@ are drawn independently with \code{\link[stats:GammaDist]{stats::rgamma()}}, the
 }
 
 \examples{
-# 1. One trajectory with 200 regular inspections up to 10 (step 0.05)
-t <- inspection_times("regular", n = 200, tmax = 10)$time
+# 1. One trajectory with 55 regular inspections up to 10 (step 10/55)
+t <- inspection_times("regular", n = 55, tmax = 10)$time
 set.seed(1)
 x <- sim_gamma(t, a = 2, b = 3)
 x
@@ -104,7 +104,6 @@ plot_traj(x)
 # Same times for all the trajectories: a matrix with the column t,
 # then one column per trajectory (X1, X2, ...)
 head(x[, 1:4])
-x[, "X2"]
 
 # 3. Irregular inspections, more and more frequent over time
 plan <- inspection_times("decreasing", n = 50, n_traj = 5, tmax = 10)

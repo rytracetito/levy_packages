@@ -57,9 +57,9 @@
 #'   [plot_plan()]
 #'
 #' @examples
-#' # 1. One trajectory with 200 regular inspections up to 10 (step 0.05), exponential
+#' # 1. One trajectory with 55 regular inspections up to 10 (step 10/55), exponential
 #' #    jumps of mean 1 (default)
-#' t <- inspection_times("regular", n = 200, tmax = 10)$time
+#' t <- inspection_times("regular", n = 55, tmax = 10)$time
 #' set.seed(1)
 #' x <- sim_cpoisson(t, lambda = 2)
 #' x
@@ -72,7 +72,6 @@
 #' # Same times for all the trajectories: a matrix with the column t,
 #' # then one column per trajectory (X1, X2, ...)
 #' head(x[, 1:4])
-#' x[, "X2"]
 #'
 #' # 3. Rare and large shocks, then frequent and small shocks: same mean
 #' x1 <- sim_cpoisson(t, lambda = 0.2, rjump = function(n) rexp(n, 0.1), n_traj = 10)

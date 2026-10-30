@@ -36,7 +36,7 @@ Paramètres utilisés :
 | Normal inverse gaussien | `sim_nig` | `alpha = 2`, `beta = 0.5`, `delta = 1`, `mu = 0.2` |
 | Poisson composé | `sim_cpoisson` | `lambda = 0.5`, sauts exponentiels de moyenne 1 (`rjump` par défaut) |
 
-Dans chaque cas, les trajectoires simulées sont d'abord **stockées** dans un objet `x`, puis utilisées : premières valeurs, puis graphique. Quand toutes les trajectoires ont les mêmes instants d'inspection, `x` est une matrice : une colonne `t`, puis une colonne par trajectoire (`X1`, `X2`, ...).
+Dans chaque cas, les trajectoires simulées sont d'abord **stockées** dans un objet `x`, puis utilisées : premières valeurs, accroissements de la première trajectoire (arrondis à 3 décimales), puis graphique. Les accroissements montrent qu'un palier presque plat sur le graphique correspond à de petits accroissements, pas à des accroissements nuls (sauf pour le Poisson composé, constant entre deux chocs). Quand toutes les trajectoires ont les mêmes instants d'inspection, `x` est une matrice : une colonne `t`, puis une colonne par trajectoire (`X1`, `X2`, ...).
 
 \newpage
 
@@ -57,6 +57,7 @@ plot_plan(t1, "Inspections régulières")
 set.seed(11)
 x <- sim_gamma(t1, a = 2, b = 3)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Gamma")
 ```
 
@@ -66,6 +67,7 @@ plot_traj(x, "Gamma")
 set.seed(12)
 x <- sim_wiener(t1, mu = 0.5, sigma = 1.5)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Wiener")
 ```
 
@@ -75,6 +77,7 @@ plot_traj(x, "Wiener")
 set.seed(13)
 x <- sim_ig(t1, mu = 0.5, eta = 2)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Inverse gaussien")
 ```
 
@@ -84,6 +87,7 @@ plot_traj(x, "Inverse gaussien")
 set.seed(14)
 x <- sim_vg(t1, theta = 0.5, sigma = 1.5, nu = 2)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Variance-gamma")
 ```
 
@@ -93,6 +97,7 @@ plot_traj(x, "Variance-gamma")
 set.seed(15)
 x <- sim_meixner(t1, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Meixner")
 ```
 
@@ -102,6 +107,7 @@ plot_traj(x, "Meixner")
 set.seed(16)
 x <- sim_nig(t1, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "NIG")
 ```
 
@@ -111,6 +117,7 @@ plot_traj(x, "NIG")
 set.seed(17)
 x <- sim_cpoisson(t1, lambda = 0.5)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Poisson composé")
 ```
 
@@ -129,6 +136,7 @@ plot_plan(t2, "Pas décroissants : peu d'inspections au début, beaucoup à la f
 set.seed(21)
 x <- sim_gamma(t2, a = 2, b = 3)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Gamma")
 ```
 
@@ -138,6 +146,7 @@ plot_traj(x, "Gamma")
 set.seed(22)
 x <- sim_wiener(t2, mu = 0.5, sigma = 1.5)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Wiener")
 ```
 
@@ -147,6 +156,7 @@ plot_traj(x, "Wiener")
 set.seed(23)
 x <- sim_ig(t2, mu = 0.5, eta = 2)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Inverse gaussien")
 ```
 
@@ -156,6 +166,7 @@ plot_traj(x, "Inverse gaussien")
 set.seed(24)
 x <- sim_vg(t2, theta = 0.5, sigma = 1.5, nu = 2)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Variance-gamma")
 ```
 
@@ -165,6 +176,7 @@ plot_traj(x, "Variance-gamma")
 set.seed(25)
 x <- sim_meixner(t2, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Meixner")
 ```
 
@@ -174,6 +186,7 @@ plot_traj(x, "Meixner")
 set.seed(26)
 x <- sim_nig(t2, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "NIG")
 ```
 
@@ -183,6 +196,7 @@ plot_traj(x, "NIG")
 set.seed(27)
 x <- sim_cpoisson(t2, lambda = 0.5)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Poisson composé")
 ```
 
@@ -201,6 +215,7 @@ plot_plan(t3, "Pas croissants : beaucoup d'inspections au début, peu à la fin"
 set.seed(31)
 x <- sim_gamma(t3, a = 2, b = 3)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Gamma")
 ```
 
@@ -210,6 +225,7 @@ plot_traj(x, "Gamma")
 set.seed(32)
 x <- sim_wiener(t3, mu = 0.5, sigma = 1.5)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Wiener")
 ```
 
@@ -219,6 +235,7 @@ plot_traj(x, "Wiener")
 set.seed(33)
 x <- sim_ig(t3, mu = 0.5, eta = 2)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Inverse gaussien")
 ```
 
@@ -228,6 +245,7 @@ plot_traj(x, "Inverse gaussien")
 set.seed(34)
 x <- sim_vg(t3, theta = 0.5, sigma = 1.5, nu = 2)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Variance-gamma")
 ```
 
@@ -237,6 +255,7 @@ plot_traj(x, "Variance-gamma")
 set.seed(35)
 x <- sim_meixner(t3, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Meixner")
 ```
 
@@ -246,6 +265,7 @@ plot_traj(x, "Meixner")
 set.seed(36)
 x <- sim_nig(t3, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "NIG")
 ```
 
@@ -255,6 +275,7 @@ plot_traj(x, "NIG")
 set.seed(37)
 x <- sim_cpoisson(t3, lambda = 0.5)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Poisson composé")
 ```
 
@@ -273,6 +294,7 @@ plot_plan(t4, "Beaucoup au début et à la fin, peu au milieu")
 set.seed(41)
 x <- sim_gamma(t4, a = 2, b = 3)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Gamma")
 ```
 
@@ -282,6 +304,7 @@ plot_traj(x, "Gamma")
 set.seed(42)
 x <- sim_wiener(t4, mu = 0.5, sigma = 1.5)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Wiener")
 ```
 
@@ -291,6 +314,7 @@ plot_traj(x, "Wiener")
 set.seed(43)
 x <- sim_ig(t4, mu = 0.5, eta = 2)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Inverse gaussien")
 ```
 
@@ -300,6 +324,7 @@ plot_traj(x, "Inverse gaussien")
 set.seed(44)
 x <- sim_vg(t4, theta = 0.5, sigma = 1.5, nu = 2)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Variance-gamma")
 ```
 
@@ -309,6 +334,7 @@ plot_traj(x, "Variance-gamma")
 set.seed(45)
 x <- sim_meixner(t4, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Meixner")
 ```
 
@@ -318,6 +344,7 @@ plot_traj(x, "Meixner")
 set.seed(46)
 x <- sim_nig(t4, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "NIG")
 ```
 
@@ -327,6 +354,7 @@ plot_traj(x, "NIG")
 set.seed(47)
 x <- sim_cpoisson(t4, lambda = 0.5)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Poisson composé")
 ```
 
@@ -345,6 +373,7 @@ plot_plan(t5, "Peu au début et à la fin, beaucoup au milieu")
 set.seed(51)
 x <- sim_gamma(t5, a = 2, b = 3)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Gamma")
 ```
 
@@ -354,6 +383,7 @@ plot_traj(x, "Gamma")
 set.seed(52)
 x <- sim_wiener(t5, mu = 0.5, sigma = 1.5)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Wiener")
 ```
 
@@ -363,6 +393,7 @@ plot_traj(x, "Wiener")
 set.seed(53)
 x <- sim_ig(t5, mu = 0.5, eta = 2)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Inverse gaussien")
 ```
 
@@ -372,6 +403,7 @@ plot_traj(x, "Inverse gaussien")
 set.seed(54)
 x <- sim_vg(t5, theta = 0.5, sigma = 1.5, nu = 2)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Variance-gamma")
 ```
 
@@ -381,6 +413,7 @@ plot_traj(x, "Variance-gamma")
 set.seed(55)
 x <- sim_meixner(t5, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Meixner")
 ```
 
@@ -390,6 +423,7 @@ plot_traj(x, "Meixner")
 set.seed(56)
 x <- sim_nig(t5, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "NIG")
 ```
 
@@ -399,6 +433,7 @@ plot_traj(x, "NIG")
 set.seed(57)
 x <- sim_cpoisson(t5, lambda = 0.5)
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Poisson composé")
 ```
 
@@ -421,6 +456,7 @@ plot_plan(p1$time[p1$id == 1], "Inspections régulières")
 set.seed(111)
 x <- sim_gamma(p1, a = 2, b = 3)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Gamma : 10 trajectoires")
 ```
 
@@ -430,6 +466,7 @@ plot_traj(x, "Gamma : 10 trajectoires")
 set.seed(112)
 x <- sim_wiener(p1, mu = 0.5, sigma = 1.5)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Wiener : 10 trajectoires")
 ```
 
@@ -439,6 +476,7 @@ plot_traj(x, "Wiener : 10 trajectoires")
 set.seed(113)
 x <- sim_ig(p1, mu = 0.5, eta = 2)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Inverse gaussien : 10 trajectoires")
 ```
 
@@ -448,6 +486,7 @@ plot_traj(x, "Inverse gaussien : 10 trajectoires")
 set.seed(114)
 x <- sim_vg(p1, theta = 0.5, sigma = 1.5, nu = 2)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Variance-gamma : 10 trajectoires")
 ```
 
@@ -457,6 +496,7 @@ plot_traj(x, "Variance-gamma : 10 trajectoires")
 set.seed(115)
 x <- sim_meixner(p1, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Meixner : 10 trajectoires")
 ```
 
@@ -466,6 +506,7 @@ plot_traj(x, "Meixner : 10 trajectoires")
 set.seed(116)
 x <- sim_nig(p1, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "NIG : 10 trajectoires")
 ```
 
@@ -475,6 +516,7 @@ plot_traj(x, "NIG : 10 trajectoires")
 set.seed(117)
 x <- sim_cpoisson(p1, lambda = 0.5)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Poisson composé : 10 trajectoires")
 ```
 
@@ -493,6 +535,7 @@ plot_plan(p2$time[p2$id == 1], "Pas décroissants : peu d'inspections au début,
 set.seed(121)
 x <- sim_gamma(p2, a = 2, b = 3)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Gamma : 10 trajectoires")
 ```
 
@@ -502,6 +545,7 @@ plot_traj(x, "Gamma : 10 trajectoires")
 set.seed(122)
 x <- sim_wiener(p2, mu = 0.5, sigma = 1.5)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Wiener : 10 trajectoires")
 ```
 
@@ -511,6 +555,7 @@ plot_traj(x, "Wiener : 10 trajectoires")
 set.seed(123)
 x <- sim_ig(p2, mu = 0.5, eta = 2)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Inverse gaussien : 10 trajectoires")
 ```
 
@@ -520,6 +565,7 @@ plot_traj(x, "Inverse gaussien : 10 trajectoires")
 set.seed(124)
 x <- sim_vg(p2, theta = 0.5, sigma = 1.5, nu = 2)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Variance-gamma : 10 trajectoires")
 ```
 
@@ -529,6 +575,7 @@ plot_traj(x, "Variance-gamma : 10 trajectoires")
 set.seed(125)
 x <- sim_meixner(p2, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Meixner : 10 trajectoires")
 ```
 
@@ -538,6 +585,7 @@ plot_traj(x, "Meixner : 10 trajectoires")
 set.seed(126)
 x <- sim_nig(p2, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "NIG : 10 trajectoires")
 ```
 
@@ -547,6 +595,7 @@ plot_traj(x, "NIG : 10 trajectoires")
 set.seed(127)
 x <- sim_cpoisson(p2, lambda = 0.5)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Poisson composé : 10 trajectoires")
 ```
 
@@ -565,6 +614,7 @@ plot_plan(p3$time[p3$id == 1], "Pas croissants : beaucoup d'inspections au débu
 set.seed(131)
 x <- sim_gamma(p3, a = 2, b = 3)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Gamma : 10 trajectoires")
 ```
 
@@ -574,6 +624,7 @@ plot_traj(x, "Gamma : 10 trajectoires")
 set.seed(132)
 x <- sim_wiener(p3, mu = 0.5, sigma = 1.5)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Wiener : 10 trajectoires")
 ```
 
@@ -583,6 +634,7 @@ plot_traj(x, "Wiener : 10 trajectoires")
 set.seed(133)
 x <- sim_ig(p3, mu = 0.5, eta = 2)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Inverse gaussien : 10 trajectoires")
 ```
 
@@ -592,6 +644,7 @@ plot_traj(x, "Inverse gaussien : 10 trajectoires")
 set.seed(134)
 x <- sim_vg(p3, theta = 0.5, sigma = 1.5, nu = 2)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Variance-gamma : 10 trajectoires")
 ```
 
@@ -601,6 +654,7 @@ plot_traj(x, "Variance-gamma : 10 trajectoires")
 set.seed(135)
 x <- sim_meixner(p3, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Meixner : 10 trajectoires")
 ```
 
@@ -610,6 +664,7 @@ plot_traj(x, "Meixner : 10 trajectoires")
 set.seed(136)
 x <- sim_nig(p3, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "NIG : 10 trajectoires")
 ```
 
@@ -619,6 +674,7 @@ plot_traj(x, "NIG : 10 trajectoires")
 set.seed(137)
 x <- sim_cpoisson(p3, lambda = 0.5)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Poisson composé : 10 trajectoires")
 ```
 
@@ -637,6 +693,7 @@ plot_plan(p4$time[p4$id == 1], "Beaucoup au début et à la fin, peu au milieu")
 set.seed(141)
 x <- sim_gamma(p4, a = 2, b = 3)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Gamma : 10 trajectoires")
 ```
 
@@ -646,6 +703,7 @@ plot_traj(x, "Gamma : 10 trajectoires")
 set.seed(142)
 x <- sim_wiener(p4, mu = 0.5, sigma = 1.5)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Wiener : 10 trajectoires")
 ```
 
@@ -655,6 +713,7 @@ plot_traj(x, "Wiener : 10 trajectoires")
 set.seed(143)
 x <- sim_ig(p4, mu = 0.5, eta = 2)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Inverse gaussien : 10 trajectoires")
 ```
 
@@ -664,6 +723,7 @@ plot_traj(x, "Inverse gaussien : 10 trajectoires")
 set.seed(144)
 x <- sim_vg(p4, theta = 0.5, sigma = 1.5, nu = 2)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Variance-gamma : 10 trajectoires")
 ```
 
@@ -673,6 +733,7 @@ plot_traj(x, "Variance-gamma : 10 trajectoires")
 set.seed(145)
 x <- sim_meixner(p4, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Meixner : 10 trajectoires")
 ```
 
@@ -682,6 +743,7 @@ plot_traj(x, "Meixner : 10 trajectoires")
 set.seed(146)
 x <- sim_nig(p4, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "NIG : 10 trajectoires")
 ```
 
@@ -691,6 +753,7 @@ plot_traj(x, "NIG : 10 trajectoires")
 set.seed(147)
 x <- sim_cpoisson(p4, lambda = 0.5)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Poisson composé : 10 trajectoires")
 ```
 
@@ -709,6 +772,7 @@ plot_plan(p5$time[p5$id == 1], "Peu au début et à la fin, beaucoup au milieu")
 set.seed(151)
 x <- sim_gamma(p5, a = 2, b = 3)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Gamma : 10 trajectoires")
 ```
 
@@ -718,6 +782,7 @@ plot_traj(x, "Gamma : 10 trajectoires")
 set.seed(152)
 x <- sim_wiener(p5, mu = 0.5, sigma = 1.5)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Wiener : 10 trajectoires")
 ```
 
@@ -727,6 +792,7 @@ plot_traj(x, "Wiener : 10 trajectoires")
 set.seed(153)
 x <- sim_ig(p5, mu = 0.5, eta = 2)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Inverse gaussien : 10 trajectoires")
 ```
 
@@ -736,6 +802,7 @@ plot_traj(x, "Inverse gaussien : 10 trajectoires")
 set.seed(154)
 x <- sim_vg(p5, theta = 0.5, sigma = 1.5, nu = 2)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Variance-gamma : 10 trajectoires")
 ```
 
@@ -745,6 +812,7 @@ plot_traj(x, "Variance-gamma : 10 trajectoires")
 set.seed(155)
 x <- sim_meixner(p5, a = 1, b = 0.3, d = 1.5, m = 0.2)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Meixner : 10 trajectoires")
 ```
 
@@ -754,6 +822,7 @@ plot_traj(x, "Meixner : 10 trajectoires")
 set.seed(156)
 x <- sim_nig(p5, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "NIG : 10 trajectoires")
 ```
 
@@ -763,6 +832,7 @@ plot_traj(x, "NIG : 10 trajectoires")
 set.seed(157)
 x <- sim_cpoisson(p5, lambda = 0.5)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Poisson composé : 10 trajectoires")
 ```
 
@@ -790,6 +860,7 @@ A <- function(t) 0.02 * t^1.5
 set.seed(301)
 x <- sim_gamma(p2, b = 3, A = A)
 x
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Gamma à échelle de temps : 10 trajectoires")
 ```
 
@@ -799,6 +870,7 @@ plot_traj(x, "Gamma à échelle de temps : 10 trajectoires")
 set.seed(302)
 x <- sim_wiener(p2, sigma = 1.5, A = A)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Wiener à échelle de temps : 10 trajectoires")
 ```
 
@@ -808,6 +880,7 @@ plot_traj(x, "Wiener à échelle de temps : 10 trajectoires")
 set.seed(303)
 x <- sim_ig(p2, eta = 2, A = A)
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Inverse gaussien à échelle de temps : 10 trajectoires")
 ```
 

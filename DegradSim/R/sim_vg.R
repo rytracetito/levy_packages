@@ -78,8 +78,8 @@
 #' @seealso [plot_traj()], [traj_df()], [inspection_times()], [plot_plan()]
 #'
 #' @examples
-#' # 1. One trajectory with 200 regular inspections up to 10 (step 0.05)
-#' t <- inspection_times("regular", n = 200, tmax = 10)$time
+#' # 1. One trajectory with 55 regular inspections up to 10 (step 10/55)
+#' t <- inspection_times("regular", n = 55, tmax = 10)$time
 #' set.seed(1)
 #' x <- sim_vg(t, theta = 0.5, sigma = 1.2, nu = 0.8)
 #' x
@@ -92,7 +92,6 @@
 #' # Same times for all the trajectories: a matrix with the column t,
 #' # then one column per trajectory (X1, X2, ...)
 #' head(x[, 1:4])
-#' x[, "X2"]
 #'
 #' # 3. The same model simulated as a difference of two gamma processes
 #' y <- sim_vg(t, theta = 0.5, sigma = 1.2, nu = 0.8, increments = "difference", n_traj = 10)
