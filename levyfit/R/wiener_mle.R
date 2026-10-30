@@ -102,7 +102,7 @@
 #'
 #' @seealso [gamma_mle()], [ig_mle()], [vg_mle()], [meixner_mle()]
 #'
-#' @examplesIf requireNamespace("DegradSim", quietly = TRUE)
+#' @examples
 #' # 1. One trajectory inspected every time unit up to 50 (mu = 0.5, sigma2 = 2.25)
 #' t <- DegradSim::inspection_times("regular", n = 50, tmax = 50)$time
 #' set.seed(1)

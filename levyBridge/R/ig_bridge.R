@@ -66,7 +66,6 @@
 #' # Errors: t outside (t_A, t_B), theta without all the parameters
 #' try(ig_bridge(1, 3, 4, 6, 5, theta = c(mu = 1, eta = 3)))
 #' try(ig_bridge(1, 3, 4, 6, 2, theta = c(eta = 3)))
-#' @examplesIf requireNamespace("levyfit", quietly = TRUE)
 #' # 4. Parameters estimated with levyfit on a simulated trajectory
 #' t <- c(0, 1.2, 2, 3.8, 5.5, 7.1, 10.4, 12.9, 15.3, 18.7, 22.5)
 #' x <- DegradSim::sim_ig(t, mu = 1, eta = 3)
@@ -162,7 +161,6 @@ ig_bridge <- function(t_A, x_A, t_B, x_B, t, theta, n = 1) {
 #' set.seed(2); y1 <- ig_resampling(x, theta)[[1]]$X
 #' set.seed(2); y2 <- ig_resampling(x, theta)[[1]]$X
 #' identical(y1, y2)
-#' @examplesIf requireNamespace("levyfit", quietly = TRUE)
 #' # 7. With the parameters estimated by levyfit
 #' theta_hat <- levyfit::ig_mle(xs)
 #' theta_hat

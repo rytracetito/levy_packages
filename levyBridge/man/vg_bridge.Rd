@@ -92,7 +92,6 @@ hist(y, breaks = 50, freq = FALSE)
 # Errors: t outside (t_A, t_B), theta without all the parameters
 try(vg_bridge(1, 3, 4, 6, 5, theta = c(theta = 0.5, sigma = 1.5, nu = 2)))
 try(vg_bridge(1, 3, 4, 6, 2, theta = c(sigma = 1.5, nu = 2)))
-\dontshow{if (requireNamespace("levyfit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 3. Parameters estimated with levyfit on simulated trajectories
 set.seed(1)
 plan <- DegradSim::inspection_times("decreasing", n = 20, n_traj = 10, tmax = 40)
@@ -100,7 +99,6 @@ x <- DegradSim::sim_vg(plan, theta = 0.5, sigma = 1.5, nu = 2)
 est <- levyfit::vg_mle(x)
 est
 vg_bridge(0, 0, 2, 1, 1, theta = est, n = 3)
-\dontshow{\}) # examplesIf}
 }
 \references{
 Hörmann, W. and Leydold, J. (2014). Generating generalized inverse

@@ -85,7 +85,6 @@ the tested increments.
 }
 
 \examples{
-\dontshow{if (requireNamespace("DegradSim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 1. A gamma trajectory (a = 2, b = 3) with irregular inspections,
 #    more and more frequent
 set.seed(1)
@@ -98,7 +97,6 @@ gof.levy(x, "HWP")
 
 # 3. The tests of each model
 tests_disponibles()
-\dontshow{\}) # examplesIf}
 }
 \references{
 Grall-Maës, E. (2012). Use of the Kolmogorov-Smirnov test for gamma

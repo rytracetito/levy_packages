@@ -118,7 +118,6 @@ sapply(r6, nrow)
 set.seed(2); y1 <- vg_resampling(x, theta)[[1]]$X
 set.seed(2); y2 <- vg_resampling(x, theta)[[1]]$X
 identical(y1, y2)
-\dontshow{if (requireNamespace("levyfit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 7. With the parameters estimated by levyfit
 set.seed(1)
 plan_e <- DegradSim::inspection_times("decreasing", n = 20, n_traj = 10, tmax = 40)
@@ -127,7 +126,6 @@ theta_hat <- levyfit::vg_mle(xe)
 theta_hat
 r7 <- vg_resampling(xe, theta_hat)
 attr(r7, "parameters")
-\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=vg_bridge]{vg_bridge()}} for the distribution of the bridge,

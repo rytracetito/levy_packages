@@ -170,7 +170,6 @@ associated with the Meixner distribution of Grigoletto and Provasi
 }
 
 \examples{
-\dontshow{if (requireNamespace("DegradSim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 1. Inspection times: 10 trajectories inspected more and more often
 plan <- DegradSim::inspection_times("decreasing", n = 20, n_traj = 10, tmax = 100)
 
@@ -185,7 +184,6 @@ ig_mle(x)
 
 # 4. Estimates with 95 \% confidence intervals
 gamma_mle(x, ci = TRUE)
-\dontshow{\}) # examplesIf}
 }
 \references{
 \strong{Degradation processes}: Kahle, W., Mercier, S. and Paroissin, C. (2016).

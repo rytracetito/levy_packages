@@ -70,7 +70,7 @@
 #' Journal of Risk and Reliability*, 226(6), 624-634.
 #' \doi{10.1177/1748006X12462522}
 #'
-#' @examplesIf requireNamespace("DegradSim", quietly = TRUE)
+#' @examples
 #' # 1. A gamma trajectory (a = 2, b = 3) with irregular inspections,
 #' #    more and more frequent
 #' set.seed(1)
@@ -85,4 +85,5 @@
 #' tests_disponibles()
 #' @keywords package
 #' @importFrom Runuran ur pinvd.new udmeixner
+#' @importFrom DegradSim inspection_times
 "_PACKAGE"

@@ -176,7 +176,7 @@
 #'
 #' The references of each method are given in the help page of each function.
 #'
-#' @examplesIf requireNamespace("DegradSim", quietly = TRUE)
+#' @examples
 #' # 1. Inspection times: 10 trajectories inspected more and more often
 #' plan <- DegradSim::inspection_times("decreasing", n = 20, n_traj = 10, tmax = 100)
 #'
@@ -195,4 +195,5 @@
 "_PACKAGE"
 
 #' @importFrom stats dgamma dnorm integrate optim optimHess optimize qnorm runif sd uniroot
+#' @importFrom DegradSim inspection_times
 NULL

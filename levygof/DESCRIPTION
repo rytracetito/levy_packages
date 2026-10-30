@@ -22,6 +22,7 @@ Language: en
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports:
+    DegradSim,
     fBasics,
     gofgamma,
     gofIG,
@@ -34,7 +35,6 @@ Imports:
     stats,
     tseries
 Suggests:
-    DegradSim,
     testthat (>= 3.0.0)
 Remotes:
     github::rytracetito/levy_packages/levyfit,

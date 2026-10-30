@@ -278,7 +278,6 @@ as defined in section 10.25(ii)).
 }
 
 \examples{
-\dontshow{if (requireNamespace("DegradSim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 1. One trajectory inspected every 2 time units up to 400
 #    (theta = 0.5, sigma = 1.5, nu = 2)
 t <- DegradSim::inspection_times("regular", n = 200, tmax = 400)$time
@@ -308,7 +307,6 @@ t100 <- DegradSim::inspection_times("regular", n = 100, tmax = 100)$time
 y <- DegradSim::sim_gamma(t100, a = 2, b = 3)
 vg_mle(y)
 gamma_mle(y)
-\dontshow{\}) # examplesIf}
 }
 \references{
 Alzer, H. (1997). On some inequalities for the gamma and psi functions.

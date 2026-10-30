@@ -88,7 +88,6 @@
 #' # Errors: t outside (t_A, t_B), theta without all the parameters
 #' try(vg_bridge(1, 3, 4, 6, 5, theta = c(theta = 0.5, sigma = 1.5, nu = 2)))
 #' try(vg_bridge(1, 3, 4, 6, 2, theta = c(sigma = 1.5, nu = 2)))
-#' @examplesIf requireNamespace("levyfit", quietly = TRUE)
 #' # 3. Parameters estimated with levyfit on simulated trajectories
 #' set.seed(1)
 #' plan <- DegradSim::inspection_times("decreasing", n = 20, n_traj = 10, tmax = 40)
@@ -181,7 +180,6 @@ vg_bridge <- function(t_A, x_A, t_B, x_B, t, theta, n = 1) {
 #' set.seed(2); y1 <- vg_resampling(x, theta)[[1]]$X
 #' set.seed(2); y2 <- vg_resampling(x, theta)[[1]]$X
 #' identical(y1, y2)
-#' @examplesIf requireNamespace("levyfit", quietly = TRUE)
 #' # 7. With the parameters estimated by levyfit
 #' set.seed(1)
 #' plan_e <- DegradSim::inspection_times("decreasing", n = 20, n_traj = 10, tmax = 40)

@@ -256,7 +256,6 @@ Hessian used by the other models.
 }
 
 \examples{
-\dontshow{if (requireNamespace("DegradSim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 1. One trajectory with 5000 inspections up to 500 (step 0.1)
 #    (a = 1, b = 0.3, d = 1.5, m = 0.2)
 t <- DegradSim::inspection_times("regular", n = 5000, tmax = 500)$time
@@ -291,7 +290,6 @@ meixner_mle(x, ci = TRUE)
 t10 <- DegradSim::inspection_times("regular", n = 10, tmax = 100)$time
 y <- DegradSim::sim_meixner(t10, a = 1, b = 0.3, d = 1.5, m = 0.2)
 meixner_mle(y)
-\dontshow{\}) # examplesIf}
 }
 \references{
 Grigoletto, M. and Provasi, C. (2009). Simulation and estimation of the

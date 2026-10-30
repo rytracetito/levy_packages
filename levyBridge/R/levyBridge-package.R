@@ -214,5 +214,6 @@
 #' attr(gamma_resampling(xs, theta, method = "MultiBridge"), "teq")
 #' plot_bridge(gamma_resampling(xs, theta, method = "MultiBridge"), trajectory = 1:3)
 #' @importFrom DegradSim inspection_times
+#' @importFrom levyfit gamma_mle
 #' @keywords package
 "_PACKAGE"

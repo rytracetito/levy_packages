@@ -238,7 +238,7 @@
 #'
 #' @seealso [vg_mle()]
 #'
-#' @examplesIf requireNamespace("DegradSim", quietly = TRUE)
+#' @examples
 #' # 1. One trajectory with 5000 inspections up to 500 (step 0.1)
 #' #    (a = 1, b = 0.3, d = 1.5, m = 0.2)
 #' t <- DegradSim::inspection_times("regular", n = 5000, tmax = 500)$time

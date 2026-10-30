@@ -123,13 +123,11 @@ sapply(r6, nrow)
 set.seed(2); y1 <- ig_resampling(x, theta)[[1]]$X
 set.seed(2); y2 <- ig_resampling(x, theta)[[1]]$X
 identical(y1, y2)
-\dontshow{if (requireNamespace("levyfit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 7. With the parameters estimated by levyfit
 theta_hat <- levyfit::ig_mle(xs)
 theta_hat
 r7 <- ig_resampling(xs, theta_hat)
 attr(r7, "parameters")
-\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=ig_bridge]{ig_bridge()}} for the distribution of the bridge,

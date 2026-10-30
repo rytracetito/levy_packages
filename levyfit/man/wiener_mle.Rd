@@ -112,7 +112,6 @@ biased downwards. The function also returns its unbiased version
 }
 
 \examples{
-\dontshow{if (requireNamespace("DegradSim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 1. One trajectory inspected every time unit up to 50 (mu = 0.5, sigma2 = 2.25)
 t <- DegradSim::inspection_times("regular", n = 50, tmax = 50)$time
 set.seed(1)
@@ -149,7 +148,6 @@ wiener_mle(liste)
 # sigma2 is the MLE and s2 its unbiased version: with few increments,
 # here 3, they differ clearly
 wiener_mle(c(0, 1.2, 0.7, 2.5), c(0, 1, 2, 3))
-\dontshow{\}) # examplesIf}
 }
 \references{
 Kahle, W., Mercier, S. and Paroissin, C. (2016). \emph{Degradation Processes in

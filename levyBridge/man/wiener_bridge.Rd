@@ -67,14 +67,12 @@ wiener_bridge(0, 2, 2, 1, 0.5, theta = c(mu = 0.5, sigma = 1.5), n = 3)
 # Errors: t outside (t_A, t_B), theta without all the parameters
 try(wiener_bridge(1, 3, 4, 6, 5, theta = c(mu = 0.5, sigma = 1.5)))
 try(wiener_bridge(1, 3, 4, 6, 2, theta = c(sigma = 1.5)))
-\dontshow{if (requireNamespace("levyfit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 4. Parameters estimated with levyfit (variance sigma2 turned into sigma)
 t <- c(0, 1.2, 2, 3.8, 5.5, 7.1, 10.4, 12.9, 15.3, 18.7, 22.5)
 x <- DegradSim::sim_wiener(t, mu = 0.5, sigma = 1.5)
 est <- levyfit::wiener_mle(x)
 theta <- c(mu = est[["mu"]], sigma = sqrt(est[["sigma2"]]))
 wiener_bridge(1.2, x[2, 2], 2, x[3, 2], 1.5, theta = theta, n = 3)
-\dontshow{\}) # examplesIf}
 }
 \seealso{
 \itemize{

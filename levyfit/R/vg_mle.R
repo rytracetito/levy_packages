@@ -285,7 +285,7 @@
 #'
 #' @seealso [wiener_mle()], [meixner_mle()]
 #'
-#' @examplesIf requireNamespace("DegradSim", quietly = TRUE)
+#' @examples
 #' # 1. One trajectory inspected every 2 time units up to 400
 #' #    (theta = 0.5, sigma = 1.5, nu = 2)
 #' t <- DegradSim::inspection_times("regular", n = 200, tmax = 400)$time

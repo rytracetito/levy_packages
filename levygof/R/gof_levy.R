@@ -190,7 +190,7 @@
 #'   [levyfit::gamma_mle()] for the estimation,
 #'   [levyBridge::levyBridge-package] for the bridges.
 #'
-#' @examplesIf requireNamespace("DegradSim", quietly = TRUE)
+#' @examples
 #' set.seed(1)
 #'
 #' # 1. One gamma trajectory (a = 2, b = 3) inspected every 2 time units:

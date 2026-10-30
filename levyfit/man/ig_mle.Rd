@@ -117,7 +117,6 @@ estimator \eqn{(n - 3) / V} of their shape parameter given by Seshadri
 }
 
 \examples{
-\dontshow{if (requireNamespace("DegradSim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 1. One trajectory inspected every time unit up to 50 (mu = 0.5, eta = 2)
 t <- DegradSim::inspection_times("regular", n = 50, tmax = 50)$time
 set.seed(1)
@@ -153,7 +152,6 @@ ig_mle(liste)
 
 # The inverse Gaussian process only increases: a decrease stops the estimation
 try(ig_mle(c(0, 2, 1.5, 3), c(0, 1, 2, 3)))
-\dontshow{\}) # examplesIf}
 }
 \references{
 Tweedie, M. C. K. (1957). Statistical properties of inverse Gaussian

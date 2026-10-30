@@ -123,7 +123,6 @@ this starting point, which only makes the computation faster.
 }
 
 \examples{
-\dontshow{if (requireNamespace("DegradSim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 1. One trajectory inspected every time unit up to 50 (a = 2, b = 3)
 t <- DegradSim::inspection_times("regular", n = 50, tmax = 50)$time
 set.seed(1)
@@ -159,7 +158,6 @@ gamma_mle(liste)
 
 # The gamma process only increases: a decrease stops the estimation
 try(gamma_mle(c(0, 2, 1.5, 3), c(0, 1, 2, 3)))
-\dontshow{\}) # examplesIf}
 }
 \references{
 Kahle, W., Mercier, S. and Paroissin, C. (2016). \emph{Degradation Processes in

@@ -98,7 +98,6 @@ identical(y1, y2)
 try(meixner_bridge(1, 3, 4, 6, 5, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2)))
 try(meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, d = 1.5, m = 0.2)))
 try(meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = 4, d = 1.5, m = 0.2)))
-\dontshow{if (requireNamespace("levyfit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 3. Parameters estimated with levyfit on simulated trajectories
 set.seed(1)
 plan <- DegradSim::inspection_times("decreasing", n = 20, n_traj = 10, tmax = 40)
@@ -106,7 +105,6 @@ x <- DegradSim::sim_meixner(plan, a = 1, b = 0.3, d = 1.5, m = 0.2)
 est <- levyfit::meixner_mle(x)
 est
 meixner_bridge(0, 0, 2, 1, 1, theta = est, n = 3)
-\dontshow{\}) # examplesIf}
 }
 \references{
 Devroye, L. (1986). \emph{Non-Uniform Random Variate Generation}. Springer.

@@ -217,7 +217,6 @@ The bridges and the bootstrap are random: use \code{\link[=set.seed]{set.seed()}
 }
 
 \examples{
-\dontshow{if (requireNamespace("DegradSim", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 set.seed(1)
 
 # 1. One gamma trajectory (a = 2, b = 3) inspected every 2 time units:
@@ -302,7 +301,6 @@ t3 <- DegradSim::inspection_times("dec-inc", n = 60, tmax = 120, digits = 1)$tim
 mx3 <- DegradSim::sim_meixner(t3, a = 1, b = 1, d = 0.5, m = 0.2)
 try(gof.levy(mx3, "Meixner", test = "AD", B = 30))
 }
-\dontshow{\}) # examplesIf}
 }
 \references{
 Grall-Maës, E. (2012). Use of the Kolmogorov-Smirnov test for gamma

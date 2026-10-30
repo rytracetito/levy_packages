@@ -119,14 +119,12 @@ sapply(r6, nrow)
 set.seed(2); y1 <- wiener_resampling(x, theta)[[1]]$X
 set.seed(2); y2 <- wiener_resampling(x, theta)[[1]]$X
 identical(y1, y2)
-\dontshow{if (requireNamespace("levyfit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # 7. With the parameters estimated by levyfit
 est <- levyfit::wiener_mle(xs)
 theta_hat <- c(mu = est[["mu"]], sigma = sqrt(est[["sigma2"]]))
 theta_hat
 r7 <- wiener_resampling(xs, theta_hat)
 attr(r7, "parameters")
-\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=wiener_bridge]{wiener_bridge()}} for the distribution of the bridge,
