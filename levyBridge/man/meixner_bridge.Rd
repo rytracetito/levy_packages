@@ -83,9 +83,19 @@ set.seed(1)
 meixner_bridge(t_A = 1, x_A = 3, t_B = 4, x_B = 6, t = 2,
                theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2))
 
-# 2. Many draws: distribution of X_2 given the two levels
+# 2. Many draws: the histogram of the draws and, in red, the density of
+#    the bridge, f_{t - t_A}(x - x_A) f_{t_B - t}(x_B - x) / f_{t_B - t_A}(x_B - x_A)
+#    (see ?levyBridge), where f_s is the density of X_s
+#    (see the section Model, computed on the log scale)
+f <- function(x, s, a = 1, b = 0.3, d = 1.5, m = 0.2) {
+  exp(2 * d * s * log(2 * cos(b / 2)) - log(2 * a * pi) - lgamma(2 * d * s) +
+        b * (x - m * s) / a +
+        2 * Re(gsl::lngamma_complex(rep(d * s, length(x)), (x - m * s) / a)))
+}
+dens <- function(x) f(x - 3, 1) * f(6 - x, 2) / f(3, 3)
 y <- meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2), n = 5000)
 hist(y, breaks = 50, freq = FALSE)
+curve(dens, add = TRUE, col = "red")
 
 # The skewness b does not change the bridge
 set.seed(2)
@@ -98,6 +108,7 @@ identical(y1, y2)
 try(meixner_bridge(1, 3, 4, 6, 5, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2)))
 try(meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, d = 1.5, m = 0.2)))
 try(meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = 4, d = 1.5, m = 0.2)))
+
 # 3. Parameters estimated with levyfit on simulated trajectories
 set.seed(1)
 plan <- DegradSim::inspection_times("decreasing", n = 20, n_traj = 10, tmax = 40)

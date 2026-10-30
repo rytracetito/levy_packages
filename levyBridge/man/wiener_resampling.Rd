@@ -119,6 +119,7 @@ sapply(r6, nrow)
 set.seed(2); y1 <- wiener_resampling(x, theta)[[1]]$X
 set.seed(2); y2 <- wiener_resampling(x, theta)[[1]]$X
 identical(y1, y2)
+
 # 7. With the parameters estimated by levyfit
 est <- levyfit::wiener_mle(xs)
 theta_hat <- c(mu = est[["mu"]], sigma = sqrt(est[["sigma2"]]))

@@ -81,13 +81,29 @@
 #' vg_bridge(t_A = 1, x_A = 3, t_B = 4, x_B = 6, t = 2,
 #'           theta = c(theta = 0.5, sigma = 1.5, nu = 2))
 #'
-#' # 2. Many draws: distribution of X_2 given the two levels
-#' y <- vg_bridge(1, 3, 4, 6, 2, theta = c(theta = 0.5, sigma = 1.5, nu = 2), n = 10000)
+#' # 2. Many draws of X_3 given X_1 = 3 and X_6 = 6: the histogram of the
+#' #    draws and, in red, the density of the bridge,
+#' #    f_{t - t_A}(x - x_A) f_{t_B - t}(x_B - x) / f_{t_B - t_A}(x_B - x_A)
+#' #    (see ?levyBridge), where f_s is the density of X_s
+#' #    (Madan, Carr and Chang, 1998, computed on the log scale). With nu = 2,
+#' #    the times are such that t - t_A > nu / 2 and t_B - t > nu / 2: otherwise
+#' #    the density of the bridge is infinite at x_A or x_B
+#' f <- function(x, s, th = 0.5, sg = 1.5, nu = 2) {
+#'   k <- sqrt(th^2 + 2 * sg^2 / nu)
+#'   z <- k * abs(x) / sg^2
+#'   exp(log(2) + th * x / sg^2 - (s / nu) * log(nu) - log(sqrt(2 * pi) * sg) -
+#'         lgamma(s / nu) + (s / nu - 0.5) * log(abs(x) / k) +
+#'         log(besselK(z, s / nu - 0.5, expon.scaled = TRUE)) - z)
+#' }
+#' dens <- function(x) f(x - 3, 2) * f(6 - x, 3) / f(3, 5)
+#' y <- vg_bridge(1, 3, 6, 6, 3, theta = c(theta = 0.5, sigma = 1.5, nu = 2), n = 10000)
 #' hist(y, breaks = 50, freq = FALSE)
+#' curve(dens, add = TRUE, col = "red", n = 500)
 #'
 #' # Errors: t outside (t_A, t_B), theta without all the parameters
 #' try(vg_bridge(1, 3, 4, 6, 5, theta = c(theta = 0.5, sigma = 1.5, nu = 2)))
 #' try(vg_bridge(1, 3, 4, 6, 2, theta = c(sigma = 1.5, nu = 2)))
+#'
 #' # 3. Parameters estimated with levyfit on simulated trajectories
 #' set.seed(1)
 #' plan <- DegradSim::inspection_times("decreasing", n = 20, n_traj = 10, tmax = 40)
@@ -180,6 +196,7 @@ vg_bridge <- function(t_A, x_A, t_B, x_B, t, theta, n = 1) {
 #' set.seed(2); y1 <- vg_resampling(x, theta)[[1]]$X
 #' set.seed(2); y2 <- vg_resampling(x, theta)[[1]]$X
 #' identical(y1, y2)
+#'
 #' # 7. With the parameters estimated by levyfit
 #' set.seed(1)
 #' plan_e <- DegradSim::inspection_times("decreasing", n = 20, n_traj = 10, tmax = 40)

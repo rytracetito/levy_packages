@@ -54,10 +54,16 @@
 #' set.seed(1)
 #' ig_bridge(t_A = 1, x_A = 3, t_B = 4, x_B = 6, t = 2, theta = c(mu = 1, eta = 3))
 #'
-#' # 2. Many draws: the values stay between 3 and 6
+#' # 2. Many draws: the histogram of the draws and, in red, the density of
+#' #    the bridge, f_{t - t_A}(x - x_A) f_{t_B - t}(x_B - x) / f_{t_B - t_A}(x_B - x_A)
+#' #    (see ?levyBridge), where f_s is the density of X_s
+#' #    (inverse Gaussian with mean mu s = s and shape eta s^2 = 3 s^2)
+#' f <- function(x, s) sqrt(3 * s^2 / (2 * pi * x^3)) * exp(-3 * (x - s)^2 / (2 * x))
+#' dens <- function(x) f(x - 3, 1) * f(6 - x, 2) / f(3, 3)
 #' y <- ig_bridge(1, 3, 4, 6, 2, theta = c(mu = 1, eta = 3), n = 10000)
 #' range(y)
 #' hist(y, breaks = 50, freq = FALSE)
+#' curve(dens, from = 3.001, to = 5.999, add = TRUE, col = "red")
 #'
 #' # 3. Equal levels give a constant bridge; a decrease is impossible
 #' ig_bridge(0, 1, 2, 1, 0.5, theta = c(mu = 1, eta = 3))
@@ -66,6 +72,7 @@
 #' # Errors: t outside (t_A, t_B), theta without all the parameters
 #' try(ig_bridge(1, 3, 4, 6, 5, theta = c(mu = 1, eta = 3)))
 #' try(ig_bridge(1, 3, 4, 6, 2, theta = c(eta = 3)))
+#'
 #' # 4. Parameters estimated with levyfit on a simulated trajectory
 #' t <- c(0, 1.2, 2, 3.8, 5.5, 7.1, 10.4, 12.9, 15.3, 18.7, 22.5)
 #' x <- DegradSim::sim_ig(t, mu = 1, eta = 3)
@@ -161,6 +168,7 @@ ig_bridge <- function(t_A, x_A, t_B, x_B, t, theta, n = 1) {
 #' set.seed(2); y1 <- ig_resampling(x, theta)[[1]]$X
 #' set.seed(2); y2 <- ig_resampling(x, theta)[[1]]$X
 #' identical(y1, y2)
+#'
 #' # 7. With the parameters estimated by levyfit
 #' theta_hat <- levyfit::ig_mle(xs)
 #' theta_hat

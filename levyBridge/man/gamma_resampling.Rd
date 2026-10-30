@@ -123,6 +123,7 @@ sapply(r6, nrow)
 set.seed(2); y1 <- gamma_resampling(x, theta)[[1]]$X
 set.seed(2); y2 <- gamma_resampling(x, theta)[[1]]$X
 identical(y1, y2)
+
 # 7. With the parameters estimated by levyfit
 theta_hat <- levyfit::gamma_mle(xs)
 theta_hat

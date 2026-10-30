@@ -118,6 +118,7 @@ sapply(r6, nrow)
 set.seed(2); y1 <- vg_resampling(x, theta)[[1]]$X
 set.seed(2); y2 <- vg_resampling(x, theta)[[1]]$X
 identical(y1, y2)
+
 # 7. With the parameters estimated by levyfit
 set.seed(1)
 plan_e <- DegradSim::inspection_times("decreasing", n = 20, n_traj = 10, tmax = 40)

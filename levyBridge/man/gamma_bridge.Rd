@@ -52,10 +52,14 @@ rounding), the bridge is constant.
 set.seed(1)
 gamma_bridge(t_A = 1, x_A = 3, t_B = 4, x_B = 6, t = 2, theta = c(a = 2, b = 3))
 
-# 2. Many draws: X_2 = 3 + 3 Y with Y ~ Beta(2, 4)
+# 2. Many draws: the histogram of the draws and, in red, the density of
+#    the bridge, f_{t - t_A}(x - x_A) f_{t_B - t}(x_B - x) / f_{t_B - t_A}(x_B - x_A)
+#    (see ?levyBridge), where f_s is the density of X_s
+f <- function(x, s) dgamma(x, shape = 2 * s, rate = 3)
+dens <- function(x) f(x - 3, 1) * f(6 - x, 2) / f(3, 3)
 y <- gamma_bridge(1, 3, 4, 6, 2, theta = c(a = 2, b = 3), n = 10000)
 hist(y, breaks = 50, freq = FALSE)
-curve(dbeta((x - 3) / 3, 2, 4) / 3, add = TRUE, col = "red")
+curve(dens, add = TRUE, col = "red")
 
 # The rate b does not change the bridge
 set.seed(2); y1 <- gamma_bridge(1, 3, 4, 6, 2, theta = c(a = 2, b = 3), n = 5)
@@ -69,6 +73,7 @@ try(gamma_bridge(0, 2, 2, 1, 0.5, theta = c(a = 2, b = 3)))
 # Errors: t outside (t_A, t_B), theta without all the parameters
 try(gamma_bridge(1, 3, 4, 6, 5, theta = c(a = 2, b = 3)))
 try(gamma_bridge(1, 3, 4, 6, 2, theta = c(a = 2)))
+
 # 4. Parameters estimated with levyfit on a simulated trajectory
 t <- c(0, 1.2, 2, 3.8, 5.5, 7.1, 10.4, 12.9, 15.3, 18.7, 22.5)
 x <- DegradSim::sim_gamma(t, a = 2, b = 3)

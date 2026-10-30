@@ -56,10 +56,14 @@ depend on the drift \eqn{\mu}.
 set.seed(1)
 wiener_bridge(t_A = 1, x_A = 3, t_B = 4, x_B = 6, t = 2, theta = c(mu = 0.5, sigma = 1.5))
 
-# 2. Many draws: X_2 ~ N(3 + 3 / 3, 1.5^2 * 1 * 2 / 3)
+# 2. Many draws: the histogram of the draws and, in red, the density of
+#    the bridge, f_{t - t_A}(x - x_A) f_{t_B - t}(x_B - x) / f_{t_B - t_A}(x_B - x_A)
+#    (see ?levyBridge), where f_s is the density of X_s
+f <- function(x, s) dnorm(x, mean = 0.5 * s, sd = 1.5 * sqrt(s))
+dens <- function(x) f(x - 3, 1) * f(6 - x, 2) / f(3, 3)
 y <- wiener_bridge(1, 3, 4, 6, 2, theta = c(mu = 0.5, sigma = 1.5), n = 10000)
-c(mean(y), var(y))
-c(4, 1.5^2 * 2 / 3)
+hist(y, breaks = 50, freq = FALSE)
+curve(dens, add = TRUE, col = "red")
 
 # 3. A decrease is possible: the process is not monotone
 wiener_bridge(0, 2, 2, 1, 0.5, theta = c(mu = 0.5, sigma = 1.5), n = 3)
@@ -67,6 +71,7 @@ wiener_bridge(0, 2, 2, 1, 0.5, theta = c(mu = 0.5, sigma = 1.5), n = 3)
 # Errors: t outside (t_A, t_B), theta without all the parameters
 try(wiener_bridge(1, 3, 4, 6, 5, theta = c(mu = 0.5, sigma = 1.5)))
 try(wiener_bridge(1, 3, 4, 6, 2, theta = c(sigma = 1.5)))
+
 # 4. Parameters estimated with levyfit (variance sigma2 turned into sigma)
 t <- c(0, 1.2, 2, 3.8, 5.5, 7.1, 10.4, 12.9, 15.3, 18.7, 22.5)
 x <- DegradSim::sim_wiener(t, mu = 0.5, sigma = 1.5)
