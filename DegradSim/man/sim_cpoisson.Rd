@@ -95,12 +95,19 @@ with \code{\link[stats:Poisson]{stats::rpois()}};
 }
 
 \examples{
-# 1. One trajectory with 55 regular inspections up to 10 (step 10/55), exponential
+# 1. One trajectory with 20 regular inspections up to 10 (step 0.5), exponential
 #    jumps of mean 1 (default)
-t <- inspection_times("regular", n = 55, tmax = 10)$time
+t <- inspection_times("regular", n = 20, tmax = 10)$time
 set.seed(1)
 x <- sim_cpoisson(t, lambda = 2)
 x
+plot_traj(x)
+
+# 1b. One trajectory with 20 inspections up to 10 whose steps increase
+#     (inspections less and less frequent)
+t_inc <- inspection_times("increasing", n = 20, tmax = 10)$time
+round(diff(t_inc), 2)
+x <- sim_cpoisson(t_inc, lambda = 2)
 plot_traj(x)
 
 # 2. Ten trajectories with gamma jumps of mean 2/3

@@ -60,11 +60,18 @@
 #' * [plot_traj()], [traj_df()], [inspection_times()], [plot_plan()].
 #'
 #' @examples
-#' # 1. One trajectory with 55 regular inspections up to 10 (step 10/55)
-#' t <- inspection_times("regular", n = 55, tmax = 10)$time
+#' # 1. One trajectory with 20 regular inspections up to 10 (step 0.5)
+#' t <- inspection_times("regular", n = 20, tmax = 10)$time
 #' set.seed(1)
 #' x <- sim_wiener(t, mu = 0.5, sigma = 1.5)
 #' x
+#' plot_traj(x)
+#'
+#' # 1b. One trajectory with 20 inspections up to 10 whose steps increase
+#' #     (inspections less and less frequent)
+#' t_inc <- inspection_times("increasing", n = 20, tmax = 10)$time
+#' round(diff(t_inc), 2)
+#' x <- sim_wiener(t_inc, mu = 0.5, sigma = 1.5)
 #' plot_traj(x)
 #'
 #' # 2. Ten trajectories with the same inspection times
