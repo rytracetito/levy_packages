@@ -78,16 +78,16 @@
 #' @seealso [plot_traj()], [traj_df()], [inspection_times()], [plot_plan()]
 #'
 #' @examples
-#' # 1. One trajectory with 20 regular inspections up to 10 (step 0.5)
-#' t <- inspection_times("regular", n = 20, tmax = 10)$time
+#' # 1. One trajectory with 20 regular inspections up to 100 (step 5)
+#' t <- inspection_times("regular", n = 20, tmax = 100)$time
 #' set.seed(1)
 #' x <- sim_vg(t, theta = 0.5, sigma = 1.2, nu = 0.8)
 #' x
 #' plot_traj(x)
 #'
-#' # 1b. One trajectory with 20 inspections up to 10 whose steps increase
+#' # 1b. One trajectory with 20 inspections up to 100 whose steps increase
 #' #     (inspections less and less frequent)
-#' t_inc <- inspection_times("increasing", n = 20, tmax = 10)$time
+#' t_inc <- inspection_times("increasing", n = 20, tmax = 100)$time
 #' round(diff(t_inc), 2)
 #' x <- sim_vg(t_inc, theta = 0.5, sigma = 1.2, nu = 0.8)
 #' plot_traj(x)
@@ -105,7 +105,7 @@
 #' plot_traj(y, "Variance-gamma process, difference of two gamma processes")
 #'
 #' # 4. Irregular inspections, more and more frequent over time
-#' plan <- inspection_times("decreasing", n = 50, n_traj = 5, tmax = 10)
+#' plan <- inspection_times("decreasing", n = 20, n_traj = 5, tmax = 100)
 #' x <- sim_vg(plan, theta = 0.5, sigma = 1.2, nu = 0.8)
 #' plot_traj(x)
 #'
@@ -123,13 +123,13 @@
 #' head(traj_df(x, increments = TRUE))
 #'
 #' # 8. Histogram of the increments, with the density of the increments in red.
-#' #    Constant step h = 1: the increments are i.i.d.
+#' #    Constant step h = 5: the increments are i.i.d.
 #' #    with the VG density of Madan et al. (1998), written with besselK()
-#' t8 <- inspection_times("regular", n = 50, tmax = 50)$time
-#' x <- sim_vg(t8, theta = 0.5, sigma = 1.2, nu = 0.8, n_traj = 20)
+#' t8 <- inspection_times("regular", n = 20, tmax = 100)$time
+#' x <- sim_vg(t8, theta = 0.5, sigma = 1.2, nu = 0.8, n_traj = 100)
 #' dx <- traj_df(x, increments = TRUE)$dX
 #' dx <- dx[!is.na(dx)]
-#' dvg <- function(y, h = 1, theta = 0.5, sigma = 1.2, nu = 0.8) {
+#' dvg <- function(y, h = 5, theta = 0.5, sigma = 1.2, nu = 0.8) {
 #'   r <- sqrt(theta^2 + 2 * sigma^2 / nu)
 #'   z <- abs(y) * r / sigma^2
 #'   2 / (nu^(h / nu) * sqrt(2 * pi) * sigma * gamma(h / nu)) * (abs(y) / r)^(h / nu - 0.5) *
@@ -137,7 +137,7 @@
 #' }
 #' ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
 #'   ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
-#'                           bins = 30, boundary = 0, fill = "grey80", colour = "grey40") +
+#'                           bins = 30, fill = "grey80", colour = "grey40") +
 #'   ggplot2::stat_function(fun = dvg, colour = "red") +
 #'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the variance-gamma process")
 #' @export

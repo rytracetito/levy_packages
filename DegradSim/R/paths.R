@@ -86,12 +86,12 @@ as_path_list <- function(x) {
 #'
 #' @examples
 #' set.seed(1)
-#' x <- sim_gamma(inspection_times("regular", n = 10, tmax = 10)$time, a = 2, b = 3, n_traj = 3)
+#' x <- sim_gamma(inspection_times("regular", n = 20, tmax = 100)$time, a = 2, b = 3, n_traj = 3)
 #' d <- traj_df(x)
 #' head(d)
 #'
 #' # Degradation level of each trajectory at the last inspection
-#' d[d$t == 10, ]
+#' d[d$t == 100, ]
 #'
 #' # Time steps and increments between two inspections
 #' head(traj_df(x, increments = TRUE))
@@ -135,8 +135,8 @@ traj_df <- function(x, increments = FALSE) {
 #'
 #' @examples
 #' set.seed(1)
-#' t <- inspection_times("regular", n = 20, tmax = 10)$time
-#' x <- sim_wiener(t, mu = 0.5, sigma = 1.5, n_traj = 5)
+#' t <- inspection_times("regular", n = 20, tmax = 100)$time
+#' x <- sim_wiener(t, mu = 1.5, sigma = 2, n_traj = 5)
 #' plot_traj(x)
 #'
 #' # Custom title
@@ -144,7 +144,7 @@ traj_df <- function(x, increments = FALSE) {
 #'
 #' # Add a failure threshold and change the axis labels
 #' plot_traj(x) +
-#'   ggplot2::geom_hline(yintercept = 5, linetype = "dashed", colour = "red") +
+#'   ggplot2::geom_hline(yintercept = 100, linetype = "dashed", colour = "red") +
 #'   ggplot2::labs(x = "Time (hours)", y = "Degradation (%)")
 #' @export
 plot_traj <- function(x, title = NULL) {

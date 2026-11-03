@@ -34,11 +34,11 @@ It shows at a glance where the inspections are frequent and where they are
 rare.
 }
 \examples{
-# One trajectory with 20 regular inspections up to 10 (step 0.5)
-plot_plan(inspection_times("regular", n = 20, tmax = 10)$time)
+# One trajectory with 20 regular inspections up to 100 (step 5)
+plot_plan(inspection_times("regular", n = 20, tmax = 100)$time)
 
 # Inspections more and more frequent over time, with a custom title
-t <- inspection_times("decreasing", n = 30, tmax = 100)
+t <- inspection_times("decreasing", n = 20, tmax = 100)
 plot_plan(t, "Decreasing gaps between inspections")
 
 # Five trajectories, each with its own times: one row per trajectory

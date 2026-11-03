@@ -8,7 +8,7 @@
 #' \eqn{B} denotes a standard Brownian motion and \eqn{\mathcal{N}(m, v)} the normal
 #' distribution with mean \eqn{m} and variance \eqn{v}.
 #'
-#' **Wiener process** (`A = NULL`, default). Let \eqn{\mu} be
+#' **Wiener process.** Let \eqn{\mu} be
 #' real and \eqn{\sigma > 0}. The process is
 #' \deqn{X_t = \mu t + \sigma B_t, \qquad t \ge 0,}
 #' where \eqn{\mu} is the drift parameter (expected to be positive for a
@@ -38,9 +38,9 @@
 #' @param mu Drift of the Wiener process, real: mean degradation per unit
 #'   of time. Not given when `A` is given (the mean of \eqn{X_t} is then
 #'   \eqn{A(t)}).
-#' @param sigma Diffusion coefficient, \eqn{\sigma > 0}: standard deviation
-#'   (not variance) of \eqn{X_t - X_s} for \eqn{t - s = 1} (Wiener process)
-#'   or \eqn{A(t) - A(s) = 1} (time-scaled Wiener process).
+#' @param sigma Volatility \eqn{\sigma > 0}. The increment \eqn{X_t - X_s} has
+#'   variance \eqn{\sigma^2 (t - s)} for the Wiener process, and
+#'   \eqn{\sigma^2 (A(t) - A(s))} for the time-scaled Wiener process.
 #'
 #' @inherit sim_gamma return
 #'
@@ -60,22 +60,22 @@
 #' * [plot_traj()], [traj_df()], [inspection_times()], [plot_plan()].
 #'
 #' @examples
-#' # 1. One trajectory with 20 regular inspections up to 10 (step 0.5)
-#' t <- inspection_times("regular", n = 20, tmax = 10)$time
+#' # 1. One trajectory with 20 regular inspections up to 100 (step 5)
+#' t <- inspection_times("regular", n = 20, tmax = 100)$time
 #' set.seed(1)
-#' x <- sim_wiener(t, mu = 0.5, sigma = 1.5)
+#' x <- sim_wiener(t, mu = 1.5, sigma = 2)
 #' x
 #' plot_traj(x)
 #'
-#' # 1b. One trajectory with 20 inspections up to 10 whose steps increase
+#' # 1b. One trajectory with 20 inspections up to 100 whose steps increase
 #' #     (inspections less and less frequent)
-#' t_inc <- inspection_times("increasing", n = 20, tmax = 10)$time
+#' t_inc <- inspection_times("increasing", n = 20, tmax = 100)$time
 #' round(diff(t_inc), 2)
-#' x <- sim_wiener(t_inc, mu = 0.5, sigma = 1.5)
+#' x <- sim_wiener(t_inc, mu = 1.5, sigma = 2)
 #' plot_traj(x)
 #'
 #' # 2. Ten trajectories with the same inspection times
-#' x <- sim_wiener(t, mu = 0.5, sigma = 1.5, n_traj = 10)
+#' x <- sim_wiener(t, mu = 1.5, sigma = 2, n_traj = 10)
 #' plot_traj(x)
 #'
 #' # Same times for all the trajectories: a matrix with the column t,
@@ -83,27 +83,27 @@
 #' head(x[, 1:4])
 #'
 #' # 3. Irregular inspections, frequent at the beginning and at the end
-#' plan <- inspection_times("inc-dec", n = 50, n_traj = 5, tmax = 10)
-#' x <- sim_wiener(plan, mu = 0.5, sigma = 1.5)
+#' plan <- inspection_times("inc-dec", n = 20, n_traj = 5, tmax = 100)
+#' x <- sim_wiener(plan, mu = 1.5, sigma = 2)
 #' plot_traj(x)
 #'
 #' # 4. Different inspection times for each trajectory: a list of data frames
-#' x <- sim_wiener(list(c(0, 1, 3, 6), c(0, 2, 4, 6, 8, 10)), mu = 0.5, sigma = 1.5)
+#' x <- sim_wiener(list(c(0, 1, 3, 6), c(0, 2, 4, 6, 8, 10)), mu = 1.5, sigma = 2)
 #' x[[2]]
 #' x[[2]]$X
 #'
 #' # 5. Time-scaled Wiener process X_t = A(t) + sigma B_{A(t)} with
 #' #    A(t) = 0.5 t^1.5 (Cha and Mercier, 2019, Example 1)
-#' x <- sim_wiener(t, sigma = 1.5, A = function(t) 0.5 * t^1.5, n_traj = 10)
+#' x <- sim_wiener(t, sigma = 2, A = function(t) 0.5 * t^1.5, n_traj = 10)
 #' x
 #' plot_traj(x, "Time-scaled Wiener process")
 #'
 #' # 6. With A(t) = mu t, the time-scaled Wiener process with sigma is the
-#' #    Wiener process with drift mu and diffusion coefficient sigma sqrt(mu)
+#' #    Wiener process with drift mu and volatility sigma sqrt(mu)
 #' set.seed(2)
-#' y1 <- sim_wiener(t, sigma = 1.5, A = function(t) 0.5 * t)
+#' y1 <- sim_wiener(t, sigma = 2, A = function(t) 1.5 * t)
 #' set.seed(2)
-#' y2 <- sim_wiener(t, mu = 0.5, sigma = 1.5 * sqrt(0.5))
+#' y2 <- sim_wiener(t, mu = 1.5, sigma = 2 * sqrt(0.5))
 #' all.equal(unclass(y1)[, 2], unclass(y2)[, 2])
 #'
 #' # 7. All the simulated data in a single data frame, with the increments
@@ -111,15 +111,15 @@
 #' head(traj_df(x, increments = TRUE))
 #'
 #' # 8. Histogram of the increments, with their density in red. Constant
-#' #    step h = 0.5: the increments are i.i.d. N(mu h, sigma^2 h)
-#' t8 <- inspection_times("regular", n = 50, tmax = 25)$time
-#' x <- sim_wiener(t8, mu = 0.5, sigma = 1.5, n_traj = 20)
+#' #    step h = 5: the increments are i.i.d. N(mu h, sigma^2 h)
+#' t8 <- inspection_times("regular", n = 20, tmax = 100)$time
+#' x <- sim_wiener(t8, mu = 1.5, sigma = 2, n_traj = 100)
 #' dx <- traj_df(x, increments = TRUE)$dX
 #' dx <- dx[!is.na(dx)]
 #' ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
 #'   ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
-#'                           bins = 30, boundary = 0, fill = "grey80", colour = "grey40") +
-#'   ggplot2::stat_function(fun = function(y) dnorm(y, 0.5 * 0.5, 1.5 * sqrt(0.5)),
+#'                           bins = 30, fill = "grey80", colour = "grey40") +
+#'   ggplot2::stat_function(fun = function(y) dnorm(y, 1.5 * 5, 2 * sqrt(5)),
 #'                          colour = "red") +
 #'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the Wiener process")
 #' @export

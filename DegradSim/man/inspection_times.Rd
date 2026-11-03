@@ -103,26 +103,26 @@ be given as \code{pattern}, for instance \code{sqrt}; an error is raised if it i
 strictly increasing on the grid.
 }
 \examples{
-# 1. Regular inspections: 10 inspections after time 0, up to 100
-inspection_times("regular", n = 10, tmax = 100)
+# 1. Regular inspections: 20 inspections after time 0, up to 100
+inspection_times("regular", n = 20, tmax = 100)
 
 # 2. More and more frequent inspections, times rounded to integers
-inspection_times("decreasing", n = 10, digits = 0)
+inspection_times("decreasing", n = 20, tmax = 100, digits = 0)
 
 # 3. Fewer and fewer inspections
-inspection_times("increasing", n = 10, digits = 0)
+inspection_times("increasing", n = 20, tmax = 100, digits = 0)
 
 # 4. Rare at the beginning, frequent in the middle, rare at the end
-inspection_times("dec-inc", n = 20, digits = 1)
+inspection_times("dec-inc", n = 20, tmax = 100, digits = 1)
 
 # 5. Frequent at the beginning and at the end, rare in the middle
-inspection_times("inc-dec", n = 20, digits = 1)
+inspection_times("inc-dec", n = 20, tmax = 100, digits = 1)
 
 # 6. Stronger contrast between frequent and rare inspections
-inspection_times("inc-dec", n = 20, digits = 1, a = 0.8)
+inspection_times("inc-dec", n = 20, tmax = 100, digits = 1, a = 0.8)
 
 # Gaps between inspections: from about 2.5 to 7.5 with the default amplitude
-range(diff(inspection_times("inc-dec", n = 20)$time))
+range(diff(inspection_times("inc-dec", n = 20, tmax = 100)$time))
 
 # 7. Three trajectories with 10, 15 and 20 inspections, up to 50, 100 and 150
 plan <- inspection_times("decreasing", n = c(10, 15, 20), n_traj = 3,
@@ -134,21 +134,21 @@ plan$time[plan$id == 2]
 
 # 8. Same number of inspections and same tmax: the same times for the
 #    three trajectories
-inspection_times("decreasing", n = 5, n_traj = 3, tmax = 10)
+inspection_times("decreasing", n = 20, n_traj = 3, tmax = 100)
 
 # 9. Rounding too strong: the repeated times are removed with a warning
 inspection_times("increasing", n = 30, tmax = 20, digits = 0)
 
 # 10. Any strictly increasing function on [0, 1]: with sqrt, the
 #     inspections are rare at the beginning and more and more frequent
-inspection_times(sqrt, n = 10, digits = 0)
+inspection_times(sqrt, n = 20, tmax = 100, digits = 0)
 
 # 11. Mixture of the increasing and decreasing patterns: frequent
 #     inspections around a point that moves to the right when w increases
 #     (0 < w < 1)
 w <- 0.8
 f <- function(x) w * log(1 + 10 * x) - (1 - w) * log(11 - 10 * x)
-inspection_times(f, n = 20, digits = 1)
+inspection_times(f, n = 20, tmax = 100, digits = 1)
 
 # 12. Plot the inspection times, one row per trajectory, then simulate
 plan <- inspection_times("inc-dec", n = c(10, 20, 30), n_traj = 3, tmax = 100)

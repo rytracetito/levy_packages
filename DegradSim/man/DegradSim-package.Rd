@@ -144,7 +144,7 @@ gamma process is the gamma process with shape \eqn{a}. With
 \eqn{\mu t + \sigma B_{\mu t}} has the distribution of
 \eqn{\mu t + \sigma \sqrt{\mu}\, B_t}, since \eqn{(B_{\mu t})_{t \ge 0}}
 has the distribution of \eqn{(\sqrt{\mu}\, B_t)_{t \ge 0}}: it is the
-Wiener process with drift \eqn{\mu} and diffusion coefficient
+Wiener process with drift \eqn{\mu} and volatility
 \eqn{\sigma \sqrt{\mu}}. In the same way, with \eqn{A(t) = \mu t}, the
 increments of the time-scaled inverse Gaussian process are
 \eqn{IG(\mu \Delta t, \eta \mu^2 \Delta t^2)}: it is the inverse Gaussian

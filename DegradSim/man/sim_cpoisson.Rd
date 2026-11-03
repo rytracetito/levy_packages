@@ -95,17 +95,17 @@ with \code{\link[stats:Poisson]{stats::rpois()}};
 }
 
 \examples{
-# 1. One trajectory with 20 regular inspections up to 10 (step 0.5), exponential
+# 1. One trajectory with 20 regular inspections up to 100 (step 5), exponential
 #    jumps of mean 1 (default)
-t <- inspection_times("regular", n = 20, tmax = 10)$time
+t <- inspection_times("regular", n = 20, tmax = 100)$time
 set.seed(1)
 x <- sim_cpoisson(t, lambda = 2)
 x
 plot_traj(x)
 
-# 1b. One trajectory with 20 inspections up to 10 whose steps increase
+# 1b. One trajectory with 20 inspections up to 100 whose steps increase
 #     (inspections less and less frequent)
-t_inc <- inspection_times("increasing", n = 20, tmax = 10)$time
+t_inc <- inspection_times("increasing", n = 20, tmax = 100)$time
 round(diff(t_inc), 2)
 x <- sim_cpoisson(t_inc, lambda = 2)
 plot_traj(x)
@@ -129,7 +129,7 @@ x <- sim_cpoisson(t, lambda = 2, rjump = function(n) rep(1, n), n_traj = 10)
 plot_traj(x, "Poisson process")
 
 # 5. Irregular inspections, more and more frequent over time
-plan <- inspection_times("decreasing", n = 50, n_traj = 5, tmax = 10)
+plan <- inspection_times("decreasing", n = 20, n_traj = 5, tmax = 100)
 x <- sim_cpoisson(plan, lambda = 2)
 plot_traj(x)
 
@@ -142,16 +142,17 @@ x[[2]]$X
 head(traj_df(x))
 head(traj_df(x, increments = TRUE))
 
-# 8. Increments over the constant step h = 1, with exponential jumps of
-#    rate 1: an increment is 0 with probability exp(-lambda h) (no shock);
-#    otherwise its density is sum_k P(N = k) dgamma(y, k, 1) / (1 - exp(-lambda h))
-t8 <- inspection_times("regular", n = 100, tmax = 100)$time
-x <- sim_cpoisson(t8, lambda = 2, n_traj = 10)
+# 8. Increments over the constant step h = 5, with lambda = 0.2 and exponential
+#    jumps of rate 1: an increment is 0 with probability exp(-lambda h) (no shock);
+#    otherwise its density is sum_k P(N = k) dgamma(y, k, 1) / (1 - exp(-lambda h)),
+#    where N has the Poisson distribution of mean lambda h = 1
+t8 <- inspection_times("regular", n = 20, tmax = 100)$time
+x <- sim_cpoisson(t8, lambda = 0.2, n_traj = 100)
 dx <- traj_df(x, increments = TRUE)$dX
 dx <- dx[!is.na(dx)]
-c(zero_observed = mean(dx == 0), zero_theory = exp(-2))
+c(zero_observed = mean(dx == 0), zero_theory = exp(-1))
 dpos <- function(y) {
-  vapply(y, function(v) sum(dpois(1:30, 2) * dgamma(v, 1:30, 1)), 0) / (1 - exp(-2))
+  vapply(y, function(v) sum(dpois(1:30, 1) * dgamma(v, 1:30, 1)), 0) / (1 - exp(-1))
 }
 ggplot2::ggplot(data.frame(dx = dx[dx > 0]), ggplot2::aes(dx)) +
   ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),

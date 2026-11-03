@@ -34,12 +34,12 @@ two consecutive inspections.
 }
 \examples{
 set.seed(1)
-x <- sim_gamma(inspection_times("regular", n = 10, tmax = 10)$time, a = 2, b = 3, n_traj = 3)
+x <- sim_gamma(inspection_times("regular", n = 20, tmax = 100)$time, a = 2, b = 3, n_traj = 3)
 d <- traj_df(x)
 head(d)
 
 # Degradation level of each trajectory at the last inspection
-d[d$t == 10, ]
+d[d$t == 100, ]
 
 # Time steps and increments between two inspections
 head(traj_df(x, increments = TRUE))

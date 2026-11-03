@@ -106,16 +106,16 @@ mixture over the IG distribution of \eqn{\Delta Z_i} is the
 }
 
 \examples{
-# 1. One trajectory with 20 regular inspections up to 10 (step 0.5)
-t <- inspection_times("regular", n = 20, tmax = 10)$time
+# 1. One trajectory with 20 regular inspections up to 100 (step 5)
+t <- inspection_times("regular", n = 20, tmax = 100)$time
 set.seed(1)
 x <- sim_nig(t, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 x
 plot_traj(x)
 
-# 1b. One trajectory with 20 inspections up to 10 whose steps increase
+# 1b. One trajectory with 20 inspections up to 100 whose steps increase
 #     (inspections less and less frequent)
-t_inc <- inspection_times("increasing", n = 20, tmax = 10)$time
+t_inc <- inspection_times("increasing", n = 20, tmax = 100)$time
 round(diff(t_inc), 2)
 x <- sim_nig(t_inc, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 plot_traj(x)
@@ -129,7 +129,7 @@ plot_traj(x)
 head(x[, 1:4])
 
 # 3. Irregular inspections, more and more frequent over time
-plan <- inspection_times("decreasing", n = 50, n_traj = 5, tmax = 10)
+plan <- inspection_times("decreasing", n = 20, n_traj = 5, tmax = 100)
 x <- sim_nig(plan, alpha = 2, beta = 0.5, delta = 1, mu = 0.2)
 plot_traj(x)
 
@@ -148,13 +148,13 @@ head(traj_df(x))
 head(traj_df(x, increments = TRUE))
 
 # 7. Histogram of the increments, with the density of the increments in red.
-#    Constant step h = 1: the increments are i.i.d.
+#    Constant step h = 5: the increments are i.i.d.
 #    with distribution NIG(alpha, beta, delta h, mu h)
-t7 <- inspection_times("regular", n = 50, tmax = 50)$time
-x <- sim_nig(t7, alpha = 2, beta = 0.5, delta = 1, mu = 0.2, n_traj = 20)
+t7 <- inspection_times("regular", n = 20, tmax = 100)$time
+x <- sim_nig(t7, alpha = 2, beta = 0.5, delta = 1, mu = 0.2, n_traj = 100)
 dx <- traj_df(x, increments = TRUE)$dX
 dx <- dx[!is.na(dx)]
-dnig <- function(y, alpha = 2, beta = 0.5, delta = 1, mu = 0.2) {
+dnig <- function(y, alpha = 2, beta = 0.5, delta = 1 * 5, mu = 0.2 * 5) {
   gamma <- sqrt(alpha^2 - beta^2)
   q <- sqrt(delta^2 + (y - mu)^2)
   alpha * delta / (pi * q) * besselK(alpha * q, 1, expon.scaled = TRUE) *
@@ -162,7 +162,7 @@ dnig <- function(y, alpha = 2, beta = 0.5, delta = 1, mu = 0.2) {
 }
 ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
   ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
-                          bins = 30, boundary = 0, fill = "grey80", colour = "grey40") +
+                          bins = 30, fill = "grey80", colour = "grey40") +
   ggplot2::stat_function(fun = dnig, colour = "red") +
   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the NIG process")
 }

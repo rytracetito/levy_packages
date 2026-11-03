@@ -25,8 +25,8 @@ grey line per trajectory, with a point at each inspection.
 }
 \examples{
 set.seed(1)
-t <- inspection_times("regular", n = 20, tmax = 10)$time
-x <- sim_wiener(t, mu = 0.5, sigma = 1.5, n_traj = 5)
+t <- inspection_times("regular", n = 20, tmax = 100)$time
+x <- sim_wiener(t, mu = 1.5, sigma = 2, n_traj = 5)
 plot_traj(x)
 
 # Custom title
@@ -34,7 +34,7 @@ plot_traj(x, "Five trajectories of a Wiener process")
 
 # Add a failure threshold and change the axis labels
 plot_traj(x) +
-  ggplot2::geom_hline(yintercept = 5, linetype = "dashed", colour = "red") +
+  ggplot2::geom_hline(yintercept = 100, linetype = "dashed", colour = "red") +
   ggplot2::labs(x = "Time (hours)", y = "Degradation (\%)")
 }
 \seealso{
