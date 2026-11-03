@@ -7,9 +7,9 @@
 #'
 #' @section Model:
 #' The variance-gamma process with parameters \eqn{\theta}, \eqn{\sigma > 0}
-#' and \eqn{\nu > 0} is \eqn{X_s = \theta \gamma_s + \sigma W_{\gamma_s}}
-#' (Madan, Carr and Chang, 1998), where \eqn{\gamma} is a gamma process with
-#' \eqn{\gamma_s \sim \Gamma(s / \nu)} with scale \eqn{\nu} (mean \eqn{s},
+#' and \eqn{\nu > 0} is \eqn{X_s = \theta G_s + \sigma W_{G_s}}
+#' (Madan, Carr and Chang, 1998), where \eqn{G} is a gamma process with
+#' \eqn{G_s \sim \Gamma(s / \nu)} with scale \eqn{\nu} (mean \eqn{s},
 #' variance \eqn{\nu s}) and \eqn{W} an independent standard Brownian
 #' motion. Its trajectories are not monotone. The vector of its parameters is
 #' \eqn{\Theta = (\theta, \sigma, \nu)}: the drift \eqn{\theta} is one of the
@@ -39,9 +39,9 @@
 #' probability zero and the package takes \eqn{S = 0}.
 #'
 #' The variable \eqn{S / \sigma^2} is the increment
-#' \eqn{\gamma_{t_B} - \gamma_{t_A}} of the gamma process given the
+#' \eqn{G_{t_B} - G_{t_A}} of the gamma process given the
 #' observations, and \eqn{Y} is the fraction of this increment reached at
-#' time \eqn{t}, as in the gamma bridge; given \eqn{\gamma}, the Brownian
+#' time \eqn{t}, as in the gamma bridge; given \eqn{G}, the Brownian
 #' motion \eqn{W} gives the Gaussian term. The bridge uses the three
 #' parameters. The GIG variable is drawn with [GIGrvg::rgig()] (Hörmann and
 #' Leydold, 2014).

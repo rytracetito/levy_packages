@@ -160,8 +160,8 @@ section 2.7).
 \item Inverse Gaussian: \eqn{X_t - X_s \sim IG(\mu (t - s), \eta (t - s)^2)},
 the process of Wang and Xu (2010) with \eqn{\Lambda(t) = \mu t} (see
 \code{\link[=ig_mle]{ig_mle()}} for the correspondence of the parameters).
-\item Variance-gamma: \eqn{X_s = \theta \gamma_s + \sigma W_{\gamma_s}}, with
-\eqn{\gamma_s} of mean \eqn{s} and variance \eqn{\nu s} (Seneta, 2004;
+\item Variance-gamma: \eqn{X_s = \theta G_s + \sigma W_{G_s}}, with
+\eqn{G_s} of mean \eqn{s} and variance \eqn{\nu s} (Seneta, 2004;
 Bee, Dickson and Santi, 2018).
 \item Meixner: \eqn{X_s \sim Meixner(a, b, d s, m s)}, the Levy process
 associated with the Meixner distribution of Grigoletto and Provasi
@@ -208,7 +208,7 @@ Gaussian process model for degradation data. \emph{Technometrics}, 52(2),
 model to financial data. \emph{Journal of Applied Probability}, 41A, 177-187.
 \doi{10.1017/S0021900200112288}. Bee, M., Dickson, M. M. and Santi, F.
 (2018). Likelihood-based risk estimation for variance-gamma models.
-\emph{Statistical Methods & Applications}, 27(1), 69-89.
+\emph{Statistical Methods & Applications}.
 \doi{10.1007/s10260-017-0393-z}
 
 \strong{Meixner process}: Grigoletto, M. and Provasi, C. (2009). Simulation and

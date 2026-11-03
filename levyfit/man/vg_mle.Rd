@@ -42,12 +42,12 @@ a quasi-Newton refinement.
 }
 \section{Model and data}{
 
-Let \eqn{\gamma} be a gamma process such that \eqn{\gamma_s} has mean
+Let \eqn{G} be a gamma process such that \eqn{G_s} has mean
 \eqn{s} and variance \eqn{\nu s} (shape \eqn{s / \nu}, rate \eqn{1 / \nu}),
 and \eqn{W} an independent standard Brownian motion. The VG process is
-\deqn{X_s = \theta \gamma_s + \sigma W_{\gamma_s}:}
+\deqn{X_s = \theta G_s + \sigma W_{G_s}:}
 a Brownian motion with drift \eqn{\theta} and diffusion \eqn{\sigma},
-observed at the random time \eqn{\gamma_s} instead of the time \eqn{s}
+observed at the random time \eqn{G_s} instead of the time \eqn{s}
 (Madan and Seneta, 1990, section III.A, equation (7), for \eqn{\theta = 0};
 Seneta, 2004, equations (1) and (2); Bee, Dickson and Santi, 2018,
 section 2, where the increments of the random time over one unit of time
@@ -56,11 +56,11 @@ follow a gamma distribution with shape and rate both equal to their
 decrease.
 
 Given the random time, an increment over a duration \eqn{\Delta t} is
-\eqn{\theta G + \sigma \sqrt{G} Z}, with \eqn{G \sim \Gamma(\Delta t / \nu, 1 / \nu)}
-and \eqn{Z \sim \mathcal{N}(0, 1)} independent. This is the representation
-(2.18) of Fischer, Gaunt and Sarantsev (2023) with \eqn{S = 2 G / \nu},
-so that the increment follows their distribution
-\eqn{VG(r, \theta_F, \sigma_F, 0)} with
+\deqn{\theta \Delta G + \sigma \sqrt{\Delta G}\, Z, \qquad \Delta G \sim \Gamma(\Delta t / \nu, 1 / \nu), \qquad Z \sim \mathcal{N}(0, 1),}
+with \eqn{\Delta G} and \eqn{Z} independent. The process (4.50) of
+Fischer, Gaunt and Sarantsev (2023, section 4.2) is this VG process, with
+the same parameters. By their equation (4.51), the increment follows their
+distribution \eqn{VG(r, \theta_F, \sigma_F, 0)} with
 \eqn{r = 2 \Delta t / \nu}, \eqn{\theta_F = \theta \nu / 2} and
 \eqn{\sigma_F = \sigma \sqrt{\nu / 2}}. Their density (1.1) then gives, with
 \eqn{\lambda = \Delta t / \nu}, \eqn{c = \sqrt{\theta^2 + 2 \sigma^2 / \nu}}
@@ -76,7 +76,10 @@ section 3) points out this ambiguity of terminology. For
 \eqn{\Delta t = 1}, this is the density (15) of Seneta (2004) with his
 location \eqn{c = 0}, and the density (1) of Bee et al. (2018) with their
 location \eqn{\mu = 0}, their \eqn{\gamma} equal to \eqn{\theta} and their
-\eqn{\nu} equal to \eqn{1 / \nu}.
+\eqn{\nu} equal to \eqn{1 / \nu}. Their equation (1) as printed has
+\eqn{2 \gamma^2 \nu + \sigma^2} under the first radical; the correct term is
+\eqn{2 \sigma^2 \nu + \gamma^2}, as under the second radical and in their
+equation (2).
 
 The data are the \eqn{n} increments \eqn{(\Delta t_j, \Delta x_j)},
 \eqn{j = 1, \dots, n}, with \eqn{\Delta x_j \ne 0}, pooled over the
@@ -90,6 +93,10 @@ trajectories, with \eqn{T = \sum_{j=1}^{n} \Delta t_j} and
 The increments being independent, the log-likelihood is
 \deqn{\ell(\theta, \sigma, \nu) = \sum_{j=1}^{n} \ln f_{\Delta t_j}(\Delta x_j; \theta, \sigma, \nu),}
 which is equation (4) of Bee et al. (2018) for \eqn{\Delta t_j = 1}.
+Explicitly, with \eqn{\lambda_j = \Delta t_j / \nu}, and \eqn{c} and
+\eqn{\kappa} as above,
+\deqn{\ell(\theta, \sigma, \nu) = n \ln \frac{2}{\sqrt{2\pi}\, \sigma} + \frac{\theta S}{\sigma^2} + \sum_{j=1}^{n} g_j,}
+\deqn{g_j = \big(\lambda_j - \tfrac{1}{2}\big) \ln \frac{|\Delta x_j|}{c} - \lambda_j \ln \nu - \ln \Gamma(\lambda_j) + \ln K_{|\lambda_j - 1/2|}(\kappa |\Delta x_j|).}
 
 \strong{Why an EM algorithm.} The density contains the modified Bessel function
 \eqn{K_p}, whose order depends on \eqn{\nu}, and the likelihood cannot be
@@ -171,72 +178,95 @@ parameters;
 parameters, which gives their new value.
 }
 
-The likelihood of the observed data increases at each iteration (Bee et
-al., 2018, section 3.2).
+The likelihood of the observed data does not decrease at any iteration
+(Dempster, Laird and Rubin, 1977, Theorem 1). This does not by itself imply
+convergence to the MLE (Dempster et al., 1977, section 3).
 
-\strong{Application to the VG process.} The algorithm used here is the one of
-Bee et al. (2018, section 3.2), who follow Nitithumbundit and Chan (2015),
-written for increments over unequal durations and without location
-parameter. The correspondence with the general algorithm is the following.
-\itemize{
-\item Observed data: the increments \eqn{\Delta x_j}, \eqn{j = 1, \dots, n}.
-\item Missing data: the increments \eqn{G_j} of the random time \eqn{\gamma} on
-the \eqn{j}-th interval.
-\item Complete log-likelihood: since
+\strong{Principle.} The density of \eqn{\Delta x_j} is difficult because the
+random time was integrated out. Let \eqn{G_j = G_{t_j} - G_{t_{j-1}}} be the
+increment of the random time on the \eqn{j}-th interval. If
+\eqn{G_1, \dots, G_n} were observed, the likelihood would be simple. The
+algorithm therefore treats them as missing data.
+
+\strong{Complete log-likelihood.} With \eqn{a = 1 / \nu},
 \deqn{\Delta x_j \mid G_j \sim \mathcal{N}(\theta G_j, \sigma^2 G_j), \qquad
-    G_j \sim \Gamma(\Delta t_j / \nu,\ 1 / \nu),}
-it is the sum of normal and gamma log-densities, and it only involves
-\eqn{G_j}, \eqn{1 / G_j} and \eqn{\ln G_j} (Bee et al., 2018, equation
-(5)).
-\item E step: compute the expectations \eqn{e^+_j}, \eqn{e^-_j} and \eqn{l_j}
-of \eqn{G_j}, \eqn{1 / G_j} and \eqn{\ln G_j} given \eqn{\Delta x_j}
-(see below).
-\item M step: update \eqn{(\theta, \sigma^2)}, then \eqn{\nu} (see Steps
-below).
-}
+  G_j \sim \Gamma(a \Delta t_j, a),}
+so that (Bee et al., 2018, equation (5), written here for unequal durations
+and without location parameter)
+\deqn{\ell_c = \sum_{j=1}^{n} \Big[-\frac{1}{2} \ln(2 \pi \sigma^2 G_j) - \frac{(\Delta x_j - \theta G_j)^2}{2 \sigma^2 G_j}\Big] + \ell_\Gamma,}
+\deqn{\ell_\Gamma = \sum_{j=1}^{n} \big[a \Delta t_j \ln a - \ln \Gamma(a \Delta t_j) + (a \Delta t_j - 1) \ln G_j - a G_j\big].}
+The first sum depends on \eqn{(\theta, \sigma^2)} and \eqn{\ell_\Gamma} on
+\eqn{\nu}, so that they can be maximized separately.
 
-\strong{Distribution of the hidden times.} Given \eqn{\Delta x_j}, \eqn{G_j}
-follows a generalized inverse Gaussian distribution \eqn{GIG(p_j, \chi_j, \omega)}
-(Bee et al., 2018, section 3.2, after Embrechts, 1983),
-with density proportional to \eqn{g^{p_j - 1} \exp(-(\chi_j / g + \omega g) / 2)},
-\eqn{g > 0}, where
+\strong{E step.} Multiplying the two densities shows that, given
+\eqn{\Delta x_j}, the density of \eqn{G_j} is proportional to
+\eqn{g^{p_j - 1} \exp(-(\chi_j / g + \omega g) / 2)}, \eqn{g > 0}, with
 \deqn{p_j = \frac{\Delta t_j}{\nu} - \frac{1}{2}, \qquad
   \chi_j = \frac{\Delta x_j^2}{\sigma^2}, \qquad
-  \omega = \frac{\theta^2}{\sigma^2} + \frac{2}{\nu}.}
-With \eqn{z_j = \sqrt{\chi_j \omega}} and \eqn{\rho_j = \sqrt{\chi_j / \omega}},
-its moments are ratios of Bessel functions (Bee et al., 2018, equations (6)
-to (8)):
-\deqn{e^+_j = E[G_j] = \rho_j \frac{K_{p_j + 1}(z_j)}{K_{p_j}(z_j)}, \qquad
-  e^-_j = E[1 / G_j] = \frac{1}{\rho_j} \frac{K_{p_j - 1}(z_j)}{K_{p_j}(z_j)},}
-\deqn{l_j = E[\ln G_j] = \ln \rho_j + \frac{\partial}{\partial p} \ln K_p(z_j) \Big|_{p = p_j},}
+  \omega = \frac{\theta^2}{\sigma^2} + \frac{2}{\nu}:}
+this is the generalized inverse Gaussian distribution
+\eqn{GIG(p_j, \chi_j, \omega)} (Bee et al., 2018, section 3.2, after
+Embrechts, 1983). The function \eqn{\ell_c} only involves \eqn{G_j},
+\eqn{1 / G_j} and \eqn{\ln G_j}, so that the E step reduces to their
+conditional expectations. With \eqn{z_j = \sqrt{\chi_j \omega}} and
+\eqn{\rho_j = \sqrt{\chi_j / \omega}}, these are ratios of Bessel functions
+(Bee et al., 2018, equations (6) to (8)):
+\deqn{e^+_j = E[G_j \mid \Delta x_j] = \rho_j \frac{K_{p_j + 1}(z_j)}{K_{p_j}(z_j)}, \qquad
+  e^-_j = E[1 / G_j \mid \Delta x_j] = \frac{1}{\rho_j} \frac{K_{p_j - 1}(z_j)}{K_{p_j}(z_j)},}
+\deqn{l_j = E[\ln G_j \mid \Delta x_j] = \ln \rho_j + \frac{\partial}{\partial p} \ln K_p(z_j) \Big|_{p = p_j},}
 the last derivative being computed numerically, as in Bee et al. (2018).
 
-\strong{Steps.}
-\enumerate{
-\item E step: compute \eqn{e^+_j}, \eqn{e^-_j} and \eqn{l_j},
-\eqn{j = 1, \dots, n}, at the current parameters.
-\item M step for \eqn{(\theta, \sigma^2)}, explicit (Bee et al., 2018,
-equations (10) and (11) with their location \eqn{\mu = 0}): with
-\eqn{E^+ = \sum_{j=1}^{n} e^+_j},
+\strong{M step.} With these moments fixed, the expected complete log-likelihood
+is, up to a constant,
+\deqn{Q = -\frac{n}{2} \ln \sigma^2 - \frac{1}{2 \sigma^2} \sum_{j=1}^{n} \big(\Delta x_j^2 e^-_j - 2 \theta \Delta x_j + \theta^2 e^+_j\big) + Q_\Gamma,}
+\deqn{Q_\Gamma = \sum_{j=1}^{n} \big[a \Delta t_j \ln a - \ln \Gamma(a \Delta t_j) + (a \Delta t_j - 1) l_j - a e^+_j\big].}
+Setting its derivatives in \eqn{\theta} and \eqn{\sigma^2} to zero gives, with
+\eqn{E^+ = \sum_{j=1}^{n} e^+_j} (Bee et al., 2018, equations (10) and (11)
+with their location \eqn{\mu = 0}),
 \deqn{\theta = \frac{S}{E^+}, \qquad
-     \sigma^2 = \frac{1}{n} \Big(\sum_{j=1}^{n} \Delta x_j^2 e^-_j - \frac{S^2}{E^+}\Big).}
-\item M step for \eqn{\nu}: with \eqn{a = 1 / \nu} and \eqn{\psi} the digamma
-function, the derivative of the complete log-likelihood in \eqn{a} is
+  \sigma^2 = \frac{1}{n} \Big(\sum_{j=1}^{n} \Delta x_j^2 e^-_j - \frac{S^2}{E^+}\Big).}
+With \eqn{\psi} the digamma function, the derivative in \eqn{a} is
 \deqn{q(a) = \sum_{j=1}^{n} \big[\Delta t_j l_j - e^+_j + \Delta t_j \ln a + \Delta t_j - \Delta t_j\, \psi(a \Delta t_j)\big],}
-which is the derivative given in the CM-step 2a of Bee et al. (2018)
-when \eqn{\Delta t_j = 1}. Since \eqn{\psi'(x) > 1/x} (Alzer, 1997,
-Theorem 1), \eqn{q} is strictly decreasing; by the inequality (2.2) of
-Alzer (1997) it tends to \eqn{+\infty} as \eqn{a \to 0} and, by Jensen's
-inequality (\eqn{l_j < \ln e^+_j}) and \eqn{\ln u \le u - 1}, to a
-negative limit as
-\eqn{a \to \infty}: its unique root gives \eqn{\nu = 1 / a}.
-\item Repeat steps 1 to 3 until the increase of \eqn{\ell} becomes small.
+which is the derivative given in the CM-step 2a of Bee et al. (2018) when
+\eqn{\Delta t_j = 1}. By Theorem 1 of Alzer (1997) with \eqn{\alpha = 0}, the
+function \eqn{\ln x - \psi(x)} is strictly completely monotonic, hence
+strictly decreasing, so that \eqn{\psi'(x) > 1/x} and \eqn{q} is strictly
+decreasing; by the inequality (2.2) of Alzer (1997) it tends to
+\eqn{+\infty} as \eqn{a \to 0} and, by Jensen's inequality
+(\eqn{l_j < \ln e^+_j}) and \eqn{\ln u \le u - 1}, to a negative limit as
+\eqn{a \to \infty}: its unique root gives \eqn{\nu = 1 / a}. The three
+updates use the same moments, so that this step maximizes \eqn{Q} over all
+the parameters.
+
+\strong{Algorithm.}
+\enumerate{
+\item Start from \eqn{(\theta_0, \sigma_0, \nu_0)} (see Start and end).
+\item Compute \eqn{e^+_j}, \eqn{e^-_j} and \eqn{l_j}, \eqn{j = 1, \dots, n}, at
+the current parameters.
+\item Update \eqn{\theta} and \eqn{\sigma^2}, then solve \eqn{q(a) = 0} for
+\eqn{\nu}.
+\item Compute \eqn{\ell}. After at least 10 iterations, stop when the increase
+of \eqn{\ell} is at most \eqn{10^{-6} (|\ell| + 1)}, with at most 5000
+iterations.
+\item Finish with L-BFGS-B (see Start and end).
 }
 
-\strong{Start and end.} As recommended by Seneta (2004, section 3), the
+\strong{Difference with Bee et al. (2018).} Their MCECM algorithm, which follows
+Nitithumbundit and Chan (2015), adds an E step before the update of
+\eqn{\nu} and replaces small values of \eqn{(x - \mu)^2 / \sigma^2} by a
+threshold. Neither is used here.
+
+\strong{Speed and durations.} The rate of convergence depends on the information
+lost because the data are incomplete, and this loss can differ between the
+parameters (Dempster et al., 1977, section 3). For a regular step \eqn{h},
+\eqn{f_h(x; \theta, \sigma, \nu) = f_1(x; \theta h, \sigma \sqrt{h}, \nu / h)},
+so that \eqn{h} and \eqn{\nu} act on the shape of the distribution only
+through \eqn{h / \nu}.
+
+\strong{Start and end.} As is generally done (Seneta, 2004, section 3), the
 algorithm starts from moment estimates.
 \itemize{
-\item \eqn{\theta} and \eqn{\sigma}: the Wiener MLE (see \code{\link[=wiener_mle]{wiener_mle()}}),
+\item The parameters \eqn{\theta} and \eqn{\sigma}: the Wiener MLE (see \code{\link[=wiener_mle]{wiener_mle()}}),
 \eqn{\theta_0 = S / T} and
 \eqn{\sigma_0^2 = \frac{1}{n} \sum_{j=1}^{n} (\Delta x_j - \theta_0 \Delta t_j)^2 / \Delta t_j},
 which estimate the mean and the variance of the process per unit of
@@ -244,7 +274,7 @@ time. Seneta (2004, equations (23) and (24)) uses the same estimates for
 \eqn{\theta} and \eqn{\sigma^2} when the terms in \eqn{\theta^2},
 \eqn{\theta^3}, \eqn{\theta^4} are ignored (his location \eqn{c} being 0
 here).
-\item \eqn{\nu}: the kurtosis of \eqn{X_1} is \eqn{3 (1 + \nu)} when these terms
+\item The parameter \eqn{\nu}: the kurtosis of \eqn{X_1} is \eqn{3 (1 + \nu)} when these terms
 are ignored (Seneta, 2004, equation (26); exactly when \eqn{\theta = 0},
 Madan and Seneta, 1990, sections II.B and II.E), so that
 \eqn{\nu_0 = \hat\gamma_2 / 3}, where \eqn{\hat\gamma_2 = k_4 / k_2^2} is
@@ -314,18 +344,23 @@ Alzer, H. (1997). On some inequalities for the gamma and psi functions.
 \doi{10.1090/S0025-5718-97-00807-7}. Equation (2.2) and Theorem 1.
 
 Bee, M., Dickson, M. M. and Santi, F. (2018). Likelihood-based risk
-estimation for variance-gamma models. \emph{Statistical Methods & Applications},
-27(1), 69-89. \doi{10.1007/s10260-017-0393-z}. Sections 2 and 3.2,
-equations (1) and (4) to (11).
+estimation for variance-gamma models. \emph{Statistical Methods & Applications}.
+\doi{10.1007/s10260-017-0393-z}. Sections 2 and 3.2, equations (1), (2)
+and (4) to (11).
 
 Belhaj Salem, M., Fouladirad, M. and Deloux, E. (2022). Variance Gamma
 process as degradation model for prognosis and imperfect maintenance of
 centrifugal pumps. \emph{Reliability Engineering & System Safety}, 223, 108417.
 \doi{10.1016/j.ress.2022.108417}. Section 2.2.
 
+Dempster, A. P., Laird, N. M. and Rubin, D. B. (1977). Maximum likelihood
+from incomplete data via the EM algorithm. \emph{Journal of the Royal Statistical
+Society, Series B}, 39(1), 1-38. \url{https://www.jstor.org/stable/2984875}.
+Section 3, Theorem 1.
+
 Fischer, A., Gaunt, R. E. and Sarantsev, A. (2023). The variance-gamma
-distribution: a review. arXiv:2303.05615. Equations (1.1), (2.12) and
-(2.18), section 2.5.1 and appendix A (limiting form (A.65)).
+distribution: a review. arXiv:2303.05615. Equations (1.1), (2.12), (4.50)
+and (4.51), sections 2.5.1 and 4.2, and appendix A (limiting form (A.65)).
 
 Madan, D. B. and Seneta, E. (1990). The variance gamma (V.G.) model for
 share market returns. \emph{Journal of Business}, 63(4), 511-524.
