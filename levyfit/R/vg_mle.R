@@ -84,39 +84,21 @@
 #' increase towards one of these limits, without a maximum inside the
 #' parameter space: the MLE then does not exist, and the function returns
 #' `NA` with a warning that names the model to use instead.
-#' * \eqn{\nu \to 0}: with the parameters above, the characteristic function
-#'   of an increment (Fischer et al., 2023, equation (2.12)) is
-#'   \eqn{\varphi(u) = (1 - i \theta \nu u + \sigma^2 \nu u^2 / 2)^{-\Delta t / \nu}},
-#'   which tends to \eqn{\exp(\Delta t (i \theta u - \sigma^2 u^2 / 2))}, the
-#'   characteristic function of \eqn{\mathcal{N}(\theta \Delta t, \sigma^2 \Delta t)}.
-#'   By Levy's continuity theorem (van der Vaart, 1998, Theorem 2.13), each
-#'   increment converges in distribution to this normal distribution: the VG
-#'   process tends to the Wiener process with drift \eqn{\theta} and
-#'   diffusion \eqn{\sigma}. For \eqn{\theta = 0}, Seneta (2004, section 3)
-#'   gives the same limit. The function concludes that the likelihood
-#'   increases towards this limit when \eqn{\nu} falls below
-#'   \eqn{\max_j \Delta t_j / 300} during the EM algorithm, or when L-BFGS-B
-#'   stops on this bound. The value 300 is a choice of this implementation,
-#'   without a source. Its meaning: for \eqn{\theta = 0}, the kurtosis of an
-#'   increment over a duration \eqn{\Delta t} is \eqn{3 (1 + \nu / \Delta t)}
-#'   (Madan and Seneta, 1990, section III.C), so that at the threshold the
-#'   excess kurtosis of the increment over the longest duration is
-#'   \eqn{3 / 300 = 0.01}: this increment is then almost normal. Use
-#'   [wiener_mle()].
-#' * \eqn{\sigma \to 0}: when \eqn{\theta > 0}, an increment tends in
-#'   distribution to the gamma distribution with shape \eqn{\Delta t / \nu} and
-#'   rate \eqn{1 / (\theta \nu)} (Fischer et al., 2023, section 2.5.1, item 2,
-#'   with their \eqn{r} equal to \eqn{\Delta t / \nu} and their \eqn{\lambda}
-#'   equal to \eqn{1 / (\theta \nu)}): the VG process tends to the gamma
-#'   process with shape \eqn{1 / \nu} and rate \eqn{1 / (\theta \nu)}. The
-#'   density converges too: applying the limiting form (A.65) of \eqn{K_p} to
-#'   the density (1.1) of Fischer et al. (2023) shows that, as
-#'   \eqn{\sigma \to 0}, the VG density tends to this gamma density at every
-#'   \eqn{x > 0}, and to 0 at every \eqn{x < 0}. The VG likelihood therefore
-#'   tends to the gamma likelihood. When all the increments are positive, the
-#'   function compares the VG likelihood at the estimate with the maximum of
-#'   the gamma likelihood; if the VG likelihood is not larger, the function
-#'   concludes that the likelihood increases towards this limit. Use
+#' * Limit \eqn{\nu \to 0}. The characteristic function of an increment
+#'   (Fischer et al., 2023, equation (2.12)) tends to that of
+#'   \eqn{\mathcal{N}(\theta \Delta t, \sigma^2 \Delta t)}, so that the VG process
+#'   tends to the Wiener process (Levy's continuity theorem: van der Vaart, 1998,
+#'   Theorem 2.13). The function concludes that the likelihood increases towards
+#'   this limit when \eqn{\nu} falls below \eqn{\max_j \Delta t_j / 300} during
+#'   the EM algorithm, or when L-BFGS-B stops on this bound; the value 300 is a
+#'   choice of this implementation. Use [wiener_mle()].
+#' * Limit \eqn{\sigma \to 0}, with \eqn{\theta > 0}. The VG process tends to the
+#'   gamma process with shape \eqn{1 / \nu} and rate \eqn{1 / (\theta \nu)}
+#'   (Fischer et al., 2023, section 2.5.1, item 2), and its likelihood to the
+#'   gamma likelihood (limiting form (A.65) applied to their density (1.1)). When
+#'   all the increments are positive, the function compares the VG likelihood at
+#'   the estimate with the maximum of the gamma likelihood; if it is not larger,
+#'   the function concludes that the likelihood increases towards this limit. Use
 #'   [gamma_mle()].
 #'
 #' When a computation of the EM algorithm gives a value that is not finite,
@@ -301,7 +283,7 @@
 #'
 #' Madan, D. B. and Seneta, E. (1990). The variance gamma (V.G.) model for
 #' share market returns. *Journal of Business*, 63(4), 511-524.
-#' \url{https://www.jstor.org/stable/2353303}. Sections II.B, II.E, II.F, III.A and III.C.
+#' \url{https://www.jstor.org/stable/2353303}. Sections II.B, II.E, II.F and III.A.
 #'
 #' Nitithumbundit, T. and Chan, J. S. K. (2015). An ECM algorithm for skewed
 #' multivariate variance gamma distribution in normal mean-variance
