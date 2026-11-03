@@ -126,44 +126,42 @@
 #' \eqn{G_1, \dots, G_n} were observed, the likelihood would be simple. The
 #' algorithm therefore treats them as missing data.
 #'
-#' **Complete log-likelihood.** With \eqn{a = 1 / \nu},
+#' **Complete log-likelihood.** Since
 #' \deqn{\Delta x_j \mid G_j \sim \mathcal{N}(\theta G_j, \sigma^2 G_j), \qquad
-#'   G_j \sim \Gamma(a \Delta t_j, a),}
-#' so that (Bee et al., 2018, equation (5), written here for unequal durations
-#' and without location parameter)
-#' \deqn{\ell_c = \sum_{j=1}^{n} \Big[-\frac{1}{2} \ln(2 \pi \sigma^2 G_j) - \frac{(\Delta x_j - \theta G_j)^2}{2 \sigma^2 G_j}\Big] + \ell_\Gamma,}
-#' \deqn{\ell_\Gamma = \sum_{j=1}^{n} \big[a \Delta t_j \ln a - \ln \Gamma(a \Delta t_j) + (a \Delta t_j - 1) \ln G_j - a G_j\big].}
-#' The first sum depends on \eqn{(\theta, \sigma^2)} and \eqn{\ell_\Gamma} on
+#'   G_j \sim \Gamma(\lambda_j, 1 / \nu),}
+#' the complete log-likelihood is the sum of (Bee et al., 2018, equation (5),
+#' written here for unequal durations and without location parameter)
+#' \deqn{\sum_{j=1}^{n} \Big[-\frac{1}{2} \ln(2 \pi \sigma^2 G_j) - \frac{(\Delta x_j - \theta G_j)^2}{2 \sigma^2 G_j}\Big]}
+#' and
+#' \deqn{\sum_{j=1}^{n} \big[-\lambda_j \ln \nu - \ln \Gamma(\lambda_j) + (\lambda_j - 1) \ln G_j - G_j / \nu\big].}
+#' The first sum depends on \eqn{(\theta, \sigma^2)} and the second on
 #' \eqn{\nu}, so that they can be maximized separately.
 #'
-#' **E step.** Multiplying the two densities shows that, given
-#' \eqn{\Delta x_j}, the density of \eqn{G_j} is proportional to
-#' \eqn{g^{p_j - 1} \exp(-(\chi_j / g + \omega g) / 2)}, \eqn{g > 0}, with
-#' \deqn{p_j = \frac{\Delta t_j}{\nu} - \frac{1}{2}, \qquad
-#'   \chi_j = \frac{\Delta x_j^2}{\sigma^2}, \qquad
-#'   \omega = \frac{\theta^2}{\sigma^2} + \frac{2}{\nu}:}
-#' this is the generalized inverse Gaussian distribution
-#' \eqn{GIG(p_j, \chi_j, \omega)} (Bee et al., 2018, section 3.2, after
-#' Embrechts, 1983). The function \eqn{\ell_c} only involves \eqn{G_j},
-#' \eqn{1 / G_j} and \eqn{\ln G_j}, so that the E step reduces to their
-#' conditional expectations. With \eqn{z_j = \sqrt{\chi_j \omega}} and
-#' \eqn{\rho_j = \sqrt{\chi_j / \omega}}, these are ratios of Bessel functions
-#' (Bee et al., 2018, equations (6) to (8)):
-#' \deqn{e^+_j = E[G_j \mid \Delta x_j] = \rho_j \frac{K_{p_j + 1}(z_j)}{K_{p_j}(z_j)}, \qquad
-#'   e^-_j = E[1 / G_j \mid \Delta x_j] = \frac{1}{\rho_j} \frac{K_{p_j - 1}(z_j)}{K_{p_j}(z_j)},}
-#' \deqn{l_j = E[\ln G_j \mid \Delta x_j] = \ln \rho_j + \frac{\partial}{\partial p} \ln K_p(z_j) \Big|_{p = p_j},}
+#' **E step.** Given \eqn{\Delta x_j}, multiplying the two densities shows that
+#' the density of \eqn{G_j} is proportional to
+#' \deqn{g^{\lambda_j - 3/2} \exp\Big(-\frac{1}{2} \Big(\frac{\Delta x_j^2}{\sigma^2 g} + \frac{c^2 g}{\sigma^2}\Big)\Big), \qquad g > 0,}
+#' which is a generalized inverse Gaussian distribution (Bee et al., 2018,
+#' section 3.2, after Embrechts, 1983). The complete log-likelihood only
+#' involves \eqn{G_j}, \eqn{1 / G_j} and \eqn{\ln G_j}, so that the E step
+#' reduces to their conditional expectations (Bee et al., 2018, equations (6)
+#' to (8)):
+#' \deqn{e^+_j = E[G_j \mid \Delta x_j] = \frac{|\Delta x_j|}{c} \frac{K_{\lambda_j + 1/2}(\kappa |\Delta x_j|)}{K_{\lambda_j - 1/2}(\kappa |\Delta x_j|)},}
+#' \deqn{e^-_j = E[1 / G_j \mid \Delta x_j] = \frac{c}{|\Delta x_j|} \frac{K_{\lambda_j - 3/2}(\kappa |\Delta x_j|)}{K_{\lambda_j - 1/2}(\kappa |\Delta x_j|)},}
+#' \deqn{l_j = E[\ln G_j \mid \Delta x_j] = \ln \frac{|\Delta x_j|}{c} + \frac{\partial}{\partial p} \ln K_p(\kappa |\Delta x_j|) \Big|_{p = \lambda_j - 1/2},}
 #' the last derivative being computed numerically, as in Bee et al. (2018).
 #'
 #' **M step.** With these moments fixed, the expected complete log-likelihood
-#' is, up to a constant,
-#' \deqn{Q = -\frac{n}{2} \ln \sigma^2 - \frac{1}{2 \sigma^2} \sum_{j=1}^{n} \big(\Delta x_j^2 e^-_j - 2 \theta \Delta x_j + \theta^2 e^+_j\big) + Q_\Gamma,}
-#' \deqn{Q_\Gamma = \sum_{j=1}^{n} \big[a \Delta t_j \ln a - \ln \Gamma(a \Delta t_j) + (a \Delta t_j - 1) l_j - a e^+_j\big].}
-#' Setting its derivatives in \eqn{\theta} and \eqn{\sigma^2} to zero gives, with
-#' \eqn{E^+ = \sum_{j=1}^{n} e^+_j} (Bee et al., 2018, equations (10) and (11)
-#' with their location \eqn{\mu = 0}),
-#' \deqn{\theta = \frac{S}{E^+}, \qquad
-#'   \sigma^2 = \frac{1}{n} \Big(\sum_{j=1}^{n} \Delta x_j^2 e^-_j - \frac{S^2}{E^+}\Big).}
-#' With \eqn{\psi} the digamma function, the derivative in \eqn{a} is
+#' is, up to a constant, the sum of
+#' \deqn{-\frac{n}{2} \ln \sigma^2 - \frac{1}{2 \sigma^2} \sum_{j=1}^{n} \big(\Delta x_j^2 e^-_j - 2 \theta \Delta x_j + \theta^2 e^+_j\big)}
+#' and
+#' \deqn{\sum_{j=1}^{n} \big[-\lambda_j \ln \nu - \ln \Gamma(\lambda_j) + (\lambda_j - 1) l_j - e^+_j / \nu\big].}
+#' Setting the derivatives of the first part in \eqn{\theta} and \eqn{\sigma^2}
+#' to zero gives (Bee et al., 2018, equations (10) and (11) with their location
+#' \eqn{\mu = 0})
+#' \deqn{\theta = \frac{S}{\sum_{j=1}^{n} e^+_j}, \qquad
+#'   \sigma^2 = \frac{1}{n} \Big(\sum_{j=1}^{n} \Delta x_j^2 e^-_j - \frac{S^2}{\sum_{j=1}^{n} e^+_j}\Big).}
+#' With \eqn{a = 1 / \nu} and \eqn{\psi} the digamma function, the derivative of
+#' the second part in \eqn{a} is
 #' \deqn{q(a) = \sum_{j=1}^{n} \big[\Delta t_j l_j - e^+_j + \Delta t_j \ln a + \Delta t_j - \Delta t_j\, \psi(a \Delta t_j)\big],}
 #' which is the derivative given in the CM-step 2a of Bee et al. (2018) when
 #' \eqn{\Delta t_j = 1}. By Theorem 1 of Alzer (1997) with \eqn{\alpha = 0}, the
@@ -173,15 +171,15 @@
 #' \eqn{+\infty} as \eqn{a \to 0} and, by Jensen's inequality
 #' (\eqn{l_j < \ln e^+_j}) and \eqn{\ln u \le u - 1}, to a negative limit as
 #' \eqn{a \to \infty}: its unique root gives \eqn{\nu = 1 / a}. The three
-#' updates use the same moments, so that this step maximizes \eqn{Q} over all
-#' the parameters.
+#' updates use the same moments, so that this step maximizes the expected
+#' complete log-likelihood over all the parameters.
 #'
 #' **Algorithm.**
 #' 1. Start from \eqn{(\theta_0, \sigma_0, \nu_0)} (see Start and end).
 #' 2. Compute \eqn{e^+_j}, \eqn{e^-_j} and \eqn{l_j}, \eqn{j = 1, \dots, n}, at
 #'    the current parameters.
-#' 3. Update \eqn{\theta} and \eqn{\sigma^2}, then solve \eqn{q(a) = 0} for
-#'    \eqn{\nu}.
+#' 3. Update \eqn{\theta} and \eqn{\sigma^2}, then solve \eqn{q(a) = 0} and
+#'    set \eqn{\nu = 1 / a}.
 #' 4. Compute \eqn{\ell}. After at least 10 iterations, stop when the increase
 #'    of \eqn{\ell} is at most \eqn{10^{-6} (|\ell| + 1)}, with at most 5000
 #'    iterations.

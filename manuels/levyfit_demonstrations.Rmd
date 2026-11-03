@@ -393,11 +393,11 @@ En \(\mu\) (et non \(\delta\)) : \(\partial_\mu\ell = \frac{\eta}{\mu^2}\big(\fr
 
 ## Modèle
 
-\(X_s = \theta\gamma_s + \sigma W_{\gamma_s}\), où \(\gamma\) est un processus gamma avec \(\gamma_s \sim \Gamma(s/\nu, 1/\nu)\) (forme \(s/\nu\), intensité \(1/\nu\), donc moyenne \(s\) et variance \(\nu s\)), et \(W\) un mouvement brownien indépendant. C'est le modèle de subordination de Seneta (2004, équations (1)-(2)) [V]. Sachant \(\gamma_s = g\), \(X_s \sim \mathcal{N}(\theta g, \sigma^2 g)\) : c'est un mélange normal en variance et en moyenne [Fischer, Gaunt et Sarantsev (2023), section 2.4, représentation (2.18) [V]].
+\(X_s = \theta G_s + \sigma W_{G_s}\), où \(G\) est un processus gamma avec \(G_s \sim \Gamma(s/\nu, 1/\nu)\) (forme \(s/\nu\), intensité \(1/\nu\), donc moyenne \(s\) et variance \(\nu s\)), et \(W\) un mouvement brownien indépendant. C'est le modèle de subordination de Seneta (2004, équations (1)-(2)) [V]. Sachant \(G_s = g\), \(X_s \sim \mathcal{N}(\theta g, \sigma^2 g)\) : c'est un mélange normal en variance et en moyenne [Fischer, Gaunt et Sarantsev (2023), section 2.4, représentation (2.18) [V]].
 
 ## La densité d'un accroissement
 
-Soit \(\lambda = \Delta t/\nu\). Sur une durée \(\Delta t\), l'accroissement de \(\gamma\) suit \(\Gamma(\lambda, 1/\nu)\) [définition 2.24 de Kahle et al. [V]], donc
+Soit \(\lambda = \Delta t/\nu\). Sur une durée \(\Delta t\), l'accroissement de \(G\) suit \(\Gamma(\lambda, 1/\nu)\) [définition 2.24 de Kahle et al. [V]], donc
 \[
 f_{\Delta t}(x) = \int_0^\infty \frac{1}{\sqrt{2\pi\sigma^2 g}}e^{-\frac{(x - \theta g)^2}{2\sigma^2 g}}\,\frac{g^{\lambda-1}e^{-g/\nu}}{\nu^\lambda\Gamma(\lambda)}\,dg
 \]
@@ -409,13 +409,28 @@ avec \(c^2 = \theta^2 + 2\sigma^2/\nu\). Le lemme 2.9(b) avec \(q = \lambda - 1/
 \[
 f_{\Delta t}(x) = \frac{2e^{\theta x/\sigma^2}}{\sqrt{2\pi}\,\sigma\,\nu^\lambda\Gamma(\lambda)}\Big(\frac{|x|}{c}\Big)^{\lambda - 1/2}K_{\lambda - 1/2}(\kappa|x|), \qquad x \ne 0,
 \]
-et \(K_{\lambda-1/2} = K_{|\lambda - 1/2|}\) [lemme 2.9(a)]. C'est la densité de la page d'aide. (Elle correspond à la paramétrisation (1.1) de Fischer, Gaunt et Sarantsev (2023) [V], aux changements de paramètres près indiqués dans leur section 2.1.)
+et \(K_{\lambda-1/2} = K_{|\lambda - 1/2|}\) [lemme 2.9(a)]. C'est la densité de la page d'aide. (C'est aussi ce que donnent les équations (4.50), (4.51) et (1.1) de Fischer, Gaunt et Sarantsev (2023) [V].)
+
+## La vraisemblance
+
+**Proposition 7.1.** Avec \(\lambda_j = \Delta t_j/\nu\), \(c\) et \(\kappa\) définis ci-dessus,
+\[
+\ell(\theta, \sigma, \nu) = n\ln\frac{2}{\sqrt{2\pi}\,\sigma} + \frac{\theta S}{\sigma^2} + \sum_{j=1}^{n}\Big[\Big(\lambda_j - \frac12\Big)\ln\frac{|\Delta x_j|}{c} - \lambda_j\ln\nu - \ln\Gamma(\lambda_j) + \ln K_{|\lambda_j - 1/2|}(\kappa|\Delta x_j|)\Big].
+\]
+
+*Démonstration.*
+
+1. Le processus VG est un processus de Lévy [Fischer, Gaunt et Sarantsev (2023), section 4.2 [V]] : la proposition 2.1 donne \(\ell = \sum_{j=1}^{n}\ln f_{\Delta t_j}(\Delta x_j)\).
+2. Chaque \(\Delta x_j\) vaut 0 avec probabilité nulle, puisque l'accroissement a une densité : la formule de la section précédente s'applique presque sûrement.
+3. On prend le logarithme de cette densité, puis on somme sur \(j\). Les termes constants donnent \(n\ln(2/(\sqrt{2\pi}\,\sigma))\) et les exposants donnent \(\sum_{j=1}^{n}\theta\Delta x_j/\sigma^2 = \theta S/\sigma^2\). \(\square\)
+
+**Remarque.** Pour \(\Delta t_j = 1\), c'est la somme (4) de Bee, Dickson et Santi (2018) [V] avec leur location \(\mu = 0\) et le radical corrigé de leur équation (1), imprimée avec \(2\gamma^2\nu + \sigma^2\) au lieu de \(2\sigma^2\nu + \gamma^2\) sous le premier radical.
 
 ## Les trois limites du modèle (page d'aide, « When the estimator does not exist »)
 
 **Limite \(\nu \to 0\) (vers Wiener).** Pour tout \(x\), \(f_{\Delta t}(x) \to (2\pi\sigma^2\Delta t)^{-1/2}e^{-(x - \theta\Delta t)^2/(2\sigma^2\Delta t)}\).
 
-*Démonstration.* On note \(G\) l'accroissement de \(\gamma\) et \(\varphi(g) = (2\pi\sigma^2 g)^{-1/2}e^{-(x-\theta g)^2/(2\sigma^2 g)}\), de sorte que \(f_{\Delta t}(x) = \E[\varphi(G)]\). (1) \(\E[G] = \Delta t\) et \(\Var(G) = \nu\Delta t \to 0\) : \(G \to \Delta t\) en probabilité [inégalité de Bienaymé-Tchebychev]. (2) Sur \(\{G \ge \Delta t/2\}\), \(\varphi\) est continue et bornée par \((\pi\sigma^2\Delta t)^{-1/2}\) : \(\E[\varphi(G)1_{G \ge \Delta t/2}] \to \varphi(\Delta t)\) [convergence en probabilité et fonction continue bornée, C]. (3) Sur \(\{G < \Delta t/2\}\), \(\varphi(G) \le (2\pi\sigma^2)^{-1/2}G^{-1/2}\) et, par Cauchy-Schwarz, \(\E[G^{-1/2}1_{G < \Delta t/2}] \le \sqrt{\E[1/G]\,P(G < \Delta t/2)}\). Or \(\E[1/G] = \frac{1/\nu}{\Delta t/\nu - 1}\) reste borné quand \(\nu \to 0\) [calcul comme au lemme 2.7(b)] et \(P(G < \Delta t/2) \to 0\) [point 1]. \(\square\)
+*Démonstration.* On note encore \(G\) l'accroissement du processus gamma sur la durée \(\Delta t\) et \(\varphi(g) = (2\pi\sigma^2 g)^{-1/2}e^{-(x-\theta g)^2/(2\sigma^2 g)}\), de sorte que \(f_{\Delta t}(x) = \E[\varphi(G)]\). (1) \(\E[G] = \Delta t\) et \(\Var(G) = \nu\Delta t \to 0\) : \(G \to \Delta t\) en probabilité [inégalité de Bienaymé-Tchebychev]. (2) Sur \(\{G \ge \Delta t/2\}\), \(\varphi\) est continue et bornée par \((\pi\sigma^2\Delta t)^{-1/2}\) : \(\E[\varphi(G)1_{G \ge \Delta t/2}] \to \varphi(\Delta t)\) [convergence en probabilité et fonction continue bornée, C]. (3) Sur \(\{G < \Delta t/2\}\), \(\varphi(G) \le (2\pi\sigma^2)^{-1/2}G^{-1/2}\) et, par Cauchy-Schwarz, \(\E[G^{-1/2}1_{G < \Delta t/2}] \le \sqrt{\E[1/G]\,P(G < \Delta t/2)}\). Or \(\E[1/G] = \frac{1/\nu}{\Delta t/\nu - 1}\) reste borné quand \(\nu \to 0\) [calcul comme au lemme 2.7(b)] et \(P(G < \Delta t/2) \to 0\) [point 1]. \(\square\)
 
 Chaque terme de \(\ell\) converge donc vers celui du processus de Wiener de dérive \(\theta\) et de coefficient de diffusion \(\sigma\).
 
@@ -437,51 +452,46 @@ f_{\Delta t}(x) = \int_{w > -x/(\theta\sigma)}\frac{1}{\sqrt{2\pi g_w}}\exp\Big(
 
 **Conséquence utilisée par le code.** Si tous les accroissements sont positifs et \(\theta > 0\), \(\ell_{VG}(\theta, \sigma, \nu) \to \ell_\Gamma(1/\nu, 1/(\theta\nu))\) quand \(\sigma \to 0\). En prenant \(\nu = 1/\hat a\) et \(\theta = \hat a/\hat b\) (de sorte que \(1/(\theta\nu) = \hat b\)), on obtient \(\sup\ell_{VG} \ge \ell_\Gamma(\hat a, \hat b)\). Le code compare donc la vraisemblance VG obtenue à \(\ell_\Gamma(\hat a, \hat b)\) ; si elle n'est pas plus grande, il conclut que le maximum est à la limite gamma (fonction `vg_est`). Cette conclusion est une règle de décision du code [N] : elle signale qu'aucun maximum intérieur meilleur que la limite n'a été trouvé, sans démontrer qu'il n'en existe pas.
 
-**« Environ un cas sur quatre avec une trajectoire de dix accroissements »** : constat de simulation [N].
-
-```{r}
-set.seed(1)
-t <- inspection_times("regular", n = 10, tmax = 20)$time
-na <- replicate(400, anyNA(suppressWarnings(vg_mle(sim_vg(t, theta = 0.5, sigma = 1.5, nu = 2)))))
-mean(na)
-```
-
 ## L'algorithme EM
 
-**Vraisemblance complète.** Si l'on observait \(G_j\), la densité jointe de \((\Delta x_j, G_j)\) serait \(\varphi_j(\Delta x_j \mid G_j)\,\pi_j(G_j)\) [définition d'une densité conditionnelle], et
+**Vraisemblance complète.** Si l'on observait \(G_j\), la densité jointe de \((\Delta x_j, G_j)\) serait le produit de la densité de \(\Delta x_j\) sachant \(G_j\) et de celle de \(G_j\) [définition d'une densité conditionnelle]. Avec \(\lambda_j = \Delta t_j/\nu\), la log-vraisemblance complète vaut donc
 \[
-\ell_c = \sum_{j=1}^{n}\Big[-\frac12\ln(2\pi\sigma^2) - \frac12\ln G_j - \frac{\Delta x_j^2/G_j - 2\theta\Delta x_j + \theta^2 G_j}{2\sigma^2} + a\Delta t_j\ln a - \ln\Gamma(a\Delta t_j) + (a\Delta t_j - 1)\ln G_j - aG_j\Big],
+\sum_{j=1}^{n}\Big[-\frac12\ln(2\pi\sigma^2) - \frac12\ln G_j - \frac{\Delta x_j^2/G_j - 2\theta\Delta x_j + \theta^2 G_j}{2\sigma^2} - \lambda_j\ln\nu - \ln\Gamma(\lambda_j) + (\lambda_j - 1)\ln G_j - \frac{G_j}{\nu}\Big]
 \]
-avec \(a = 1/\nu\) [logarithme de la densité normale, développement de \((\Delta x - \theta G)^2/G\), et logarithme de la densité \(\Gamma(a\Delta t_j, a)\)]. Elle ne dépend des \(G_j\) que par \(G_j\), \(1/G_j\) et \(\ln G_j\). Cette structure est celle de l'algorithme ECM décrit par Fischer, Gaunt et Sarantsev (2023, section 3.3) [V].
+[logarithme de la densité normale, développement de \((\Delta x - \theta G)^2/G\), et logarithme de la densité \(\Gamma(\lambda_j, 1/\nu)\)]. Elle ne dépend des \(G_j\) que par \(G_j\), \(1/G_j\) et \(\ln G_j\). Cette structure est celle de l'algorithme ECM décrit par Fischer, Gaunt et Sarantsev (2023, section 3.3) [V].
 
-**Loi de \(G_j\) sachant \(\Delta x_j\).** Elle est proportionnelle, en \(g\), à \(\varphi(\Delta x_j \mid g)\pi(g) \propto g^{-1/2}e^{-\frac{\Delta x_j^2}{2\sigma^2 g} - \frac{\theta^2 g}{2\sigma^2}}g^{a\Delta t_j - 1}e^{-ag}\) [formule de Bayes ; les facteurs indépendants de \(g\) sont omis], soit \(g^{p_j - 1}\exp(-(\chi_j/g + \omega g)/2)\) avec \(p_j = \Delta t_j/\nu - 1/2\), \(\chi_j = \Delta x_j^2/\sigma^2\), \(\omega = \theta^2/\sigma^2 + 2/\nu\). C'est la loi \(\GIG(p_j, \chi_j, \omega)\). Fischer, Gaunt et Sarantsev (2023, section 3.3) [V] attribuent ce résultat à Embrechts.
-
-**Moments.** Par le lemme 2.9(b) avec \(A = \chi_j/2\), \(B = \omega/2\), \(2\sqrt{AB} = \sqrt{\chi_j\omega} = z_j\) et \(\sqrt{A/B} = \sqrt{\chi_j/\omega} = \rho_j\) : \(\int_0^\infty g^{p + r - 1}e^{-(\chi/g + \omega g)/2}dg = 2\rho^{p+r}K_{p+r}(z)\). En divisant par la constante de normalisation (cas \(r = 0\)) :
+**Loi de \(G_j\) sachant \(\Delta x_j\).** Elle est proportionnelle, en \(g\), à \(g^{-1/2}e^{-\frac{\Delta x_j^2}{2\sigma^2 g} - \frac{\theta^2 g}{2\sigma^2}}g^{\lambda_j - 1}e^{-g/\nu}\) [formule de Bayes ; les facteurs indépendants de \(g\) sont omis], soit
 \[
-\E[G_j^r] = \rho_j^r\frac{K_{p_j + r}(z_j)}{K_{p_j}(z_j)}.
+g^{\lambda_j - 3/2}\exp\Big(-\frac12\Big(\frac{\Delta x_j^2}{\sigma^2 g} + \frac{c^2 g}{\sigma^2}\Big)\Big) \qquad [c^2/\sigma^2 = \theta^2/\sigma^2 + 2/\nu].
 \]
-Avec \(r = 1\) et \(r = -1\), on obtient \(e^+_j\) et \(e^-_j\). Comme \(\E[\ln G] = \frac{d}{dr}\E[G^r]\big|_{r=0}\) [dérivation sous l'intégrale, justifiée par convergence dominée, C], \(l_j = \ln\rho_j + \partial_p\ln K_p(z_j)\big|_{p = p_j}\). Le code calcule cette dérivée par différence finie centrée, de pas \(10^{-5}\) [N].
+C'est une loi gaussienne inverse généralisée. Fischer, Gaunt et Sarantsev (2023, section 3.3) [V] attribuent ce résultat à Embrechts.
 
-**Étape M pour \((\theta, \sigma^2)\).** La fonction \(Q\) (espérance de \(\ell_c\)) se sépare en une partie en \((\theta, \sigma^2)\) et une partie en \(a\) [aucun terme ne mêle les deux]. La première est \(-\frac{n}{2}\ln\sigma^2 - \frac{1}{2\sigma^2}\sum_{j=1}^{n}(\Delta x_j^2e^-_j - 2\theta\Delta x_j + \theta^2e^+_j)\) + constante.
+**Moments.** Le lemme 2.9(b), avec \(A = \Delta x_j^2/(2\sigma^2)\) et \(B = c^2/(2\sigma^2)\), donne \(\sqrt{A/B} = |\Delta x_j|/c\) et \(2\sqrt{AB} = \kappa|\Delta x_j|\). En divisant par la constante de normalisation (cas \(r = 0\)) :
+\[
+\E[G_j^r \mid \Delta x_j] = \Big(\frac{|\Delta x_j|}{c}\Big)^r\frac{K_{\lambda_j - 1/2 + r}(\kappa|\Delta x_j|)}{K_{\lambda_j - 1/2}(\kappa|\Delta x_j|)}.
+\]
+Avec \(r = 1\) et \(r = -1\), on obtient \(e^+_j\) et \(e^-_j\). Comme \(\E[\ln G] = \frac{d}{dr}\E[G^r]\big|_{r=0}\) [dérivation sous l'intégrale, justifiée par convergence dominée, C], \(l_j = \ln(|\Delta x_j|/c) + \partial_p\ln K_p(\kappa|\Delta x_j|)\big|_{p = \lambda_j - 1/2}\). Le code calcule cette dérivée par différence finie centrée, de pas \(10^{-5}\) [N].
 
-* En \(\theta\), c'est un trinôme concave (\(E^+ > 0\)), de dérivée \(\frac{1}{\sigma^2}(S - \theta E^+)\) : \(\theta = S/E^+\).
-* En \(\sigma^2\), même raisonnement qu'en section 4.3, point 3 : \(\sigma^2 = \frac1n\sum_{j=1}^{n}(\Delta x_j^2e^-_j - 2\theta\Delta x_j + \theta^2e^+_j) = \frac1n\big(\sum_{j=1}^{n}\Delta x_j^2e^-_j - \frac{S^2}{E^+}\big)\) [avec \(\theta = S/E^+\) : \(-2\theta S + \theta^2E^+ = -S^2/E^+\)].
+**Étape M pour \((\theta, \sigma^2)\).** L'espérance \(Q\) de la log-vraisemblance complète se sépare en une partie en \((\theta, \sigma^2)\) et une partie en \(\nu\) [aucun terme ne mêle les deux]. Le code calcule donc une seule fois les moments par itération, et cette étape maximise \(Q\) sur tous les paramètres : c'est un algorithme EM, et non le MCECM de Bee, Dickson et Santi (2018, section 3.2) [V], qui ajoute une étape E avant la mise à jour de \(\nu\). La première partie est \(-\frac{n}{2}\ln\sigma^2 - \frac{1}{2\sigma^2}\sum_{j=1}^{n}(\Delta x_j^2e^-_j - 2\theta\Delta x_j + \theta^2e^+_j)\) + constante.
 
-**Étape M pour \(\nu\).** La partie en \(a\) est \(\sum_{j=1}^{n}[a\Delta t_j\ln a - \ln\Gamma(a\Delta t_j) + a\Delta t_j l_j - ae^+_j]\) + constante. Sa dérivée est \(q(a)\) (formule de la page d'aide) [dérivée de \(a\ln a\) : \(\ln a + 1\)].
+* En \(\theta\), c'est un trinôme concave (\(\sum_{j=1}^{n}e^+_j > 0\)), de dérivée \(\frac{1}{\sigma^2}(S - \theta\sum_{j=1}^{n}e^+_j)\) : \(\theta = S/\sum_{j=1}^{n}e^+_j\).
+* En \(\sigma^2\), même raisonnement qu'en section 4.3, point 3 : \(\sigma^2 = \frac1n\sum_{j=1}^{n}(\Delta x_j^2e^-_j - 2\theta\Delta x_j + \theta^2e^+_j) = \frac1n\big(\sum_{j=1}^{n}\Delta x_j^2e^-_j - S^2/\sum_{j=1}^{n}e^+_j\big)\) [avec la valeur de \(\theta\) : \(-2\theta S + \theta^2\sum_{j=1}^{n}e^+_j = -S^2/\sum_{j=1}^{n}e^+_j\)].
+
+**Étape M pour \(\nu\).** Avec \(a = 1/\nu\), la partie en \(a\) est \(\sum_{j=1}^{n}[a\Delta t_j\ln a - \ln\Gamma(a\Delta t_j) + a\Delta t_j l_j - ae^+_j]\) + constante. Sa dérivée est \(q(a)\) (formule de la page d'aide) [dérivée de \(a\ln a\) : \(\ln a + 1\)].
 
 * **\(q\) est strictement décroissante** : \(q'(a) = \sum_{j=1}^{n}[\Delta t_j/a - \Delta t_j^2\psi'(a\Delta t_j)] < 0\) [lemme 2.3(a)].
 * **\(q \to +\infty\) en 0** : comme à la section 5.4, point 2, \(-\Delta t_j\psi(a\Delta t_j) \sim 1/a\) domine \(\Delta t_j\ln a\).
 * **Limite négative en \(+\infty\)** : avec le lemme 2.3(b), \(\Delta t_j\ln a - \Delta t_j\psi(a\Delta t_j) \to -\Delta t_j\ln\Delta t_j\). La limite vaut \(\sum_{j=1}^{n}\Delta t_j\big[l_j - \ln\Delta t_j + 1 - e^+_j/\Delta t_j\big]\). Par l'inégalité de Jensen stricte pour le logarithme [lemme 2.4 sous forme d'espérance ; \(G_j\) n'est pas constant], \(l_j = \E[\ln G_j] < \ln\E[G_j] = \ln e^+_j\). Donc chaque crochet est \(< \ln u_j + 1 - u_j \le 0\), avec \(u_j = e^+_j/\Delta t_j\) [lemme 2.4 : \(\ln u \le u - 1\)].
 * Par le lemme 2.5, \(q\) a une racine unique, qui est le maximum en \(a\) (même argument de signe qu'en section 5.4).
 
-**L'EM augmente la vraisemblance à chaque itération** (page d'aide, avec renvoi à Dempster, Laird et Rubin (1977) [C, article non disponible]). Démonstration directe : on note \(k(g \mid x; \vartheta)\) la densité conditionnelle des temps cachés. Pour tout \(\vartheta\), \(\ell(\vartheta) = \ln f_c(x, g; \vartheta) - \ln k(g \mid x; \vartheta)\) [définition de la densité conditionnelle]. On prend l'espérance sous \(k(\cdot \mid x; \vartheta')\) : \(\ell(\vartheta) = Q(\vartheta \mid \vartheta') - H(\vartheta \mid \vartheta')\), avec \(H(\vartheta \mid \vartheta') = \E_{\vartheta'}[\ln k(G \mid x; \vartheta)]\). Or \(H(\vartheta \mid \vartheta') \le H(\vartheta' \mid \vartheta')\) [\(\E_{\vartheta'}[\ln(k_\vartheta/k_{\vartheta'})] \le \ln\E_{\vartheta'}[k_\vartheta/k_{\vartheta'}] = \ln 1 = 0\), par Jensen]. Si l'étape M donne \(Q(\vartheta_{new} \mid \vartheta') \ge Q(\vartheta' \mid \vartheta')\), alors \(\ell(\vartheta_{new}) \ge \ell(\vartheta')\). \(\square\)
+**La vraisemblance ne diminue à aucune itération** (Dempster, Laird et Rubin (1977), théorème 1 [V]). Démonstration directe : on note \(k(g \mid x; \vartheta)\) la densité conditionnelle des temps cachés. Pour tout \(\vartheta\), \(\ell(\vartheta) = \ln f_c(x, g; \vartheta) - \ln k(g \mid x; \vartheta)\) [définition de la densité conditionnelle]. On prend l'espérance sous \(k(\cdot \mid x; \vartheta')\) : \(\ell(\vartheta) = Q(\vartheta \mid \vartheta') - H(\vartheta \mid \vartheta')\), avec \(H(\vartheta \mid \vartheta') = \E_{\vartheta'}[\ln k(G \mid x; \vartheta)]\). Or \(H(\vartheta \mid \vartheta') \le H(\vartheta' \mid \vartheta')\) [\(\E_{\vartheta'}[\ln(k_\vartheta/k_{\vartheta'})] \le \ln\E_{\vartheta'}[k_\vartheta/k_{\vartheta'}] = \ln 1 = 0\), par Jensen]. Si l'étape M donne \(Q(\vartheta_{new} \mid \vartheta') \ge Q(\vartheta' \mid \vartheta')\), alors \(\ell(\vartheta_{new}) \ge \ell(\vartheta')\). \(\square\) Cela n'implique pas à soi seul la convergence vers l'EMV (Dempster et al., 1977, section 3 [V]).
 
 **Choix numériques, non démontrés [N].**
 
-* Le départ : EMV de Wiener pour \((\theta, \sigma)\), et \(\nu = T/n\).
+* Le départ : EMV de Wiener pour \((\theta, \sigma)\), et \(\nu\) estimé par la kurtosis (page d'aide, section EM algorithm) ; \(\nu = T/n\) seulement si cette estimation n'est pas utilisable.
 * Le critère d'arrêt : au moins 10 itérations, puis arrêt dès qu'une itération augmente \(\ell\) de moins de \(10^{-6}(|\ell| + 1)\).
 * Le seuil d'arrêt à la limite brownienne : \(\nu < \max_j\Delta t_j/300\).
-* La finition par L-BFGS-B. L'affirmation « the likelihood and the MLE are the same, much faster » est un constat numérique : L-BFGS-B et l'EM cherchent le même maximum local, mais rien ne garantit en général qu'ils atteignent le même point.
+* La finition par L-BFGS-B, qui termine la maximisation à partir du dernier itéré de l'EM. Rien ne garantit en général que les deux méthodes atteignent le même point.
 
 ## Les fonctions de Bessel en échelle logarithmique
 
@@ -645,10 +655,9 @@ for (h in c(0.1, 1)) {
 **Constats numériques et choix d'implémentation [N].**
 
 * Le biais d'environ 40 % pour le processus gamma.
-* « Un cas sur quatre » pour le VG.
 * L'effet du pas de temps pour Meixner.
 * Les critères d'arrêt et les seuils (\(10^{-6}\), \(\max\Delta t/300\), \(0.1\), \(1000\), bornes de L-BFGS-B, `n_start`).
-* L'égalité des résultats de l'EM et de L-BFGS-B.
+* La finition de l'EM par L-BFGS-B.
 * La règle de décision du code à la limite gamma du VG.
 
 \newpage
@@ -663,9 +672,10 @@ Les références marquées [V] ont été relues dans le PDF correspondant du dos
 * [V] Schoutens, W. (2002). The Meixner process: theory and applications in finance. EURANDOM report 2002-004. Section 2 (densité et tableau des moments).
 * [V] Wang, X. and Xu, D. (2010). An inverse Gaussian process model for degradation data. *Technometrics*, 52(2), 188-197. Section 2, équations (1) et (3).
 * [V] Ye, Z.-S. and Chen, N. (2014). The inverse Gaussian process as a degradation model. *Technometrics*, 56(3), 302-311. Sections 2.1 et 4.2.
-* [V] Fischer, A., Gaunt, R. E. and Sarantsev, A. (2023). The variance-gamma distribution: a review. Paramétrisation (1.1) ; section 2.4, représentation (2.18) ; section 3.3 (algorithmes ECM) ; annexe A (définition de \(K_\nu\)).
+* [V] Fischer, A., Gaunt, R. E. and Sarantsev, A. (2023). The variance-gamma distribution: a review. Paramétrisation (1.1) ; section 2.4, représentation (2.18) ; section 3.3 (algorithmes ECM) ; section 4.2, équations (4.50) et (4.51) ; annexe A (définition de \(K_\nu\)).
 * [V] Seneta, E. (2004). Fitting the variance-gamma model to financial data. *Journal of Applied Probability*, 41A, 177-187. Équations (1)-(2).
-* [C] Dempster, A. P., Laird, N. M. and Rubin, D. B. (1977). Maximum likelihood from incomplete data via the EM algorithm. *JRSS B*, 39(1), 1-22. (Monotonie de l'EM, démontrée ici en section 7.4.)
+* [V] Bee, M., Dickson, M. M. and Santi, F. (2018). Likelihood-based risk estimation for variance-gamma models. *Statistical Methods & Applications*. doi:10.1007/s10260-017-0393-z. Section 3.2, équations (1) et (4).
+* [V] Dempster, A. P., Laird, N. M. and Rubin, D. B. (1977). Maximum likelihood from incomplete data via the EM algorithm. *JRSS B*, 39(1), 1-38. Section 3, théorème 1 (monotonie de l'EM, démontrée aussi ici en section 7.5).
 * [C] Feller, W. (1971). *An Introduction to Probability Theory and Its Applications*, vol. II, 2e édition. Wiley. Chapitre XIII (transformée de Laplace).
 * [C] van der Vaart, A. W. (1998). *Asymptotic Statistics*. Cambridge University Press. Chapitre 3 (méthode delta).
 * [C] Tweedie, M. C. K. (1957). Statistical properties of inverse Gaussian distributions. I. *The Annals of Mathematical Statistics*, 28(2), 362-377.
