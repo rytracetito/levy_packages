@@ -311,12 +311,21 @@ vg_mle(x)
 # 4. Estimates with 95 \% confidence intervals
 vg_mle(x, ci = TRUE)
 
-# 5. Increasing data, here from a gamma process: the likelihood increases
-#    towards the gamma limit (sigma = 0): warning suggesting gamma_mle(), NA estimates
+# 5. Increasing data, here from a gamma process, which is a limit of the VG model
+#    (sigma = 0). The result depends on the data.
 t100 <- DegradSim::inspection_times("regular", n = 100, tmax = 100)$time
+
+# The likelihood increases towards the gamma limit: warning suggesting
+# gamma_mle(), NA estimates
+set.seed(2)
 y <- DegradSim::sim_gamma(t100, a = 2, b = 3)
 vg_mle(y)
 gamma_mle(y)
+
+# The VG likelihood is larger than the gamma likelihood: estimates with a small sigma
+set.seed(1)
+y <- DegradSim::sim_gamma(t100, a = 2, b = 3)
+vg_mle(y)
 }
 \references{
 Alzer, H. (1997). On some inequalities for the gamma and psi functions.
