@@ -37,7 +37,7 @@ test_that("Bridge gives the distribution of the increments", {
 })
 
 test_that("Bridge with a time-scaling function", {
-  A <- function(t) 0.02 * t^1.5
+  A <- function(t) 0.2 * t^1.5
   set.seed(22)
   dA <- diff(A(tb))
   x <- unclass(sim_gamma(tb, b = 3, A = A, method = "Bridge", n_traj = 300))[, -1]

@@ -152,7 +152,29 @@
 #'                          colour = "red") +
 #'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the gamma process")
 #'
-#' # 9. The same simulation by bridge sampling: the increments have the same density
+#' # 9. Bridge sampling: one trajectory. The printed result gives the method
+#' x <- sim_gamma(t, a = 2, b = 3, method = "Bridge")
+#' x
+#' plot_traj(x)
+#'
+#' # 10. Bridge sampling: ten trajectories with the same inspection times
+#' x <- sim_gamma(t, a = 2, b = 3, n_traj = 10, method = "Bridge")
+#' plot_traj(x)
+#' head(x[, 1:4])
+#'
+#' # 11. Bridge sampling: irregular inspections, the same as above
+#' x <- sim_gamma(plan, a = 2, b = 3, method = "Bridge")
+#' plot_traj(x)
+#'
+#' # 12. Bridge sampling: all the simulated data in a single data frame, with the increments
+#' head(traj_df(x, increments = TRUE))
+#'
+#' # 13. Bridge sampling: different inspection times for each trajectory
+#' x <- sim_gamma(list(c(0, 1, 3, 6), c(0, 2, 4, 6, 8, 10)), a = 2, b = 3,
+#'                method = "Bridge")
+#' x[[2]]
+#'
+#' # 14. Bridge sampling: histogram of the increments, with the same density as above
 #' x <- sim_gamma(t8, a = 2, b = 3, n_traj = 100, method = "Bridge")
 #' dx <- traj_df(x, increments = TRUE)$dX
 #' dx <- dx[!is.na(dx)]
@@ -163,8 +185,8 @@
 #'                          colour = "red") +
 #'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the gamma process, bridge")
 #'
-#' # 10. Time-scaled process simulated by bridge sampling
-#' x <- sim_gamma(t8, b = 3, A = function(t) 0.02 * t^1.5, method = "Bridge", n_traj = 5)
+#' # 15. Bridge sampling: time-scaled process with A(t) = 0.2 t^1.5
+#' x <- sim_gamma(t8, b = 3, A = function(t) 0.2 * t^1.5, method = "Bridge", n_traj = 5)
 #' plot_traj(x)
 #' @export
 sim_gamma <- function(t, a, b, A = NULL, method = "RWA", type = NULL, n_traj = 1) {

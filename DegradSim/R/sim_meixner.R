@@ -115,7 +115,33 @@
 #'   ggplot2::stat_function(fun = function(y) Runuran::ud(dist, y), colour = "red") +
 #'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the Meixner process")
 #'
-#' # 8. The same simulation by bridge sampling: the increments have the same density
+#' # 8. Bridge sampling: one trajectory. The printed result gives the method
+#' x <- sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2, method = "Bridge")
+#' x
+#' plot_traj(x)
+#'
+#' # 9. Bridge sampling: ten trajectories with the same inspection times
+#' x <- sim_meixner(t, a = 1, b = 0.3, d = 1.5, m = 0.2, n_traj = 10, method = "Bridge")
+#' plot_traj(x)
+#' head(x[, 1:4])
+#'
+#' # 10. Bridge sampling: irregular inspections, the same as above
+#' x <- sim_meixner(plan, a = 1, b = 0.3, d = 1.5, m = 0.2, method = "Bridge")
+#' plot_traj(x)
+#'
+#' # 11. Bridge sampling: all the simulated data in a single data frame, with the increments
+#' head(traj_df(x, increments = TRUE))
+#'
+#' # 12. Bridge sampling: different inspection times for each trajectory
+#' x <- sim_meixner(list(c(0, 1, 3, 6), c(0, 2, 4, 6, 8, 10)), a = 1, b = 0.3, d = 1.5, m = 0.2,
+#'                  method = "Bridge")
+#' x[[2]]
+#'
+#' # 13. Bridge sampling: symmetric increments (b = 0) and no drift (m = 0)
+#' x <- sim_meixner(t, a = 1, b = 0, d = 1.5, m = 0, n_traj = 10, method = "Bridge")
+#' plot_traj(x, "Symmetric Meixner process, bridge")
+#'
+#' # 14. Bridge sampling: histogram of the increments, with the same density as above
 #' x <- sim_meixner(t7, a = 1, b = 0.3, d = 1.5, m = 0.2, n_traj = 100, method = "Bridge")
 #' dx <- traj_df(x, increments = TRUE)$dX
 #' dx <- dx[!is.na(dx)]

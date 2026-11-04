@@ -345,8 +345,8 @@
 #' head(traj_df(x, increments = TRUE))
 #' plot_traj(x)
 #'
-#' # 4. Time-scaled gamma process with A(t) = 0.02 t^1.5
-#' y <- sim_gamma(plan, b = 1, A = function(t) 0.02 * t^1.5)
+#' # 4. Time-scaled gamma process with A(t) = 0.2 t^1.5
+#' y <- sim_gamma(plan, b = 1, A = function(t) 0.2 * t^1.5)
 #' y
 #' plot_traj(y, "Time-scaled gamma process")
 #'
@@ -356,6 +356,13 @@
 #' z[[2]]$t      # its inspection times, the same as z[[2]][, 1]
 #' z[[2]]$X      # its levels, the same as z[[2]][, 2]
 #' z[[2]][, 2]
+#'
+#' # 6. The same model by the two simulation methods
+#' x_rwa <- sim_gamma(plan, a = 2, b = 3)
+#' x_bridge <- sim_gamma(plan, a = 2, b = 3, method = "Bridge")
+#' x_bridge
+#' plot_traj(x_rwa, "Gamma process, method RWA")
+#' plot_traj(x_bridge, "Gamma process, method Bridge")
 #' @keywords package
 "_PACKAGE"
 

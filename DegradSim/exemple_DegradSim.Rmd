@@ -850,12 +850,12 @@ Une fonction d'échelle de temps $A$ (fonction croissante, continue à droite av
 
 Pour le Wiener, $X_t = \mu t + \sigma B_{\mu t}$ a la loi de $\mu t + \sigma \sqrt{\mu}\, B_t$, car $(B_{\mu t})_{t \ge 0}$ a la loi de $(\sqrt{\mu}\, B_t)_{t \ge 0}$.
 
-On prend $A(t) = 0.02\, t^{1.5}$, de sorte que $A(100) = 20$, et les 5 trajectoires du cas 2 de la partie II (pas décroissants).
+On prend $A(t) = 0.2\, t^{1.5}$, de sorte que $A(100) = 200$, et les 5 trajectoires du cas 2 de la partie II (pas décroissants).
 
 ## Modèle 1 : gamma à échelle de temps (Cha et Mercier, 2019, exemple 2)
 
 ```{r}
-A <- function(t) 0.02 * t^1.5
+A <- function(t) 0.2 * t^1.5
 set.seed(301)
 x <- sim_gamma(p2, b = 3, A = A)
 x
@@ -903,109 +903,567 @@ Les parties I à III utilisent la méthode RWA, qui cumule des accroissements in
 
 Les trajectoires ont la même loi qu'avec la méthode RWA. Avec une même graine, les valeurs obtenues sont différentes, et le calcul est plus lent. Le normal inverse gaussien et le Poisson composé n'ont pas de pont : pour eux, seule la méthode RWA est disponible.
 
-## Cas 1 : une trajectoire
+## Cas 1 : une trajectoire, inspections régulières
 
-Les inspections sont celles du cas 2 de la partie I (pas décroissants). L'affichage de `x` indique la méthode utilisée.
+Les inspections sont celles du cas 1 de la partie I. L'affichage de `x` indique la méthode utilisée.
 
 ### Modèle 1 : gamma
 
 ```{r}
-set.seed(401)
-x <- sim_gamma(t2, a = 2, b = 3, method = "Bridge")
+set.seed(411)
+x <- sim_gamma(t1, a = 2, b = 3, method = "Bridge")
 x
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Gamma, méthode Bridge")
 ```
 
 ### Modèle 2 : Wiener
 
 ```{r}
-set.seed(402)
-x <- sim_wiener(t2, mu = 1.5, sigma = 2, method = "Bridge")
+set.seed(412)
+x <- sim_wiener(t1, mu = 1.5, sigma = 2, method = "Bridge")
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Wiener, méthode Bridge")
 ```
 
 ### Modèle 3 : inverse gaussien
 
 ```{r}
-set.seed(403)
-x <- sim_ig(t2, mu = 0.5, eta = 2, method = "Bridge")
+set.seed(413)
+x <- sim_ig(t1, mu = 0.5, eta = 2, method = "Bridge")
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Inverse gaussien, méthode Bridge")
 ```
 
 ### Modèle 4 : variance-gamma
 
 ```{r}
-set.seed(404)
-x <- sim_vg(t2, theta = 0.5, sigma = 1.5, nu = 2, method = "Bridge")
+set.seed(414)
+x <- sim_vg(t1, theta = 0.5, sigma = 1.5, nu = 2, method = "Bridge")
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Variance-gamma, méthode Bridge")
 ```
 
 ### Modèle 5 : Meixner
 
 ```{r}
-set.seed(405)
-x <- sim_meixner(t2, a = 1, b = 0.3, d = 1.5, m = 0.2, method = "Bridge")
+set.seed(415)
+x <- sim_meixner(t1, a = 1, b = 0.3, d = 1.5, m = 0.2, method = "Bridge")
 head(x)
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Meixner, méthode Bridge")
 ```
 
 \newpage
 
-## Cas 2 : plusieurs trajectoires
+## Cas 2 : une trajectoire, pas décroissants
 
-Les inspections sont celles du cas 2 de la partie II : 5 trajectoires, pas décroissants.
+Les inspections sont celles du cas 2 de la partie I.
 
 ### Modèle 1 : gamma
 
 ```{r}
-set.seed(411)
-x <- sim_gamma(p2, a = 2, b = 3, method = "Bridge")
+set.seed(421)
+x <- sim_gamma(t2, a = 2, b = 3, method = "Bridge")
+head(x)
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Gamma, méthode Bridge")
+```
+
+### Modèle 2 : Wiener
+
+```{r}
+set.seed(422)
+x <- sim_wiener(t2, mu = 1.5, sigma = 2, method = "Bridge")
+head(x)
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Wiener, méthode Bridge")
+```
+
+### Modèle 3 : inverse gaussien
+
+```{r}
+set.seed(423)
+x <- sim_ig(t2, mu = 0.5, eta = 2, method = "Bridge")
+head(x)
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Inverse gaussien, méthode Bridge")
+```
+
+### Modèle 4 : variance-gamma
+
+```{r}
+set.seed(424)
+x <- sim_vg(t2, theta = 0.5, sigma = 1.5, nu = 2, method = "Bridge")
+head(x)
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Variance-gamma, méthode Bridge")
+```
+
+### Modèle 5 : Meixner
+
+```{r}
+set.seed(425)
+x <- sim_meixner(t2, a = 1, b = 0.3, d = 1.5, m = 0.2, method = "Bridge")
+head(x)
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Meixner, méthode Bridge")
+```
+
+\newpage
+
+## Cas 3 : une trajectoire, pas croissants
+
+Les inspections sont celles du cas 3 de la partie I.
+
+### Modèle 1 : gamma
+
+```{r}
+set.seed(431)
+x <- sim_gamma(t3, a = 2, b = 3, method = "Bridge")
+head(x)
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Gamma, méthode Bridge")
+```
+
+### Modèle 2 : Wiener
+
+```{r}
+set.seed(432)
+x <- sim_wiener(t3, mu = 1.5, sigma = 2, method = "Bridge")
+head(x)
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Wiener, méthode Bridge")
+```
+
+### Modèle 3 : inverse gaussien
+
+```{r}
+set.seed(433)
+x <- sim_ig(t3, mu = 0.5, eta = 2, method = "Bridge")
+head(x)
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Inverse gaussien, méthode Bridge")
+```
+
+### Modèle 4 : variance-gamma
+
+```{r}
+set.seed(434)
+x <- sim_vg(t3, theta = 0.5, sigma = 1.5, nu = 2, method = "Bridge")
+head(x)
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Variance-gamma, méthode Bridge")
+```
+
+### Modèle 5 : Meixner
+
+```{r}
+set.seed(435)
+x <- sim_meixner(t3, a = 1, b = 0.3, d = 1.5, m = 0.2, method = "Bridge")
+head(x)
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Meixner, méthode Bridge")
+```
+
+\newpage
+
+## Cas 4 : une trajectoire, mixtes, beaucoup au début et à la fin
+
+Les inspections sont celles du cas 4 de la partie I.
+
+### Modèle 1 : gamma
+
+```{r}
+set.seed(441)
+x <- sim_gamma(t4, a = 2, b = 3, method = "Bridge")
+head(x)
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Gamma, méthode Bridge")
+```
+
+### Modèle 2 : Wiener
+
+```{r}
+set.seed(442)
+x <- sim_wiener(t4, mu = 1.5, sigma = 2, method = "Bridge")
+head(x)
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Wiener, méthode Bridge")
+```
+
+### Modèle 3 : inverse gaussien
+
+```{r}
+set.seed(443)
+x <- sim_ig(t4, mu = 0.5, eta = 2, method = "Bridge")
+head(x)
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Inverse gaussien, méthode Bridge")
+```
+
+### Modèle 4 : variance-gamma
+
+```{r}
+set.seed(444)
+x <- sim_vg(t4, theta = 0.5, sigma = 1.5, nu = 2, method = "Bridge")
+head(x)
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Variance-gamma, méthode Bridge")
+```
+
+### Modèle 5 : Meixner
+
+```{r}
+set.seed(445)
+x <- sim_meixner(t4, a = 1, b = 0.3, d = 1.5, m = 0.2, method = "Bridge")
+head(x)
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Meixner, méthode Bridge")
+```
+
+\newpage
+
+## Cas 5 : une trajectoire, mixtes, beaucoup au milieu
+
+Les inspections sont celles du cas 5 de la partie I.
+
+### Modèle 1 : gamma
+
+```{r}
+set.seed(451)
+x <- sim_gamma(t5, a = 2, b = 3, method = "Bridge")
+head(x)
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Gamma, méthode Bridge")
+```
+
+### Modèle 2 : Wiener
+
+```{r}
+set.seed(452)
+x <- sim_wiener(t5, mu = 1.5, sigma = 2, method = "Bridge")
+head(x)
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Wiener, méthode Bridge")
+```
+
+### Modèle 3 : inverse gaussien
+
+```{r}
+set.seed(453)
+x <- sim_ig(t5, mu = 0.5, eta = 2, method = "Bridge")
+head(x)
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Inverse gaussien, méthode Bridge")
+```
+
+### Modèle 4 : variance-gamma
+
+```{r}
+set.seed(454)
+x <- sim_vg(t5, theta = 0.5, sigma = 1.5, nu = 2, method = "Bridge")
+head(x)
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Variance-gamma, méthode Bridge")
+```
+
+### Modèle 5 : Meixner
+
+```{r}
+set.seed(455)
+x <- sim_meixner(t5, a = 1, b = 0.3, d = 1.5, m = 0.2, method = "Bridge")
+head(x)
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Meixner, méthode Bridge")
+```
+
+\newpage
+
+## Cas 6 : 5 trajectoires, inspections régulières
+
+Les inspections sont celles du cas 1 de la partie II.
+
+### Modèle 1 : gamma
+
+```{r}
+set.seed(511)
+x <- sim_gamma(p1, a = 2, b = 3, method = "Bridge")
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Gamma, méthode Bridge : 5 trajectoires")
 ```
 
 ### Modèle 2 : Wiener
 
 ```{r}
-set.seed(412)
-x <- sim_wiener(p2, mu = 1.5, sigma = 2, method = "Bridge")
+set.seed(512)
+x <- sim_wiener(p1, mu = 1.5, sigma = 2, method = "Bridge")
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Wiener, méthode Bridge : 5 trajectoires")
 ```
 
 ### Modèle 3 : inverse gaussien
 
 ```{r}
-set.seed(413)
-x <- sim_ig(p2, mu = 0.5, eta = 2, method = "Bridge")
+set.seed(513)
+x <- sim_ig(p1, mu = 0.5, eta = 2, method = "Bridge")
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Inverse gaussien, méthode Bridge : 5 trajectoires")
 ```
 
 ### Modèle 4 : variance-gamma
 
 ```{r}
-set.seed(414)
-x <- sim_vg(p2, theta = 0.5, sigma = 1.5, nu = 2, method = "Bridge")
+set.seed(514)
+x <- sim_vg(p1, theta = 0.5, sigma = 1.5, nu = 2, method = "Bridge")
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Variance-gamma, méthode Bridge : 5 trajectoires")
 ```
 
 ### Modèle 5 : Meixner
 
 ```{r}
-set.seed(415)
-x <- sim_meixner(p2, a = 1, b = 0.3, d = 1.5, m = 0.2, method = "Bridge")
+set.seed(515)
+x <- sim_meixner(p1, a = 1, b = 0.3, d = 1.5, m = 0.2, method = "Bridge")
 head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
 plot_traj(x, "Meixner, méthode Bridge : 5 trajectoires")
 ```
 
 \newpage
 
-## Cas 3 : processus à échelle de temps
+## Cas 7 : 5 trajectoires, pas décroissants
+
+Les inspections sont celles du cas 2 de la partie II.
+
+### Modèle 1 : gamma
+
+```{r}
+set.seed(521)
+x <- sim_gamma(p2, a = 2, b = 3, method = "Bridge")
+head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Gamma, méthode Bridge : 5 trajectoires")
+```
+
+### Modèle 2 : Wiener
+
+```{r}
+set.seed(522)
+x <- sim_wiener(p2, mu = 1.5, sigma = 2, method = "Bridge")
+head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Wiener, méthode Bridge : 5 trajectoires")
+```
+
+### Modèle 3 : inverse gaussien
+
+```{r}
+set.seed(523)
+x <- sim_ig(p2, mu = 0.5, eta = 2, method = "Bridge")
+head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Inverse gaussien, méthode Bridge : 5 trajectoires")
+```
+
+### Modèle 4 : variance-gamma
+
+```{r}
+set.seed(524)
+x <- sim_vg(p2, theta = 0.5, sigma = 1.5, nu = 2, method = "Bridge")
+head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Variance-gamma, méthode Bridge : 5 trajectoires")
+```
+
+### Modèle 5 : Meixner
+
+```{r}
+set.seed(525)
+x <- sim_meixner(p2, a = 1, b = 0.3, d = 1.5, m = 0.2, method = "Bridge")
+head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Meixner, méthode Bridge : 5 trajectoires")
+```
+
+\newpage
+
+## Cas 8 : 5 trajectoires, pas croissants
+
+Les inspections sont celles du cas 3 de la partie II.
+
+### Modèle 1 : gamma
+
+```{r}
+set.seed(531)
+x <- sim_gamma(p3, a = 2, b = 3, method = "Bridge")
+head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Gamma, méthode Bridge : 5 trajectoires")
+```
+
+### Modèle 2 : Wiener
+
+```{r}
+set.seed(532)
+x <- sim_wiener(p3, mu = 1.5, sigma = 2, method = "Bridge")
+head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Wiener, méthode Bridge : 5 trajectoires")
+```
+
+### Modèle 3 : inverse gaussien
+
+```{r}
+set.seed(533)
+x <- sim_ig(p3, mu = 0.5, eta = 2, method = "Bridge")
+head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Inverse gaussien, méthode Bridge : 5 trajectoires")
+```
+
+### Modèle 4 : variance-gamma
+
+```{r}
+set.seed(534)
+x <- sim_vg(p3, theta = 0.5, sigma = 1.5, nu = 2, method = "Bridge")
+head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Variance-gamma, méthode Bridge : 5 trajectoires")
+```
+
+### Modèle 5 : Meixner
+
+```{r}
+set.seed(535)
+x <- sim_meixner(p3, a = 1, b = 0.3, d = 1.5, m = 0.2, method = "Bridge")
+head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Meixner, méthode Bridge : 5 trajectoires")
+```
+
+\newpage
+
+## Cas 9 : 5 trajectoires, mixtes, beaucoup au début et à la fin
+
+Les inspections sont celles du cas 4 de la partie II.
+
+### Modèle 1 : gamma
+
+```{r}
+set.seed(541)
+x <- sim_gamma(p4, a = 2, b = 3, method = "Bridge")
+head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Gamma, méthode Bridge : 5 trajectoires")
+```
+
+### Modèle 2 : Wiener
+
+```{r}
+set.seed(542)
+x <- sim_wiener(p4, mu = 1.5, sigma = 2, method = "Bridge")
+head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Wiener, méthode Bridge : 5 trajectoires")
+```
+
+### Modèle 3 : inverse gaussien
+
+```{r}
+set.seed(543)
+x <- sim_ig(p4, mu = 0.5, eta = 2, method = "Bridge")
+head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Inverse gaussien, méthode Bridge : 5 trajectoires")
+```
+
+### Modèle 4 : variance-gamma
+
+```{r}
+set.seed(544)
+x <- sim_vg(p4, theta = 0.5, sigma = 1.5, nu = 2, method = "Bridge")
+head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Variance-gamma, méthode Bridge : 5 trajectoires")
+```
+
+### Modèle 5 : Meixner
+
+```{r}
+set.seed(545)
+x <- sim_meixner(p4, a = 1, b = 0.3, d = 1.5, m = 0.2, method = "Bridge")
+head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Meixner, méthode Bridge : 5 trajectoires")
+```
+
+\newpage
+
+## Cas 10 : 5 trajectoires, mixtes, beaucoup au milieu
+
+Les inspections sont celles du cas 5 de la partie II.
+
+### Modèle 1 : gamma
+
+```{r}
+set.seed(551)
+x <- sim_gamma(p5, a = 2, b = 3, method = "Bridge")
+head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Gamma, méthode Bridge : 5 trajectoires")
+```
+
+### Modèle 2 : Wiener
+
+```{r}
+set.seed(552)
+x <- sim_wiener(p5, mu = 1.5, sigma = 2, method = "Bridge")
+head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Wiener, méthode Bridge : 5 trajectoires")
+```
+
+### Modèle 3 : inverse gaussien
+
+```{r}
+set.seed(553)
+x <- sim_ig(p5, mu = 0.5, eta = 2, method = "Bridge")
+head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Inverse gaussien, méthode Bridge : 5 trajectoires")
+```
+
+### Modèle 4 : variance-gamma
+
+```{r}
+set.seed(554)
+x <- sim_vg(p5, theta = 0.5, sigma = 1.5, nu = 2, method = "Bridge")
+head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Variance-gamma, méthode Bridge : 5 trajectoires")
+```
+
+### Modèle 5 : Meixner
+
+```{r}
+set.seed(555)
+x <- sim_meixner(p5, a = 1, b = 0.3, d = 1.5, m = 0.2, method = "Bridge")
+head(x[, 1:4])
+round(diff(x[, "X1"]), 3)
+plot_traj(x, "Meixner, méthode Bridge : 5 trajectoires")
+```
+
+\newpage
+
+## Cas 11 : processus à échelle de temps
 
 Les processus et la fonction `A` sont ceux de la partie III. Le pont est alors tiré sur l'échelle de temps `A(t)`.
 

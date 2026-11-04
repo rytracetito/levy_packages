@@ -147,7 +147,34 @@
 #'   ggplot2::stat_function(fun = dvg, colour = "red") +
 #'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the variance-gamma process")
 #'
-#' # 9. The same simulation by bridge sampling: the increments have the same density
+#' # 9. Bridge sampling: one trajectory. The printed result gives the method
+#' x <- sim_vg(t, theta = 0.5, sigma = 1.2, nu = 0.8, method = "Bridge")
+#' x
+#' plot_traj(x)
+#'
+#' # 10. Bridge sampling: ten trajectories with the same inspection times
+#' x <- sim_vg(t, theta = 0.5, sigma = 1.2, nu = 0.8, n_traj = 10, method = "Bridge")
+#' plot_traj(x)
+#' head(x[, 1:4])
+#'
+#' # 11. Bridge sampling: irregular inspections, the same as above
+#' x <- sim_vg(plan, theta = 0.5, sigma = 1.2, nu = 0.8, method = "Bridge")
+#' plot_traj(x)
+#'
+#' # 12. Bridge sampling: all the simulated data in a single data frame, with the increments
+#' head(traj_df(x, increments = TRUE))
+#'
+#' # 13. Bridge sampling: different inspection times for each trajectory
+#' x <- sim_vg(list(c(0, 1, 3, 6), c(0, 2, 4, 6, 8, 10)), theta = 0.5, sigma = 1.2, nu = 0.8,
+#'             method = "Bridge")
+#' x[[2]]
+#'
+#' # 14. Bridge sampling: last value drawn as a difference of two gamma processes
+#' y <- sim_vg(t, theta = 0.5, sigma = 1.2, nu = 0.8, increments = "difference", n_traj = 10,
+#'             method = "Bridge")
+#' plot_traj(y, "Variance-gamma process, bridge")
+#'
+#' # 15. Bridge sampling: histogram of the increments, with the same density as above
 #' x <- sim_vg(t8, theta = 0.5, sigma = 1.2, nu = 0.8, n_traj = 100, method = "Bridge")
 #' dx <- traj_df(x, increments = TRUE)$dX
 #' dx <- dx[!is.na(dx)]
