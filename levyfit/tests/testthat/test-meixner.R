@@ -47,3 +47,21 @@ test_that("the Meixner estimate is the maximum reached from the moment estimates
   ci <- meixner_mle(x, t, ci = TRUE)
   expect_true(all(ci$lower < ci$estimate & ci$estimate < ci$upper))
 })
+
+test_that("n_start must be a positive integer", {
+  x <- c(0, 1, 3, 4, 7, 8)
+  t <- 0:5
+  expect_error(meixner_mle(x, t, n_start = 0), "n_start must be a positive integer")
+  expect_error(meixner_mle(x, t, n_start = 1.5), "n_start must be a positive integer")
+  expect_error(meixner_mle(x, t, n_start = c(1, 2)), "n_start must be a positive integer")
+  expect_error(meixner_mle(x, t, n_start = "a"), "n_start must be a positive integer")
+  expect_length(suppressWarnings(meixner_mle(x, t, n_start = 1)), 4)
+})
+
+test_that("the message explains why no estimate is returned", {
+  set.seed(3)
+  x <- c(0, cumsum(rnorm(10, 4, 3)))
+  expect_warning(e <- meixner_mle(x, 0:10), "the likelihood increases towards its edge")
+  expect_true(all(is.na(e)))
+  expect_match(attr(e, "message"), "inside the parameter space")
+})

@@ -279,8 +279,8 @@ meixner_mle(x)
 # 4. Estimates with 95 \% confidence intervals
 meixner_mle(x, ci = TRUE)
 
-# 5. Ten increments over long intervals: when no acceptable maximum is
-#    found, the function gives a warning and NA estimates
+# 5. Ten increments over long intervals: when no maximum is found inside the
+#    parameter space, the function gives a warning and NA estimates
 t10 <- DegradSim::inspection_times("regular", n = 10, tmax = 100)$time
 y <- DegradSim::sim_meixner(t10, a = 1, b = 0.3, d = 1.5, m = 0.2)
 meixner_mle(y)

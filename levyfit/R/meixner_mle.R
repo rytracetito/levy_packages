@@ -261,8 +261,8 @@
 #' # 4. Estimates with 95 % confidence intervals
 #' meixner_mle(x, ci = TRUE)
 #'
-#' # 5. Ten increments over long intervals: when no acceptable maximum is
-#' #    found, the function gives a warning and NA estimates
+#' # 5. Ten increments over long intervals: when no maximum is found inside the
+#' #    parameter space, the function gives a warning and NA estimates
 #' t10 <- DegradSim::inspection_times("regular", n = 10, tmax = 100)$time
 #' y <- DegradSim::sim_meixner(t10, a = 1, b = 0.3, d = 1.5, m = 0.2)
 #' meixner_mle(y)
@@ -282,6 +282,9 @@
 #' meixner_mle(increments_data(d$dX, d$dt))
 #' @export
 meixner_mle <- function(x, t = NULL, ci = FALSE, level = 0.95, n_start = 5) {
+  if (!is.numeric(n_start) || length(n_start) != 1 || is.na(n_start) || n_start < 1 || n_start != round(n_start)) {
+    stop("n_start must be a positive integer")
+  }
   estimate("meixner", x, t, ci, level, n_start = n_start)
 }
 
@@ -319,7 +322,7 @@ meixner_est <- function(x, t = NULL, n_start = 5) {
     pi - abs(b_hat(a, d, f$par[3])) < 0.1 || d * max(dt) > 1e3 ||
       any(abs(f$par - lower) < 1e-6) || any(abs(f$par - upper) < 1e-6)
   }, TRUE)
-  if (all(deg)) no_mle("no acceptable maximum found")
+  if (all(deg)) no_mle("no maximum found inside the parameter space: the likelihood increases towards its edge")
   ll <- -vapply(fits, function(f) f$value, 0)
   conv <- vapply(fits, function(f) f$convergence == 0, TRUE)
   ll_max <- max(ll[!deg])
