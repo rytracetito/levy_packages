@@ -48,11 +48,11 @@ Wiener process.}
 Both are exact and give the same distribution; see the section Exact
 simulation.}
 
-\item{method}{Simulation method: \code{"RWA"} (random walk approximation,
-default), \code{"Bridge"} (bridge sampling) or \code{"Series"} (truncated series
-representation), described in the section Simulation methods of
-\link{DegradSim-package}. Only \code{"RWA"} is currently available: the other two
-give an error.}
+\item{method}{Simulation method, described in the section Simulation methods
+of \link{DegradSim-package}: \code{"RWA"} (random walk approximation, default) or
+\code{"Bridge"} (bridge sampling). The two give the same distribution, but
+different trajectories with the same seed. \code{"Series"} (truncated series
+representation) is not currently available and gives an error.}
 
 \item{type}{Used only with \code{method = "Series"}, to choose the series
 representation; \code{NULL} (default).}
@@ -129,6 +129,12 @@ with scale \eqn{\nu \mu_-};
 }
 
 This algorithm only uses gamma draws.
+
+With \code{method = "Bridge"}, the values are drawn by
+\code{\link[levyBridge:vg_bridge]{levyBridge::vg_bridge()}}: see the section Simulation methods of
+\link{DegradSim-package}.
+The argument \code{increments} then only concerns the draw of the value at the
+last inspection time.
 }
 
 \examples{
@@ -194,6 +200,22 @@ ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
                           bins = 30, fill = "grey80", colour = "grey40") +
   ggplot2::stat_function(fun = dvg, colour = "red") +
   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the variance-gamma process")
+
+# 9. The same simulation by bridge sampling: the increments have the same density
+x <- sim_vg(t8, theta = 0.5, sigma = 1.2, nu = 0.8, n_traj = 100, method = "Bridge")
+dx <- traj_df(x, increments = TRUE)$dX
+dx <- dx[!is.na(dx)]
+dvg <- function(y, h = 5, theta = 0.5, sigma = 1.2, nu = 0.8) {
+  r <- sqrt(theta^2 + 2 * sigma^2 / nu)
+  z <- abs(y) * r / sigma^2
+  2 / (nu^(h / nu) * sqrt(2 * pi) * sigma * gamma(h / nu)) * (abs(y) / r)^(h / nu - 0.5) *
+    besselK(z, h / nu - 0.5, expon.scaled = TRUE) * exp(theta * y / sigma^2 - z)
+}
+ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
+  ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
+                          bins = 30, fill = "grey80", colour = "grey40") +
+  ggplot2::stat_function(fun = dvg, colour = "red") +
+  ggplot2::labs(x = "dX", y = "Density", title = "Variance-gamma process, bridge")
 }
 \references{
 Madan, D. B., Carr, P. P. and Chang, E. C. (1998). The variance gamma

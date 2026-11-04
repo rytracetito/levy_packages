@@ -48,6 +48,10 @@
 #' \eqn{NIG(\alpha, \beta, \delta \Delta t_i, \mu \Delta t_i)} distribution.
 #'
 #' @inheritParams sim_gamma
+#' @param method Simulation method: only `"RWA"` (random walk approximation,
+#'   default) is available for this process. `"Bridge"` gives an error, because
+#'   the package `levyBridge` has no bridge for this process, and `"Series"` is
+#'   not currently available.
 #' @param alpha Tail parameter, \eqn{\alpha > 0}: the larger \eqn{\alpha}, the
 #'   lighter the tails.
 #' @param beta Asymmetry parameter, \eqn{|\beta| < \alpha}: \eqn{\beta = 0}

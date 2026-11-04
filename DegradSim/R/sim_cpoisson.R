@@ -32,6 +32,10 @@
 #'    \eqn{]t_{i-1}, t_i]} (0 if \eqn{N_i = 0}).
 #'
 #' @inheritParams sim_gamma
+#' @param method Simulation method: only `"RWA"` (random walk approximation,
+#'   default) is available for this process. `"Bridge"` gives an error, because
+#'   the package `levyBridge` has no bridge for this process, and `"Series"` is
+#'   not currently available.
 #' @param lambda Intensity of the shocks, \eqn{\lambda > 0}: mean number of
 #'   shocks per unit of time.
 #' @param rjump Distribution of the jumps: an R function of `n` that returns

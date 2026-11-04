@@ -177,22 +177,23 @@ test_that("traj_df gives the time steps and increments", {
   expect_equal(traj_df(y, increments = TRUE)$dt, c(NA, 1, 1, NA, 2, 3, 2))
 })
 
-test_that("only the method RWA is available, type only with Series", {
-  sims <- list(function(...) sim_gamma(tg, a = 2, b = 3, ...),
-               function(...) sim_wiener(tg, mu = 0.5, sigma = 1.5, ...),
-               function(...) sim_ig(tg, mu = 0.5, eta = 2, ...),
-               function(...) sim_vg(tg, theta = 0.5, sigma = 1.2, nu = 0.8, ...),
-               function(...) sim_meixner(tg, a = 1, b = 0.3, d = 1.5, m = 0.2, ...),
-               function(...) sim_nig(tg, alpha = 2, beta = 0.5, delta = 1, mu = 0.2, ...),
-               function(...) sim_cpoisson(tg, lambda = 2, ...))
-  for (f in sims) {
+test_that("the method is checked, type only with Series", {
+  with_bridge <- list(function(...) sim_gamma(tg, a = 2, b = 3, ...),
+                      function(...) sim_wiener(tg, mu = 0.5, sigma = 1.5, ...),
+                      function(...) sim_ig(tg, mu = 0.5, eta = 2, ...),
+                      function(...) sim_vg(tg, theta = 0.5, sigma = 1.2, nu = 0.8, ...),
+                      function(...) sim_meixner(tg, a = 1, b = 0.3, d = 1.5, m = 0.2, ...))
+  no_bridge <- list(function(...) sim_nig(tg, alpha = 2, beta = 0.5, delta = 1, mu = 0.2, ...),
+                    function(...) sim_cpoisson(tg, lambda = 2, ...))
+  for (f in c(with_bridge, no_bridge)) {
     set.seed(9); x1 <- f()
     set.seed(9); x2 <- f(method = "RWA")
     expect_identical(x1, x2)
-    expect_error(f(method = "Bridge"), "no other method is currently available")
-    expect_error(f(method = "Series"), "no other method is currently available")
-    expect_error(f(method = "Series", type = "Bondesson"), "no other method is currently available")
+    expect_error(f(method = "Series"), "not currently available")
+    expect_error(f(method = "Series", type = "Bondesson"), "not currently available")
     expect_error(f(type = "Bondesson"), "type is used only with method")
     expect_error(f(method = "other"))
   }
+  for (f in with_bridge) expect_identical(attr(f(method = "Bridge"), "method"), "Bridge")
+  for (f in no_bridge) expect_error(f(method = "Bridge"), "no bridge is available")
 })

@@ -22,9 +22,13 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports:
     ggplot2,
+    levyBridge,
     Runuran,
     stats,
     utils
 Suggests:
     testthat (>= 3.0.0)
+Remotes:
+    github::rytracetito/levy_packages/levyfit,
+    github::rytracetito/levy_packages/levyBridge
 Config/testthat/edition: 3

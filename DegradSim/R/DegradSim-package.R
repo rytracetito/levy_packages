@@ -189,8 +189,9 @@
 #' @section Simulation methods:
 #' The argument `method` of the `sim_` functions chooses among the three
 #' simulation methods of Kahle et al. (2016) for the Wiener process (section
-#' 1.3) and the gamma process (section 2.5). Only `"RWA"` is currently
-#' available.
+#' 1.3) and the gamma process (section 2.5). `"RWA"` is available for all the
+#' processes, `"Bridge"` for the gamma, Wiener, inverse Gaussian, variance-gamma
+#' and Meixner processes, and `"Series"` is not currently available.
 #'
 #' **Random walk approximation** (`method = "RWA"`, default). All the
 #' simulated processes have independent increments with known distributions.
@@ -210,11 +211,24 @@
 #'
 #' **Bridge sampling** (`method = "Bridge"`; Kahle et al., 2016, section
 #' 1.3.2, algorithm 1.9, p. 8, for the Brownian motion, and section 2.5.2,
-#' algorithm 2.34, p. 85, for the gamma process). The value at
-#' the end \eqn{T} is drawn first, then the value at the middle of
-#' \eqn{[0, T]} given the two end values, by the bridge of the process, and
-#' so on, each interval being divided in half at each step: the values at the
-#' times \eqn{i T / 2^n} have exactly the distribution of the process.
+#' algorithm 2.34, p. 85, for the gamma process). The value at the last
+#' inspection time is drawn first, with its distribution. The value at the middle
+#' of the list of inspection times is then drawn given its two known neighbours,
+#' with the bridge of the process, and so on in each part of the list. The bridges
+#' are the functions [levyBridge::gamma_bridge()], [levyBridge::wiener_bridge()],
+#' [levyBridge::ig_bridge()], [levyBridge::vg_bridge()] and
+#' [levyBridge::meixner_bridge()]. The values at the inspection times have exactly
+#' the distribution of the process, as with `"RWA"`, but the same seed gives a
+#' different trajectory.
+#'
+#' The algorithms of Kahle et al. (2016) divide each interval in half, for
+#' \eqn{2^n + 1} points, and are written for the standard Brownian motion and for
+#' a gamma process of rate 1. This implementation is more general: taking the
+#' middle of the list allows any number of inspection times, the bridges include
+#' the drift, the volatility and the rate, and the same scheme is applied to the
+#' inverse Gaussian, variance-gamma and Meixner processes. For a time-scaled
+#' process, the bridge is applied at the times \eqn{A(t_i)}, and the level does not
+#' change where \eqn{A} is constant.
 #'
 #' **Truncated series representation** (`method = "Series"`, argument
 #' `type`). The path is approximated on the whole interval

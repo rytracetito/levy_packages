@@ -30,11 +30,10 @@ gives symmetric increments, \eqn{\beta > 0} increments skewed to the right.}
 
 \item{mu}{Location parameter per unit of time, real.}
 
-\item{method}{Simulation method: \code{"RWA"} (random walk approximation,
-default), \code{"Bridge"} (bridge sampling) or \code{"Series"} (truncated series
-representation), described in the section Simulation methods of
-\link{DegradSim-package}. Only \code{"RWA"} is currently available: the other two
-give an error.}
+\item{method}{Simulation method: only \code{"RWA"} (random walk approximation,
+default) is available for this process. \code{"Bridge"} gives an error, because
+the package \code{levyBridge} has no bridge for this process, and \code{"Series"} is
+not currently available.}
 
 \item{type}{Used only with \code{method = "Series"}, to choose the series
 representation; \code{NULL} (default).}

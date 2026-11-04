@@ -32,6 +32,10 @@
 #' \eqn{\Delta_i = a (t_i - t_{i-1})} or \eqn{\Delta_i = A(t_i) - A(t_{i-1})},
 #' are drawn independently with [stats::rgamma()], then cumulated.
 #'
+#' With `method = "Bridge"`, the values are drawn by
+#' [levyBridge::gamma_bridge()]: see the section Simulation methods of
+#' [DegradSim-package].
+#'
 #' @param t Inspection times. The times of each trajectory must start at 0 and
 #'   be strictly increasing. Three forms are accepted:
 #'   * a numeric vector: all the trajectories share these times, and their
@@ -50,11 +54,11 @@
 #'   function \eqn{A} of the time-scaled process (defined in
 #'   [DegradSim-package]): a vectorized R function of `t`, for instance
 #'   `function(t) 2 * t^1.5`.
-#' @param method Simulation method: `"RWA"` (random walk approximation,
-#'   default), `"Bridge"` (bridge sampling) or `"Series"` (truncated series
-#'   representation), described in the section Simulation methods of
-#'   [DegradSim-package]. Only `"RWA"` is currently available: the other two
-#'   give an error.
+#' @param method Simulation method, described in the section Simulation methods
+#'   of [DegradSim-package]: `"RWA"` (random walk approximation, default) or
+#'   `"Bridge"` (bridge sampling). The two give the same distribution, but
+#'   different trajectories with the same seed. `"Series"` (truncated series
+#'   representation) is not currently available and gives an error.
 #' @param type Used only with `method = "Series"`, to choose the series
 #'   representation; `NULL` (default).
 #' @param n_traj Number of trajectories to simulate when `t` is a vector
@@ -147,9 +151,24 @@
 #'   ggplot2::stat_function(fun = function(y) dgamma(y, shape = 2 * 5, rate = 3),
 #'                          colour = "red") +
 #'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the gamma process")
+#'
+#' # 9. The same simulation by bridge sampling: the increments have the same density
+#' x <- sim_gamma(t8, a = 2, b = 3, n_traj = 100, method = "Bridge")
+#' dx <- traj_df(x, increments = TRUE)$dX
+#' dx <- dx[!is.na(dx)]
+#' ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
+#'   ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
+#'                           bins = 30, boundary = 0, fill = "grey80", colour = "grey40") +
+#'   ggplot2::stat_function(fun = function(y) dgamma(y, shape = 2 * 5, rate = 3),
+#'                          colour = "red") +
+#'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the gamma process, bridge")
+#'
+#' # 10. Time-scaled process simulated by bridge sampling
+#' x <- sim_gamma(t8, b = 3, A = function(t) 0.02 * t^1.5, method = "Bridge", n_traj = 5)
+#' plot_traj(x)
 #' @export
 sim_gamma <- function(t, a, b, A = NULL, method = "RWA", type = NULL, n_traj = 1) {
-  check_sim_method(method, type)
+  method <- check_sim_method(method, type, bridge = TRUE)
   if (missing(b) || !is.numeric(b) || length(b) != 1 || !(b > 0)) stop("b must be a positive number")
   if (is.null(A)) {
     if (missing(a)) stop("a is missing: give a (gamma process) or A (time-scaled gamma process)")
@@ -163,9 +182,12 @@ sim_gamma <- function(t, a, b, A = NULL, method = "RWA", type = NULL, n_traj = 1
     model <- "time-scaled gamma"
     parameters <- c(b = b)
   }
-  one_path <- function(t) {
+  rwa_path <- function(t) {
     k <- shape(t)
     c(0, cumsum(stats::rgamma(length(k), shape = k, rate = b)))
   }
-  simulate_paths(t, n_traj, one_path, model, parameters, A)
+  one_path <- if (method == "RWA") rwa_path else bridge_one_path(rwa_path, function(t_A, x_A, t_B, x_B, s) {
+    levyBridge::gamma_bridge(t_A, x_A, t_B, x_B, s, theta = c(a = if (is.null(A)) a else 1, b = b))
+  }, A)
+  simulate_paths(t, n_traj, one_path, model, parameters, A, method)
 }

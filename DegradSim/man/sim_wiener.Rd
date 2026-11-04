@@ -33,11 +33,11 @@ function \eqn{A} of the time-scaled process (defined in
 \link{DegradSim-package}): a vectorized R function of \code{t}, for instance
 \code{function(t) 2 * t^1.5}.}
 
-\item{method}{Simulation method: \code{"RWA"} (random walk approximation,
-default), \code{"Bridge"} (bridge sampling) or \code{"Series"} (truncated series
-representation), described in the section Simulation methods of
-\link{DegradSim-package}. Only \code{"RWA"} is currently available: the other two
-give an error.}
+\item{method}{Simulation method, described in the section Simulation methods
+of \link{DegradSim-package}: \code{"RWA"} (random walk approximation, default) or
+\code{"Bridge"} (bridge sampling). The two give the same distribution, but
+different trajectories with the same seed. \code{"Series"} (truncated series
+representation) is not currently available and gives an error.}
 
 \item{type}{Used only with \code{method = "Series"}, to choose the series
 representation; \code{NULL} (default).}
@@ -91,6 +91,10 @@ al., 2016, algorithm 1.7): the increments
 \eqn{\Delta X_i = \Delta A_i + \sigma \sqrt{\Delta A_i}\, Z_i}, with
 \eqn{Z_i} independent \eqn{\mathcal{N}(0, 1)} drawn with \code{\link[stats:Normal]{stats::rnorm()}}, are
 cumulated.
+
+With \code{method = "Bridge"}, the values are drawn by
+\code{\link[levyBridge:wiener_bridge]{levyBridge::wiener_bridge()}}: see the section Simulation methods of
+\link{DegradSim-package}.
 }
 
 \examples{
@@ -156,6 +160,21 @@ ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
   ggplot2::stat_function(fun = function(y) dnorm(y, 1.5 * 5, 2 * sqrt(5)),
                          colour = "red") +
   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the Wiener process")
+
+# 9. The same simulation by bridge sampling: the increments have the same density
+x <- sim_wiener(t8, mu = 1.5, sigma = 2, n_traj = 100, method = "Bridge")
+dx <- traj_df(x, increments = TRUE)$dX
+dx <- dx[!is.na(dx)]
+ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
+  ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
+                          bins = 30, fill = "grey80", colour = "grey40") +
+  ggplot2::stat_function(fun = function(y) dnorm(y, 1.5 * 5, 2 * sqrt(5)),
+                         colour = "red") +
+  ggplot2::labs(x = "dX", y = "Density", title = "Increments of the Wiener process, bridge")
+
+# 10. Time-scaled process simulated by bridge sampling
+x <- sim_wiener(t8, sigma = 2, A = function(t) 0.02 * t^1.5, method = "Bridge", n_traj = 5)
+plot_traj(x)
 }
 \references{
 Kahle, W., Mercier, S. and Paroissin, C. (2016). \emph{Degradation Processes in

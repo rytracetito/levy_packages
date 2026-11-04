@@ -33,6 +33,10 @@
 #' time step \eqn{\Delta t_i} and reused for all the trajectories. The
 #' simulation is therefore exact up to this numerical error.
 #'
+#' With `method = "Bridge"`, the values are drawn by
+#' [levyBridge::meixner_bridge()]: see the section Simulation methods of
+#' [DegradSim-package].
+#'
 #' @inheritParams sim_gamma
 #' @param a Scale parameter, \eqn{a > 0}.
 #' @param b Asymmetry parameter, \eqn{b \in ]-\pi, \pi[}: \eqn{b = 0} gives
@@ -110,9 +114,20 @@
 #'                           bins = 30, fill = "grey80", colour = "grey40") +
 #'   ggplot2::stat_function(fun = function(y) Runuran::ud(dist, y), colour = "red") +
 #'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the Meixner process")
+#'
+#' # 8. The same simulation by bridge sampling: the increments have the same density
+#' x <- sim_meixner(t7, a = 1, b = 0.3, d = 1.5, m = 0.2, n_traj = 100, method = "Bridge")
+#' dx <- traj_df(x, increments = TRUE)$dX
+#' dx <- dx[!is.na(dx)]
+#' dist <- Runuran::udmeixner(alpha = 1, beta = 0.3, delta = 1.5 * 5, mu = 0.2 * 5)
+#' ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
+#'   ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
+#'                           bins = 30, fill = "grey80", colour = "grey40") +
+#'   ggplot2::stat_function(fun = function(y) Runuran::ud(dist, y), colour = "red") +
+#'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the Meixner process, bridge")
 #' @export
 sim_meixner <- function(t, a, b, d, m, method = "RWA", type = NULL, n_traj = 1) {
-  check_sim_method(method, type)
+  method <- check_sim_method(method, type, bridge = TRUE)
   if (!is.numeric(a) || length(a) != 1 || !(a > 0)) stop("a must be a positive number")
   if (!is.numeric(b) || length(b) != 1 || !(abs(b) < pi)) stop("b must be in (-pi, pi)")
   if (!is.numeric(d) || length(d) != 1 || !(d > 0)) stop("d must be a positive number")
@@ -126,6 +141,9 @@ sim_meixner <- function(t, a, b, d, m, method = "RWA", type = NULL, n_traj = 1) 
     }
     Runuran::ur(generators[[key]], 1)
   }
-  one_path <- function(t) c(0, cumsum(vapply(diff(t), draw, 0)))
-  simulate_paths(t, n_traj, one_path, "Meixner", c(a = a, b = b, d = d, m = m))
+  rwa_path <- function(t) c(0, cumsum(vapply(diff(t), draw, 0)))
+  one_path <- if (method == "RWA") rwa_path else bridge_one_path(rwa_path, function(t_A, x_A, t_B, x_B, s) {
+    levyBridge::meixner_bridge(t_A, x_A, t_B, x_B, s, theta = c(a = a, b = b, d = d, m = m))
+  })
+  simulate_paths(t, n_traj, one_path, "Meixner", c(a = a, b = b, d = d, m = m), method = method)
 }

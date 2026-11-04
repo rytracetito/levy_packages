@@ -31,11 +31,11 @@ function \eqn{A} of the time-scaled process (defined in
 \link{DegradSim-package}): a vectorized R function of \code{t}, for instance
 \code{function(t) 2 * t^1.5}.}
 
-\item{method}{Simulation method: \code{"RWA"} (random walk approximation,
-default), \code{"Bridge"} (bridge sampling) or \code{"Series"} (truncated series
-representation), described in the section Simulation methods of
-\link{DegradSim-package}. Only \code{"RWA"} is currently available: the other two
-give an error.}
+\item{method}{Simulation method, described in the section Simulation methods
+of \link{DegradSim-package}: \code{"RWA"} (random walk approximation, default) or
+\code{"Bridge"} (bridge sampling). The two give the same distribution, but
+different trajectories with the same seed. \code{"Series"} (truncated series
+representation) is not currently available and gives an error.}
 
 \item{type}{Used only with \code{method = "Series"}, to choose the series
 representation; \code{NULL} (default).}
@@ -87,6 +87,10 @@ Random walk approximation, described in \link{DegradSim-package}: the
 increments \eqn{\Delta X_i \sim \Gamma(\Delta_i, b)}, with
 \eqn{\Delta_i = a (t_i - t_{i-1})} or \eqn{\Delta_i = A(t_i) - A(t_{i-1})},
 are drawn independently with \code{\link[stats:GammaDist]{stats::rgamma()}}, then cumulated.
+
+With \code{method = "Bridge"}, the values are drawn by
+\code{\link[levyBridge:gamma_bridge]{levyBridge::gamma_bridge()}}: see the section Simulation methods of
+\link{DegradSim-package}.
 }
 
 \examples{
@@ -152,6 +156,21 @@ ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
   ggplot2::stat_function(fun = function(y) dgamma(y, shape = 2 * 5, rate = 3),
                          colour = "red") +
   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the gamma process")
+
+# 9. The same simulation by bridge sampling: the increments have the same density
+x <- sim_gamma(t8, a = 2, b = 3, n_traj = 100, method = "Bridge")
+dx <- traj_df(x, increments = TRUE)$dX
+dx <- dx[!is.na(dx)]
+ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
+  ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
+                          bins = 30, boundary = 0, fill = "grey80", colour = "grey40") +
+  ggplot2::stat_function(fun = function(y) dgamma(y, shape = 2 * 5, rate = 3),
+                         colour = "red") +
+  ggplot2::labs(x = "dX", y = "Density", title = "Increments of the gamma process, bridge")
+
+# 10. Time-scaled process simulated by bridge sampling
+x <- sim_gamma(t8, b = 3, A = function(t) 0.02 * t^1.5, method = "Bridge", n_traj = 5)
+plot_traj(x)
 }
 \references{
 Kahle, W., Mercier, S. and Paroissin, C. (2016). \emph{Degradation Processes in

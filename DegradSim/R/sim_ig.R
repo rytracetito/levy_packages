@@ -41,6 +41,10 @@
 #' and return \eqn{x_1} with probability \eqn{m / (m + x_1)}, otherwise
 #' \eqn{m^2 / x_1}.
 #'
+#' With `method = "Bridge"`, the values are drawn by
+#' [levyBridge::ig_bridge()]: see the section Simulation methods of
+#' [DegradSim-package].
+#'
 #' @inheritParams sim_gamma
 #' @param mu Mean degradation per unit of time of the IG process,
 #'   \eqn{\mu > 0}. Not given when `A` is given (the mean of \eqn{X_t} is then
@@ -137,9 +141,27 @@
 #'   ggplot2::stat_function(fun = dig, colour = "red") +
 #'   ggplot2::labs(x = "dX", y = "Density",
 #'                 title = "Increments of the inverse Gaussian process")
+#'
+#' # 9. The same simulation by bridge sampling: the increments have the same density
+#' x <- sim_ig(t8, mu = 0.5, eta = 2, n_traj = 100, method = "Bridge")
+#' dx <- traj_df(x, increments = TRUE)$dX
+#' dx <- dx[!is.na(dx)]
+#' m <- 0.5 * 5
+#' lambda <- 2 * 5^2
+#' dig <- function(y) sqrt(lambda / (2 * pi * y^3)) * exp(-lambda * (y - m)^2 / (2 * m^2 * y))
+#' ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
+#'   ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
+#'                           bins = 30, boundary = 0, fill = "grey80", colour = "grey40") +
+#'   ggplot2::stat_function(fun = dig, colour = "red") +
+#'   ggplot2::labs(x = "dX", y = "Density",
+#'                 title = "Increments of the inverse Gaussian process, bridge")
+#'
+#' # 10. Time-scaled process simulated by bridge sampling
+#' x <- sim_ig(t8, eta = 2, A = function(t) 0.02 * t^1.5, method = "Bridge", n_traj = 5)
+#' plot_traj(x)
 #' @export
 sim_ig <- function(t, mu, eta, A = NULL, method = "RWA", type = NULL, n_traj = 1) {
-  check_sim_method(method, type)
+  method <- check_sim_method(method, type, bridge = TRUE)
   if (missing(eta) || !is.numeric(eta) || length(eta) != 1 || !(eta > 0)) stop("eta must be a positive number")
   if (is.null(A)) {
     if (missing(mu)) stop("mu is missing: give mu (IG process) or A (time-scaled IG process)")
@@ -155,14 +177,17 @@ sim_ig <- function(t, mu, eta, A = NULL, method = "RWA", type = NULL, n_traj = 1
     model <- "time-scaled inverse Gaussian"
     parameters <- c(eta = eta)
   }
-  one_path <- function(t) {
+  rwa_path <- function(t) {
     dA <- clock(t)
     dX <- numeric(length(dA))
     pos <- dA > 0
     dX[pos] <- rig(sum(pos), drift * dA[pos], eta * dA[pos]^2)
     c(0, cumsum(dX))
   }
-  simulate_paths(t, n_traj, one_path, model, parameters, A)
+  one_path <- if (method == "RWA") rwa_path else bridge_one_path(rwa_path, function(t_A, x_A, t_B, x_B, s) {
+    levyBridge::ig_bridge(t_A, x_A, t_B, x_B, s, theta = c(mu = drift, eta = eta))
+  }, A)
+  simulate_paths(t, n_traj, one_path, model, parameters, A, method)
 }
 
 rig <- function(n, m, lambda) {

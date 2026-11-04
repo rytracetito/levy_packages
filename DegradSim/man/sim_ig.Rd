@@ -34,11 +34,11 @@ function \eqn{A} of the time-scaled process (defined in
 \link{DegradSim-package}): a vectorized R function of \code{t}, for instance
 \code{function(t) 2 * t^1.5}.}
 
-\item{method}{Simulation method: \code{"RWA"} (random walk approximation,
-default), \code{"Bridge"} (bridge sampling) or \code{"Series"} (truncated series
-representation), described in the section Simulation methods of
-\link{DegradSim-package}. Only \code{"RWA"} is currently available: the other two
-give an error.}
+\item{method}{Simulation method, described in the section Simulation methods
+of \link{DegradSim-package}: \code{"RWA"} (random walk approximation, default) or
+\code{"Bridge"} (bridge sampling). The two give the same distribution, but
+different trajectories with the same seed. \code{"Series"} (truncated series
+representation) is not currently available and gives an error.}
 
 \item{type}{Used only with \code{method = "Series"}, to choose the series
 representation; \code{NULL} (default).}
@@ -99,6 +99,10 @@ by the method of Michael, Schucany and Haas (1976), based on
 \eqn{x_1 = m + m^2 \nu / (2\lambda) - m \sqrt{4 m \lambda \nu + m^2 \nu^2} / (2\lambda)},
 and return \eqn{x_1} with probability \eqn{m / (m + x_1)}, otherwise
 \eqn{m^2 / x_1}.
+
+With \code{method = "Bridge"}, the values are drawn by
+\code{\link[levyBridge:ig_bridge]{levyBridge::ig_bridge()}}: see the section Simulation methods of
+\link{DegradSim-package}.
 }
 
 \examples{
@@ -168,6 +172,24 @@ ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
   ggplot2::stat_function(fun = dig, colour = "red") +
   ggplot2::labs(x = "dX", y = "Density",
                 title = "Increments of the inverse Gaussian process")
+
+# 9. The same simulation by bridge sampling: the increments have the same density
+x <- sim_ig(t8, mu = 0.5, eta = 2, n_traj = 100, method = "Bridge")
+dx <- traj_df(x, increments = TRUE)$dX
+dx <- dx[!is.na(dx)]
+m <- 0.5 * 5
+lambda <- 2 * 5^2
+dig <- function(y) sqrt(lambda / (2 * pi * y^3)) * exp(-lambda * (y - m)^2 / (2 * m^2 * y))
+ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
+  ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
+                          bins = 30, boundary = 0, fill = "grey80", colour = "grey40") +
+  ggplot2::stat_function(fun = dig, colour = "red") +
+  ggplot2::labs(x = "dX", y = "Density",
+                title = "Increments of the inverse Gaussian process, bridge")
+
+# 10. Time-scaled process simulated by bridge sampling
+x <- sim_ig(t8, eta = 2, A = function(t) 0.02 * t^1.5, method = "Bridge", n_traj = 5)
+plot_traj(x)
 }
 \references{
 Cha, J. H. and Mercier, S. (2019). Transformed Lévy processes as

@@ -53,6 +53,12 @@
 #'
 #' This algorithm only uses gamma draws.
 #'
+#' With `method = "Bridge"`, the values are drawn by
+#' [levyBridge::vg_bridge()]: see the section Simulation methods of
+#' [DegradSim-package].
+#' The argument `increments` then only concerns the draw of the value at the
+#' last inspection time.
+#'
 #' @inheritParams sim_gamma
 #' @param theta Drift of the subordinated Brownian motion, real: mean
 #'   degradation per unit of time.
@@ -140,10 +146,26 @@
 #'                           bins = 30, fill = "grey80", colour = "grey40") +
 #'   ggplot2::stat_function(fun = dvg, colour = "red") +
 #'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the variance-gamma process")
+#'
+#' # 9. The same simulation by bridge sampling: the increments have the same density
+#' x <- sim_vg(t8, theta = 0.5, sigma = 1.2, nu = 0.8, n_traj = 100, method = "Bridge")
+#' dx <- traj_df(x, increments = TRUE)$dX
+#' dx <- dx[!is.na(dx)]
+#' dvg <- function(y, h = 5, theta = 0.5, sigma = 1.2, nu = 0.8) {
+#'   r <- sqrt(theta^2 + 2 * sigma^2 / nu)
+#'   z <- abs(y) * r / sigma^2
+#'   2 / (nu^(h / nu) * sqrt(2 * pi) * sigma * gamma(h / nu)) * (abs(y) / r)^(h / nu - 0.5) *
+#'     besselK(z, h / nu - 0.5, expon.scaled = TRUE) * exp(theta * y / sigma^2 - z)
+#' }
+#' ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
+#'   ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
+#'                           bins = 30, fill = "grey80", colour = "grey40") +
+#'   ggplot2::stat_function(fun = dvg, colour = "red") +
+#'   ggplot2::labs(x = "dX", y = "Density", title = "Variance-gamma process, bridge")
 #' @export
 sim_vg <- function(t, theta, sigma, nu, increments = "subordination", method = "RWA", type = NULL,
                    n_traj = 1) {
-  check_sim_method(method, type)
+  method <- check_sim_method(method, type, bridge = TRUE)
   if (!is.numeric(theta) || length(theta) != 1 || !is.finite(theta)) stop("theta must be a real number")
   if (!is.numeric(sigma) || length(sigma) != 1 || !(sigma > 0)) stop("sigma must be a positive number")
   if (!is.numeric(nu) || length(nu) != 1 || !(nu > 0)) stop("nu must be a positive number")
@@ -151,7 +173,7 @@ sim_vg <- function(t, theta, sigma, nu, increments = "subordination", method = "
     stop("increments must be \"subordination\" or \"difference\"")
   }
   r <- sqrt(theta^2 + 2 * sigma^2 / nu) / 2
-  one_path <- function(t) {
+  rwa_path <- function(t) {
     dt <- diff(t)
     n <- length(dt)
     if (increments == "subordination") {
@@ -163,5 +185,8 @@ sim_vg <- function(t, theta, sigma, nu, increments = "subordination", method = "
     }
     c(0, cumsum(dX))
   }
-  simulate_paths(t, n_traj, one_path, "variance-gamma", c(theta = theta, sigma = sigma, nu = nu))
+  one_path <- if (method == "RWA") rwa_path else bridge_one_path(rwa_path, function(t_A, x_A, t_B, x_B, s) {
+    levyBridge::vg_bridge(t_A, x_A, t_B, x_B, s, theta = c(theta = theta, sigma = sigma, nu = nu))
+  })
+  simulate_paths(t, n_traj, one_path, "variance-gamma", c(theta = theta, sigma = sigma, nu = nu), method = method)
 }

@@ -15,11 +15,41 @@ as_plans <- function(t, n_traj) {
   t
 }
 
-# Méthodes de simulation : seule "RWA" est disponible pour l'instant
-check_sim_method <- function(method, type) {
+# Méthodes de simulation : "RWA" pour tous les processus, "Bridge" pour ceux qui ont un pont dans levyBridge
+check_sim_method <- function(method, type, bridge = FALSE) {
   method <- match.arg(method, c("RWA", "Bridge", "Series"))
-  if (method != "RWA") stop("no other method is currently available: use method = \"RWA\"", call. = FALSE)
+  if (method == "Series") stop("the method \"Series\" is not currently available", call. = FALSE)
+  if (method == "Bridge" && !bridge) stop("no bridge is available for this process: use method = \"RWA\"", call. = FALSE)
   if (!is.null(type)) stop("type is used only with method = \"Series\"", call. = FALSE)
+  method
+}
+
+# Le point du milieu de la liste est tiré entre ses deux voisins connus ; là où le temps ne change pas, le niveau non plus
+bridge_path <- function(t, x_T, bridge) {
+  x <- numeric(length(t))
+  x[length(t)] <- x_T
+  fill <- function(i, j) {
+    if (j - i < 2) return(invisible(NULL))
+    m <- (i + j) %/% 2
+    x[m] <<- if (t[m] == t[i]) x[i] else if (t[m] == t[j]) x[j] else bridge(t[i], x[i], t[j], x[j], t[m])
+    fill(i, m)
+    fill(m, j)
+  }
+  fill(1, length(t))
+  x
+}
+
+# X_T est tiré par la marche aléatoire sur c(0, T), qui donne exactement sa loi
+bridge_one_path <- function(rwa_path, bridge, A = NULL) {
+  function(t) {
+    if (is.null(A)) {
+      clock <- t
+    } else {
+      time_change(A, t)
+      clock <- A(t)
+    }
+    bridge_path(clock, rwa_path(c(0, t[length(t)]))[2], bridge)
+  }
 }
 
 time_change <- function(A, t) {
@@ -35,7 +65,7 @@ time_change <- function(A, t) {
   dA
 }
 
-simulate_paths <- function(t, n_traj, one_path, model, parameters, A = NULL) {
+simulate_paths <- function(t, n_traj, one_path, model, parameters, A = NULL, method = "RWA") {
   plans <- as_plans(t, n_traj)
   same <- all(vapply(plans, function(tt) identical(tt, plans[[1]]), TRUE))
   if (same) {
@@ -49,6 +79,7 @@ simulate_paths <- function(t, n_traj, one_path, model, parameters, A = NULL) {
   }
   attr(paths, "model") <- model
   attr(paths, "parameters") <- parameters
+  attr(paths, "method") <- method
   if (!is.null(A)) attr(paths, "A") <- paste(deparse(A), collapse = " ")
   paths
 }
@@ -164,6 +195,7 @@ print.DegradSim <- function(x, ...) {
   cat(n, "simulated trajectory(ies) of the", attr(x, "model"), "process")
   cat(if (is.matrix(x)) ", same inspection times (matrix)\n" else ", own inspection times (list)\n")
   cat("parameters:", paste(names(par), signif(par, 4), sep = " = ", collapse = ", "), "\n")
+  cat("simulation method:", attr(x, "method"), "\n")
   if (!is.null(attr(x, "A"))) cat("time-scaling function: A =", attr(x, "A"), "\n")
   if (!is.null(attr(x, "jumps"))) cat("jumps: rjump =", attr(x, "jumps"), "\n")
   cat("\n")

@@ -201,5 +201,4 @@
 "_PACKAGE"
 
 #' @importFrom stats dgamma dnorm integrate optim optimHess optimize qnorm runif sd uniroot
-#' @importFrom DegradSim inspection_times
 NULL

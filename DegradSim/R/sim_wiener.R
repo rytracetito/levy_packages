@@ -34,6 +34,10 @@
 #' \eqn{Z_i} independent \eqn{\mathcal{N}(0, 1)} drawn with [stats::rnorm()], are
 #' cumulated.
 #'
+#' With `method = "Bridge"`, the values are drawn by
+#' [levyBridge::wiener_bridge()]: see the section Simulation methods of
+#' [DegradSim-package].
+#'
 #' @inheritParams sim_gamma
 #' @param mu Drift of the Wiener process, real: mean degradation per unit
 #'   of time. Not given when `A` is given (the mean of \eqn{X_t} is then
@@ -122,9 +126,24 @@
 #'   ggplot2::stat_function(fun = function(y) dnorm(y, 1.5 * 5, 2 * sqrt(5)),
 #'                          colour = "red") +
 #'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the Wiener process")
+#'
+#' # 9. The same simulation by bridge sampling: the increments have the same density
+#' x <- sim_wiener(t8, mu = 1.5, sigma = 2, n_traj = 100, method = "Bridge")
+#' dx <- traj_df(x, increments = TRUE)$dX
+#' dx <- dx[!is.na(dx)]
+#' ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
+#'   ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
+#'                           bins = 30, fill = "grey80", colour = "grey40") +
+#'   ggplot2::stat_function(fun = function(y) dnorm(y, 1.5 * 5, 2 * sqrt(5)),
+#'                          colour = "red") +
+#'   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the Wiener process, bridge")
+#'
+#' # 10. Time-scaled process simulated by bridge sampling
+#' x <- sim_wiener(t8, sigma = 2, A = function(t) 0.02 * t^1.5, method = "Bridge", n_traj = 5)
+#' plot_traj(x)
 #' @export
 sim_wiener <- function(t, mu, sigma, A = NULL, method = "RWA", type = NULL, n_traj = 1) {
-  check_sim_method(method, type)
+  method <- check_sim_method(method, type, bridge = TRUE)
   if (missing(sigma) || !is.numeric(sigma) || length(sigma) != 1 || !(sigma > 0)) stop("sigma must be a positive number")
   if (is.null(A)) {
     if (missing(mu)) stop("mu is missing: give mu (Wiener process) or A (time-scaled Wiener process)")
@@ -140,9 +159,12 @@ sim_wiener <- function(t, mu, sigma, A = NULL, method = "RWA", type = NULL, n_tr
     model <- "time-scaled Wiener"
     parameters <- c(sigma = sigma)
   }
-  one_path <- function(t) {
+  rwa_path <- function(t) {
     dA <- clock(t)
     c(0, cumsum(drift * dA + sigma * sqrt(dA) * stats::rnorm(length(dA))))
   }
-  simulate_paths(t, n_traj, one_path, model, parameters, A)
+  one_path <- if (method == "RWA") rwa_path else bridge_one_path(rwa_path, function(t_A, x_A, t_B, x_B, s) {
+    levyBridge::wiener_bridge(t_A, x_A, t_B, x_B, s, theta = c(mu = drift, sigma = sigma))
+  }, A)
+  simulate_paths(t, n_traj, one_path, model, parameters, A, method)
 }

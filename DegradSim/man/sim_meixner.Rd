@@ -29,11 +29,11 @@ symmetric increments, \eqn{b > 0} increments skewed to the right.}
 
 \item{m}{Location parameter per unit of time, real.}
 
-\item{method}{Simulation method: \code{"RWA"} (random walk approximation,
-default), \code{"Bridge"} (bridge sampling) or \code{"Series"} (truncated series
-representation), described in the section Simulation methods of
-\link{DegradSim-package}. Only \code{"RWA"} is currently available: the other two
-give an error.}
+\item{method}{Simulation method, described in the section Simulation methods
+of \link{DegradSim-package}: \code{"RWA"} (random walk approximation, default) or
+\code{"Bridge"} (bridge sampling). The two give the same distribution, but
+different trajectories with the same seed. \code{"Series"} (truncated series
+representation) is not currently available and gives an error.}
 
 \item{type}{Used only with \code{method = "Series"}, to choose the series
 representation; \code{NULL} (default).}
@@ -86,6 +86,10 @@ the package \code{Runuran}, built from the exact density, with an error in
 \eqn{u} of order \eqn{10^{-10}}). One generator is built for each distinct
 time step \eqn{\Delta t_i} and reused for all the trajectories. The
 simulation is therefore exact up to this numerical error.
+
+With \code{method = "Bridge"}, the values are drawn by
+\code{\link[levyBridge:meixner_bridge]{levyBridge::meixner_bridge()}}: see the section Simulation methods of
+\link{DegradSim-package}.
 }
 
 \examples{
@@ -142,6 +146,17 @@ ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
                           bins = 30, fill = "grey80", colour = "grey40") +
   ggplot2::stat_function(fun = function(y) Runuran::ud(dist, y), colour = "red") +
   ggplot2::labs(x = "dX", y = "Density", title = "Increments of the Meixner process")
+
+# 8. The same simulation by bridge sampling: the increments have the same density
+x <- sim_meixner(t7, a = 1, b = 0.3, d = 1.5, m = 0.2, n_traj = 100, method = "Bridge")
+dx <- traj_df(x, increments = TRUE)$dX
+dx <- dx[!is.na(dx)]
+dist <- Runuran::udmeixner(alpha = 1, beta = 0.3, delta = 1.5 * 5, mu = 0.2 * 5)
+ggplot2::ggplot(data.frame(dx), ggplot2::aes(dx)) +
+  ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)),
+                          bins = 30, fill = "grey80", colour = "grey40") +
+  ggplot2::stat_function(fun = function(y) Runuran::ud(dist, y), colour = "red") +
+  ggplot2::labs(x = "dX", y = "Density", title = "Increments of the Meixner process, bridge")
 }
 \references{
 Schoutens, W. (2003). \emph{Lévy Processes in Finance: Pricing Financial
