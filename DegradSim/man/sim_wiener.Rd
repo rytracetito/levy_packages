@@ -130,8 +130,8 @@ x <- sim_wiener(list(c(0, 1, 3, 6), c(0, 2, 4, 6, 8, 10)), mu = 1.5, sigma = 2)
 x[[2]]
 x[[2]]$X
 
-# 5. Time-scaled Wiener process X_t = A(t) + sigma B_{A(t)} with
-#    A(t) = 0.5 t^1.5 (Cha and Mercier, 2019, Example 1)
+# 5. Time-scaled Wiener process (model of Cha and Mercier, 2019, Example 1):
+#    X_t = A(t) + sigma B_{A(t)}, here with A(t) = 0.5 t^1.5
 x <- sim_wiener(t, sigma = 2, A = function(t) 0.5 * t^1.5, n_traj = 10)
 x
 plot_traj(x, "Time-scaled Wiener process")

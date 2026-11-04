@@ -121,8 +121,8 @@
 #' x[[2]]
 #' x[[2]]$X
 #'
-#' # 5. Time-scaled gamma process with A(t) = 2 t^1.5
-#' #    (Cha and Mercier, 2019, Example 2): X_t - X_s ~ Gamma(A(t) - A(s), b)
+#' # 5. Time-scaled gamma process (model of Cha and Mercier, 2019, Example 2):
+#' #    X_t - X_s ~ Gamma(A(t) - A(s), b), here with A(t) = 2 t^1.5
 #' x <- sim_gamma(t, b = 3, A = function(t) 2 * t^1.5, n_traj = 10)
 #' x
 #' plot_traj(x, "Time-scaled gamma process")

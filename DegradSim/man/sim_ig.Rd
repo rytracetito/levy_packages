@@ -80,9 +80,10 @@ purely made of jumps.
 is the IG process with \eqn{\mu = 1} (identifiability, see
 \link{DegradSim-package}):
 \deqn{X_t - X_s \sim IG\big(A(t) - A(s),\ \eta\, (A(t) - A(s))^2\big),}
-\eqn{E[X_t] = A(t)} and \eqn{Var(X_t) = A(t) / \eta}. This is the
-time-scaled IG process with mean function \eqn{A} of Cha and Mercier
-(2019, Example 3), whose parameter \eqn{b} is \eqn{\eta}.
+\eqn{E[X_t] = A(t)} and \eqn{Var(X_t) = A(t) / \eta}. Cha and Mercier
+(2019, Example 3) consider the inverse Gaussian process with mean function
+\eqn{A}, but write its increments with a constant shape \eqn{b}. The form
+above is used here because its variances add over successive intervals.
 }
 
 \section{Exact simulation}{
@@ -139,7 +140,7 @@ x[[2]]
 x[[2]]$X
 
 # 5. Time-scaled IG process with mean function A(t) = 0.5 t^1.5
-#    (Cha and Mercier, 2019, Example 3): X_t - X_s ~ IG(dA, eta dA^2)
+#    X_t - X_s ~ IG(dA, eta dA^2)
 x <- sim_ig(t, eta = 2, A = function(t) 0.5 * t^1.5, n_traj = 10)
 x
 plot_traj(x, "Time-scaled inverse Gaussian process")

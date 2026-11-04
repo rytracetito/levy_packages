@@ -873,7 +873,7 @@ round(diff(x[, "X1"]), 3)
 plot_traj(x, "Wiener à échelle de temps : 5 trajectoires")
 ```
 
-## Modèle 3 : inverse gaussien à échelle de temps (Cha et Mercier, 2019, exemple 3)
+## Modèle 3 : inverse gaussien à échelle de temps
 
 ```{r}
 set.seed(303)

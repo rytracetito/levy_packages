@@ -101,12 +101,12 @@ case.
 
 \strong{Time-scaling function.} Let \eqn{A : [0, +\infty[ \to [0, +\infty[} be
 a non-decreasing function, right-continuous with left limits, with
-\eqn{A(0) = 0} and \eqn{A(t) \to +\infty} as \eqn{t \to +\infty} (a
-time-scaling function, Cha and Mercier, 2019, Example 1), and let \eqn{Y}
-be a Levy process. The process
+\eqn{A(0) = 0} and \eqn{A(t) \to +\infty} as \eqn{t \to +\infty}, called
+a time-scaling function (the name is taken from Cha and Mercier, 2019,
+Example 1), and let \eqn{Y} be a Levy process. The process
 \deqn{X_t = Y_{A(t)}, \qquad t \ge 0,}
 is a time-scaled Levy process (Kahle et al., 2016, p. xix-xx; Cha and
-Mercier, 2019, section 2): \eqn{X_0 = 0}, its increments are independent
+Mercier, 2019, Example 1, for the Wiener process): \eqn{X_0 = 0}, its increments are independent
 and \eqn{X_t - X_s} has the distribution of \eqn{Y_{A(t) - A(s)}}. Its
 increments are not stationary when \eqn{A} is not linear: \eqn{X} is not a
 Levy process, but a non-homogeneous Levy process. When \eqn{A} is
