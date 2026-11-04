@@ -9,6 +9,7 @@ as_trajectories <- function(x, t) {
   for (k in seq_along(traj)) {
     if (length(traj[[k]]$t) != length(traj[[k]]$x)) stop("trajectory ", k, ": t and x must have the same length")
     if (length(traj[[k]]$t) < 2) stop("trajectory ", k, ": at least two observations are needed")
+    if (anyNA(traj[[k]]$t) || anyNA(traj[[k]]$x)) stop("trajectory ", k, ": missing values are not allowed")
     if (any(diff(traj[[k]]$t) <= 0)) stop("inspection times must be strictly increasing")
   }
   traj
@@ -37,8 +38,8 @@ increments <- function(x, t) {
 #' positive number \eqn{x} such that \eqn{1 + x \ne 1} (see [base::.Machine]), so
 #' that an increment smaller than about \eqn{10^{-16}} times the level can be
 #' rounded to 0 when computed as a difference of levels; this happens for
-#' instance with the increments reconstructed by the bridges of the package
-#' `levyBridge` on a fine grid.
+#' instance when a gamma or variance-gamma process is observed over very short
+#' durations.
 #'
 #' @param dx Numeric vector of increments.
 #' @param dt Durations of the increments: one positive number (all the

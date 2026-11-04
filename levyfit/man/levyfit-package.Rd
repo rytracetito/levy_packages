@@ -54,7 +54,10 @@ column the degradation levels;
 }
 
 The trajectories are assumed independent and with the same distribution.
-The increments are computed within each trajectory and then pooled.
+The increments are computed within each trajectory and then pooled. The
+inspection times are assumed fixed in advance or independent of the process.
+When the first inspection time is not 0, the first level only serves as the
+origin of the increments.
 }
 
 \section{Notation}{
@@ -68,9 +71,9 @@ total number of increments. The durations \eqn{\Delta t_j} can be equal
 (regular inspections) or not: all the formulas hold in both cases.
 \item \eqn{T = \sum_{j=1}^{n} \Delta t_j}, the total observed time, and
 \eqn{S = \sum_{j=1}^{n} \Delta x_j}, the total degradation.
-\item \eqn{\theta}: the vector of the parameters of the Levy process, for
-instance \eqn{\theta = (a, b)} for the gamma process.
-\item \eqn{f_{\Delta t}(x; \theta)}: the density of an increment of the
+\item \eqn{\vartheta}: the vector of the parameters of the Levy process, for
+instance \eqn{\vartheta = (a, b)} for the gamma process.
+\item \eqn{f_{\Delta t}(x; \vartheta)}: the density of an increment of the
 process over a duration \eqn{\Delta t}.
 \item \eqn{\psi} and \eqn{\psi'}: the digamma and trigamma functions, the first
 and second derivatives of \eqn{\ln \Gamma}.
@@ -80,7 +83,7 @@ and second derivatives of \eqn{\ln \Gamma}.
 \section{Computation of the estimators}{
 
 The increments of a Levy process being independent, the log-likelihood is
-\deqn{\ell(\theta) = \sum_{j=1}^{n} \ln f_{\Delta t_j}(\Delta x_j; \theta).}
+\deqn{\ell(\vartheta) = \sum_{j=1}^{n} \ln f_{\Delta t_j}(\Delta x_j; \vartheta).}
 \itemize{
 \item \strong{Closed form}: Wiener and inverse Gaussian. The MLE is explicit, with
 \eqn{\hat\mu = S / T}.
@@ -93,28 +96,31 @@ not depend on this starting point.
 \item Variance-gamma: the process is a Brownian motion observed at a random
 time given by a gamma process. The EM algorithm treats this random time
 as a hidden variable (each step is explicit or a unique root); it starts
-from the Wiener MLE and is followed by L-BFGS-B (\code{\link[stats:optim]{stats::optim()}}).
+from moment estimates and is followed by L-BFGS-B (\code{\link[stats:optim]{stats::optim()}}).
 \item Meixner: L-BFGS-B (\code{\link[stats:optim]{stats::optim()}}) on the likelihood profiled in
 \eqn{b} (\eqn{\hat b} is explicit for given \eqn{a}, \eqn{d}, \eqn{m}),
 with the exact gradient, from several starting points: the moment
 estimates when they exist, and points built from the empirical mean
-and variance (\code{n_start}); the solution of largest likelihood is kept.
+and variance (\code{n_start}); among the solutions not at the edge of the
+parameter space, the one of largest likelihood is kept (see
+\code{\link[=meixner_mle]{meixner_mle()}}).
 }
 }
 }
 
 \section{Confidence intervals}{
 
-With \code{ci = TRUE}, the intervals are asymptotic intervals based on the
-asymptotic normality of the MLE. For i.i.d. observations, that is equal
-durations, the MLE is asymptotically normal with covariance matrix the
-inverse of the Fisher information (van der Vaart, 1998, Theorem 5.39);
-with unequal durations the increments are independent but not identically
-distributed, and the same normal approximation is used. Let
-\eqn{\hat\theta} be the MLE. The Fisher information is estimated by the
+With \code{ci = TRUE}, the intervals rely on the asymptotic normality of the MLE.
+For i.i.d. observations, that is equal durations, and under regularity
+conditions, the MLE is asymptotically normal with covariance matrix the
+inverse of the Fisher information (van der Vaart, 1998, Theorem 5.39). These
+conditions are not checked here for each model; with unequal durations the
+increments are not identically distributed, and the same normal approximation
+is used. The intervals are therefore approximations and can be too narrow. Let
+\eqn{\hat\vartheta} be the MLE. The Fisher information is estimated by the
 observed information
-\eqn{J = -\partial^2 \ell / \partial \theta \partial \theta^\top} taken at
-\eqn{\hat\theta} (Grigoletto and Provasi, 2009, section 4.2), computed
+\eqn{J = -\partial^2 \ell / \partial \vartheta \partial \vartheta^\top} taken at
+\eqn{\hat\vartheta} (Grigoletto and Provasi, 2008, section 4.2), computed
 numerically by \code{\link[stats:optim]{stats::optimHess()}}, except for the Meixner process whose
 Hessian is explicit (see \code{\link[=meixner_mle]{meixner_mle()}}). The standard error of the
 \eqn{k}-th parameter is \eqn{se_k = \sqrt{(J^{-1})_{kk}}}; replacing the
@@ -125,16 +131,16 @@ function of the standard normal distribution: \eqn{(1 + level) / 2} is the
 order of the quantile for a two-sided interval, for instance
 \eqn{z = 1.96} for \code{level = 0.95}. The interval is
 \itemize{
-\item \eqn{\hat\theta_k \pm z\, se_k} for a real parameter (\code{mu} of the
+\item \eqn{\hat\vartheta_k \pm z\, se_k} for a real parameter (\code{mu} of the
 Wiener process, \code{theta} of the variance-gamma process, \code{b} and \code{m} of the
 Meixner process);
-\item \eqn{[\hat\theta_k e^{-z\, se_k / \hat\theta_k},\ \hat\theta_k e^{z\, se_k / \hat\theta_k}]}
+\item \eqn{[\hat\vartheta_k e^{-z\, se_k / \hat\vartheta_k},\ \hat\vartheta_k e^{z\, se_k / \hat\vartheta_k}]}
 for a positive parameter (all the others): this is the interval
-\eqn{\ln \hat\theta_k \pm z\, se_k / \hat\theta_k} for
-\eqn{\ln \theta_k}, whose standard error \eqn{se_k / \hat\theta_k} is
+\eqn{\ln \hat\vartheta_k \pm z\, se_k / \hat\vartheta_k} for
+\eqn{\ln \vartheta_k}, whose standard error \eqn{se_k / \hat\vartheta_k} is
 given by the delta method (van der Vaart, 1998, Theorem 3.1); since
 \eqn{\ln} is monotone, this interval is transformed back into an interval
-for \eqn{\theta_k} (van der Vaart, 1998, section 3.2), which always stays
+for \eqn{\vartheta_k} (van der Vaart, 1998, section 3.2), which always stays
 positive.
 }
 
@@ -165,7 +171,7 @@ the process of Wang and Xu (2010) with \eqn{\Lambda(t) = \mu t} (see
 Bee, Dickson and Santi, 2018).
 \item Meixner: \eqn{X_s \sim Meixner(a, b, d s, m s)}, the Levy process
 associated with the Meixner distribution of Grigoletto and Provasi
-(2009) (see \code{\link[=meixner_mle]{meixner_mle()}}).
+(2008) (see \code{\link[=meixner_mle]{meixner_mle()}}).
 }
 }
 
@@ -211,7 +217,7 @@ model to financial data. \emph{Journal of Applied Probability}, 41A, 177-187.
 \emph{Statistical Methods & Applications}.
 \doi{10.1007/s10260-017-0393-z}
 
-\strong{Meixner process}: Grigoletto, M. and Provasi, C. (2009). Simulation and
+\strong{Meixner process}: Grigoletto, M. and Provasi, C. (2008). Simulation and
 estimation of the Meixner distribution. \emph{Communications in Statistics -
 Simulation and Computation}, 38(1), 58-77.\cr
 \doi{10.1080/03610910802395679}

@@ -2,9 +2,9 @@
 #'
 #' Computes the maximum likelihood estimator (MLE) of the shape \eqn{a} and
 #' the rate \eqn{b} of the gamma process from one or several trajectories
-#' observed at regular or irregular inspection times. The MLE always exists
-#' (with probability one), is unique, and is the root of an equation in one
-#' variable.
+#' observed at regular or irregular inspection times. The MLE exists with
+#' probability one as soon as \eqn{n \ge 2}, is unique, and is the root of an
+#' equation in one variable.
 #'
 #' @section Model and data:
 #' The gamma process is increasing, with independent increments
@@ -19,23 +19,17 @@
 #' \eqn{j = 1, \dots, n}, with \eqn{\Delta x_j > 0}, pooled over the
 #' trajectories, with \eqn{T = \sum_{j=1}^{n} \Delta t_j} and
 #' \eqn{S = \sum_{j=1}^{n} \Delta x_j} (see the section Notation of
-#' [levyfit-package]). Let also
-#' \deqn{U = \sum_{j=1}^{n} \Delta t_j \ln \Delta x_j, \qquad
-#'   r_j = \frac{\Delta x_j}{\Delta t_j} \ \text{(speeds)}, \qquad
-#'   w_j = \frac{\Delta t_j}{T} \ \text{(weights)}.}
+#' [levyfit-package]).
 #'
 #' @section Likelihood:
 #' The increments being independent, the log-likelihood is (Kahle et al.,
-#' 2016, equation \[2.42\] with \eqn{\Delta A_{i,j}(\theta) = a s_{i,j}})
+#' 2016, equation \[2.42\] with \eqn{\Delta A_{i,j}(\theta) = a s_{i,j}}, which
+#' omits the constant \eqn{-\sum_{j=1}^{n} \ln \Delta x_j}; van Noortwijk, 2009,
+#' equation (11) with his \eqn{b = 1})
 #' \deqn{\ell(a, b) = \sum_{j=1}^{n} \big[(a \Delta t_j - 1) \ln \Delta x_j - \ln \Gamma(a \Delta t_j)
 #'   + a \Delta t_j \ln b - b \Delta x_j\big].}
-#' It is a two-parameter exponential family with sufficient statistic
-#' \eqn{(U, S)}, whatever the durations \eqn{\Delta t_j}, equal or not. With
-#' equal durations \eqn{\Delta t}, the increments are i.i.d.
-#' \eqn{\Gamma(a \Delta t, b)} and \eqn{(U, S)} is, up to the factor
-#' \eqn{\Delta t}, the usual sufficient statistic
-#' \eqn{(\sum_{j=1}^{n} \ln \Delta x_j, \sum_{j=1}^{n} \Delta x_j)} of an
-#' i.i.d. gamma sample.
+#' The data only act on the parameters through \eqn{S} and
+#' \eqn{U = \sum_{j=1}^{n} \Delta t_j \ln \Delta x_j}.
 #'
 #' @section Maximum likelihood estimator:
 #' The score in \eqn{b} is \eqn{\partial \ell / \partial b = a T / b - S}, so
@@ -55,34 +49,35 @@
 #' on \eqn{a}, so that \eqn{g(a) \to +\infty} as \eqn{a \to 0}, and
 #' \eqn{\psi(x) - \ln x \to 0} as \eqn{x \to \infty}, so that, by Jensen's
 #' inequality,
-#' \deqn{\lim_{a \to \infty} g(a) = T \Big(\sum_{j=1}^{n} w_j \ln r_j - \ln \sum_{j=1}^{n} w_j r_j\Big) < 0,}
-#' unless all the speeds \eqn{r_j} are equal. By the intermediate value
-#' theorem, \eqn{g} has a root \eqn{\hat a}, unique since \eqn{g} is strictly
-#' decreasing, and \eqn{\hat b = \hat a T / S}. These are the equations
-#' \[2.43\] and \[2.44\] of Kahle, Mercier and Paroissin (2016, section 2.7.1.1).
+#' \deqn{\lim_{a \to \infty} g(a) = \sum_{j=1}^{n} \Delta t_j \ln \frac{\Delta x_j}{\Delta t_j} - T \ln \frac{S}{T} < 0,}
+#' unless all the ratios \eqn{\Delta x_j / \Delta t_j} are equal. By the
+#' intermediate value theorem, \eqn{g} has a root \eqn{\hat a}, unique since
+#' \eqn{g} is strictly decreasing, and \eqn{\hat b = \hat a T / S}. These are the
+#' equations \[2.43\] and \[2.44\] of Kahle, Mercier and Paroissin (2016, section
+#' 2.7.1.1) and, for one trajectory, equation (12) of van Noortwijk (2009, section
+#' 3.7.1, after Cinlar et al.) with his \eqn{b = 1}.
 #' With equal durations \eqn{\Delta t}, the equation \eqn{g(a) = 0} becomes
 #' equation \[2.45a\] of Kahle et al. (2016), whose common step \eqn{\delta}
 #' is \eqn{\Delta t} here:
 #' \deqn{\psi(a \Delta t) - \ln(a \Delta t) = \frac{1}{n} \sum_{j=1}^{n} \ln \Delta x_j
 #'   - \ln\Big(\frac{1}{n} \sum_{j=1}^{n} \Delta x_j\Big),}
 #' the logarithm of the ratio of the geometric and arithmetic means of the
-#' increments. If all the speeds are equal (in particular if \eqn{n = 1}), the
-#' MLE does not exist and the function returns `NA` with a warning; this has
-#' probability zero when \eqn{n \ge 2}.
+#' increments. If all the ratios \eqn{\Delta x_j / \Delta t_j} are equal (in
+#' particular if \eqn{n = 1}), the MLE does not exist and the function returns
+#' `NA` with a warning; this has probability zero when \eqn{n \ge 2}. Numerically,
+#' the ratios are treated as equal when they differ by less than a relative
+#' \eqn{10^{-12}}. Because of rounding errors, estimates of \eqn{a} above about
+#' \eqn{10^{13}} are not reliable; this order of magnitude comes from a numerical
+#' check.
 #'
-#' The root is computed by [stats::uniroot()] in \eqn{\ln a}. Kahle, Mercier
-#' and Paroissin (2016, remark 2.50) recommend a moment estimator as starting
-#' point. The mean and the variance of the gamma process are \eqn{a t / b} and
-#' \eqn{a t / b^2} (Kahle et al., 2016, section 2.7), that is
-#' \eqn{\mu = a / b} and \eqn{\nu = a / b^2} per unit of time, so that
-#' \eqn{a = \mu^2 / \nu}. The search starts from
-#' \eqn{a_{MM} = \hat\mu^2 / \hat\nu}, where
-#' \deqn{\hat\mu = \frac{\sum_{j=1}^{n} \Delta x_j}{\sum_{j=1}^{n} \Delta t_j} = \frac{S}{T}, \qquad
-#'   \hat\nu = \frac{1}{n} \sum_{j=1}^{n} \frac{(\Delta x_j - \hat\mu \Delta t_j)^2}{\Delta t_j}}
-#' are the estimators of the mean and of the variance per unit of time of
-#' Kahle et al. (2016, section 1.6.1, equation \[1.19\]), given there for the
-#' Wiener process. Since the root of \eqn{g} is unique, it does not depend on
-#' this starting point, which only makes the computation faster.
+#' The root is computed by [stats::uniroot()] in \eqn{\ln a}, starting from
+#' \deqn{a_{MM} = \frac{(S / T)^2}{\hat\nu}, \qquad
+#'   \hat\nu = \frac{1}{n} \sum_{j=1}^{n} \frac{(\Delta x_j - (S / T) \Delta t_j)^2}{\Delta t_j}.}
+#' It uses the mean \eqn{a / b} and the variance \eqn{a / b^2} per unit of time
+#' (Kahle et al., 2016, section 2.7) and the estimators of their equation
+#' \[1.19\], given there for the Wiener process. A moment estimator can be used
+#' as a starting point (Kahle et al., 2016, remark 2.50). The root being unique,
+#' it does not depend on this choice.
 #'
 #' @inheritParams wiener_mle
 #' @param x Degradation levels of one trajectory, with strictly positive increments;
@@ -112,7 +107,7 @@
 #'
 #' van Noortwijk, J. M. (2009). A survey of the application of gamma processes
 #' in maintenance. *Reliability Engineering & System Safety*, 94(1), 2-21.
-#' \doi{10.1016/j.ress.2007.03.019}
+#' \doi{10.1016/j.ress.2007.03.019}. Section 3.7.1, equations (11) and (12).
 #'
 #' @seealso [wiener_mle()], [ig_mle()]
 #'
@@ -152,6 +147,13 @@
 #'
 #' # The gamma process only increases: a decrease stops the estimation
 #' try(gamma_mle(c(0, 2, 1.5, 3), c(0, 1, 2, 3)))
+#'
+#' # The increments given directly
+#' dt <- runif(50, 0.5, 2)
+#' gamma_mle(increments_data(rgamma(50, shape = 2 * dt, rate = 3), dt))
+#'
+#' # All the ratios dx/dt are equal: the MLE does not exist (warning, NA estimates)
+#' gamma_mle(c(0, 1, 2, 3), c(0, 1, 2, 3))
 #' @export
 gamma_mle <- function(x, t = NULL, ci = FALSE, level = 0.95) {
   estimate("gamma", x, t, ci, level)

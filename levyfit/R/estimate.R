@@ -36,7 +36,7 @@ confidence_intervals <- function(model, x, t, fit, level) {
   } else {
     H <- optimHess(par, function(p) -ll(p), control = list(parscale = pmax(abs(par), 1e-8)))
   }
-  V <- tryCatch(solve(H), error = function(e) matrix(NA, length(par), length(par)))
+  V <- tryCatch(chol2inv(chol(H)), error = function(e) matrix(NA, length(par), length(par)))
   se <- sqrt(ifelse(diag(V) > 0, diag(V), NA))
 
   z <- qnorm((1 + level) / 2)

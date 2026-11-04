@@ -50,7 +50,8 @@ density of an increment over a duration \eqn{\Delta t} is
 \deqn{f_{\Delta t}(x; \mu, \eta) = \Delta t \sqrt{\frac{\eta}{2 \pi x^3}}
   \exp\Big(-\frac{\eta (x - \mu \Delta t)^2}{2 \mu^2 x}\Big), \qquad x > 0.}
 This is the inverse Gaussian process of Wang and Xu (2010, section 1 and
-equation (1)) with mean function \eqn{\Lambda(t) = \mu t}: they write the
+equation (1)) and Ye and Chen (2014, section 2.1), with mean function
+\eqn{\Lambda(t) = \mu t}: they write the
 increments \eqn{IG(\Delta\Lambda, \eta_{WX} \Delta\Lambda^2)}, with
 \eqn{\Delta\Lambda = \Lambda(t) - \Lambda(s)}, so that the parameter
 \eqn{\eta} used here is their \eqn{\eta_{WX}} multiplied by \eqn{\mu^2}:
@@ -65,36 +66,33 @@ trajectories, with \eqn{T = \sum_{j=1}^{n} \Delta t_j} and
 \section{Likelihood}{
 
 The increments being independent (Wang and Xu, 2010, section 2,
-equation (3)), with \eqn{\delta = 1 / \mu}, the log-likelihood is
-\deqn{\ell(\mu, \eta) = c_0 + \frac{n}{2} \ln \eta
-  - \frac{\eta}{2} \sum_{j=1}^{n} \frac{(\delta \Delta x_j - \Delta t_j)^2}{\Delta x_j},
-  \qquad c_0 = \sum_{j=1}^{n} \Big[\ln \Delta t_j - \frac{1}{2} \ln(2\pi) - \frac{3}{2} \ln \Delta x_j\Big].}
+equation (3)), the log-likelihood is
+\deqn{\ell(\mu, \eta) = \sum_{j=1}^{n} \Big[\ln \Delta t_j - \frac{1}{2} \ln(2\pi) - \frac{3}{2} \ln \Delta x_j\Big] + \frac{n}{2} \ln \eta
+  - \frac{\eta}{2} \sum_{j=1}^{n} \frac{(\Delta x_j / \mu - \Delta t_j)^2}{\Delta x_j}.}
 }
 
 \section{Maximum likelihood estimator}{
 
 Expanding the square gives
-\deqn{\sum_{j=1}^{n} \frac{(\delta \Delta x_j - \Delta t_j)^2}{\Delta x_j} = \frac{(\delta S - T)^2}{S} + \hat Q,
+\deqn{\sum_{j=1}^{n} \frac{(\Delta x_j / \mu - \Delta t_j)^2}{\Delta x_j} = \frac{(S / \mu - T)^2}{S} + \hat Q,
   \qquad \hat Q = \sum_{j=1}^{n} \frac{\Delta t_j^2}{\Delta x_j} - \frac{T^2}{S} \ge 0,}
-with \eqn{\hat Q = 0} if and only if the speeds
+with \eqn{\hat Q = 0} if and only if the ratios
 \eqn{\Delta x_j / \Delta t_j} are all equal. For every \eqn{\eta},
-\eqn{\ell} is therefore maximal at \eqn{\delta = T / S}, that is
-\eqn{\hat\mu = S / T}. It remains to maximize
-\eqn{\frac{n}{2} \ln \eta - \frac{\eta}{2} \hat Q}, which gives
+\eqn{\ell} is therefore maximal at \eqn{\hat\mu = S / T}. It remains to
+maximize \eqn{\frac{n}{2} \ln \eta - \frac{\eta}{2} \hat Q}, which gives
 \eqn{\hat\eta = n / \hat Q}. The MLE exists and is unique if and only if
 \eqn{\hat Q > 0}, which has probability one as soon as \eqn{n \ge 2}.
 Otherwise the likelihood is unbounded and the function returns \code{NA} with a
-warning.
+warning. Numerically, \eqn{\hat Q} is treated as 0 when
+\eqn{\hat Q \le 10^{-12} \sum_{j=1}^{n} \Delta t_j^2 / \Delta x_j}, because of
+rounding errors; this threshold is a choice of this implementation.
 
-These are the estimators of Tweedie (1957, section 3, equations (13) and
-(14)), who considers independent observations \eqn{x_j \sim IG(\mu, \lambda_0 w_j)}
-with known weights \eqn{w_j}. A change of scale multiplies the mean and the
-shape of an inverse Gaussian variable by the same factor (Tweedie, 1957,
-section 1, p. 364), so that the speeds \eqn{x_j = \Delta x_j / \Delta t_j}
-follow \eqn{IG(\mu, \eta \Delta t_j)}: this is his setting with
-\eqn{w_j = \Delta t_j} and \eqn{\lambda_0 = \eta}. His estimators are then
-\eqn{\hat\mu = \sum_{j=1}^{n} w_j x_j / \sum_{j=1}^{n} w_j = S / T} and
-\eqn{1 / \hat\lambda_0 = \frac{1}{n} \sum_{j=1}^{n} w_j (1 / x_j - 1 / \hat\mu) = \hat Q / n}.
+A change of scale multiplies the mean and the shape of an inverse Gaussian
+variable by the same factor (Tweedie, 1957, section 1, p. 364), so that the
+ratios \eqn{\Delta x_j / \Delta t_j} follow \eqn{IG(\mu, \eta \Delta t_j)}.
+These are therefore the estimators (13) and (14) of Tweedie (1957, section 3),
+with his weights equal to \eqn{\Delta t_j} and his \eqn{\lambda_0} equal to
+\eqn{\eta}.
 }
 
 \section{Bias}{
@@ -103,17 +101,15 @@ With the same correspondence, Tweedie (1957, equation (15) and section 4,
 equations (21) and (22), p. 367-369) shows that, for \eqn{n \ge 2},
 \deqn{\hat\mu \sim IG(\mu, \eta T), \qquad \eta \hat Q \sim \chi^2_{n-1},}
 and that \eqn{\hat\mu} and \eqn{\hat Q} are independent. Hence
-\eqn{\hat\mu} is unbiased and, since \eqn{\hat\eta = n \eta / V} with
-\eqn{V = \eta \hat Q \sim \chi^2_{n-1}} and
-\eqn{E[1/V] = 1/(k - 2)} for \eqn{V \sim \chi^2_k},
-\eqn{E[\hat\eta] = \frac{n}{n - 3} \eta} for \eqn{n > 3}: \eqn{\hat\eta} is
-biased upwards. The function also returns its unbiased version
+\eqn{\hat\mu} is unbiased and, since the mean of \eqn{1 / \chi^2_k} is
+\eqn{1 / (k - 2)}, \eqn{E[\hat\eta] = \frac{n}{n - 3} \eta} for \eqn{n > 3}:
+\eqn{\hat\eta} is biased upwards. The function also returns its unbiased
+version
 \deqn{\tilde\eta = \frac{n - 3}{\hat Q} = \frac{n - 3}{n} \hat\eta,}
 which requires at least four increments (\code{NA} otherwise). With equal
-durations \eqn{\Delta t}, the speeds are i.i.d. \eqn{IG(\mu, \eta \Delta t)}
-and \eqn{\tilde\eta \Delta t} is the uniformly minimum variance unbiased
-estimator \eqn{(n - 3) / V} of their shape parameter given by Seshadri
-(1999, section 2.1, Table 2.1, \eqn{n \ge 4}).
+durations \eqn{\Delta t}, \eqn{\tilde\eta \Delta t} is the uniformly minimum
+variance unbiased estimator of the shape parameter of the ratios (Seshadri,
+1999, section 2.1, Table 2.1, \eqn{n \ge 4}).
 }
 
 \examples{
@@ -152,12 +148,20 @@ ig_mle(liste)
 
 # The inverse Gaussian process only increases: a decrease stops the estimation
 try(ig_mle(c(0, 2, 1.5, 3), c(0, 1, 2, 3)))
+
+# The increments given directly
+t <- DegradSim::inspection_times("regular", n = 50, tmax = 50)$time
+d <- DegradSim::traj_df(DegradSim::sim_ig(t, mu = 0.5, eta = 2), increments = TRUE)
+d <- d[!is.na(d$dX), ]
+ig_mle(increments_data(d$dX, d$dt))
+
+# All the ratios dx/dt are equal: the MLE does not exist (warning, NA estimates)
+ig_mle(c(0, 1, 2, 3), c(0, 1, 2, 3))
 }
 \references{
 Tweedie, M. C. K. (1957). Statistical properties of inverse Gaussian
 distributions. I. \emph{The Annals of Mathematical Statistics}, 28(2), 362-377.
-\doi{10.1214/aoms/1177706964}. Sections 1, 3 and 4, equations (13) to (15),
-(21) and (22).
+Sections 1, 3 and 4, equations (13) to (15), (21) and (22).
 
 Seshadri, V. (1999). \emph{The Inverse Gaussian Distribution: Statistical Theory
 and Applications}. Lecture Notes in Statistics, 137. Springer, New York.
@@ -169,7 +173,7 @@ degradation data. \emph{Technometrics}, 52(2), 188-197.
 
 Ye, Z.-S. and Chen, N. (2014). The inverse Gaussian process as a
 degradation model. \emph{Technometrics}, 56(3), 302-311.
-\doi{10.1080/00401706.2013.830074}
+\doi{10.1080/00401706.2013.830074}. Section 2.1.
 }
 \seealso{
 \code{\link[=wiener_mle]{wiener_mle()}}, \code{\link[=gamma_mle]{gamma_mle()}}

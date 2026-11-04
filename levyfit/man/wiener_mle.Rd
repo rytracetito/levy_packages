@@ -53,8 +53,7 @@ duration \eqn{\Delta t} is
 The data are the \eqn{n} increments \eqn{(\Delta t_j, \Delta x_j)},
 \eqn{j = 1, \dots, n}, pooled over the trajectories, with
 \eqn{T = \sum_{j=1}^{n} \Delta t_j} and \eqn{S = \sum_{j=1}^{n} \Delta x_j}
-(see the section Notation of \link{levyfit-package}). The speeds are
-\eqn{r_j = \Delta x_j / \Delta t_j}.
+(see the section Notation of \link{levyfit-package}).
 }
 
 \section{Likelihood}{
@@ -64,6 +63,8 @@ The increments being independent, the log-likelihood is (Kahle et al.,
 \deqn{\ell(\mu, \sigma^2) = -\frac{n}{2} \ln(2\pi) - \frac{1}{2} \sum_{j=1}^{n} \ln \Delta t_j
   - \frac{n}{2} \ln \sigma^2 - \frac{Q(\mu)}{2 \sigma^2},
   \qquad Q(\mu) = \sum_{j=1}^{n} \frac{(\Delta x_j - \mu \Delta t_j)^2}{\Delta t_j}.}
+When the first inspection time is not 0, the first level only serves as the
+origin of the increments.
 }
 
 \section{Maximum likelihood estimator}{
@@ -71,17 +72,20 @@ The increments being independent, the log-likelihood is (Kahle et al.,
 Completing the square gives \eqn{Q(\mu) = T (\mu - \hat\mu)^2 + \hat Q},
 with
 \deqn{\hat\mu = \frac{S}{T}, \qquad
-  \hat Q = Q(\hat\mu) = \sum_{j=1}^{n} \Delta t_j (r_j - \hat\mu)^2.}
+  \hat Q = Q(\hat\mu) = \sum_{j=1}^{n} \frac{(\Delta x_j - \hat\mu \Delta t_j)^2}{\Delta t_j}.}
 For every \eqn{\sigma^2}, \eqn{\ell} is therefore maximal in \eqn{\mu} at
-\eqn{\hat\mu}, which is the mean of the speeds weighted by
-\eqn{\Delta t_j / T}. It remains to maximize
+\eqn{\hat\mu}, which is the mean of the ratios \eqn{\Delta x_j / \Delta t_j}
+weighted by \eqn{\Delta t_j / T}. It remains to maximize
 \eqn{-\frac{n}{2} \ln \sigma^2 - \hat Q / (2 \sigma^2)}, which gives
 \eqn{\hat\sigma^2 = \hat Q / n}. These are the estimators of Kahle et al.
 (2016, section 1.6.1, equation [1.19]). The MLE exists and is unique if and only
-if \eqn{\hat Q > 0}, that is if the speeds \eqn{r_j} are not all equal,
-which has probability one as soon as \eqn{n \ge 2}. Otherwise (in
-particular if \eqn{n = 1}) the likelihood is unbounded and the function
-returns \code{NA} with a warning.
+if \eqn{\hat Q > 0}, that is if the ratios \eqn{\Delta x_j / \Delta t_j} are
+not all equal, which has probability one as soon as \eqn{n \ge 2}. Otherwise
+(in particular if \eqn{n = 1}) the likelihood is unbounded and the function
+returns \code{NA} with a warning. Numerically, \eqn{\hat Q} is treated as 0 when
+\eqn{\hat Q \le 10^{-12} \sum_{j=1}^{n} \Delta x_j^2 / \Delta t_j}, because of
+the rounding errors on the levels; this threshold is a choice of this
+implementation.
 
 Equation [1.19] also writes \eqn{\hat\mu} as the sum of the last
 observed levels divided by the sum of the last inspection times: with one
@@ -91,23 +95,20 @@ and the intermediate inspections only bring information on \eqn{\sigma^2}.
 
 \section{Bias}{
 
-Whitmore (1995, section 3, equations (3.8a), (3.8b), (3.10a) and (3.10b))
-considers increments \eqn{\Delta Y \sim \mathcal{N}_n(\delta \Delta t, \sigma^2 \Psi)}
-with a known matrix \eqn{\Psi}; his estimators are
-\deqn{\hat\delta = \frac{\Delta t' \Psi^{-1} \Delta Y}{\Delta t' \Psi^{-1} \Delta t}, \qquad
-  \hat\sigma^2 = \frac{(\Delta Y - \hat\delta \Delta t)' \Psi^{-1} (\Delta Y - \hat\delta \Delta t)}{n},}
-and they are independent, with
-\eqn{\hat\delta \sim \mathcal{N}(\delta, \sigma^2 / (\Delta t' \Psi^{-1} \Delta t))} and
-\eqn{n \hat\sigma^2 / \sigma^2 \sim \chi^2_{n-1}}. Here the increments are
-independent with variances \eqn{\sigma^2 \Delta t_j}, that is
-\eqn{\Psi = \mathrm{diag}(\Delta t_1, \dots, \Delta t_n)}, \eqn{\delta = \mu},
-\eqn{\Delta t' \Psi^{-1} \Delta t = T}, and his estimators are \eqn{\hat\mu} and
-\eqn{\hat\sigma^2} above. Hence, for \eqn{n \ge 2},
-\deqn{\hat\mu \sim \mathcal{N}(\mu, \sigma^2 / T), \qquad n \hat\sigma^2 / \sigma^2 = \hat Q / \sigma^2 \sim \chi^2_{n-1},}
-\eqn{\hat\mu} and \eqn{\hat\sigma^2} are independent, \eqn{\hat\mu} is
-unbiased and, the mean of a \eqn{\chi^2_{n-1}} variable being \eqn{n - 1},
-\eqn{E[\hat\sigma^2] = \frac{n - 1}{n} \sigma^2}: \eqn{\hat\sigma^2} is
-biased downwards. The function also returns its unbiased version
+For \eqn{n \ge 2},
+\deqn{\hat\mu \sim \mathcal{N}(\mu, \sigma^2 / T), \qquad \hat Q / \sigma^2 \sim \chi^2_{n-1},}
+and \eqn{\hat\mu} and \eqn{\hat Q} are independent. Indeed, the variables
+\eqn{(\Delta x_j - \mu \Delta t_j) / (\sigma \sqrt{\Delta t_j})} are i.i.d.
+\eqn{\mathcal{N}(0, 1)}. An orthogonal rotation whose first coordinate is
+\eqn{\sqrt{T} (\hat\mu - \mu) / \sigma} leaves them i.i.d., and
+\eqn{\hat Q / \sigma^2} is the sum of the squares of the other \eqn{n - 1}
+coordinates. These distributions have the same form as equations (3.10a) and
+(3.10b) of Whitmore (1995), obtained there for a Wiener process with
+measurement error and a known ratio of variances.
+
+Hence \eqn{\hat\mu} is unbiased and
+\eqn{E[\hat\sigma^2] = \frac{n - 1}{n} \sigma^2}: \eqn{\hat\sigma^2} is biased
+downwards. The function also returns its unbiased version
 \deqn{s^2 = \frac{\hat Q}{n - 1} = \frac{n}{n - 1} \hat\sigma^2.}
 }
 
@@ -148,15 +149,22 @@ wiener_mle(liste)
 # sigma2 is the MLE and s2 its unbiased version: with few increments,
 # here 3, they differ clearly
 wiener_mle(c(0, 1.2, 0.7, 2.5), c(0, 1, 2, 3))
+
+# The increments given directly
+dt <- runif(50, 0.5, 2)
+wiener_mle(increments_data(rnorm(50, 0.5 * dt, 1.5 * sqrt(dt)), dt))
+
+# All the ratios dx/dt are equal: the MLE does not exist (warning, NA estimates)
+wiener_mle(c(0, 1, 2, 3), c(0, 1, 2, 3))
 }
 \references{
 Kahle, W., Mercier, S. and Paroissin, C. (2016). \emph{Degradation Processes in
 Reliability}. ISTE and Wiley, London. Definition 1.11, section 1.6.1
-(equations [1.3], [1.14], [1.17] and [1.19]).
+(equations [1.3], [1.14] and [1.19]).
 
 Whitmore, G. A. (1995). Estimating degradation by a Wiener diffusion process
 subject to measurement error. \emph{Lifetime Data Analysis}, 1, 307-319.
-Section 3, equations (3.8a) to (3.10b).
+Section 3, equations (3.3) to (3.10b).
 }
 \seealso{
 \code{\link[=gamma_mle]{gamma_mle()}}, \code{\link[=ig_mle]{ig_mle()}}, \code{\link[=vg_mle]{vg_mle()}}, \code{\link[=meixner_mle]{meixner_mle()}}

@@ -33,8 +33,8 @@ Giving the increments directly keeps all their precision. In R,
 positive number \eqn{x} such that \eqn{1 + x \ne 1} (see \link[base:zMachine]{base::.Machine}), so
 that an increment smaller than about \eqn{10^{-16}} times the level can be
 rounded to 0 when computed as a difference of levels; this happens for
-instance with the increments reconstructed by the bridges of the package
-\code{levyBridge} on a fine grid.
+instance when a gamma or variance-gamma process is observed over very short
+durations.
 }
 \examples{
 set.seed(1)

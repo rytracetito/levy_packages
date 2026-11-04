@@ -6,18 +6,16 @@
 #' maximized numerically from several starting points.
 #'
 #' @section Source and notation:
-#' The results on the Meixner distribution used below come from Grigoletto
-#' and Provasi (2009), who treat an i.i.d. sample of this
-#' distribution. The distribution written here \eqn{Meixner(a, b, d, m)} is
-#' their \eqn{MXN(m, a, b, d)}: \eqn{m} is a location parameter, \eqn{a > 0} a
-#' scale parameter, and \eqn{b \in (-\pi, \pi)} and \eqn{d > 0} are shape
-#' parameters (Grigoletto and Provasi, 2009, section 2); the same notation is used by Schoutens
-#' (2002), whose Meixner process is used here. The extension of the results
-#' of Grigoletto and Provasi (2009) to increments over unequal durations, and the algorithm, are
-#' choices of this implementation; they are marked as such.
+#' The distribution written here \eqn{Meixner(a, b, d, m)} is the
+#' \eqn{MXN(m, a, b, d)} of Grigoletto and Provasi (2008, section 2): \eqn{m} is a
+#' location parameter, \eqn{a > 0} a scale parameter, and
+#' \eqn{b \in (-\pi, \pi)} and \eqn{d > 0} are shape parameters. Schoutens (2002),
+#' whose Meixner process is used here, has the same notation. Grigoletto and
+#' Provasi (2008) treat an i.i.d. sample; the extension to increments over unequal
+#' durations is a choice of this implementation.
 #'
 #' @section Model and data:
-#' The density of \eqn{Meixner(a, b, d, m)} is (Grigoletto and Provasi, 2009, section 2)
+#' The density of \eqn{Meixner(a, b, d, m)} is (Grigoletto and Provasi, 2008, section 2)
 #' \deqn{f(x) = \frac{(2 \cos(b/2))^{2 d}}{2 a \pi\, \Gamma(2 d)}
 #'   \exp\Big(\frac{b (x - m)}{a}\Big) \Big|\Gamma\Big(d + i\, \frac{x - m}{a}\Big)\Big|^2,
 #'   \qquad x \in (-\infty, \infty),}
@@ -25,7 +23,7 @@
 #' \eqn{e^{i m u} \big(\cos(b/2) / \cosh((a u - i b)/2)\big)^{2 d}}
 #' (Schoutens, 2002, section 2), so that the distribution is infinitely
 #' divisible. Its mean and variance are \eqn{m + a d \tan(b/2)} and
-#' \eqn{a^2 d / (1 + \cos b)} (Grigoletto and Provasi, 2009, equation (1)).
+#' \eqn{a^2 d / (1 + \cos b)} (Grigoletto and Provasi, 2008, equation (1)).
 #'
 #' The Meixner process \eqn{X} is the Levy process associated with this
 #' distribution: \eqn{X_0 = 0}, its increments are independent and
@@ -43,7 +41,7 @@
 #' \eqn{T = \sum_{j=1}^{n} \Delta t_j} and \eqn{S = \sum_{j=1}^{n} \Delta x_j}
 #' (see the section Notation of [levyfit-package]). To shorten the formulas, let
 #' \deqn{s_j = d \Delta t_j, \qquad y_j = \frac{\Delta x_j - m \Delta t_j}{a}, \qquad j = 1, \dots, n;}
-#' \eqn{y_j} is the standardized value \eqn{z_j = (x_j - m)/a} of Grigoletto and Provasi (2009)
+#' \eqn{y_j} is the standardized value \eqn{z_j = (x_j - m)/a} of Grigoletto and Provasi (2008)
 #' (section 4.2) for an increment over \eqn{\Delta t_j}.
 #'
 #' @section Likelihood and score:
@@ -51,16 +49,12 @@
 #' \deqn{\ell(a, b, d, m) = \sum_{j=1}^{n} \Big[2 s_j \ln(2 \cos(b/2)) - \ln(2 a \pi) - \ln \Gamma(2 s_j)
 #'   + b y_j + \ln |\Gamma(s_j + i y_j)|^2\Big].}
 #' With equal durations \eqn{\Delta t_j = 1}, it is \eqn{n} times the average
-#' log-likelihood \eqn{\ell_n(\theta)} of Grigoletto and Provasi (2009, equation (6)); with unequal
+#' log-likelihood \eqn{\ell_n(\theta)} of Grigoletto and Provasi (2008, equation (6)); with unequal
 #' durations, it is its extension to the process.
 #'
-#' The first derivatives (the score) are explicit (Grigoletto and Provasi, 2009, appendix A). Grigoletto and Provasi (2009)
-#' write them with \eqn{\Psi_j^+ = \psi(d + i z_j) + \psi(d - i z_j)} and
-#' \eqn{\Psi_j^- = \psi(d + i z_j) - \psi(d - i z_j)}, \eqn{\psi} being the
-#' digamma function. Here, with \eqn{\psi_j = \psi(s_j + i y_j)} and its real
-#' and imaginary parts \eqn{\mathrm{Re}\,\psi_j} and \eqn{\mathrm{Im}\,\psi_j},
-#' these are \eqn{\Psi_j^+ = 2\, \mathrm{Re}\,\psi_j} and
-#' \eqn{i\, \Psi_j^- = -2\, \mathrm{Im}\,\psi_j}, and the score is
+#' The first derivatives (the score) are explicit (Grigoletto and Provasi, 2008,
+#' appendix A, for an i.i.d. sample). With \eqn{\psi} the digamma function and
+#' \eqn{\psi_j = \psi(s_j + i y_j)}, the score is
 #' \deqn{\frac{\partial \ell}{\partial a} = \frac{1}{a} \sum_{j=1}^{n} \big(-1 - b y_j + 2 y_j\, \mathrm{Im}\,\psi_j\big),}
 #' \deqn{\frac{\partial \ell}{\partial b} = \sum_{j=1}^{n} y_j - \tan(b/2) \sum_{j=1}^{n} s_j,}
 #' \deqn{\frac{\partial \ell}{\partial d} = \sum_{j=1}^{n} \Delta t_j \big(2 \ln(2 \cos(b/2)) - 2 \psi(2 s_j) + 2\, \mathrm{Re}\,\psi_j\big),}
@@ -70,18 +64,18 @@
 #' For fixed \eqn{(a, d, m)}, \eqn{\partial \ell / \partial b = 0} has the
 #' unique solution
 #' \deqn{\hat b(a, d, m) = 2 \arctan \frac{S - m T}{a d T},}
-#' which is the lemma of Grigoletto and Provasi (2009, section 4.2),
+#' which is the lemma of Grigoletto and Provasi (2008, section 4.2),
 #' \eqn{\hat b = 2 \tan^{-1}(\bar z / \hat d)}, written for increments over
 #' unequal durations. It is a maximum, since
 #' \eqn{\partial^2 \ell / \partial b^2 = -\sum_{j=1}^{n} s_j / (1 + \cos b) < 0}
-#' (Grigoletto and Provasi, 2009, appendix A). It makes the expected total
+#' (Grigoletto and Provasi, 2008, appendix A). It makes the expected total
 #' increment \eqn{\kappa_1 T} equal to \eqn{S}. The maximization is therefore
 #' done in dimension 3, on the profile log-likelihood
 #' \eqn{\ell_p(a, d, m) = \ell(a, \hat b(a, d, m), d, m)}, as suggested by
-#' Grigoletto and Provasi (2009, section 4.2).
+#' Grigoletto and Provasi (2008, section 4.2).
 #'
 #' @section Method of moments:
-#' With unequal durations (extension of Grigoletto and Provasi, 2009, section 4.1), the mean and the
+#' With unequal durations (extension of Grigoletto and Provasi, 2008, section 4.1), the mean and the
 #' higher cumulants of the process per unit of time are estimated by
 #' \eqn{k_1 = S / T} and, with the residuals
 #' \eqn{e_j = \Delta x_j - k_1 \Delta t_j},
@@ -91,9 +85,9 @@
 #' Let \eqn{\gamma_1 = k_3 / k_2^{3/2}} and \eqn{\gamma_2 = k_4 / k_2^2} be
 #' the skewness and the excess kurtosis of \eqn{X_1}. Since the skewness of
 #' \eqn{Meixner(a, b, d, m)} is \eqn{\sin b / \sqrt{d (1 + \cos b)}} and its
-#' kurtosis \eqn{3 + (2 - \cos b) / d} (Grigoletto and Provasi, 2009, equation (1)), that is
+#' kurtosis \eqn{3 + (2 - \cos b) / d} (Grigoletto and Provasi, 2008, equation (1)), that is
 #' \eqn{\gamma_1^2 = (1 - \cos b) / d} and \eqn{\gamma_2 = (2 - \cos b) / d},
-#' the moment estimates are (Grigoletto and Provasi, 2009, section 4.1, with the excess kurtosis)
+#' the moment estimates are (Grigoletto and Provasi, 2008, section 4.1, with the excess kurtosis)
 #' \deqn{d = \frac{1}{\gamma_2 - \gamma_1^2}, \quad
 #'   b = \mathrm{sign}(\gamma_1) \arccos(2 - d \gamma_2), \quad
 #'   a = \sqrt{k_2 (1 + \cos b) / d}, \quad m = k_1 - a d \tan(b/2).}
@@ -105,17 +99,28 @@
 #' \eqn{\gamma_2 / \gamma_1^2 = (2 - \cos b) / (1 - \cos b)} takes all the
 #' values larger than \eqn{3/2}: the condition says that the sample skewness
 #' and kurtosis are those of a Meixner distribution. Grigoletto and Provasi
-#' (2009, section 4.1) write that the estimates do not exist when the
+#' (2008, section 4.1) write that the estimates do not exist when the
 #' kurtosis \eqn{\gamma_2 + 3} is smaller than \eqn{2 \gamma_1^2 + 3}, that
 #' is \eqn{\gamma_2 < 2 \gamma_1^2}. The bound \eqn{2} instead of \eqn{3/2} corresponds to \eqn{|b| = \pi/2}: it
 #' excludes the Meixner distributions with \eqn{\pi/2 < |b| < \pi}, for which
 #' the estimates exist. With
-#' equal durations \eqn{\Delta t}, they are the estimates of Grigoletto and Provasi (2009, section 4.1)
+#' equal durations \eqn{\Delta t}, they are the estimates of Grigoletto and Provasi (2008, section 4.1)
 #' computed on the increments, with the variance divided by \eqn{n}, and with
 #' \eqn{d} and \eqn{m} divided by \eqn{\Delta t}.
 #'
 #' @section Algorithm:
-#' Grigoletto and Provasi (2009, section 4.2) propose to maximize the
+#' The likelihood is not bounded: for \eqn{b \to \pi}, \eqn{a \to 0}, with \eqn{m}
+#' on the smallest ratio \eqn{\Delta x_j / \Delta t_j} and
+#' \eqn{2 d \Delta t_j < 1} for that increment, \eqn{\ell \to +\infty} (proof in
+#' the document of demonstrations). The global maximum therefore does not exist,
+#' and the estimate returned is the best local maximum found inside the parameter
+#' space.
+#'
+#' At least four increments are required (error otherwise). When all the ratios
+#' \eqn{\Delta x_j / \Delta t_j} are equal, the optimization fails and the
+#' function returns `NA` with a warning.
+#'
+#' Grigoletto and Provasi (2008, section 4.2) propose to maximize the
 #' likelihood by a Newton-type algorithm with the first and second
 #' derivatives, and note that the moment estimates can be used as starting
 #' points. These estimates do not always exist (see Method of
@@ -131,21 +136,12 @@
 #'    time (see Model and data) by
 #'    \deqn{\hat\kappa_1 = \frac{\sum_{j=1}^{n} \Delta x_j}{\sum_{j=1}^{n} \Delta t_j} = \frac{S}{T}, \qquad
 #'      \hat\kappa_2 = \frac{1}{n} \sum_{j=1}^{n} \frac{(\Delta x_j - \hat\kappa_1 \Delta t_j)^2}{\Delta t_j},}
-#'    and compute the mean duration \eqn{\overline{\Delta t} = T / n}. For the
-#'    Wiener process, \eqn{\hat\kappa_1} and \eqn{\hat\kappa_2} are the maximum
-#'    likelihood estimators of the drift and of the variance of Kahle, Mercier
-#'    and Paroissin (2016, section 1.6.1, equation \[1.19\]). They only use the
-#'    mean and the variance of the increments, which are
-#'    \eqn{E[\Delta x_j] = \kappa_1 \Delta t_j} and
-#'    \eqn{Var(\Delta x_j) = \kappa_2 \Delta t_j} for the Meixner process too
-#'    (see Model and data); a direct computation then gives
-#'    \eqn{E[\hat\kappa_1] = \kappa_1} and
-#'    \eqn{E[\hat\kappa_2] = (1 - 1/n) \kappa_2}.
+#'    and compute the mean duration \eqn{\overline{\Delta t} = T / n}.
 #' 2. Build the starting points \eqn{(a_0, d_0, m_0)} (the value of \eqn{b}
 #'    is always \eqn{\hat b(a, d, m)}, see Profile in b):
 #'    * the moment estimates of \eqn{a}, \eqn{d}, \eqn{m} (see Method of
 #'      moments), when they exist, as suggested by Grigoletto and Provasi
-#'      (2009, section 4.2);
+#'      (2008, section 4.2);
 #'    * the point \eqn{b_0 = 0}, \eqn{d_0 = 1 / \overline{\Delta t}};
 #'    * `n_start - 1` random points: \eqn{b_0} drawn uniformly on
 #'      \eqn{(-\pi + 0.1, \pi - 0.1)}, and \eqn{d_0 = u / \overline{\Delta t}}
@@ -175,19 +171,17 @@
 #' Because of the random starting points, call [set.seed()] before
 #' `meixner_mle()` to reproduce a result exactly.
 #'
-#' Grigoletto and Provasi (2009, section 4.2) find that the convergence of the estimator to its
+#' Grigoletto and Provasi (2008, section 4.2) find that the convergence of the estimator to its
 #' asymptotic normal distribution is very slow, with a speed inversely related
 #' to \eqn{d}, and that inference based on asymptotic normality must be carefully
 #' evaluated even for medium samples.
 #'
 #' @section Hessian:
-#' The second derivatives of \eqn{\ell} are explicit (Grigoletto and Provasi, 2009, appendix A, where
-#' they are written with \eqn{\Upsilon_j^\pm = \psi'(d + i z_j) \pm \psi'(d - i z_j)},
-#' \eqn{\psi'} being the trigamma function). Here, with
-#' \eqn{\psi'_j = \psi'(s_j + i y_j)},
-#' \deqn{G_j = b - 2\, \mathrm{Im}\,\psi_j, \qquad R_j = \mathrm{Re}\,\psi'_j, \qquad I_j = \mathrm{Im}\,\psi'_j,
-#'   \qquad j = 1, \dots, n,}
-#' so that \eqn{\Upsilon_j^+ = 2 R_j} and \eqn{\Upsilon_j^- = 2 i I_j}, they are
+#' The second derivatives of \eqn{\ell} are explicit (Grigoletto and Provasi, 2008,
+#' appendix A, for an i.i.d. sample). With \eqn{\psi'} the trigamma function,
+#' \eqn{\psi'_j = \psi'(s_j + i y_j)} and
+#' \deqn{G_j = b - 2\, \mathrm{Im}\,\psi_j, \qquad R_j = \mathrm{Re}\,\psi'_j, \qquad I_j = \mathrm{Im}\,\psi'_j,}
+#' they are
 #' \deqn{\frac{\partial^2 \ell}{\partial a^2} = \frac{1}{a^2} \sum_{j=1}^{n} \big(1 - 2 R_j y_j^2 + 2 G_j y_j\big), \qquad
 #'   \frac{\partial^2 \ell}{\partial a \partial b} = -\frac{1}{a} \sum_{j=1}^{n} y_j, \qquad
 #'   \frac{\partial^2 \ell}{\partial a \partial d} = \frac{2}{a} \sum_{j=1}^{n} I_j y_j \Delta t_j,}
@@ -199,7 +193,7 @@
 #' \deqn{\frac{\partial^2 \ell}{\partial d \partial m} = \frac{2}{a} \sum_{j=1}^{n} I_j \Delta t_j^2, \qquad
 #'   \frac{\partial^2 \ell}{\partial m^2} = -\frac{2}{a^2} \sum_{j=1}^{n} R_j \Delta t_j^2.}
 #' With `ci = TRUE`, the observed Fisher information is minus this Hessian at
-#' the estimate, as proposed by Grigoletto and Provasi (2009, section 4.2), instead of the numerical
+#' the estimate, as proposed by Grigoletto and Provasi (2008, section 4.2), instead of the numerical
 #' Hessian used by the other models.
 #'
 #' @inheritParams wiener_mle
@@ -221,17 +215,16 @@
 #'   are `NA`, with a warning.
 #'
 #' @references
-#' Grigoletto, M. and Provasi, C. (2009). Simulation and estimation of the
+#' Grigoletto, M. and Provasi, C. (2008). Simulation and estimation of the
 #' Meixner distribution. *Communications in Statistics - Simulation and
 #' Computation*, 38(1), 58-77.\cr
-#' \doi{10.1080/03610910802395679}
-#'
-#' Kahle, W., Mercier, S. and Paroissin, C. (2016). *Degradation Processes in
-#' Reliability*. ISTE and Wiley, London. Section 1.6.1 (equation \[1.19\]).
+#' \doi{10.1080/03610910802395679}. Sections 2, 4.1 and 4.2, equations (1) and
+#' (6), appendix A.
 #'
 #' Kawai, R. and Masuda, H. (2011). On the local asymptotic behavior of the
 #' likelihood function for Meixner Levy processes under high-frequency
 #' sampling. *Statistics and Probability Letters*, 81(4), 460-469.
+#' \doi{10.1016/j.spl.2010.12.011}. Section 1.
 #'
 #' Schoutens, W. (2002). The Meixner process: theory and applications in
 #' finance. EURANDOM report 2002-004. Section 2.
@@ -273,6 +266,20 @@
 #' t10 <- DegradSim::inspection_times("regular", n = 10, tmax = 100)$time
 #' y <- DegradSim::sim_meixner(t10, a = 1, b = 0.3, d = 1.5, m = 0.2)
 #' meixner_mle(y)
+#'
+#' # 6. Your own data: a list of data frames, one per trajectory, with the times
+#' #    in the first column and the levels in the second
+#' t1 <- seq(0, 30, by = 0.1)
+#' t2 <- seq(0, 40, by = 0.1)
+#' x1 <- DegradSim::sim_meixner(t1, a = 1, b = 0.3, d = 1.5, m = 0.2)
+#' x2 <- DegradSim::sim_meixner(t2, a = 1, b = 0.3, d = 1.5, m = 0.2)
+#' liste <- list(data.frame(t = t1, X = x1[, "X1"]), data.frame(t = t2, X = x2[, "X1"]))
+#' meixner_mle(liste)
+#'
+#' # 7. The increments given directly
+#' d <- DegradSim::traj_df(x, increments = TRUE)
+#' d <- d[!is.na(d$dX), ]
+#' meixner_mle(increments_data(d$dX, d$dt))
 #' @export
 meixner_mle <- function(x, t = NULL, ci = FALSE, level = 0.95, n_start = 5) {
   estimate("meixner", x, t, ci, level, n_start = n_start)
