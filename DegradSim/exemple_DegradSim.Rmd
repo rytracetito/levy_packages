@@ -22,7 +22,7 @@ Installation du package depuis GitHub :
 remotes::install_github("rytracetito/levy_packages", subdir = "DegradSim")
 ```
 
-Les parties I et II utilisent les sept **processus de Lévy** du package (`A = NULL` par défaut). La partie III montre les **processus de Lévy à échelle de temps** (*time-scaled Lévy processes*) $X_t = Y_{A(t)}$, obtenus avec une fonction d'échelle de temps $A$ (*time-scaling function*) : gamma, Wiener et inverse gaussien.
+Les parties I et II utilisent les sept **processus de Lévy** du package (`A = NULL` par défaut). La partie III montre les **processus de Lévy à échelle de temps** (*time-scaled Lévy processes*) $X_t = Y_{A(t)}$, obtenus avec une fonction d'échelle de temps $A$ (*time-scaling function*) : gamma, Wiener et inverse gaussien. La partie IV reprend ces simulations avec la **méthode Bridge** (`method = "Bridge"`), pour les cinq processus qui ont un pont dans le package `levyBridge`.
 
 Paramètres utilisés :
 
@@ -836,8 +836,7 @@ round(diff(x[, "X1"]), 3)
 plot_traj(x, "Poisson composé : 5 trajectoires")
 ```
 
-
-ewpage
+\newpage
 
 # III - Processus de Lévy à échelle de temps
 
@@ -894,4 +893,219 @@ y1 <- sim_gamma(p2, b = 3, A = function(t) 2 * t)
 set.seed(304)
 y2 <- sim_gamma(p2, a = 2, b = 3)
 all.equal(unclass(y1)[, -1], unclass(y2)[, -1], check.attributes = FALSE)
+```
+
+\newpage
+
+# IV - Méthode Bridge
+
+Les parties I à III utilisent la méthode RWA, qui cumule des accroissements indépendants. Avec `method = "Bridge"`, la valeur à la dernière inspection est tirée d'abord. Les autres valeurs sont ensuite tirées une à une, en prenant chaque fois la date du milieu de la liste, par les fonctions `gamma_bridge`, `wiener_bridge`, `ig_bridge`, `vg_bridge` et `meixner_bridge` du package `levyBridge`, installé avec `DegradSim`.
+
+Les trajectoires ont la même loi qu'avec la méthode RWA. Avec une même graine, les valeurs obtenues sont différentes, et le calcul est plus lent. Le normal inverse gaussien et le Poisson composé n'ont pas de pont : pour eux, seule la méthode RWA est disponible.
+
+## Cas 1 : une trajectoire
+
+Les inspections sont celles du cas 2 de la partie I (pas décroissants). L'affichage de `x` indique la méthode utilisée.
+
+### Modèle 1 : gamma
+
+```{r}
+set.seed(401)
+x <- sim_gamma(t2, a = 2, b = 3, method = "Bridge")
+x
+plot_traj(x, "Gamma, méthode Bridge")
+```
+
+### Modèle 2 : Wiener
+
+```{r}
+set.seed(402)
+x <- sim_wiener(t2, mu = 1.5, sigma = 2, method = "Bridge")
+head(x)
+plot_traj(x, "Wiener, méthode Bridge")
+```
+
+### Modèle 3 : inverse gaussien
+
+```{r}
+set.seed(403)
+x <- sim_ig(t2, mu = 0.5, eta = 2, method = "Bridge")
+head(x)
+plot_traj(x, "Inverse gaussien, méthode Bridge")
+```
+
+### Modèle 4 : variance-gamma
+
+```{r}
+set.seed(404)
+x <- sim_vg(t2, theta = 0.5, sigma = 1.5, nu = 2, method = "Bridge")
+head(x)
+plot_traj(x, "Variance-gamma, méthode Bridge")
+```
+
+### Modèle 5 : Meixner
+
+```{r}
+set.seed(405)
+x <- sim_meixner(t2, a = 1, b = 0.3, d = 1.5, m = 0.2, method = "Bridge")
+head(x)
+plot_traj(x, "Meixner, méthode Bridge")
+```
+
+\newpage
+
+## Cas 2 : plusieurs trajectoires
+
+Les inspections sont celles du cas 2 de la partie II : 5 trajectoires, pas décroissants.
+
+### Modèle 1 : gamma
+
+```{r}
+set.seed(411)
+x <- sim_gamma(p2, a = 2, b = 3, method = "Bridge")
+head(x[, 1:4])
+plot_traj(x, "Gamma, méthode Bridge : 5 trajectoires")
+```
+
+### Modèle 2 : Wiener
+
+```{r}
+set.seed(412)
+x <- sim_wiener(p2, mu = 1.5, sigma = 2, method = "Bridge")
+head(x[, 1:4])
+plot_traj(x, "Wiener, méthode Bridge : 5 trajectoires")
+```
+
+### Modèle 3 : inverse gaussien
+
+```{r}
+set.seed(413)
+x <- sim_ig(p2, mu = 0.5, eta = 2, method = "Bridge")
+head(x[, 1:4])
+plot_traj(x, "Inverse gaussien, méthode Bridge : 5 trajectoires")
+```
+
+### Modèle 4 : variance-gamma
+
+```{r}
+set.seed(414)
+x <- sim_vg(p2, theta = 0.5, sigma = 1.5, nu = 2, method = "Bridge")
+head(x[, 1:4])
+plot_traj(x, "Variance-gamma, méthode Bridge : 5 trajectoires")
+```
+
+### Modèle 5 : Meixner
+
+```{r}
+set.seed(415)
+x <- sim_meixner(p2, a = 1, b = 0.3, d = 1.5, m = 0.2, method = "Bridge")
+head(x[, 1:4])
+plot_traj(x, "Meixner, méthode Bridge : 5 trajectoires")
+```
+
+\newpage
+
+## Cas 3 : processus à échelle de temps
+
+Les processus et la fonction `A` sont ceux de la partie III. Le pont est alors tiré sur l'échelle de temps `A(t)`.
+
+### Modèle 1 : gamma à échelle de temps
+
+```{r}
+set.seed(421)
+x <- sim_gamma(p2, b = 3, A = A, method = "Bridge")
+head(x[, 1:4])
+plot_traj(x, "Gamma à échelle de temps, méthode Bridge")
+```
+
+### Modèle 2 : Wiener à échelle de temps
+
+```{r}
+set.seed(422)
+x <- sim_wiener(p2, sigma = 2, A = A, method = "Bridge")
+head(x[, 1:4])
+plot_traj(x, "Wiener à échelle de temps, méthode Bridge")
+```
+
+### Modèle 3 : inverse gaussien à échelle de temps
+
+```{r}
+set.seed(423)
+x <- sim_ig(p2, eta = 2, A = A, method = "Bridge")
+head(x[, 1:4])
+plot_traj(x, "Inverse gaussien à échelle de temps, méthode Bridge")
+```
+
+\newpage
+
+## Vérification : la densité des accroissements
+
+Pour chaque processus, on simule 100 trajectoires inspectées tous les 5. L'histogramme montre les accroissements simulés avec `method = "Bridge"`, et la courbe rouge la densité exacte de l'accroissement sur cette durée, calculée sans simulation. L'histogramme doit suivre la courbe.
+
+La forme de la densité dépend de la durée du pas : un accroissement gamma, par exemple, suit une loi gamma de forme `a * pas`, décroissante sur un pas court et en cloche sur un pas long.
+
+```{r}
+pas <- 5
+t6 <- seq(0, 100, by = pas)
+
+trace_densite <- function(x, densite, titre) {
+  dx <- traj_df(x, increments = TRUE)$dX
+  dx <- dx[!is.na(dx)]
+  hist(dx, breaks = 40, freq = FALSE, col = "grey85", border = "grey60",
+       main = titre, xlab = "Accroissement", ylab = "Densité")
+  curve(densite(x), add = TRUE, col = "red", lwd = 2, n = 500)
+}
+```
+
+### Modèle 1 : gamma
+
+```{r, fig.height = 3.5}
+set.seed(431)
+x <- sim_gamma(t6, a = 2, b = 3, n_traj = 100, method = "Bridge")
+trace_densite(x, function(y) dgamma(y, shape = 2 * pas, rate = 3), "Gamma")
+```
+
+### Modèle 2 : Wiener
+
+```{r, fig.height = 3.5}
+set.seed(432)
+x <- sim_wiener(t6, mu = 1.5, sigma = 2, n_traj = 100, method = "Bridge")
+trace_densite(x, function(y) dnorm(y, mean = 1.5 * pas, sd = 2 * sqrt(pas)), "Wiener")
+```
+
+### Modèle 3 : inverse gaussien
+
+```{r, fig.height = 3.5}
+set.seed(433)
+x <- sim_ig(t6, mu = 0.5, eta = 2, n_traj = 100, method = "Bridge")
+dig <- function(y) {
+  m <- 0.5 * pas
+  l <- 2 * pas^2
+  sqrt(l / (2 * pi * y^3)) * exp(-l * (y - m)^2 / (2 * m^2 * y))
+}
+trace_densite(x, dig, "Inverse gaussien")
+```
+
+### Modèle 4 : variance-gamma
+
+```{r, fig.height = 3.5}
+set.seed(434)
+x <- sim_vg(t6, theta = 0.5, sigma = 1.5, nu = 2, n_traj = 100, method = "Bridge")
+dvg <- function(y, theta = 0.5, sigma = 1.5, nu = 2) {
+  r <- sqrt(theta^2 + 2 * sigma^2 / nu)
+  z <- abs(y) * r / sigma^2
+  k <- pas / nu
+  2 / (nu^k * sqrt(2 * pi) * sigma * gamma(k)) * (abs(y) / r)^(k - 0.5) *
+    besselK(z, k - 0.5, expon.scaled = TRUE) * exp(theta * y / sigma^2 - z)
+}
+trace_densite(x, dvg, "Variance-gamma")
+```
+
+### Modèle 5 : Meixner
+
+```{r, fig.height = 3.5}
+set.seed(435)
+x <- sim_meixner(t6, a = 1, b = 0.3, d = 1.5, m = 0.2, n_traj = 100, method = "Bridge")
+loi <- Runuran::udmeixner(alpha = 1, beta = 0.3, delta = 1.5 * pas, mu = 0.2 * pas)
+trace_densite(x, function(y) Runuran::ud(loi, y), "Meixner")
 ```
