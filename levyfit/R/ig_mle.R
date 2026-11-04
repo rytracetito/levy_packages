@@ -21,6 +21,10 @@
 #' \eqn{\Delta\Lambda = \Lambda(t) - \Lambda(s)}, so that the parameter
 #' \eqn{\eta} used here is their \eqn{\eta_{WX}} multiplied by \eqn{\mu^2}:
 #' \eqn{\eta = \eta_{WX} \mu^2}.
+#' Since \eqn{\eta / \mu^2} does not depend on the duration, the sum of
+#' independent increments over successive durations has the distribution of an
+#' increment over the total duration (Tweedie, 1957, section 2, p. 367;
+#' Seshadri, 1999, part E, p. 199, with another parametrization).
 #' The data are the \eqn{n} increments \eqn{(\Delta t_j, \Delta x_j)},
 #' \eqn{j = 1, \dots, n}, with \eqn{\Delta x_j > 0}, pooled over the
 #' trajectories, with \eqn{T = \sum_{j=1}^{n} \Delta t_j} and
@@ -91,11 +95,12 @@
 #' @references
 #' Tweedie, M. C. K. (1957). Statistical properties of inverse Gaussian
 #' distributions. I. *The Annals of Mathematical Statistics*, 28(2), 362-377.
-#' Sections 1, 3 and 4, equations (13) to (15), (21) and (22).
+#' Sections 1 to 4, equations (13) to (15), (21) and (22).
 #'
 #' Seshadri, V. (1999). *The Inverse Gaussian Distribution: Statistical Theory
 #' and Applications*. Lecture Notes in Statistics, 137. Springer, New York.
-#' \doi{10.1007/978-1-4612-1456-4}. Section 2.1, Table 2.1.
+#' \doi{10.1007/978-1-4612-1456-4}. Section 2.1, Table 2.1; part E (Electrical
+#' networks), p. 198-199.
 #'
 #' Wang, X. and Xu, D. (2010). An inverse Gaussian process model for
 #' degradation data. *Technometrics*, 52(2), 188-197.
