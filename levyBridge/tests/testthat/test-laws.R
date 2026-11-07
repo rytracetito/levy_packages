@@ -57,6 +57,34 @@ test_that("Meixner bridge: exact sampler and increments", {
     expect_gt(ks.test(y, approxfun(pts, F))$p.value, 0.001)
   }
 
+  # n draws with one envelope, negative and large z
+  for (cfg in list(c(0.5, 0.5, 6), c(0.05, 0.3, -4), c(2, 0.3, -3), c(0.5, 0.5, 300))) {
+    a1 <- cfg[1]; a2 <- cfg[2]; z <- cfg[3]
+    lZ <- log(2 * pi) + lbeta(2 * a1, 2 * a2) + lh(a1 + a2, z)
+    dq <- function(u) exp(lh(a1, u) + lh(a2, z - u) - lZ)
+    y <- rmeixner_bridge_y(a1, a2, z, n = 5000)
+    expect_length(y, 5000)
+    pts <- sort(unique(c(seq(min(0, z) - 60, max(0, z) + 60, length.out = 4001), 0, z,
+                         outer(c(-1, 1), 10^seq(-8, 0.5, length.out = 200)), z + outer(c(-1, 1), 10^seq(-8, 0.5, length.out = 200)))))
+    seg <- vapply(seq_len(length(pts) - 1), function(k) integrate(dq, pts[k], pts[k + 1], rel.tol = 1e-10, stop.on.error = FALSE)$value, 0)
+    F <- c(0, cumsum(seg))
+    expect_gt(suppressWarnings(ks.test(y, approxfun(pts, F / F[length(F)], rule = 2)))$p.value, 0.001)
+  }
+
+  # The piecewise exponential bound is above the target
+  for (cfg in list(c(1e-4, 1e-4, 5), c(0.5, 0.5, 1e4), c(300, 300, 40), c(3, 0.01, 20))) {
+    env <- meixner_envelope(cfg[1], cfg[2], cfg[3])
+    p <- meixner_envelope_draw(env, 20000)
+    expect_true(all(p$le >= lh(cfg[1], p$y) + lh(cfg[2], cfg[3] - p$y) - 1e-9))
+  }
+  expect_lt(system.time(rmeixner_bridge_y(0.5, 0.5, 1e5))[[3]], 1)
+
+  # Peaks finer than the floating point precision: the construction stops and the draws stay finite
+  for (cfg in list(c(1e-10, 1e-10, 1e7), c(0.5, 1e-10, -1e6), c(1e-10, 1e4, 1e7))) {
+    y <- rmeixner_bridge_y(cfg[1], cfg[2], cfg[3], n = 20)
+    expect_true(all(is.finite(y)))
+  }
+
   skip_if_not_installed("Runuran")
   gens <- lapply(unique(diff(plan)), function(s) Runuran::pinvd.new(Runuran::udmeixner(1, 0.3, 1.5 * s, 0.2 * s)))
   names(gens) <- format(unique(diff(plan)))

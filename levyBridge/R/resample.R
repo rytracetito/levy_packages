@@ -46,14 +46,19 @@ check_theta <- function(theta, required, real = character(0)) {
   p
 }
 
-# n tirages de X_t sachant X_{t_A} = x_A et X_{t_B} = x_B ; le niveau est calculé depuis l'extrémité la plus proche
-bridge_draws <- function(t_A, x_A, t_B, x_B, t, n, draw, model, increasing = FALSE) {
+# n tirages de X_t sachant X_{t_A} = x_A et X_{t_B} = x_B ; le niveau est calculé depuis l'extrémité la plus proche.
+# draw_n, s'il est fourni, fait les n tirages en un appel et renvoie une matrice à deux colonnes.
+bridge_draws <- function(t_A, x_A, t_B, x_B, t, n, draw, model, increasing = FALSE, draw_n = NULL) {
   check_par(t_A = t_A, x_A = x_A, t_B = t_B, x_B = x_B, t = t, positive = FALSE)
   if (!(t_A < t && t < t_B)) stop("the times must satisfy t_A < t < t_B", call. = FALSE)
   if (!is.numeric(n) || length(n) != 1 || !is.finite(n) || n < 1 || n != round(n)) {
     stop("n must be a positive integer", call. = FALSE)
   }
   if (increasing && x_B < x_A) stop("the ", model, " process is increasing: x_B must not be smaller than x_A", call. = FALSE)
+  if (!is.null(draw_n)) {
+    d <- matrix(draw_n(t_A, x_B - x_A, t, t_B, n), ncol = 2)
+    return(ifelse(abs(d[, 1]) <= abs(d[, 2]), x_A + d[, 1], x_B - d[, 2]))
+  }
   vapply(seq_len(n), function(i) {
     d <- draw(t_A, x_B - x_A, t, t_B)
     if (abs(d[1]) <= abs(d[2])) x_A + d[1] else x_B - d[2]

@@ -40,9 +40,40 @@
 #' a bound proportional to the Cauchy density with location \eqn{y_0} and
 #' scale \eqn{s}. The probability of acceptance with this bound is
 #' \deqn{P_{acc} = \frac{2 B(2 \alpha_1, 2 \alpha_2)\, h_{\alpha_1 + \alpha_2}(z)}{s\, \Gamma(\alpha_1)^2 \Gamma(\alpha_2)^2}.}
-#' When this probability is small, a tighter bound is used, which depends only
-#' on \eqn{\alpha_1}, \eqn{\alpha_2} and \eqn{z}: the draw stays exact. The
-#' function \eqn{\log h_\alpha} is computed with [gsl::lngamma_complex()].
+#' It is computed exactly before any draw, and it tends to 0 when \eqn{|z|}
+#' grows. The function draws with this Cauchy bound when
+#' \eqn{P_{acc} \ge \min(1, 0.025\, n)}, where \eqn{n} is the number of draws.
+#' Otherwise it uses a piecewise exponential bound, built once for the
+#' \eqn{n} draws, as follows.
+#'
+#' * For \eqn{\alpha > 0}, \eqn{h_\alpha(y)} is bounded above by
+#'   \deqn{\Gamma(\alpha)^2 \frac{\alpha^2}{\alpha^2 + y^2}
+#'   \Big(1 + \frac{y^2}{(\alpha + 1)^2}\Big)^{\alpha + 1/2}
+#'   \exp\Big(-2 |y| \arctan \frac{|y|}{\alpha + 1}\Big),}
+#'   and this bound exceeds \eqn{h_\alpha(y)} by a factor at most
+#'   \eqn{e^{1 / (6 (\alpha + 1))}}, whatever \eqn{y}. The proof uses the
+#'   product formula above (DLMF, equation 5.8.3) and the partial fraction
+#'   expansion of \eqn{\coth} (DLMF, equation 4.36.3).
+#' * The product of the two bounds, for \eqn{h_{\alpha_1}(y)} and
+#'   \eqn{h_{\alpha_2}(z - y)}, is bounded on small intervals by exponential
+#'   functions of \eqn{y}, using exact bounds of its derivative. The intervals
+#'   are halved until the exponential function exceeds the product by a
+#'   factor at most 1.25. Beyond the last intervals, the tails are bounded by
+#'   exponential functions.
+#'
+#' With this second bound, the probability of acceptance is at least
+#' \eqn{1 / (1.25\, e^{1/3} + 3 \times 10^{-4}) \approx 0.57} for all the
+#' parameters, and its cost changes little with \eqn{z}. In both cases, the
+#' mean number of proposals per draw is at most 40. There is one exception,
+#' due to the precision of floating point numbers: when \eqn{\alpha_1} and
+#' \eqn{\alpha_2} are both smaller than about \eqn{10^{-15} |z|}, the peaks of
+#' the density at \eqn{0} and \eqn{z} cannot be resolved; the draws stay exact,
+#' but the probability of acceptance can be lower. Many proposals are
+#' accepted or rejected with the two bounds of \eqn{h_\alpha} above, without
+#' computing \eqn{h_\alpha}; otherwise \eqn{\log h_\alpha} is computed with
+#' [gsl::lngamma_complex()]. The choice between the two bounds depends only
+#' on \eqn{\alpha_1}, \eqn{\alpha_2}, \eqn{z} and \eqn{n}: the draws stay
+#' exact and independent.
 #'
 #' @inheritParams gamma_bridge
 #' @param theta Vector \eqn{\Theta = (a, b, d, m)} of the parameters of the process,
@@ -55,6 +86,11 @@
 #'
 #' @references
 #' Devroye, L. (1986). *Non-Uniform Random Variate Generation*. Springer.
+#'
+#' NIST Digital Library of Mathematical Functions (DLMF), release 1.2.8,
+#' 2026-09-15, <https://dlmf.nist.gov/>: equation 5.8.3 (product formula
+#' of the gamma function) and equation 4.36.3 (partial fraction expansion of
+#' \eqn{\coth}).
 #'
 #' Schoutens, W. and Teugels, J. L. (1998). Lévy processes, polynomials and
 #' martingales. *Communications in Statistics. Stochastic Models*, 14(1-2),
@@ -91,6 +127,11 @@
 #' y2 <- meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = -2, d = 1.5, m = 0.2), n = 5)
 #' identical(y1, y2)
 #'
+#' # A bridge far from its typical value: x_B - x_A is more than 1000 times its
+#' # standard deviation, and the draws stay fast and exact
+#' system.time(y <- meixner_bridge(0, 0, 1, 2000, 0.5, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2), n = 1000))
+#' summary(y)
+#'
 #' # Errors: t outside (t_A, t_B), theta without all the parameters
 #' try(meixner_bridge(1, 3, 4, 6, 5, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2)))
 #' try(meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, d = 1.5, m = 0.2)))
@@ -106,7 +147,7 @@
 #' @export
 meixner_bridge <- function(t_A, x_A, t_B, x_B, t, theta, n = 1) {
   p <- check_meixner(theta)
-  bridge_draws(t_A, x_A, t_B, x_B, t, n, meixner_draw(p), "Meixner")
+  bridge_draws(t_A, x_A, t_B, x_B, t, n, meixner_draw(p), "Meixner", draw_n = meixner_draw(p))
 }
 
 #' Meixner process: resampling on a regular grid
@@ -222,10 +263,11 @@ check_meixner <- function(theta) {
 
 # Pont de Meixner : X_t - x_A = m (t - t_A) + a Y, Y tiré exactement par rejet
 meixner_draw <- function(p) {
-  function(t_inf, delta, t, t_sup) {
+  function(t_inf, delta, t, t_sup, n = 1) {
     z <- (delta - p[["m"]] * (t_sup - t_inf)) / p[["a"]]
-    y <- rmeixner_bridge_y(p[["d"]] * (t - t_inf), p[["d"]] * (t_sup - t), z)
-    c(p[["m"]] * (t - t_inf) + p[["a"]] * y, p[["m"]] * (t_sup - t) + p[["a"]] * (z - y))
+    y <- rmeixner_bridge_y(p[["d"]] * (t - t_inf), p[["d"]] * (t_sup - t), z, n)
+    d <- cbind(p[["m"]] * (t - t_inf) + p[["a"]] * y, p[["m"]] * (t_sup - t) + p[["a"]] * (z - y))
+    if (n == 1) d[1, ] else d
   }
 }
 
@@ -234,17 +276,24 @@ lh <- function(alpha, y) {
   2 * Re(gsl::lngamma_complex(rep_len(alpha, n), rep_len(y, n)))
 }
 
-# Taux d'acceptation exact de l'enveloppe de Cauchy : la constante de normalisation de la loi cible est
-# 2 pi B(2 alpha1, 2 alpha2) h_{alpha1 + alpha2}(z). Le choix de l'algorithme ne dépend que des
-# paramètres : le tirage reste exact.
-rmeixner_bridge_y <- function(alpha1, alpha2, z) {
+meixner_threshold <- 0.025
+
+# Probabilité d'acceptation exacte de l'enveloppe de Cauchy, la constante de normalisation de la loi cible
+# étant 2 pi B(2 alpha1, 2 alpha2) h_{alpha1 + alpha2}(z). Le choix de l'algorithme ne dépend que des
+# paramètres et de n : le tirage reste exact.
+rmeixner_bridge_y <- function(alpha1, alpha2, z, n = 1) {
   s <- min(alpha1, alpha2)
   log_rate <- log(2) + lbeta(2 * alpha1, 2 * alpha2) + lh(alpha1 + alpha2, z) -
     log(s) - 2 * lgamma(alpha1) - 2 * lgamma(alpha2)
-  if (log_rate >= log(0.05)) rmeixner_bridge_cauchy(alpha1, alpha2, z) else rmeixner_bridge_cells(alpha1, alpha2, z)
+  if (log_rate >= log(min(1, n * meixner_threshold))) return(rmeixner_bridge_cauchy(alpha1, alpha2, z, n))
+  # Si Y a la densité associée à (alpha1, alpha2, z), z - Y a celle associée à (alpha2, alpha1, z) : le pic le plus
+  # étroit est placé en 0, où les nombres flottants sont les plus fins
+  za <- abs(z)
+  y <- if (alpha1 <= alpha2) rmeixner_bridge_envelope(alpha1, alpha2, za, n) else za - rmeixner_bridge_envelope(alpha2, alpha1, za, n)
+  sign(z + (z == 0)) * y
 }
 
-rmeixner_bridge_cauchy <- function(alpha1, alpha2, z) {
+rmeixner_bridge_cauchy <- function(alpha1, alpha2, z, n = 1) {
   if (alpha1 <= alpha2) {
     y0 <- 0
     s <- alpha1
@@ -253,53 +302,166 @@ rmeixner_bridge_cauchy <- function(alpha1, alpha2, z) {
     s <- alpha2
   }
   lC <- 2 * lgamma(alpha1) + 2 * lgamma(alpha2)
+  y <- rep(NA_real_, n)
   repeat {
-    y <- y0 + s * tan(pi * (stats::runif(1) - 0.5))
-    u <- stats::runif(1)
-    if (log(u) + lC + 2 * log(s) - log(s^2 + (y - y0)^2) <= lh(alpha1, y) + lh(alpha2, z - y)) return(y)
+    i <- which(is.na(y))
+    if (length(i) == 0) return(y)
+    u <- y0 + s * tan(pi * (stats::runif(length(i)) - 0.5))
+    ok <- meixner_accept(log(stats::runif(length(i))) + lC + 2 * log(s) - log(s^2 + (u - y0)^2), alpha1, alpha2, z, u)
+    y[i[ok]] <- u[ok]
   }
 }
 
-# Enveloppe constante par cases de largeur 0.1 (raffinées près des pics en 0 et z) et queues de Cauchy :
-# h_alpha(y) = |Gamma(alpha + i y)|^2 décroît en |y|, le taux d'acceptation reste bon pour tous les paramètres.
-rmeixner_bridge_cells <- function(alpha1, alpha2, z) {
-  ell <- 3 + 2 * sqrt(alpha1 + alpha2)
-  w0 <- 0.1
-  lo <- min(0, z) - ell
-  hi <- lo + w0 * ceiling((abs(z) + 2 * ell) / w0)
-  refine <- function(centre, alpha) {
-    if (alpha < w0) centre + c(0, outer(c(-1, 1), alpha * 2^(0:floor(log2(w0 / alpha))))) else centre
-  }
-  e <- c(seq(lo, hi, by = w0), refine(0, alpha1), refine(z, alpha2))
-  e <- sort(unique(c(lo, e[e > lo & e < hi], hi)))
-  K <- length(e) - 1
-  w <- diff(e)
+# Majorant b_alpha de |Gamma(alpha + i y)|^2 / Gamma(alpha)^2, à un facteur au plus exp(1 / (6 (alpha + 1))) près
+meixner_log_b <- function(alpha, y) {
+  t <- abs(y)
+  b <- alpha + 1
+  2 * lgamma(alpha) + log(alpha^2 / (alpha^2 + t^2)) + (alpha + 0.5) * log1p(t^2 / b^2) - 2 * t * atan(t / b)
+}
 
-  d1 <- pmax(0, e[-(K + 1)], -e[-1])
-  d2 <- pmax(0, e[-(K + 1)] - z, z - e[-1])
-  lM <- lh(alpha1, d1) + lh(alpha2, d2)
+meixner_log_E <- function(alpha1, alpha2, z, y) meixner_log_b(alpha1, y) + meixner_log_b(alpha2, z - y)
 
-  lCL <- lh(alpha1, lo) + lh(alpha2, z - lo) + log(alpha1^2 + lo^2)
-  thL <- atan(alpha1 / abs(lo))
-  lCR <- lh(alpha2, hi - z) + lh(alpha1, hi) + log(alpha2^2 + (hi - z)^2)
-  thR <- atan(alpha2 / (hi - z))
+# Test d'acceptation avec compression : log_E - correction <= log q <= log_E ; log q n'est calculé que si nécessaire
+meixner_accept <- function(lu, alpha1, alpha2, z, y) {
+  w <- z - y
+  lE <- meixner_log_E(alpha1, alpha2, z, y)
+  lmin <- lE - y^2 / (6 * (alpha1 + 1) * ((alpha1 + 1)^2 + y^2)) - w^2 / (6 * (alpha2 + 1) * ((alpha2 + 1)^2 + w^2))
+  ok <- lu <= lmin
+  j <- !ok & lu <= lE
+  if (any(j)) ok[j] <- lu[j] <= lh(alpha1, y[j]) + lh(alpha2, w[j])
+  ok
+}
 
-  lmass <- c(lCL + log(thL / alpha1), lM + log(w), lCR + log(thR / alpha2))
-  cum <- cumsum(exp(lmass - max(lmass)))
+# Encadrement de t / (c^2 + t^2) pour t dans [tl, tu]
+meixner_ratio_range <- function(cc, tl, tu) {
+  fl <- tl / (cc^2 + tl^2)
+  fu <- tu / (cc^2 + tu^2)
+  list(lo = pmin(fl, fu), hi = ifelse(tl < cc & cc < tu, 1 / (2 * cc), pmax(fl, fu)))
+}
 
+# Encadrement de la dérivée de log b_alpha(t) pour t dans [tl, tu]
+meixner_dlogb_range <- function(alpha, tl, tu) {
+  b <- alpha + 1
+  ra <- meixner_ratio_range(alpha, tl, tu)
+  rb <- meixner_ratio_range(b, tl, tu)
+  list(lo = -2 * ra$hi - rb$hi - 2 * atan(tu / b), hi = -2 * ra$lo - rb$lo - 2 * atan(tl / b))
+}
+
+# Encadrement de la dérivée de log E sur les cellules [lo, hi], qui ne contiennent ni 0 ni z en leur intérieur
+meixner_dlogE_range <- function(alpha1, alpha2, z, lo, hi) {
+  pos <- lo >= 0
+  g1 <- meixner_dlogb_range(alpha1, ifelse(pos, lo, -hi), ifelse(pos, hi, -lo))
+  wl <- z - hi
+  wh <- z - lo
+  pw <- wl >= 0
+  g2 <- meixner_dlogb_range(alpha2, ifelse(pw, wl, -wh), ifelse(pw, wh, -wl))
+  list(lo = ifelse(pos, g1$lo, -g1$hi) + ifelse(pw, -g2$hi, g2$lo),
+       hi = ifelse(pos, g1$hi, -g1$lo) + ifelse(pw, -g2$lo, g2$hi))
+}
+
+# Enveloppe exponentielle par morceaux de la loi réduite, pour z >= 0 : cellules sur [-L, z + R] et deux queues
+# exponentielles. Une cellule est coupée en deux tant que l'enveloppe y dépasse E d'un facteur supérieur à rho et
+# que sa hauteur dépasse eps K / (z + L + R) ; la probabilité d'acceptation est au moins 1 / (rho e^(1/3) + 3 eps).
+meixner_envelope <- function(alpha1, alpha2, z, rho = 1.25, eps = 1e-4) {
+  ref <- log(2 * pi) + lbeta(2 * alpha1, 2 * alpha2) + lh(alpha1 + alpha2, z) + log(eps)
+  F <- function(y) meixner_log_E(alpha1, alpha2, z, y)
+  kappa <- function(alpha, t) 2 * atan(t / (alpha + 1))
+  R <- 1
+  while (F(z + R) - log(kappa(alpha1, z + R) + kappa(alpha2, R)) > ref) R <- 2 * R
+  L <- 1
+  while (F(-L) - log(kappa(alpha1, L) + kappa(alpha2, z + L)) > ref) L <- 2 * L
+  geo <- function(s, M) if (M > s) s * 2^(0:floor(log2(M / s))) else numeric(0)
+  c1 <- min(alpha1, 1) / 4
+  c2 <- min(alpha2, 1) / 4
+  pts <- c(-L, -geo(c1, L), 0, geo(c1, z / 2), z - geo(c2, z / 2), if (z > 0) z, z + geo(c2, R), z + R)
+  pts <- sort(unique(pts[pts >= -L & pts <= z + R]))
+  lo <- pts[-length(pts)]
+  hi <- pts[-1]
+  fl <- F(lo)
+  fh <- F(hi)
+  cel <- matrix(numeric(0), ncol = 4)
   repeat {
-    k <- findInterval(stats::runif(1) * cum[K + 2], cum) + 1
-    u <- stats::runif(1)
-    if (k == 1) {
-      y <- -alpha1 / tan(u * thL)
-      le <- lCL - log(alpha1^2 + y^2)
-    } else if (k == K + 2) {
-      y <- z + alpha2 / tan(u * thR)
-      le <- lCR - log(alpha2^2 + (y - z)^2)
-    } else {
-      y <- e[k - 1] + w[k - 1] * u
-      le <- lM[k - 1]
-    }
-    if (log(stats::runif(1)) <= lh(alpha1, y) + lh(alpha2, z - y) - le) return(y)
+    w <- hi - lo
+    sl <- (fh - fl) / w
+    D <- meixner_dlogE_range(alpha1, alpha2, z, lo, hi)
+    dp <- pmax(D$hi - sl, 0)
+    dm <- pmax(sl - D$lo, 0)
+    del <- ifelse(dp + dm > 0, dp * dm * w / (dp + dm), 0)
+    mid <- (lo + hi) / 2
+    cut <- 2 * del > log(rho) & pmax(fl, fh) + del > ref - log(z + L + R) & w > 1e-13 & mid > lo & mid < hi
+    cel <- rbind(cel, cbind(lo[!cut], hi[!cut], fl[!cut] + del[!cut], sl[!cut]))
+    if (!any(cut)) break
+    lo <- lo[cut]
+    hi <- hi[cut]
+    fl <- fl[cut]
+    fh <- fh[cut]
+    mid <- (lo + hi) / 2
+    fm <- F(mid)
+    lo <- c(lo, mid)
+    hi <- c(mid, hi)
+    fl <- c(fl, fm)
+    fh <- c(fm, fh)
   }
+  w <- cel[, 2] - cel[, 1]
+  sl <- cel[, 4]
+  x <- sl * w
+  lm <- cel[, 3] + log(w)
+  ip <- x > 1e-12
+  im <- x < -1e-12
+  lm[ip] <- cel[ip, 3] + x[ip] + log(-expm1(-x[ip])) - log(sl[ip])
+  lm[im] <- cel[im, 3] + log(-expm1(x[im])) - log(-sl[im])
+  kR <- kappa(alpha1, z + R) + kappa(alpha2, R)
+  kL <- kappa(alpha1, L) + kappa(alpha2, z + L)
+  lm <- c(lm, F(z + R) - log(kR), F(-L) - log(kL))
+  list(z = z, L = L, R = R, kL = kL, kR = kR, FL = F(-L), FR = F(z + R), cel = cel, prob = exp(lm - max(lm)))
+}
+
+# n propositions selon l'enveloppe, avec la valeur du log de l'enveloppe en chaque proposition
+meixner_envelope_draw <- function(env, n) {
+  nc <- nrow(env$cel)
+  j <- sample.int(nc + 2, n, replace = TRUE, prob = env$prob)
+  u <- stats::runif(n)
+  y <- numeric(n)
+  le <- numeric(n)
+  ic <- j <= nc
+  if (any(ic)) {
+    cc <- env$cel[j[ic], , drop = FALSE]
+    w <- cc[, 2] - cc[, 1]
+    sl <- cc[, 4]
+    x <- sl * w
+    uu <- u[ic]
+    t <- uu * w
+    ip <- x > 1e-12
+    im <- x < -1e-12
+    t[ip] <- w[ip] + log(uu[ip] + (1 - uu[ip]) * exp(-x[ip])) / sl[ip]
+    t[im] <- log1p(uu[im] * expm1(x[im])) / sl[im]
+    y[ic] <- cc[, 1] + t
+    le[ic] <- cc[, 3] + sl * t
+  }
+  iR <- j == nc + 1
+  if (any(iR)) {
+    e <- stats::rexp(sum(iR)) / env$kR
+    y[iR] <- env$z + env$R + e
+    le[iR] <- env$FR - env$kR * e
+  }
+  iL <- j == nc + 2
+  if (any(iL)) {
+    e <- stats::rexp(sum(iL)) / env$kL
+    y[iL] <- -env$L - e
+    le[iL] <- env$FL - env$kL * e
+  }
+  list(y = y, le = le)
+}
+
+# n tirages de la loi réduite pour z >= 0, avec une seule enveloppe
+rmeixner_bridge_envelope <- function(alpha1, alpha2, z, n = 1) {
+  env <- meixner_envelope(alpha1, alpha2, z)
+  y <- numeric(0)
+  while (length(y) < n) {
+    k <- ceiling(1.5 * (n - length(y))) + 2
+    prop <- meixner_envelope_draw(env, k)
+    ok <- meixner_accept(log(stats::runif(k)) + prop$le, alpha1, alpha2, z, prop$y)
+    y <- c(y, prop$y[ok])
+  }
+  y[seq_len(n)]
 }
