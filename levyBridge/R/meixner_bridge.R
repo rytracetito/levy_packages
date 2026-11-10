@@ -29,38 +29,42 @@
 #'
 #' @section Simulation of the bridge:
 #' The random variable \eqn{Y} is drawn exactly by acceptance-rejection
-#' (Devroye, 1986, section II.3), with a piecewise exponential bound of
-#' \eqn{h_{\alpha_1}(y)\, h_{\alpha_2}(z - y)}, built as follows.
+#' (Devroye, 1986, section II.3): a value is proposed from a simpler density,
+#' the envelope, and accepted or rejected so that the accepted values follow
+#' exactly the distribution of \eqn{Y}. The envelope is built in three steps.
 #'
-#' * For \eqn{\alpha > 0}, \eqn{h_\alpha(y)} is bounded above by
-#'   \deqn{\Gamma(\alpha)^2 \frac{\alpha^2}{\alpha^2 + y^2}
-#'   \Big(1 + \frac{y^2}{(\alpha + 1)^2}\Big)^{\alpha + 1/2}
-#'   \exp\Big(-2 |y| \arctan \frac{|y|}{\alpha + 1}\Big),}
-#'   and this bound exceeds \eqn{h_\alpha(y)} by a factor at most
-#'   \eqn{e^{1 / (6 (\alpha + 1))}}, whatever \eqn{y}. The proof uses the
-#'   product formula
-#'   \eqn{h_\alpha(y) = \Gamma(\alpha)^2 \prod_{n \ge 0} (1 + y^2 / (\alpha + n)^2)^{-1}}
-#'   (DLMF, equation 5.8.3) and the partial fraction expansion of
-#'   \eqn{\coth} (DLMF, equation 4.36.3).
-#' * The product of the two bounds, for \eqn{h_{\alpha_1}(y)} and
-#'   \eqn{h_{\alpha_2}(z - y)}, is bounded on small intervals by exponential
-#'   functions of \eqn{y}, using exact bounds of its derivative. The intervals
-#'   are halved until the exponential function exceeds the product by a
-#'   factor at most 1.25. Beyond the last intervals, the tails are bounded by
-#'   exponential functions.
+#' 1. **A bound of the gamma function.** For \eqn{\alpha > 0},
+#'    \deqn{|\Gamma(\alpha + i y)|^2 \le \Gamma(\alpha)^2 \frac{\alpha^2}{\alpha^2 + y^2}
+#'    \Big(1 + \frac{y^2}{(\alpha + 1)^2}\Big)^{\alpha + 1/2}
+#'    \exp\Big(-2 |y| \arctan \frac{|y|}{\alpha + 1}\Big),}
+#'    a bound close to \eqn{|\Gamma(\alpha + i y)|^2} for all \eqn{y}, which
+#'    uses only elementary functions.
+#' 2. **A piecewise exponential envelope.** The product of the bounds for
+#'    \eqn{h_{\alpha_1}(y)} and \eqn{h_{\alpha_2}(z - y)} is bounded above by an
+#'    exponential function on each of a set of intervals, which are halved
+#'    until this exponential function is close to the product. Beyond these
+#'    intervals, the two tails are bounded by exponential functions.
+#' 3. **Acceptance-rejection.** A piece of the envelope is chosen with a
+#'    probability proportional to its area, a value is drawn from it by
+#'    inversion of its distribution function, and this value is accepted with
+#'    the probability given by the ratio of the density of \eqn{Y} to the
+#'    envelope.
 #'
-#' The probability of acceptance is at least
-#' \eqn{1 / (1.25\, e^{1/3} + 3 \times 10^{-4}) \approx 0.57} for all the
-#' parameters, so that the mean number of proposals per draw is at most
-#' 1.75, and the cost of the bound changes little with \eqn{z}. There is one
-#' exception, due to the precision of floating point numbers: when
-#' \eqn{\alpha_1} and \eqn{\alpha_2} are both smaller than about
-#' \eqn{10^{-15} |z|}, the peaks of the density at \eqn{0} and \eqn{z} cannot
-#' be resolved; the draws stay exact, but the probability of acceptance can be
-#' lower. For \eqn{n} draws with the same endpoints, the bound is built once.
-#' Many proposals are accepted or rejected with the two bounds of
-#' \eqn{h_\alpha} above, without computing \eqn{h_\alpha}; otherwise
-#' \eqn{\log h_\alpha} is computed with [gsl::lngamma_complex()].
+#' **Guarantee.** For all the parameters, a proposed value is accepted with
+#' probability at least 0.57, so that at most 1.75 values are proposed on
+#' average for each draw. The cost of the envelope changes little with
+#' \eqn{z}, and for \eqn{n} draws with the same endpoints it is built only
+#' once.
+#'
+#' **Details.** The bound of step 1 follows from the product formula of the
+#' gamma function (DLMF, equation 5.8.3) and the partial fraction expansion of
+#' \eqn{\coth} (DLMF, equation 4.36.3). The function
+#' \eqn{\log |\Gamma(\alpha + i y)|^2} is computed with
+#' [gsl::lngamma_complex()], and only when the bound of step 1 and a similar
+#' lower bound cannot decide the acceptance alone. When \eqn{\alpha_1} and
+#' \eqn{\alpha_2} are both smaller than about \eqn{10^{-15} |z|}, the two peaks
+#' of the density cannot be resolved with floating point numbers: the draws
+#' stay exact, but the probability of acceptance can be lower.
 #'
 #' @inheritParams gamma_bridge
 #' @param theta Vector \eqn{\Theta = (a, b, d, m)} of the parameters of the process,
@@ -116,7 +120,8 @@
 #'
 #' # A bridge far from its typical value: x_B - x_A is more than 1000 times its
 #' # standard deviation, and the draws stay fast and exact
-#' system.time(y <- meixner_bridge(0, 0, 1, 2000, 0.5, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2), n = 1000))
+#' system.time(y <- meixner_bridge(0, 0, 1, 2000, 0.5,
+#'                                 theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2), n = 1000))
 #' summary(y)
 #'
 #' # Errors: t outside (t_A, t_B), theta without all the parameters
