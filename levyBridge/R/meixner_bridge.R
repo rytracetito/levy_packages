@@ -107,7 +107,7 @@
 #'         2 * Re(gsl::lngamma_complex(rep(d * s, length(x)), (x - m * s) / a)))
 #' }
 #' dens <- function(x) f(x - 3, 1) * f(6 - x, 2) / f(3, 3)
-#' y <- meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2), n = 5000)
+#' y <- meixner_bridge(1, 3, 4, 6, 2, theta = c(a = 1, b = 0.3, d = 1.5, m = 0.2), n = 50000)
 #' hist(y, breaks = 50, freq = FALSE)
 #' curve(dens, add = TRUE, col = "red")
 #'
