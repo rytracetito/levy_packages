@@ -451,6 +451,8 @@ print.gof.levy <- function(x, ...) {
   if (all(is.na(r$critical.value))) r$critical.value <- NULL
   if (all(r$message == "")) r$message <- NULL
   if (n == 1) r$group <- NULL
+  op <- options(width = max(getOption("width"), 200))
+  on.exit(options(op))
   print(r, row.names = FALSE)
   invisible(x)
 }
