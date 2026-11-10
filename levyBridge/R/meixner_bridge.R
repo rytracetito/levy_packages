@@ -29,22 +29,8 @@
 #'
 #' @section Simulation of the bridge:
 #' The random variable \eqn{Y} is drawn exactly by acceptance-rejection
-#' (Devroye, 1986, section II.3). For \eqn{\alpha > 0} and \eqn{y} real, the
-#' product formula
-#' \eqn{h_\alpha(y) = \Gamma(\alpha)^2 \prod_{n \ge 0} (1 + y^2 / (\alpha + n)^2)^{-1}}
-#' shows that \eqn{h_\alpha(y)} decreases with \eqn{|y|} and that
-#' \eqn{h_\alpha(y) \le \Gamma(\alpha)^2 \alpha^2 / (\alpha^2 + y^2)}. With
-#' \eqn{(y_0, s) = (0, \alpha_1)} if \eqn{\alpha_1 \le \alpha_2} and
-#' \eqn{(y_0, s) = (z, \alpha_2)} otherwise, this gives, for all \eqn{y},
-#' \deqn{h_{\alpha_1}(y)\, h_{\alpha_2}(z - y) \le \Gamma(\alpha_1)^2 \Gamma(\alpha_2)^2 \frac{s^2}{s^2 + (y - y_0)^2},}
-#' a bound proportional to the Cauchy density with location \eqn{y_0} and
-#' scale \eqn{s}. The probability of acceptance with this bound is
-#' \deqn{P_{acc} = \frac{2 B(2 \alpha_1, 2 \alpha_2)\, h_{\alpha_1 + \alpha_2}(z)}{s\, \Gamma(\alpha_1)^2 \Gamma(\alpha_2)^2}.}
-#' It is computed exactly before any draw, and it tends to 0 when \eqn{|z|}
-#' grows. The function draws with this Cauchy bound when
-#' \eqn{P_{acc} \ge \min(1, 0.025\, n)}, where \eqn{n} is the number of draws.
-#' Otherwise it uses a piecewise exponential bound, built once for the
-#' \eqn{n} draws, as follows.
+#' (Devroye, 1986, section II.3), with a piecewise exponential bound of
+#' \eqn{h_{\alpha_1}(y)\, h_{\alpha_2}(z - y)}, built as follows.
 #'
 #' * For \eqn{\alpha > 0}, \eqn{h_\alpha(y)} is bounded above by
 #'   \deqn{\Gamma(\alpha)^2 \frac{\alpha^2}{\alpha^2 + y^2}
@@ -52,8 +38,10 @@
 #'   \exp\Big(-2 |y| \arctan \frac{|y|}{\alpha + 1}\Big),}
 #'   and this bound exceeds \eqn{h_\alpha(y)} by a factor at most
 #'   \eqn{e^{1 / (6 (\alpha + 1))}}, whatever \eqn{y}. The proof uses the
-#'   product formula above (DLMF, equation 5.8.3) and the partial fraction
-#'   expansion of \eqn{\coth} (DLMF, equation 4.36.3).
+#'   product formula
+#'   \eqn{h_\alpha(y) = \Gamma(\alpha)^2 \prod_{n \ge 0} (1 + y^2 / (\alpha + n)^2)^{-1}}
+#'   (DLMF, equation 5.8.3) and the partial fraction expansion of
+#'   \eqn{\coth} (DLMF, equation 4.36.3).
 #' * The product of the two bounds, for \eqn{h_{\alpha_1}(y)} and
 #'   \eqn{h_{\alpha_2}(z - y)}, is bounded on small intervals by exponential
 #'   functions of \eqn{y}, using exact bounds of its derivative. The intervals
@@ -61,19 +49,18 @@
 #'   factor at most 1.25. Beyond the last intervals, the tails are bounded by
 #'   exponential functions.
 #'
-#' With this second bound, the probability of acceptance is at least
+#' The probability of acceptance is at least
 #' \eqn{1 / (1.25\, e^{1/3} + 3 \times 10^{-4}) \approx 0.57} for all the
-#' parameters, and its cost changes little with \eqn{z}. In both cases, the
-#' mean number of proposals per draw is at most 40. There is one exception,
-#' due to the precision of floating point numbers: when \eqn{\alpha_1} and
-#' \eqn{\alpha_2} are both smaller than about \eqn{10^{-15} |z|}, the peaks of
-#' the density at \eqn{0} and \eqn{z} cannot be resolved; the draws stay exact,
-#' but the probability of acceptance can be lower. Many proposals are
-#' accepted or rejected with the two bounds of \eqn{h_\alpha} above, without
-#' computing \eqn{h_\alpha}; otherwise \eqn{\log h_\alpha} is computed with
-#' [gsl::lngamma_complex()]. The choice between the two bounds depends only
-#' on \eqn{\alpha_1}, \eqn{\alpha_2}, \eqn{z} and \eqn{n}: the draws stay
-#' exact and independent.
+#' parameters, so that the mean number of proposals per draw is at most
+#' 1.75, and the cost of the bound changes little with \eqn{z}. There is one
+#' exception, due to the precision of floating point numbers: when
+#' \eqn{\alpha_1} and \eqn{\alpha_2} are both smaller than about
+#' \eqn{10^{-15} |z|}, the peaks of the density at \eqn{0} and \eqn{z} cannot
+#' be resolved; the draws stay exact, but the probability of acceptance can be
+#' lower. For \eqn{n} draws with the same endpoints, the bound is built once.
+#' Many proposals are accepted or rejected with the two bounds of
+#' \eqn{h_\alpha} above, without computing \eqn{h_\alpha}; otherwise
+#' \eqn{\log h_\alpha} is computed with [gsl::lngamma_complex()].
 #'
 #' @inheritParams gamma_bridge
 #' @param theta Vector \eqn{\Theta = (a, b, d, m)} of the parameters of the process,
@@ -276,40 +263,13 @@ lh <- function(alpha, y) {
   2 * Re(gsl::lngamma_complex(rep_len(alpha, n), rep_len(y, n)))
 }
 
-meixner_threshold <- 0.025
-
-# Probabilité d'acceptation exacte de l'enveloppe de Cauchy, la constante de normalisation de la loi cible
-# étant 2 pi B(2 alpha1, 2 alpha2) h_{alpha1 + alpha2}(z). Le choix de l'algorithme ne dépend que des
-# paramètres et de n : le tirage reste exact.
+# Y est tiré par acceptation-rejet avec l'enveloppe exponentielle par morceaux, construite une seule fois pour
+# les n tirages. Si Y a la densité associée à (alpha1, alpha2, z), z - Y a celle associée à (alpha2, alpha1, z) :
+# le pic le plus étroit est placé en 0, où les nombres flottants sont les plus fins.
 rmeixner_bridge_y <- function(alpha1, alpha2, z, n = 1) {
-  s <- min(alpha1, alpha2)
-  log_rate <- log(2) + lbeta(2 * alpha1, 2 * alpha2) + lh(alpha1 + alpha2, z) -
-    log(s) - 2 * lgamma(alpha1) - 2 * lgamma(alpha2)
-  if (log_rate >= log(min(1, n * meixner_threshold))) return(rmeixner_bridge_cauchy(alpha1, alpha2, z, n))
-  # Si Y a la densité associée à (alpha1, alpha2, z), z - Y a celle associée à (alpha2, alpha1, z) : le pic le plus
-  # étroit est placé en 0, où les nombres flottants sont les plus fins
   za <- abs(z)
   y <- if (alpha1 <= alpha2) rmeixner_bridge_envelope(alpha1, alpha2, za, n) else za - rmeixner_bridge_envelope(alpha2, alpha1, za, n)
   sign(z + (z == 0)) * y
-}
-
-rmeixner_bridge_cauchy <- function(alpha1, alpha2, z, n = 1) {
-  if (alpha1 <= alpha2) {
-    y0 <- 0
-    s <- alpha1
-  } else {
-    y0 <- z
-    s <- alpha2
-  }
-  lC <- 2 * lgamma(alpha1) + 2 * lgamma(alpha2)
-  y <- rep(NA_real_, n)
-  repeat {
-    i <- which(is.na(y))
-    if (length(i) == 0) return(y)
-    u <- y0 + s * tan(pi * (stats::runif(length(i)) - 0.5))
-    ok <- meixner_accept(log(stats::runif(length(i))) + lC + 2 * log(s) - log(s^2 + (u - y0)^2), alpha1, alpha2, z, u)
-    y[i[ok]] <- u[ok]
-  }
 }
 
 # Majorant b_alpha de |Gamma(alpha + i y)|^2 / Gamma(alpha)^2, à un facteur au plus exp(1 / (6 (alpha + 1))) près

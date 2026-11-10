@@ -138,7 +138,7 @@ test_that("ExtBridge: common_step gives the same step to all the trajectories", 
   expect_error(gamma_resampling(liste, theta = c(a = 2, b = 3), method = "ExtBridge", common_step = NA), "common_step")
 })
 
-test_that("Meixner bridge: fast in the cases where the Cauchy bound is poor", {
+test_that("Meixner bridge: fast when the bridge is far from its typical value", {
   set.seed(8)
   expect_lt(system.time(replicate(200, rmeixner_bridge_y(9.191, 6.360, 11.166)))[[3]], 5)
   lZ <- log(2 * pi) + lbeta(2 * 9.191, 2 * 6.360) + lh(9.191 + 6.360, 11.166)
