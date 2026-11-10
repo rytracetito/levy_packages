@@ -60,7 +60,7 @@
 #' Gaussian random variates. *Statistics and Computing*, 24, 547-557.
 #' \doi{10.1007/s11222-013-9387-3}
 #'
-#' Hoyle, E. (2010). *Information-Based Models for Finance and Insurance*.
+#' Hoyle, A. E. V. (2010). *Information-Based Models for Finance and Insurance*.
 #' PhD thesis, Imperial College London. arXiv:1010.0829.
 #'
 #' Peña, V. and Jauch, M. (2025). Properties of the generalized inverse

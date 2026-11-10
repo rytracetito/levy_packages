@@ -162,7 +162,7 @@ gives \eqn{se(\hat\mu) = \hat\sigma / \sqrt{T}} and
 \item Gamma: \eqn{X_t - X_s \sim \Gamma(a (t - s), b)}, with shape
 \eqn{a(t - s)} and rate \eqn{b} (scale \eqn{1 / b}), so that
 \eqn{E[X_t] = a t / b} (Kahle et al., 2016, definition 2.24 and
-section 2.7).
+section 2.7.1.2).
 \item Inverse Gaussian: \eqn{X_t - X_s \sim IG(\mu (t - s), \eta (t - s)^2)},
 the process of Wang and Xu (2010) with \eqn{\Lambda(t) = \mu t} (see
 \code{\link[=ig_mle]{ig_mle()}} for the correspondence of the parameters).

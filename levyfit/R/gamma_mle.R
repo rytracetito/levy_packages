@@ -11,7 +11,7 @@
 #' \eqn{X_t - X_s \sim \Gamma(a (t - s), b)}, with shape \eqn{a(t - s)} and rate
 #' \eqn{b} (Kahle, Mercier and Paroissin, 2016, definition 2.24 with
 #' \eqn{A(t) = a t}), so that \eqn{E[X_t] = a t / b} and
-#' \eqn{Var(X_t) = a t / b^2} (Kahle et al., 2016, section 2.7). The density of
+#' \eqn{Var(X_t) = a t / b^2} (Kahle et al., 2016, section 2.7.1.2). The density of
 #' an increment over a duration \eqn{\Delta t} is (Kahle et al., 2016,
 #' definition 2.1)
 #' \deqn{f_{\Delta t}(x; a, b) = \frac{b^{a \Delta t}}{\Gamma(a \Delta t)}\, x^{a \Delta t - 1} e^{-b x}, \qquad x > 0.}
@@ -24,8 +24,8 @@
 #' @section Likelihood:
 #' The increments being independent, the log-likelihood is (Kahle et al.,
 #' 2016, equation \[2.42\] with \eqn{\Delta A_{i,j}(\theta) = a s_{i,j}}, which
-#' omits the constant \eqn{-\sum_{j=1}^{n} \ln \Delta x_j}; van Noortwijk, 2009,
-#' equation (11) with his \eqn{b = 1})
+#' omits the constant \eqn{-\sum_{j=1}^{n} \ln \Delta x_j}; logarithm of the
+#' likelihood (11) of van Noortwijk, 2009, with his \eqn{b = 1})
 #' \deqn{\ell(a, b) = \sum_{j=1}^{n} \big[(a \Delta t_j - 1) \ln \Delta x_j - \ln \Gamma(a \Delta t_j)
 #'   + a \Delta t_j \ln b - b \Delta x_j\big].}
 #' The data only act on the parameters through \eqn{S} and
@@ -53,7 +53,7 @@
 #' unless all the ratios \eqn{\Delta x_j / \Delta t_j} are equal. By the
 #' intermediate value theorem, \eqn{g} has a root \eqn{\hat a}, unique since
 #' \eqn{g} is strictly decreasing, and \eqn{\hat b = \hat a T / S}. These are the
-#' equations \[2.43\] and \[2.44\] of Kahle, Mercier and Paroissin (2016, section
+#' equations \[2.43a\], \[2.43b\] and \[2.44\] of Kahle, Mercier and Paroissin (2016, section
 #' 2.7.1.1) and, for one trajectory, equation (12) of van Noortwijk (2009, section
 #' 3.7.1, after Cinlar et al.) with his \eqn{b = 1}.
 #' With equal durations \eqn{\Delta t}, the equation \eqn{g(a) = 0} becomes
@@ -74,7 +74,7 @@
 #' \deqn{a_{MM} = \frac{(S / T)^2}{\hat\nu}, \qquad
 #'   \hat\nu = \frac{1}{n} \sum_{j=1}^{n} \frac{(\Delta x_j - (S / T) \Delta t_j)^2}{\Delta t_j}.}
 #' It uses the mean \eqn{a / b} and the variance \eqn{a / b^2} per unit of time
-#' (Kahle et al., 2016, section 2.7) and the estimators of their equation
+#' (Kahle et al., 2016, section 2.7.1.2) and the estimators of their equation
 #' \[1.19\], given there for the Wiener process. A moment estimator can be used
 #' as a starting point (Kahle et al., 2016, remark 2.50). The root being unique,
 #' it does not depend on this choice.
@@ -98,7 +98,7 @@
 #' @references
 #' Kahle, W., Mercier, S. and Paroissin, C. (2016). *Degradation Processes in
 #' Reliability*. ISTE and Wiley, London. Definitions 2.1 and 2.24, section
-#' 1.6.1 (equation \[1.19\]) and section 2.7 (equations \[2.42\] to \[2.45\]
+#' 1.6.1 (equation \[1.19\]) and section 2.7 (equations \[2.42\] to \[2.45a\]
 #' and remark 2.50).
 #'
 #' Alzer, H. (1997). On some inequalities for the gamma and psi functions.

@@ -42,13 +42,16 @@ increasing. The vector of its parameters is \eqn{\Theta = (\mu, \eta)}.
 \section{Distribution of the bridge}{
 
 Let \eqn{x_B > x_A}. Given \eqn{X_{t_A} = x_A} and \eqn{X_{t_B} = x_B},
-the ratio \eqn{W = (X_t - x_A) / (x_B - X_t)} has the density given by
-Ribeiro and Webber (2003, eq. (27)), which is the mixture
-\deqn{W \sim IG(m, \lambda) \text{ with probability } \frac{t_B - t}{t_B - t_A}, \qquad
-  W \sim \frac{m^2}{IG(m, \lambda)} \text{ with probability } \frac{t - t_A}{t_B - t_A},}
+the ratio \eqn{W = (X_t - x_A) / (x_B - X_t)} has the density
+\deqn{f_W(w) = \sqrt{\frac{\lambda}{2 \pi}}\, \frac{1}{1 + m}\, w^{-3/2} (1 + w)
+  \exp\Big(-\frac{\lambda (w - m)^2}{2 m^2 w}\Big), \qquad w > 0,}
 where \eqn{m = (t - t_A) / (t_B - t)} and
-\eqn{\lambda = \eta (t - t_A)^2 / (x_B - x_A)}; then
-\eqn{X_t = x_A + (x_B - x_A)\, W / (1 + W)}. This distribution does not
+\eqn{\lambda = \eta (t - t_A)^2 / (x_B - x_A)}. Ribeiro and Webber (2003,
+section 3.3, eq. (27)) give this density for the inverse ratio
+\eqn{S = 1 / W}. Splitting the factor \eqn{1 + w}, it is the mixture
+\deqn{W \sim IG(m, \lambda) \text{ with probability } \frac{t_B - t}{t_B - t_A}, \qquad
+  W \sim \frac{m^2}{IG(m, \lambda)} \text{ with probability } \frac{t - t_A}{t_B - t_A};}
+then \eqn{X_t = x_A + (x_B - x_A)\, W / (1 + W)}. This distribution does not
 depend on \eqn{\mu}. When \eqn{x_B = x_A} (two equal levels, which can
 happen after rounding), the bridge is constant.
 

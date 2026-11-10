@@ -333,7 +333,8 @@ Alzer, H. (1997). On some inequalities for the gamma and psi functions.
 \doi{10.1090/S0025-5718-97-00807-7}. Equation (2.2) and Theorem 1.
 
 Bee, M., Dickson, M. M. and Santi, F. (2018). Likelihood-based risk
-estimation for variance-gamma models. \emph{Statistical Methods & Applications}.
+estimation for variance-gamma models. \emph{Statistical Methods & Applications},
+27(1), 69-89.
 \doi{10.1007/s10260-017-0393-z}. Sections 2 and 3.2, equations (1), (2)
 and (4) to (11).
 

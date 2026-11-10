@@ -312,7 +312,7 @@ sampling. \emph{Statistics and Probability Letters}, 81(4), 460-469.
 \doi{10.1016/j.spl.2010.12.011}. Section 1.
 
 Schoutens, W. (2002). The Meixner process: theory and applications in
-finance. EURANDOM report 2002-004. Section 2.
+finance. Preprint, K.U. Leuven, February 12, 2002. Section 2.
 }
 \seealso{
 \code{\link[=vg_mle]{vg_mle()}}

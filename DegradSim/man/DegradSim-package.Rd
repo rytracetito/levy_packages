@@ -77,7 +77,8 @@ the Poisson process, given by \code{\link[=sim_cpoisson]{sim_cpoisson()}} with j
 \item the \strong{Poisson process}, increments \eqn{Poisson(\lambda \Delta t)}
 (Hoyle, 2010, section 2.11);
 \item the \strong{Cauchy process}, increments \eqn{Cauchy(0, \gamma \Delta t)}, of
-infinite mean (Hoyle, 2010, section 2.9);
+whose mean is not defined and whose second moment is infinite (Hoyle,
+2010, section 2.9);
 \item the \strong{\eqn{\alpha}-stable processes}, of infinite variance for
 \eqn{\alpha < 2}; for \eqn{\alpha < 1}, the stable subordinator is
 increasing (Samorodnitsky and Taqqu, 1994; exact simulation by Chambers,
@@ -361,7 +362,7 @@ Series A}, 353, 401-419.
 
 Carr, P., Geman, H., Madan, D. B. and Yor, M. (2002). The fine structure of
 asset returns: an empirical investigation. \emph{The Journal of Business},
-75(2), 305-332. \doi{10.1086/338705}
+75(2), 305-333. \doi{10.1086/338705}
 
 Chambers, J. M., Mallows, C. L. and Stuck, B. W. (1976). A method for
 simulating stable random variables. \emph{Journal of the American Statistical
