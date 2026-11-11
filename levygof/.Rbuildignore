@@ -4,3 +4,5 @@
 ^exemple_levygof\.pdf$
 ^exemple_levygof_cache$
 ^exemple_levygof_files$
+^puissance_levygof\.R$
+^puissance_levygof\.rds$

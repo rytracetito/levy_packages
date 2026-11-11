@@ -193,20 +193,34 @@
 #' @examples
 #' set.seed(1)
 #'
-#' # 1. One gamma trajectory (a = 2, b = 3) inspected every 2 time units:
-#' #    the observed increments are tested directly
-#' t <- DegradSim::inspection_times("regular", n = 30, tmax = 60)$time
-#' x <- DegradSim::sim_gamma(t, a = 2, b = 3)
+#' # 1. One gamma trajectory (a = 2, b = 1) inspected every time unit:
+#' #    the observed increments are tested directly, against the true model
+#' #    and against the other models
+#' t <- DegradSim::inspection_times("regular", n = 100, tmax = 100)$time
+#' x <- DegradSim::sim_gamma(t, a = 2, b = 1)
 #' gof.levy(x, "HGP", B = 100)
+#' gof.levy(x, "HWP", B = 100)
+#' gof.levy(x, "InvGaus", B = 100)
 #'
-#' # 2. Irregular inspections, more and more frequent (a = 10, b = 5):
-#' #    estimation, gamma bridge, test
-#' t2 <- DegradSim::inspection_times("decreasing", n = 30, tmax = 60, digits = 1)$time
-#' x2 <- DegradSim::sim_gamma(t2, a = 10, b = 5)
+#' # 2. 400 irregular inspections, more and more frequent (a = 2, b = 1):
+#' #    estimation, bridge of the tested model, test. The true model is not
+#' #    rejected, the other models are.
+#' t2 <- DegradSim::inspection_times("decreasing", n = 400, tmax = 400, digits = 1)$time
+#' x2 <- DegradSim::sim_gamma(t2, a = 2, b = 1)
 #' res <- gof.levy(x2, "HGP", test = c("KS", "AD"), B = 100)
 #' res
 #' res$parameters
 #' res$results
+#' gof.levy(x2, "HWP")
+#' gof.levy(x2, "InvGaus", test = c("KS", "AD"), B = 100)
+#'
+#' # 2b. The same process with only 30 irregular inspections: the bridge fills
+#' #     the gaps with the tested model, which reduces the power of the tests.
+#' #     Over many simulations, the Wiener model is rejected much less often
+#' #     than with the 400 inspections of example 2.
+#' t30 <- DegradSim::inspection_times("decreasing", n = 30, tmax = 30, digits = 1)$time
+#' x30 <- DegradSim::sim_gamma(t30, a = 2, b = 1)
+#' gof.levy(x30, "HWP")
 #'
 #' # 3. The same trajectory with the method "ExtBridge"
 #' gof.levy(x2, "HGP", test = c("KS", "AD"), method = "ExtBridge", B = 100)
@@ -215,46 +229,45 @@
 #' x4 <- DegradSim::sim_gamma(t2, a = 2, b = 3)
 #' gof.levy(x4, "HGP", test = "AD", method = "ExtBridge", B = 100)
 #'
-#' # 3c. Times drawn at random have many decimal places: "ExtBridge" needs
+#' # 3c. Times that are not rounded have many decimal places: "ExtBridge" needs
 #' #     digits, and the times are truncated to 1 decimal place (with a warning)
-#' t6 <- c(0, cumsum(runif(20, 1, 3)))
+#' t6 <- DegradSim::inspection_times("decreasing", n = 20, tmax = 40)$time
 #' x6 <- DegradSim::sim_gamma(t6, a = 10, b = 5)
 #' try(gof.levy(x6, "HGP", test = "AD", method = "ExtBridge", B = 100))
 #' gof.levy(x6, "HGP", test = "AD", method = "ExtBridge", B = 100, digits = 1)
 #'
-#' # 4. Wiener model on the same data, at level 10 %
+#' # 4. Wiener model on the same data as in 2, at level 10 %
 #' gof.levy(x2, "hwp", alpha = 0.1)
 #'
-#' # 5. A degradation level that goes down: the gamma model is rejected for sure
-#' x3 <- x2
-#' x3[10, "X1"] <- x3[9, "X1"] - 0.1
-#' gof.levy(x3, "HGP", test = "KS")
-#'
-#' # 6. Three Wiener trajectories (mu = 0.5, sigma = 1.5) with their own
-#' #    inspection times, up to 40, 50 and 60 (a list): one test per trajectory
+#' # 5. Three Wiener trajectories (mu = 0.5, sigma = 1.5) with their own
+#' #    inspection times, up to 40, 50 and 60 (a list): one test per trajectory;
+#' #    their negative increments are impossible for the gamma and inverse
+#' #    Gaussian processes
 #' plan <- DegradSim::inspection_times("dec-inc", n = 20, n_traj = 3,
 #'                                     tmax = c(40, 50, 60), digits = 1)
 #' liste <- DegradSim::sim_wiener(plan, mu = 0.5, sigma = 1.5)
 #' gof.levy(liste, "HWP", test = c("SW", "AD"))
+#' gof.levy(liste, "HGP", B = 100)
+#' gof.levy(liste, "InvGaus", B = 100)
 #'
-#' # 6b. The same trajectories with "ExtBridge": common step, so also one test on all
+#' # 5b. The same trajectories with "ExtBridge": common step, so also one test on all
 #' gof.levy(liste, "HWP", test = c("SW", "AD"), method = "ExtBridge")
 #'
-#' # 6c. "MultiBridge": one common grid of Grall-Maes type, also one test on all
+#' # 5c. "MultiBridge": one common grid of Grall-Maes type, also one test on all
 #' gof.levy(liste, "HWP", test = c("SW", "AD"), method = "MultiBridge")
 #' gof.levy(liste, "HWP", test = c("SW", "AD"), method = "MultiBridge", option = 2)
 #'
-#' # 7. Four trajectories with the same irregular inspection times (matrix):
+#' # 6. Four trajectories with the same irregular inspection times (matrix):
 #' #    the grids have the same step, so the increments are also tested together
 #' m <- DegradSim::sim_gamma(t2, a = 10, b = 5, n_traj = 4)
 #' gof.levy(m, "HGP", test = "AD", B = 100)
 #'
-#' # 7b. Three trajectories inspected every 2 time units (regular, same step):
+#' # 6b. Three trajectories inspected every 2 time units (regular, same step):
 #' #     observed increments, one test per trajectory and one on all of them
 #' m2 <- DegradSim::sim_gamma(t, a = 2, b = 3, n_traj = 3)
 #' gof.levy(m2, "HGP", test = "VGE", B = 50)
 #'
-#' # 8. Data from another process: H0 is rejected. In 100 simulations of each
+#' # 7. Data from another process: H0 is rejected. In 100 simulations of each
 #' #    case below, the tests rejected H0 in about 90 % to 100 % of the cases.
 #' t100 <- DegradSim::inspection_times("regular", n = 100, tmax = 100)$time
 #'
@@ -271,21 +284,27 @@
 #' gof.levy(w, "HGP", test = c("KS", "AD"), B = 100)
 #'
 #' \donttest{
-#' # 9. Inverse Gaussian (mu = 1, eta = 3) and variance-gamma
-#' #    (theta = 0.5, sigma = 1.5, nu = 1) models (slower)
-#' ig <- DegradSim::sim_ig(t2, mu = 1, eta = 3)
-#' gof.levy(ig, "InvGaus", test = c("KS", "AD", "HK2"), B = 100)
+#' # 8. Inverse Gaussian (mu = 1, eta = 1) and variance-gamma
+#' #    (theta = 0.5, sigma = 1.5, nu = 1) data on the 400 irregular times of
+#' #    example 2, tested against several models (slower)
+#' ig <- DegradSim::sim_ig(t2, mu = 1, eta = 1)
+#' gof.levy(ig, "InvGaus", test = c("KS", "AD"), B = 100)
+#' gof.levy(ig, "HGP", test = c("KS", "AD"), B = 100)
+#' gof.levy(ig, "HWP")
 #'
-#' t5 <- DegradSim::inspection_times("increasing", n = 60, tmax = 120, digits = 1)$time
-#' vg <- DegradSim::sim_vg(t5, theta = 0.5, sigma = 1.5, nu = 1)
+#' vg <- DegradSim::sim_vg(t2, theta = 0.5, sigma = 1.5, nu = 1)
 #' gof.levy(vg, "VG", test = "AD", B = 50)
+#' gof.levy(vg, "HGP", B = 100)
+#' gof.levy(vg, "InvGaus", B = 100)
+#' gof.levy(vg, "HWP")
 #'
-#' # 10. Meixner model (a = 1, b = 1, d = 0.5, m = 0.2), regular and irregular
+#' # 9. Meixner model (a = 1, b = 1, d = 0.5, m = 0.2), regular and irregular
 #' #    inspections; with few increments meixner_mle() may give no estimate,
 #' #    and the test then stops with a message
 #' t_reg <- DegradSim::inspection_times("regular", n = 100, tmax = 100)$time
 #' mx <- DegradSim::sim_meixner(t_reg, a = 1, b = 1, d = 0.5, m = 0.2)
 #' gof.levy(mx, "Meixner", test = "AD", B = 30)
+#' gof.levy(mx, "HWP", B = 100)
 #'
 #' t3 <- DegradSim::inspection_times("dec-inc", n = 60, tmax = 120, digits = 1)$time
 #' mx3 <- DegradSim::sim_meixner(t3, a = 1, b = 1, d = 0.5, m = 0.2)
