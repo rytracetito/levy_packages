@@ -151,7 +151,7 @@ ggplot() +
 
 L'expérience de la partie I est répétée : pour chaque processus simulé et chaque modèle testé, la proportion de rejets de \(H_0\) au niveau 5 % sur de nombreuses répétitions. Sur la diagonale, cette proportion estime le niveau du test (proche de 5 % attendu) ; hors de la diagonale, elle estime sa puissance.
 
-Ce calcul est long (de l'ordre d'une heure) : il est fait une seule fois par le script `puissance_levygof.R`, placé dans le même dossier que ce document, qui enregistre le résultat dans `puissance_levygof.rds`. Ce document lit ce fichier.
+Ce calcul est long (près de deux heures) : il est fait une seule fois par le script `puissance_levygof.R`, placé dans le même dossier que ce document, qui enregistre le résultat dans `puissance_levygof.rds`. Ce document lit ce fichier.
 
 ```{r}
 if (file.exists("puissance_levygof.rds")) {
@@ -166,6 +166,13 @@ if (file.exists("puissance_levygof.rds")) {
   cat("Lancer d'abord le script puissance_levygof.R.\n")
 }
 ```
+
+Les lignes donnent le processus simulé, les colonnes le modèle testé.
+
+- **Sur la diagonale**, la proportion de rejets reste proche de 5 % : quand le modèle testé est le bon, le test le rejette rarement, comme attendu.
+- **Gamma, Wiener et gaussien inverse se séparent bien** : les données de l'un de ces trois processus sont presque toujours rejetées par les deux autres modèles. Le cas le moins net est celui des données du gaussien inverse testées comme un processus gamma : les deux lois sont positives et dissymétriques, et le rejet est moins fréquent.
+- **Les données VG et Meixner sont rejetées** par les modèles gamma et gaussien inverse, qui sont croissants alors que ces processus ont des accroissements négatifs. Testées comme un processus de Wiener, les données VG sont presque toujours rejetées ; les données Meixner le sont moins souvent, car avec ces paramètres la loi de leurs accroissements est moins éloignée d'une loi normale.
+- **Les modèles VG et Meixner rejettent peu** : ils ont plus de paramètres, s'ajustent à des données très diverses, et ne permettent pas de distinguer le VG du Meixner. Sur les données des autres processus, leur estimation échoue souvent (proportion de cas non estimables) : ces cas ne sont pas comptés comme des rejets.
 
 \newpage
 

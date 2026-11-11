@@ -1,7 +1,7 @@
 catalogue <- list(
   HGP     = c("HME1", "BE", "VGE", "KS", "CvM", "AD", "Watson"),
   HWP     = c("AD", "CvM", "SW", "Lilliefors", "JB", "DAgostinoPearson"),
-  InvGaus = c("ABEV1", "ABEV2", "HK1", "HK2", "KS", "CvM", "AD", "VGE_ratio", "VGE_gamma"),
+  InvGaus = c("ABEV1", "ABEV2", "HK1", "HK2", "KS", "CvM", "AD", "VGE_ratio", "VGE_gamma", "BG"),
   VG      = c("KS", "CvM", "AD", "Watson"),
   Meixner = c("KS", "CvM", "AD", "Watson")
 )
@@ -67,7 +67,23 @@ catalogue <- list(
 #'   (`goft::ig_test`, method `"ratio"`);
 #' * `"VGE_gamma"`: Villasenor and Gonzalez-Estrada (2015), transformation of
 #'   the data to gamma variables of shape 1/2 and Anderson-Darling test
-#'   (`goft::ig_test`, method `"transf"`).
+#'   (`goft::ig_test`, method `"transf"`);
+#' * `"BG"`: Baringhaus and Gaigall (2015) (`gofIG`), independence test (see
+#'   below). It is slow and is not applied by default: give `test = "BG"`.
+#'
+#' **Test BG.** For two independent positive variables \eqn{X_1} and
+#' \eqn{X_2} with the same distribution (with finite moments
+#' \eqn{E[X_1^2]} and \eqn{E[1/X_1]}), the variables
+#' \eqn{Y = (X_1 + X_2)/2} and \eqn{Z = (1/X_1 + 1/X_2)/2 - 1/Y} are
+#' independent if and only if this distribution is inverse Gaussian (Allison,
+#' Betsch, Ebner and Visagie, 2022, section 5.2.4). The test computes
+#' \eqn{Y} and \eqn{Z} for all the pairs \eqn{(X_i, X_j)}, \eqn{i \neq j}, of the
+#' sample and measures their dependence with the Hoeffding-Blum-Kiefer-Rosenblatt
+#' criterion; H0 is rejected for large values, and the p-value is obtained by
+#' parametric bootstrap. `gofIG` compares every pair with every other pair:
+#' the cost grows as \eqn{n^4}, times \eqn{B + 1}. One statistic already takes
+#' a few seconds for \eqn{n = 100}: use BG only with small samples, a few
+#' dozen increments (a warning is given above 50 increments).
 #'
 #' **Tests ABEV1, ABEV2, HK1 and HK2.** Let \eqn{X_1, \dots, X_n} be the
 #' sample, \eqn{IG(m, \lambda)} the inverse Gaussian distribution of mean \eqn{m} and
@@ -189,6 +205,10 @@ catalogue <- list(
 #' inverse Gaussian distributions. *Statistics and Probability Letters*, 105,
 #' 189-194. \doi{10.1016/j.spl.2015.06.017} (tests VGE_ratio and VGE_gamma)
 #'
+#' Baringhaus, L. and Gaigall, D. (2015). On an independence test approach to
+#' the goodness-of-fit problem. *Journal of Multivariate Analysis*, 140,
+#' 193-208. (test BG)
+#'
 #' **EDF statistics and parametric bootstrap (VG and Meixner)**
 #'
 #' Anderson, T. W. and Darling, D. A. (1954). A test of goodness of fit.
@@ -228,7 +248,7 @@ aliases <- list(HWP = c(KS = "Lilliefors"))
 
 test_names <- function(test, model) {
   dispo <- catalogue[[model]]
-  if (is.null(test)) return(dispo)
+  if (is.null(test)) return(setdiff(dispo, "BG"))
   if (!is.character(test) || length(test) == 0 || anyNA(test)) stop("test must be a vector of test names", call. = FALSE)
   al <- aliases[[model]]
   if (!is.null(al)) {

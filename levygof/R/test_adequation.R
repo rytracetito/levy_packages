@@ -12,7 +12,8 @@
 #'   `"InvGaus"` (inverse Gaussian process), `"VG"` (variance-gamma process)
 #'   or `"Meixner"` (Meixner process). Upper or lower case does not matter.
 #' @param test Names of the tests to apply; `NULL` (default) applies all the
-#'   tests of the model, see [tests_disponibles()].
+#'   tests of the model except the slow test BG of the inverse Gaussian
+#'   model, see [tests_disponibles()].
 #' @param alpha Level of the tests, strictly between 0 and 1.
 #' @param B Number of bootstrap replications, for the tests whose p-value or
 #'   critical value is computed by parametric bootstrap.
@@ -32,7 +33,9 @@
 #'     otherwise.
 #'
 #'   The column `message` is not printed when it is empty for all the tests;
-#'   it stays in the data frame.
+#'   it stays in the data frame. When H0 is rejected for sure (negative or
+#'   zero increment under the gamma or inverse Gaussian model), `print()`
+#'   shows this conclusion in one line; the data frame keeps one row per test.
 #'
 #' @details
 #' The null hypothesis is: the increments are i.i.d. with a distribution of the
@@ -76,6 +79,9 @@
 #' dx_ig <- 1 / rgamma(40, 3) # not inverse Gaussian
 #' test_adequation(dx_ig, "invgaus", test = c("KS", "AD", "VGE_ratio"), B = 100)
 #'
+#' # The test BG is slow and is not applied by default: a small sample
+#' test_adequation(dx_ig[1:30], "invgaus", test = "BG", B = 50)
+#'
 #' \donttest{
 #' # 6. Variance-gamma model (slower: estimation and numerical integration
 #' #    in each bootstrap replication)
@@ -112,6 +118,11 @@ tests_table <- function(d) {
 #' @export
 print.levygof_tests <- function(x, ...) {
   d <- as.data.frame(unclass(x), stringsAsFactors = FALSE)
+  if (all(is.na(d$statistic)) && all(d$p.value %in% 0) && length(unique(d$message)) == 1 && d$message[1] != "") {
+    cat(d$message[1], "\n")
+    cat("All the tests (", paste(d$test, collapse = ", "), "): reject H0 for sure (p-value = 0)\n", sep = "")
+    return(invisible(x))
+  }
   if (all(d$message == "")) d$message <- NULL
   print(d, ...)
   invisible(x)
@@ -145,10 +156,19 @@ call_test <- function(dx, model, test, alpha, B) {
     "InvGaus KS"           = gofIG::test.KS(dx, B = B),
     "InvGaus CvM"          = gofIG::test.CM(dx, B = B),
     "InvGaus AD"           = gofIG::test.AD(dx, B = B),
+    "InvGaus BG"           = gof_ig_bg(dx, B),
     "InvGaus VGE_ratio"    = goft::ig_test(dx, method = "ratio"),
     "InvGaus VGE_gamma"    = goft::ig_test(dx, method = "transf")[[2]],
     gof_pit(dx, model, test, B, alpha)
   )
+}
+
+gof_ig_bg <- function(dx, B) {
+  if (length(dx) > 50) {
+    warning("the test BG compares all the pairs of increments: with ", length(dx),
+            " increments it can take a very long time; use it with a few dozen increments", call. = FALSE)
+  }
+  gofIG::test.BG(dx, B = B)
 }
 
 one_test <- function(dx, model, test, alpha, B) {

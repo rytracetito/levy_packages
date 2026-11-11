@@ -15,7 +15,8 @@ step.}
 or \code{"Meixner"} (Meixner process). Upper or lower case does not matter.}
 
 \item{test}{Names of the tests to apply; \code{NULL} (default) applies all the
-tests of the model, see \code{\link[=tests_disponibles]{tests_disponibles()}}.}
+tests of the model except the slow test BG of the inverse Gaussian
+model, see \code{\link[=tests_disponibles]{tests_disponibles()}}.}
 
 \item{alpha}{Level of the tests, strictly between 0 and 1.}
 
@@ -40,7 +41,9 @@ otherwise.
 }
 
 The column \code{message} is not printed when it is empty for all the tests;
-it stays in the data frame.
+it stays in the data frame. When H0 is rejected for sure (negative or
+zero increment under the gamma or inverse Gaussian model), \code{print()}
+shows this conclusion in one line; the data frame keeps one row per test.
 }
 \description{
 Applies goodness-of-fit tests to a sample of increments of a Levy process
@@ -85,6 +88,9 @@ test_adequation(rnorm(50), "HGP", test = c("KS", "AD"))
 # 5. Inverse Gaussian increments
 dx_ig <- 1 / rgamma(40, 3) # not inverse Gaussian
 test_adequation(dx_ig, "invgaus", test = c("KS", "AD", "VGE_ratio"), B = 100)
+
+# The test BG is slow and is not applied by default: a small sample
+test_adequation(dx_ig[1:30], "invgaus", test = "BG", B = 50)
 
 \donttest{
 # 6. Variance-gamma model (slower: estimation and numerical integration
@@ -164,6 +170,10 @@ the Institute of Statistical Mathematics}, 54(2), 425-444.
 Villasenor, J. A. and Gonzalez-Estrada, E. (2015). Tests of fit for
 inverse Gaussian distributions. \emph{Statistics and Probability Letters}, 105,
 189-194. \doi{10.1016/j.spl.2015.06.017} (tests VGE_ratio and VGE_gamma)
+
+Baringhaus, L. and Gaigall, D. (2015). On an independence test approach to
+the goodness-of-fit problem. \emph{Journal of Multivariate Analysis}, 140,
+193-208. (test BG)
 
 \strong{EDF statistics and parametric bootstrap (VG and Meixner)}
 

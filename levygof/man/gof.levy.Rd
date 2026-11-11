@@ -37,7 +37,8 @@ a trajectory must be strictly increasing; they do not have to start at
 or \code{"Meixner"} (Meixner process). Upper or lower case does not matter.}
 
 \item{test}{Names of the tests to apply; \code{NULL} (default) applies all the
-tests of the model, see \code{\link[=tests_disponibles]{tests_disponibles()}}.}
+tests of the model except the slow test BG of the inverse Gaussian
+model, see \code{\link[=tests_disponibles]{tests_disponibles()}}.}
 
 \item{method}{Resampling method of the bridges, used with irregular
 inspections only (see \link[levyBridge:levyBridge-package]{levyBridge::levyBridge-package}):
@@ -76,10 +77,13 @@ An object of class \code{"gof.levy"}, printed by \code{print()}: a list
 with
 \itemize{
 \item \code{model}, \code{method} (\code{NA} when no bridge was used), \code{alpha}, \code{B};
+\item \code{trajectories}: number of trajectories;
 \item \code{regular}: \code{TRUE} when all the trajectories are inspected with a
 constant time step;
 \item \code{out_of_support}: \code{TRUE} when an observed increment is negative or
-zero under an increasing model (gamma, inverse Gaussian);
+zero under an increasing model (gamma, inverse Gaussian): H0 is then
+rejected for sure by all the tests, without computation, and \code{print()}
+shows this conclusion in one line (\code{results} keeps one row per test);
 \item \code{parameters}: maximum likelihood estimates of the parameters of the
 process (\code{NULL} when no bridge was used);
 \item \code{steps}: time step of the increments of each trajectory;

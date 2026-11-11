@@ -74,8 +74,24 @@ variance estimators, asymptotic p-value, suited to large samples
 (\code{goft::ig_test}, method \code{"ratio"});
 \item \code{"VGE_gamma"}: Villasenor and Gonzalez-Estrada (2015), transformation of
 the data to gamma variables of shape 1/2 and Anderson-Darling test
-(\code{goft::ig_test}, method \code{"transf"}).
+(\code{goft::ig_test}, method \code{"transf"});
+\item \code{"BG"}: Baringhaus and Gaigall (2015) (\code{gofIG}), independence test (see
+below). It is slow and is not applied by default: give \code{test = "BG"}.
 }
+
+\strong{Test BG.} For two independent positive variables \eqn{X_1} and
+\eqn{X_2} with the same distribution (with finite moments
+\eqn{E[X_1^2]} and \eqn{E[1/X_1]}), the variables
+\eqn{Y = (X_1 + X_2)/2} and \eqn{Z = (1/X_1 + 1/X_2)/2 - 1/Y} are
+independent if and only if this distribution is inverse Gaussian (Allison,
+Betsch, Ebner and Visagie, 2022, section 5.2.4). The test computes
+\eqn{Y} and \eqn{Z} for all the pairs \eqn{(X_i, X_j)}, \eqn{i \neq j}, of the
+sample and measures their dependence with the Hoeffding-Blum-Kiefer-Rosenblatt
+criterion; H0 is rejected for large values, and the p-value is obtained by
+parametric bootstrap. \code{gofIG} compares every pair with every other pair:
+the cost grows as \eqn{n^4}, times \eqn{B + 1}. One statistic already takes
+a few seconds for \eqn{n = 100}: use BG only with small samples, a few
+dozen increments (a warning is given above 50 increments).
 
 \strong{Tests ABEV1, ABEV2, HK1 and HK2.} Let \eqn{X_1, \dots, X_n} be the
 sample, \eqn{IG(m, \lambda)} the inverse Gaussian distribution of mean \eqn{m} and
@@ -206,6 +222,10 @@ the Institute of Statistical Mathematics}, 54(2), 425-444.
 Villasenor, J. A. and Gonzalez-Estrada, E. (2015). Tests of fit for
 inverse Gaussian distributions. \emph{Statistics and Probability Letters}, 105,
 189-194. \doi{10.1016/j.spl.2015.06.017} (tests VGE_ratio and VGE_gamma)
+
+Baringhaus, L. and Gaigall, D. (2015). On an independence test approach to
+the goodness-of-fit problem. \emph{Journal of Multivariate Analysis}, 140,
+193-208. (test BG)
 
 \strong{EDF statistics and parametric bootstrap (VG and Meixner)}
 

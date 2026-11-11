@@ -24,7 +24,8 @@
 #'   `"InvGaus"` (inverse Gaussian process), `"VG"` (variance-gamma process)
 #'   or `"Meixner"` (Meixner process). Upper or lower case does not matter.
 #' @param test Names of the tests to apply; `NULL` (default) applies all the
-#'   tests of the model, see [tests_disponibles()].
+#'   tests of the model except the slow test BG of the inverse Gaussian
+#'   model, see [tests_disponibles()].
 #' @param method Resampling method of the bridges, used with irregular
 #'   inspections only (see [levyBridge::levyBridge-package]):
 #'   * `"Bridge"` (default, Grall-Maës, 2012): one regular grid per
@@ -54,10 +55,13 @@
 #' @return An object of class `"gof.levy"`, printed by `print()`: a list
 #'   with
 #'   * `model`, `method` (`NA` when no bridge was used), `alpha`, `B`;
+#'   * `trajectories`: number of trajectories;
 #'   * `regular`: `TRUE` when all the trajectories are inspected with a
 #'     constant time step;
 #'   * `out_of_support`: `TRUE` when an observed increment is negative or
-#'     zero under an increasing model (gamma, inverse Gaussian);
+#'     zero under an increasing model (gamma, inverse Gaussian): H0 is then
+#'     rejected for sure by all the tests, without computation, and `print()`
+#'     shows this conclusion in one line (`results` keeps one row per test);
 #'   * `parameters`: maximum likelihood estimates of the parameters of the
 #'     process (`NULL` when no bridge was used);
 #'   * `steps`: time step of the increments of each trajectory;
@@ -345,7 +349,7 @@ gof.levy <- function(data, model, test = NULL, method = "Bridge", option = 1, al
   structure(list(model = model,
                  method = if (regular || out_of_support) NA_character_
                           else if (method == "MultiBridge") paste0("MultiBridge, option ", option) else method,
-                 alpha = alpha, B = B, regular = regular, out_of_support = out_of_support,
+                 alpha = alpha, B = B, trajectories = length(traj), regular = regular, out_of_support = out_of_support,
                  parameters = par, steps = vapply(pieces, `[[`, 0, "step"), bridge = bridge,
                  increments = do.call(rbind, lapply(seq_along(pieces), function(k)
                    data.frame(id = k, step = pieces[[k]]$step, dx = pieces[[k]]$dx))),
@@ -452,7 +456,14 @@ run_tests <- function(pieces, model, test, alpha, B, out_of_support) {
 print.gof.levy <- function(x, ...) {
   n <- length(x$steps)
   cat("\nGoodness-of-fit test of the model", x$model, "\n")
-  cat("Trajectories:", n, "| Increments tested:", nrow(x$increments), "| Level:", x$alpha, "| B:", x$B, "\n")
+  if (x$out_of_support) {
+    r <- x$results
+    cat("Trajectories:", x$trajectories, "| Increments:", nrow(x$increments), "| Level:", x$alpha, "\n")
+    cat(r$message[1], "\n")
+    cat("All the tests (", paste(r$test, collapse = ", "), "): reject H0 for sure (p-value = 0)\n", sep = "")
+    return(invisible(x))
+  }
+  cat("Trajectories:", n,"| Increments tested:", nrow(x$increments), "| Level:", x$alpha, "| B:", x$B, "\n")
   cat("Inspections:",
       if (x$out_of_support) "observed increment <= 0 under an increasing model, H0 rejected for sure"
       else if (x$regular) "regular (observed increments)"
