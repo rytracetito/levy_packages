@@ -85,11 +85,11 @@ the tested increments.
 }
 
 \examples{
-# 1. A gamma trajectory (a = 2, b = 3) with irregular inspections,
+# 1. A gamma trajectory (a = 2, b = 1) with 400 irregular inspections,
 #    more and more frequent
 set.seed(1)
-t <- DegradSim::inspection_times("decreasing", n = 30, tmax = 60, digits = 1)$time
-x <- DegradSim::sim_gamma(t, a = 2, b = 3)
+t <- DegradSim::inspection_times("decreasing", n = 400, tmax = 400, digits = 1)$time
+x <- DegradSim::sim_gamma(t, a = 2, b = 1)
 
 # 2. Is it a gamma process? Is it a Wiener process?
 gof.levy(x, "HGP", test = c("KS", "AD"), B = 100)
