@@ -62,7 +62,9 @@
 #' @param type Used only with `method = "Series"`, to choose the series
 #'   representation; `NULL` (default).
 #' @param n_traj Number of trajectories to simulate when `t` is a vector
-#'   (default 1), a positive integer.
+#'   (default 1), a positive integer. It must stay 1 when `t` is a plan or a
+#'   list, which already gives the trajectories: to simulate several
+#'   trajectories on the times of a plan, give `plan$time`.
 #'
 #' @return An object of class `DegradSim`: a matrix (column `t`, then one
 #'   column of levels per trajectory) when all the trajectories have the same

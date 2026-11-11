@@ -1,4 +1,8 @@
 as_plans <- function(t, n_traj) {
+  if (is.list(t) && !identical(n_traj, 1) && !identical(n_traj, 1L)) {
+    stop("n_traj is used only when t is a vector of times: a plan or a list already gives the ",
+         "trajectories; give plan$time to simulate n_traj trajectories on the same times", call. = FALSE)
+  }
   if (is.data.frame(t)) t <- unname(split(t[[2]], t[[1]]))
   if (!is.list(t)) {
     if (!is.numeric(n_traj) || length(n_traj) != 1 || n_traj < 1 || n_traj != round(n_traj)) {

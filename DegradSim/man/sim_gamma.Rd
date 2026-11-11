@@ -41,7 +41,9 @@ representation) is not currently available and gives an error.}
 representation; \code{NULL} (default).}
 
 \item{n_traj}{Number of trajectories to simulate when \code{t} is a vector
-(default 1), a positive integer.}
+(default 1), a positive integer. It must stay 1 when \code{t} is a plan or a
+list, which already gives the trajectories: to simulate several
+trajectories on the times of a plan, give \code{plan$time}.}
 }
 \value{
 An object of class \code{DegradSim}: a matrix (column \code{t}, then one

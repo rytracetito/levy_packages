@@ -136,6 +136,10 @@ test_that("invalid inspection times are refused", {
   expect_error(sim_gamma(c(0, 1, NA), 2, 3), "finite")
   expect_error(sim_gamma(0, 2, 3), "at least two")
   expect_error(sim_gamma(tg, 2, 3, n_traj = 1.5), "n_traj")
+  plan <- inspection_times("regular", n = 5, tmax = 10)
+  expect_error(sim_gamma(plan, 2, 3, n_traj = 5), "plan\\$time")
+  expect_error(sim_wiener(list(tg, tg), 1, 1, n_traj = 2), "plan\\$time")
+  expect_equal(ncol(sim_gamma(plan$time, 2, 3, n_traj = 5)), 6)
 })
 
 test_that("invalid parameters are refused", {
