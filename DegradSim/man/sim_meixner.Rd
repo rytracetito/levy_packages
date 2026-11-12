@@ -15,9 +15,9 @@ number is \code{n_traj}. The column \code{time} of the result of
 \code{\link[=inspection_times]{inspection_times()}} can be used;
 \item a list of vectors, one per trajectory, for instance
 \code{list(c(0, 1, 3), c(0, 2, 4, 6))}: each trajectory has its own times
-(\code{n_traj} is then ignored);
+(\code{n_traj} must then stay 1);
 \item the data frame returned by \code{\link[=inspection_times]{inspection_times()}}, which gives one
-plan per trajectory (\code{n_traj} is then ignored).
+plan per trajectory (\code{n_traj} must then stay 1).
 }}
 
 \item{a}{Scale parameter, \eqn{a > 0}.}

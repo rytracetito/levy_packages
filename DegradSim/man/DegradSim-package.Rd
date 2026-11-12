@@ -166,7 +166,9 @@ their number is given by \code{n_traj};
 \code{list(c(0, 1, 3), c(0, 2, 4, 6))};
 \item the data frame returned by \code{\link[=inspection_times]{inspection_times()}}, which gives one plan
 per trajectory, for instance with the pattern \code{"decreasing"} for
-trajectories inspected more and more often (\code{n_traj} is then ignored).
+trajectories inspected more and more often. \code{n_traj} must then stay 1,
+otherwise an error is raised: to simulate \code{n_traj} trajectories on the
+same times, give \code{plan$time}.
 }
 
 The times of each trajectory must be finite, start at 0 and be

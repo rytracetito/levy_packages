@@ -43,9 +43,9 @@
 #'     [inspection_times()] can be used;
 #'   * a list of vectors, one per trajectory, for instance
 #'     `list(c(0, 1, 3), c(0, 2, 4, 6))`: each trajectory has its own times
-#'     (`n_traj` is then ignored);
+#'     (`n_traj` must then stay 1);
 #'   * the data frame returned by [inspection_times()], which gives one
-#'     plan per trajectory (`n_traj` is then ignored).
+#'     plan per trajectory (`n_traj` must then stay 1).
 #' @param a Shape parameter of the gamma process, \eqn{a > 0}: the increment
 #'   over a time \eqn{\Delta t} has shape \eqn{a \Delta t}. Not given when `A`
 #'   is given (the shape is then \eqn{A(t) - A(s)}).

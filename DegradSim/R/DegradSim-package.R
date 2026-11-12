@@ -144,7 +144,9 @@
 #'      `list(c(0, 1, 3), c(0, 2, 4, 6))`;
 #'    * the data frame returned by [inspection_times()], which gives one plan
 #'      per trajectory, for instance with the pattern `"decreasing"` for
-#'      trajectories inspected more and more often (`n_traj` is then ignored).
+#'      trajectories inspected more and more often. `n_traj` must then stay 1,
+#'      otherwise an error is raised: to simulate `n_traj` trajectories on the
+#'      same times, give `plan$time`.
 #'
 #'    The times of each trajectory must be finite, start at 0 and be
 #'    strictly increasing, with at least two times (0 and one inspection).
