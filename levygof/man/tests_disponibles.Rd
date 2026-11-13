@@ -83,12 +83,14 @@ below). It is slow and is not applied by default: give \code{test = "BG"}.
 \eqn{X_2} with the same distribution (with finite moments
 \eqn{E[X_1^2]} and \eqn{E[1/X_1]}), the variables
 \eqn{Y = (X_1 + X_2)/2} and \eqn{Z = (1/X_1 + 1/X_2)/2 - 1/Y} are
-independent if and only if this distribution is inverse Gaussian (Allison,
-Betsch, Ebner and Visagie, 2022, section 5.2.4). The test computes
-\eqn{Y} and \eqn{Z} for all the pairs \eqn{(X_i, X_j)}, \eqn{i \neq j}, of the
-sample and measures their dependence with the Hoeffding-Blum-Kiefer-Rosenblatt
-criterion; H0 is rejected for large values, and the p-value is obtained by
-parametric bootstrap. \code{gofIG} compares every pair with every other pair:
+independent if and only if this distribution is inverse Gaussian (a
+characterization due to Khatri, recalled by Baringhaus and Gaigall, 2015,
+Example 1.1 (3)). The test computes \eqn{Y} and \eqn{Z} for all the pairs
+\eqn{(X_i, X_j)}, \eqn{i \neq j}, of the sample and measures their dependence
+with the Hoeffding-Blum-Kiefer-Rosenblatt criterion (Baringhaus and
+Gaigall, 2015, section 1); H0 is rejected for large values, and the p-value
+is obtained by parametric bootstrap with the maximum likelihood estimators
+(Baringhaus and Gaigall, 2015, sections 3 and 5). \code{gofIG} compares every pair with every other pair:
 the cost grows as \eqn{n^4}, times \eqn{B + 1}. One statistic already takes
 a few seconds for \eqn{n = 100}: use BG only with small samples, a few
 dozen increments (a warning is given above 50 increments).
@@ -225,7 +227,7 @@ inverse Gaussian distributions. \emph{Statistics and Probability Letters}, 105,
 
 Baringhaus, L. and Gaigall, D. (2015). On an independence test approach to
 the goodness-of-fit problem. \emph{Journal of Multivariate Analysis}, 140,
-193-208. (test BG)
+193-208. \doi{10.1016/j.jmva.2015.05.013} (test BG)
 
 \strong{EDF statistics and parametric bootstrap (VG and Meixner)}
 

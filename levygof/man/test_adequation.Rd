@@ -173,7 +173,7 @@ inverse Gaussian distributions. \emph{Statistics and Probability Letters}, 105,
 
 Baringhaus, L. and Gaigall, D. (2015). On an independence test approach to
 the goodness-of-fit problem. \emph{Journal of Multivariate Analysis}, 140,
-193-208. (test BG)
+193-208. \doi{10.1016/j.jmva.2015.05.013} (test BG)
 
 \strong{EDF statistics and parametric bootstrap (VG and Meixner)}
 
