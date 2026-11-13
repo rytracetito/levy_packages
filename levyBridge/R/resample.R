@@ -89,12 +89,16 @@ regular_grid <- function(t) {
 multi_grids <- function(ts, option) {
   t_max <- vapply(ts, function(t) t[length(t)], 0)
   h <- sum(t_max) / sum(lengths(ts) - 1)
-  n_all <- floor(max(t_max) / h + 1e-9)
+  if (option == 2) {
+    n_all <- round(max(t_max) / h)
+    h <- max(t_max) / n_all
+  }
   lapply(seq_along(ts), function(k) {
     n <- if (option == 1) floor(t_max[k] / h + 1e-9) else n_all
     if (n == 0) warning("trajectory ", k, " is shorter than the time step ", signif(h, 4),
                         ": it gives no reconstructed increment", call. = FALSE)
-    list(grid = snap_grid(seq(0, n * h, length.out = n + 1), ts[[k]]), h = h)
+    fin <- if (option == 2) max(t_max) else n * h
+    list(grid = snap_grid(seq(0, fin, length.out = n + 1), ts[[k]]), h = h)
   })
 }
 

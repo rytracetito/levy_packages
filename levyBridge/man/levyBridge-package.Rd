@@ -155,7 +155,12 @@ The end of the trajectory, between its last grid point and
 \eqn{t_{i, max}}, is not used. A trajectory shorter than \eqn{h} gives
 no increment, with a warning.
 \item \code{option = 2}: all the trajectories are resampled up to the last
-inspection time over all of them, \eqn{\max_i t_{i, max}}. Beyond its
+inspection time over all of them, \eqn{T = \max_i t_{i, max}}. The grid
+ends exactly at \eqn{T}: the number of steps \eqn{T / h} is rounded to
+the nearest integer \eqn{N}, and the step becomes \eqn{h^* = T / N},
+close to \eqn{h}; the grid is
+\eqn{t'_k = k h^*}, \eqn{k = 0, \dots, N}, the same for all the
+trajectories, and \code{attr(res, "teq")} gives \eqn{h^*}. Beyond its
 last inspection, a trajectory is extended by increments of the process
 drawn with the given parameters, starting from its last observed level.
 This needs all the parameters of the process (for instance the rate \code{b}
@@ -232,6 +237,12 @@ attr(gamma_resampling(xs, theta), "teq")
 attr(gamma_resampling(xs, theta, method = "ExtBridge", common_step = TRUE), "teq")
 attr(gamma_resampling(xs, theta, method = "MultiBridge"), "teq")
 plot_bridge(gamma_resampling(xs, theta, method = "MultiBridge"), trajectory = 1:3)
+
+# "MultiBridge", option 2: the grid ends exactly at the last inspection
+# time (40), and the shorter trajectories are extended up to it
+r2 <- gamma_resampling(xs, theta, method = "MultiBridge", option = 2)
+sapply(r2, function(d) max(d$t))
+plot_bridge(r2, trajectory = 1:3)
 }
 \references{
 Grall-Maës, E. (2012). Use of the Kolmogorov-Smirnov test for gamma

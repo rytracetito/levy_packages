@@ -129,6 +129,31 @@ theta_hat <- levyfit::gamma_mle(xs)
 theta_hat
 r7 <- gamma_resampling(xs, theta_hat)
 attr(r7, "parameters")
+
+# 8. Four trajectories observed up to 8, 12, 45 and 58, each with its own
+#    inspection times, resampled with "MultiBridge"
+liste_t <- list(c(0, 3, 8), c(0, 2, 5, 9, 12),
+                c(0, 4, 7, 11, 15, 18, 22, 27, 33, 39, 45),
+                c(0, 2, 3, 5, 8, 9, 14, 15, 17, 20, 22, 25, 27, 30, 33, 46, 58))
+
+# Gamma process (a = 5, b = 1/3), parameters estimated by levyfit
+set.seed(46)
+x8 <- DegradSim::sim_gamma(liste_t, a = 5, b = 1/3)
+theta8 <- levyfit::gamma_mle(x8)
+
+# Option 1: one grid for all the trajectories; each one stops at the last
+# grid point before its last inspection
+r8 <- gamma_resampling(x8, theta8, method = "MultiBridge")
+attr(r8, "teq")
+sapply(r8, function(d) max(d$t))
+plot_bridge(r8, trajectory = 1:4)
+
+# Option 2: the grid ends exactly at 58; beyond its last inspection, each
+# shorter trajectory is extended by increments of the process
+r8b <- gamma_resampling(x8, theta8, method = "MultiBridge", option = 2)
+attr(r8b, "teq")
+sapply(r8b, function(d) max(d$t))
+plot_bridge(r8b, trajectory = 1:4)
 }
 \references{
 Grall-Maës, E. (2012). Use of the Kolmogorov-Smirnov test for gamma

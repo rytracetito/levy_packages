@@ -24,8 +24,10 @@ test_that("MultiBridge: common step and grids of the two options", {
   expect_equal(sapply(r1, nrow), floor(c(8, 12, 45, 58) / h) + 1)
   expect_equal(attr(r1, "method"), "MultiBridge, option 1")
   r2 <- gamma_resampling(liste, theta = c(a = 2, b = 3), method = "MultiBridge", option = 2)
-  expect_equal(sapply(r2, nrow), rep(floor(58 / h) + 1, 4))
-  expect_true(all(sapply(r2, function(d) max(d$t)) <= 58))
+  N <- round(58 / h)
+  expect_equal(attr(r2, "teq"), rep(58 / N, 4))
+  expect_equal(sapply(r2, nrow), rep(N + 1, 4))
+  expect_true(all(sapply(r2, function(d) max(d$t)) == 58))
   # levels: increasing, and equal to the observations at the grid points that are inspection times
   for (k in 1:4) {
     expect_true(all(diff(r2[[k]]$X) >= 0))
