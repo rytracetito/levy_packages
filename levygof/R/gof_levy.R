@@ -142,8 +142,11 @@
 #'   point and \eqn{t_{i,max}}, is not used. A trajectory shorter than \eqn{h}
 #'   gives no reconstructed increment (with a warning).
 #' * **`option = 2`**: all the trajectories are resampled up to the last
-#'   inspection time over all of them, \eqn{\max_i t_{i,max}}, so that they all
-#'   have the same number of grid points. Up to \eqn{t_{i,max}}, as in the
+#'   inspection time over all of them, \eqn{T = \max_i t_{i,max}}, so that they
+#'   all have the same number of grid points. The grid ends exactly at
+#'   \eqn{T}: the number of steps \eqn{T / h} is rounded to the nearest
+#'   integer \eqn{N}, and the step becomes \eqn{h^* = T / N}, close to
+#'   \eqn{h}; the grid is \eqn{t'_k = k h^*}, \eqn{k = 0, \dots, N}. Up to \eqn{t_{i,max}}, as in the
 #'   option 1; beyond, there is no observation left and no bridge: each new grid value
 #'   is the previous one plus an increment of the process drawn with **all**
 #'   the parameters estimated by `levyfit` (for instance the rate \eqn{b} of
