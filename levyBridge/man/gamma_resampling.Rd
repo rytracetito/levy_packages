@@ -118,6 +118,7 @@ plot_bridge(r5, trajectory = 1:3)
 #    one is extended by increments of the process (this uses b)
 r6 <- gamma_resampling(xs, theta, method = "MultiBridge", option = 2)
 sapply(r6, nrow)
+plot_bridge(r6, trajectory = 1:3)
 
 # 6. The bridge values are random: set.seed() makes them reproducible
 set.seed(2); y1 <- gamma_resampling(x, theta)[[1]]$X

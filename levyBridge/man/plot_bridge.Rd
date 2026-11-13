@@ -4,7 +4,7 @@
 \alias{plot_bridge}
 \title{Plot observed and resampled trajectories}
 \usage{
-plot_bridge(x, trajectory = 1, title = NULL)
+plot_bridge(x, trajectory = 1, title = NULL, same_scale = TRUE)
 }
 \arguments{
 \item{x}{An object of class \code{"levybridge"}, returned by a resampling
@@ -16,6 +16,11 @@ panel is drawn per trajectory.}
 
 \item{title}{Title of the plot, a character string; by default the name of
 the bridge, for instance \code{"gamma bridge"}.}
+
+\item{same_scale}{Used with several trajectories: \code{TRUE} (default) to draw
+all the panels with the same time and degradation axes, so that the
+trajectories can be compared (for instance the common grid of the method
+\code{"MultiBridge"}); \code{FALSE} to give each panel its own axes.}
 }
 \value{
 A \code{ggplot} object. It is displayed when printed, and it can be
@@ -45,6 +50,10 @@ plan <- DegradSim::inspection_times("decreasing", n = 10, n_traj = 3,
                                     tmax = c(20, 30, 40), digits = 1)
 xs <- DegradSim::sim_gamma(plan, a = 2, b = 3)
 plot_bridge(gamma_resampling(xs, theta = c(a = 2, b = 3)), trajectory = 1:3)
+
+# Each panel with its own axes
+plot_bridge(gamma_resampling(xs, theta = c(a = 2, b = 3)), trajectory = 1:3,
+            same_scale = FALSE)
 }
 \seealso{
 \link{levyBridge-package}

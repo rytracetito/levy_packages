@@ -114,6 +114,7 @@ plot_bridge(r5, trajectory = 1:3)
 #    one is extended by increments of the process (this uses b)
 r6 <- meixner_resampling(xs, theta, method = "MultiBridge", option = 2)
 sapply(r6, nrow)
+plot_bridge(r6, trajectory = 1:3)
 
 # 6. The bridge values are random: set.seed() makes them reproducible
 set.seed(2); y1 <- meixner_resampling(x, theta)[[1]]$X
@@ -128,6 +129,33 @@ theta_hat <- levyfit::meixner_mle(xe)
 theta_hat
 r7 <- meixner_resampling(xe, theta_hat)
 attr(r7, "parameters")
+
+# 8. Four trajectories observed up to 8, 12, 45 and 58, each with its own
+#    inspection times, resampled with "MultiBridge"
+liste_t <- list(c(0, 3, 8), c(0, 2, 5, 9, 12),
+                c(0, 4, 7, 11, 15, 18, 22, 27, 33, 39, 45),
+                c(0, 2, 3, 5, 8, 9, 14, 15, 17, 20, 22, 25, 27, 30, 33, 46, 58))
+
+# Meixner process (a = 1, b = 0.3, d = 1.5, m = 0.2). With these 32
+# increments, levyfit::meixner_mle() often finds no maximum inside the
+# parameter space: the true parameters are used
+set.seed(46)
+x8 <- DegradSim::sim_meixner(liste_t, a = 1, b = 0.3, d = 1.5, m = 0.2)
+theta8 <- c(a = 1, b = 0.3, d = 1.5, m = 0.2)
+
+# Option 1: one grid for all the trajectories; each one stops at the last
+# grid point before its last inspection
+r8 <- meixner_resampling(x8, theta8, method = "MultiBridge")
+attr(r8, "teq")
+sapply(r8, function(d) max(d$t))
+plot_bridge(r8, trajectory = 1:4)
+
+# Option 2: the grid ends exactly at 58; beyond its last inspection, each
+# shorter trajectory is extended by increments of the process
+r8b <- meixner_resampling(x8, theta8, method = "MultiBridge", option = 2)
+attr(r8b, "teq")
+sapply(r8b, function(d) max(d$t))
+plot_bridge(r8b, trajectory = 1:4)
 }
 \seealso{
 \code{\link[=meixner_bridge]{meixner_bridge()}} for the distribution of the bridge,

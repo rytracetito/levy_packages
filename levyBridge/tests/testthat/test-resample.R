@@ -84,4 +84,6 @@ test_that("print, increments and plot_bridge work", {
   r2 <- wiener_resampling(list(data.frame(t = 0:3, X = c(0, 1, 0.5, 2)), data.frame(t = 0:2, X = c(0, 1, 3))), theta = c(mu = 0.5, sigma = 1))
   expect_s3_class(plot_bridge(r2, trajectory = 1:2), "ggplot")
   expect_error(plot_bridge(r2, trajectory = 3), "between 1 and 2")
+  expect_s3_class(plot_bridge(r2, trajectory = 1:2, same_scale = FALSE), "ggplot")
+  expect_error(plot_bridge(r2, trajectory = 1:2, same_scale = NA), "TRUE or FALSE")
 })

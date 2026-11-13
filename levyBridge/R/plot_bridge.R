@@ -11,6 +11,10 @@
 #'   panel is drawn per trajectory.
 #' @param title Title of the plot, a character string; by default the name of
 #'   the bridge, for instance `"gamma bridge"`.
+#' @param same_scale Used with several trajectories: `TRUE` (default) to draw
+#'   all the panels with the same time and degradation axes, so that the
+#'   trajectories can be compared (for instance the common grid of the method
+#'   `"MultiBridge"`); `FALSE` to give each panel its own axes.
 #'
 #' @return A `ggplot` object. It is displayed when printed, and it can be
 #'   modified with the usual `ggplot2` functions, added with `+`: for instance
@@ -36,9 +40,14 @@
 #'                                     tmax = c(20, 30, 40), digits = 1)
 #' xs <- DegradSim::sim_gamma(plan, a = 2, b = 3)
 #' plot_bridge(gamma_resampling(xs, theta = c(a = 2, b = 3)), trajectory = 1:3)
+#'
+#' # Each panel with its own axes
+#' plot_bridge(gamma_resampling(xs, theta = c(a = 2, b = 3)), trajectory = 1:3,
+#'             same_scale = FALSE)
 #' @export
-plot_bridge <- function(x, trajectory = 1, title = NULL) {
+plot_bridge <- function(x, trajectory = 1, title = NULL, same_scale = TRUE) {
   if (!inherits(x, "levybridge")) stop("x must be the result of a _resampling function")
+  if (!isTRUE(same_scale) && !isFALSE(same_scale)) stop("same_scale must be TRUE or FALSE")
   if (!all(trajectory %in% seq_along(x))) stop("trajectory must be between 1 and ", length(x))
   if (is.null(title)) title <- paste(attr(x, "model"), "bridge")
   obs <- attr(x, "observed")
@@ -54,7 +63,7 @@ plot_bridge <- function(x, trajectory = 1, title = NULL) {
     ggplot2::theme_minimal() +
     ggplot2::theme(legend.position = "bottom")
   if (length(trajectory) > 1) {
-    p <- p + ggplot2::facet_wrap(~ id, scales = "free",
+    p <- p + ggplot2::facet_wrap(~ id, scales = if (same_scale) "fixed" else "free",
                                  labeller = ggplot2::as_labeller(function(v) paste("Trajectory", v)))
   }
   p
