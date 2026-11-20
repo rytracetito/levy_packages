@@ -144,7 +144,7 @@ sim_cpoisson <- function(t, lambda, rjump = function(n) stats::rexp(n, 1), metho
       pos <- N > 0
       dX[pos] <- rowsum(J, rep(seq_along(N), N))[, 1]
     }
-    c(0, cumsum(dX))
+    cumul(dX)
   }
   x <- simulate_paths(t, n_traj, one_path, "compound Poisson", c(lambda = lambda))
   attr(x, "jumps") <- paste(deparse(rjump), collapse = " ")

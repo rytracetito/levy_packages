@@ -167,7 +167,7 @@ sim_meixner <- function(t, a, b, d, m, method = "RWA", type = NULL, n_traj = 1) 
     }
     Runuran::ur(generators[[key]], 1)
   }
-  rwa_path <- function(t) c(0, cumsum(vapply(diff(t), draw, 0)))
+  rwa_path <- function(t) cumul(vapply(diff(t), draw, 0))
   one_path <- if (method == "RWA") rwa_path else bridge_one_path(rwa_path, function(t_A, x_A, t_B, x_B, s) {
     levyBridge::meixner_bridge(t_A, x_A, t_B, x_B, s, theta = c(a = a, b = b, d = d, m = m))
   })

@@ -210,7 +210,7 @@ sim_vg <- function(t, theta, sigma, nu, increments = "subordination", method = "
       dX <- stats::rgamma(n, shape = dt / nu, scale = nu * (r + theta / 2)) -
         stats::rgamma(n, shape = dt / nu, scale = nu * (r - theta / 2))
     }
-    c(0, cumsum(dX))
+    cumul(dX)
   }
   one_path <- if (method == "RWA") rwa_path else bridge_one_path(rwa_path, function(t_A, x_A, t_B, x_B, s) {
     levyBridge::vg_bridge(t_A, x_A, t_B, x_B, s, theta = c(theta = theta, sigma = sigma, nu = nu))

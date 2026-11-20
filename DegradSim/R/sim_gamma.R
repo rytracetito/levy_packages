@@ -74,6 +74,18 @@
 #'   times and levels, [traj_df()], [plot_traj()]) is described in the
 #'   section Getting started of [DegradSim-package].
 #'
+#'   With `method = "RWA"`, the increments drawn are also kept, exactly as
+#'   drawn, in `attr(x, "dx")`: a list with one vector of increments per
+#'   trajectory. A level only keeps about 16 significant digits, so that an
+#'   increment very small compared with the level (for instance a gamma
+#'   increment over a short time step) can be lost when it is added to it,
+#'   and found equal to 0 as a difference of levels. [traj_df()] and the
+#'   packages `levyBridge` and `levygof` use these exact increments when they
+#'   are present. With `method = "Bridge"`, the values are drawn as levels and
+#'   there is no such attribute. A modification of the levels (for instance
+#'   `x[, 2] <- x[, 2] / 2`) keeps the attribute unchanged: remove it with
+#'   `attr(x, "dx") <- NULL`.
+#'
 #' @references
 #' Kahle, W., Mercier, S. and Paroissin, C. (2016). *Degradation Processes in
 #' Reliability*. ISTE and Wiley, London. ISBN 978-1-84821-888-8.
@@ -208,7 +220,7 @@ sim_gamma <- function(t, a, b, A = NULL, method = "RWA", type = NULL, n_traj = 1
   }
   rwa_path <- function(t) {
     k <- shape(t)
-    c(0, cumsum(stats::rgamma(length(k), shape = k, rate = b)))
+    cumul(stats::rgamma(length(k), shape = k, rate = b))
   }
   one_path <- if (method == "RWA") rwa_path else bridge_one_path(rwa_path, function(t_A, x_A, t_B, x_B, s) {
     levyBridge::gamma_bridge(t_A, x_A, t_B, x_B, s, theta = c(a = if (is.null(A)) a else 1, b = b))

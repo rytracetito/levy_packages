@@ -70,6 +70,18 @@ trajectory. The model, the parameters and the time-scaling function, if
 any, are stored as attributes. The use of the result (a trajectory, its
 times and levels, \code{\link[=traj_df]{traj_df()}}, \code{\link[=plot_traj]{plot_traj()}}) is described in the
 section Getting started of \link{DegradSim-package}.
+
+With \code{method = "RWA"}, the increments drawn are also kept, exactly as
+drawn, in \code{attr(x, "dx")}: a list with one vector of increments per
+trajectory. A level only keeps about 16 significant digits, so that an
+increment very small compared with the level (for instance a gamma
+increment over a short time step) can be lost when it is added to it,
+and found equal to 0 as a difference of levels. \code{\link[=traj_df]{traj_df()}} and the
+packages \code{levyBridge} and \code{levygof} use these exact increments when they
+are present. With \code{method = "Bridge"}, the values are drawn as levels and
+there is no such attribute. A modification of the levels (for instance
+\code{x[, 2] <- x[, 2] / 2}) keeps the attribute unchanged: remove it with
+\code{attr(x, "dx") <- NULL}.
 }
 \description{
 Simulates exactly, at given inspection times, one or several trajectories of

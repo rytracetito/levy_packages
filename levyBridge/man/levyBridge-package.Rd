@@ -80,6 +80,16 @@ of \code{DegradSim} when all the trajectories have the same inspection times.
 
 The columns are read by position, not by name. The inspection times of a
 trajectory start at 0 and are strictly increasing.
+
+\strong{Exact increments.} The observed increment between two inspections is
+the difference of the two levels. A level only keeps about 16 significant
+digits, so that an increment very small compared with the level (for
+instance a gamma increment over a short time step) can be found equal
+to 0. The simulation functions of \code{DegradSim} keep the increments exactly
+as drawn, in \code{attr(x, "dx")}: when \code{x} has this attribute, a list with one
+vector of increments per trajectory whose cumulated sums give the levels,
+these increments are used instead of the differences of the levels. The
+resampling is otherwise the same.
 }
 
 \section{Resampling algorithm}{

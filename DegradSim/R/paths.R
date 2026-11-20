@@ -69,18 +69,24 @@ time_change <- function(A, t) {
   dA
 }
 
+# Niveaux à partir des accroissements tirés, qui sont gardés tels quels : un accroissement très petit
+# devant le niveau serait arrondi à 0 si on le recalculait comme une différence de niveaux
+cumul <- function(dX) structure(c(0, cumsum(dX)), dx = dX)
+
 simulate_paths <- function(t, n_traj, one_path, model, parameters, A = NULL, method = "RWA") {
   plans <- as_plans(t, n_traj)
   same <- all(vapply(plans, function(tt) identical(tt, plans[[1]]), TRUE))
+  X <- lapply(plans, one_path)
+  dx <- lapply(X, attr, "dx")
   if (same) {
-    X <- vapply(plans, one_path, numeric(length(plans[[1]])))
-    paths <- cbind(t = plans[[1]], X)
+    paths <- cbind(t = plans[[1]], vapply(X, as.numeric, numeric(length(plans[[1]]))))
     colnames(paths) <- c("t", paste0("X", seq_along(plans)))
     class(paths) <- c("DegradSim", "matrix", "array")
   } else {
-    paths <- lapply(plans, function(tt) data.frame(t = tt, X = one_path(tt)))
+    paths <- lapply(seq_along(plans), function(k) data.frame(t = plans[[k]], X = as.numeric(X[[k]])))
     class(paths) <- "DegradSim"
   }
+  if (!any(vapply(dx, is.null, TRUE))) attr(paths, "dx") <- dx
   attr(paths, "model") <- model
   attr(paths, "parameters") <- parameters
   attr(paths, "method") <- method
@@ -141,11 +147,12 @@ as_path_list <- function(x) {
 #' @export
 traj_df <- function(x, increments = FALSE) {
   paths <- as_path_list(x)
+  dx <- attr(x, "dx")
   do.call(rbind, lapply(seq_along(paths), function(i) {
     d <- data.frame(id = i, t = paths[[i]]$t, X = paths[[i]]$X)
     if (increments) {
       d$dt <- c(NA, diff(d$t))
-      d$dX <- c(NA, diff(d$X))
+      d$dX <- c(NA, if (is.null(dx)) diff(d$X) else dx[[i]])
     }
     d
   }))

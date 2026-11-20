@@ -67,6 +67,16 @@
 #' The columns are read by position, not by name. The inspection times of a
 #' trajectory start at 0 and are strictly increasing.
 #'
+#' **Exact increments.** The observed increment between two inspections is
+#' the difference of the two levels. A level only keeps about 16 significant
+#' digits, so that an increment very small compared with the level (for
+#' instance a gamma increment over a short time step) can be found equal
+#' to 0. The simulation functions of `DegradSim` keep the increments exactly
+#' as drawn, in `attr(x, "dx")`: when `x` has this attribute, a list with one
+#' vector of increments per trajectory whose cumulated sums give the levels,
+#' these increments are used instead of the differences of the levels. The
+#' resampling is otherwise the same.
+#'
 #' @section Resampling algorithm:
 #' Let \eqn{0 = t_0 < t_1 < \dots < t_N} be the inspection times of a
 #' trajectory and \eqn{x_0, \dots, x_N} its observed levels. The method

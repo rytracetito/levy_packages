@@ -183,7 +183,7 @@ sim_wiener <- function(t, mu, sigma, A = NULL, method = "RWA", type = NULL, n_tr
   }
   rwa_path <- function(t) {
     dA <- clock(t)
-    c(0, cumsum(drift * dA + sigma * sqrt(dA) * stats::rnorm(length(dA))))
+    cumul(drift * dA + sigma * sqrt(dA) * stats::rnorm(length(dA)))
   }
   one_path <- if (method == "RWA") rwa_path else bridge_one_path(rwa_path, function(t_A, x_A, t_B, x_B, s) {
     levyBridge::wiener_bridge(t_A, x_A, t_B, x_B, s, theta = c(mu = drift, sigma = sigma))

@@ -20,6 +20,15 @@
 #'   The columns are read by position, not by name. The inspection times of
 #'   a trajectory must be strictly increasing; they do not have to start at
 #'   0 (the first inspection is taken as origin).
+#'
+#'   The observed increments are the differences of the levels. A level only
+#'   keeps about 16 significant digits, so that an increment very small
+#'   compared with the level can be found equal to 0, which is impossible
+#'   under the gamma and inverse Gaussian models. The simulation functions of
+#'   `DegradSim` keep the increments exactly as drawn in `attr(data, "dx")`:
+#'   when this attribute is present and matches the levels, these exact
+#'   increments are used for the check of the sign, the estimation, the
+#'   bridges and the tests.
 #' @param model `"HGP"` (gamma process), `"HWP"` (Wiener process),
 #'   `"InvGaus"` (inverse Gaussian process), `"VG"` (variance-gamma process)
 #'   or `"Meixner"` (Meixner process). Upper or lower case does not matter.
@@ -329,7 +338,7 @@ gof.levy <- function(data, model, test = NULL, method = "Bridge", option = 1, al
   }
   traj <- as_trajectories(data)
 
-  dx_obs <- lapply(traj, function(d) diff(d$x))
+  dx_obs <- observed_increments(data, traj)
   regular <- all(vapply(traj, function(d) is_regular(d$t), TRUE))
   out_of_support <- model %in% c("HGP", "InvGaus") && any(unlist(dx_obs) <= 0)
   par <- NULL
@@ -340,8 +349,8 @@ gof.levy <- function(data, model, test = NULL, method = "Bridge", option = 1, al
   } else if (regular) {
     pieces <- lapply(seq_along(traj), function(k) list(step = diff(traj[[k]]$t)[1], dx = dx_obs[[k]]))
   } else {
-    par <- estimate_parameters(traj, model)
-    r <- bridge_trajectories(traj, model, par, method, option, digits)
+    par <- estimate_parameters(traj, model, dx_obs)
+    r <- bridge_trajectories(traj, model, par, method, option, digits, dx_obs)
     teq <- attr(r, "teq")
     dx <- attr(r, "dx")
     pieces <- lapply(seq_along(r), function(k) list(step = teq[k], dx = dx[[k]]))
@@ -384,6 +393,19 @@ as_trajectories <- function(data) {
   traj
 }
 
+# Accroissements observés : ceux de l'attribut dx des données (accroissements exacts d'une
+# simulation de DegradSim) s'ils correspondent aux niveaux, sinon les différences de niveaux
+observed_increments <- function(data, traj) {
+  dx <- attr(data, "dx")
+  ok <- is.list(dx) && length(dx) == length(traj) && all(vapply(seq_along(traj), function(k) {
+    d <- dx[[k]]
+    lev <- traj[[k]]$x
+    is.numeric(d) && length(d) == length(lev) - 1 && all(is.finite(d)) &&
+      all(abs(lev[1] + cumsum(d) - lev[-1]) <= 1e-8 * pmax(1, abs(lev[-1])))
+  }, TRUE))
+  if (ok) dx else lapply(traj, function(d) diff(d$x))
+}
+
 is_regular <- function(t) {
   dt <- diff(t)
   all(abs(dt - dt[1]) <= 1e-6 * dt[1])
@@ -391,8 +413,9 @@ is_regular <- function(t) {
 
 as_data_frames <- function(traj) lapply(traj, function(d) data.frame(t = d$t, X = d$x))
 
-estimate_parameters <- function(traj, model) {
-  d <- as_data_frames(traj)
+# Estimation sur les accroissements observés (exacts quand la simulation les a fournis)
+estimate_parameters <- function(traj, model, dx) {
+  d <- levyfit::increments_data(unlist(dx), unlist(lapply(traj, function(tr) diff(tr$t))))
   p <- suppressWarnings(switch(model,
     HGP     = levyfit::gamma_mle(d),
     HWP     = levyfit::wiener_mle(d),
@@ -414,8 +437,9 @@ estimate_parameters <- function(traj, model) {
 
 # Avec ExtBridge, pas commun à toutes les trajectoires ; MultiBridge a toujours une grille commune.
 # Tous les paramètres sont transmis : l'option 2 de MultiBridge en a besoin pour prolonger les trajectoires.
-bridge_trajectories <- function(traj, model, par, method, option = 1, digits = NULL) {
+bridge_trajectories <- function(traj, model, par, method, option = 1, digits = NULL, dx = NULL) {
   d <- as_data_frames(traj)
+  attr(d, "dx") <- dx
   cs <- method == "ExtBridge"
   switch(model,
     HGP     = levyBridge::gamma_resampling(d, theta = par, method = method, digits = digits,

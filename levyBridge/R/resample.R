@@ -22,6 +22,19 @@ as_trajectories <- function(x) {
   traj
 }
 
+# Accroissements observés : ceux de l'attribut dx de x (accroissements exacts d'une simulation de
+# DegradSim) s'ils correspondent aux niveaux, sinon les différences de niveaux
+observed_increments <- function(x, traj) {
+  dx <- attr(x, "dx")
+  ok <- is.list(dx) && length(dx) == length(traj) && all(vapply(seq_along(traj), function(k) {
+    d <- dx[[k]]
+    lev <- traj[[k]]$x
+    is.numeric(d) && length(d) == length(lev) - 1 && all(is.finite(d)) &&
+      all(abs(lev[1] + cumsum(d) - lev[-1]) <= 1e-8 * pmax(1, abs(lev[-1])))
+  }, TRUE))
+  if (ok) dx else lapply(traj, function(d) diff(d$x))
+}
+
 check_par <- function(..., positive = TRUE) {
   p <- list(...)
   for (nm in names(p)) {
@@ -154,7 +167,7 @@ ext_grid <- function(t, digits = NULL) ext_grids(list(t), digits, TRUE)[[1]]
 # différence de niveaux : ils gardent toute leur précision relative, même très petits.
 # Au-delà de la dernière observation (MultiBridge, option 2), sim(s) tire un accroissement du
 # processus sur une durée s.
-resample <- function(t, x, draw, g = regular_grid(t), sim = NULL) {
+resample <- function(t, x, draw, g = regular_grid(t), sim = NULL, obs_dx = diff(x)) {
   n <- length(g) - 1
   N <- length(t)
   y <- numeric(n + 1)
@@ -163,7 +176,7 @@ resample <- function(t, x, draw, g = regular_grid(t), sim = NULL) {
   k <- 1
   t_inf <- t[1]
   x_inf <- x[1]
-  rest <- x[2] - x[1]
+  rest <- obs_dx[1]
   for (i in seq_len(n)) {
     carry <- 0
     # inspections strictement entre deux points de grille (méthodes Bridge et MultiBridge)
@@ -172,7 +185,7 @@ resample <- function(t, x, draw, g = regular_grid(t), sim = NULL) {
       k <- k + 1
       t_inf <- t[k]
       x_inf <- x[k]
-      rest <- if (k < N) x[k + 1] - x[k] else 0
+      rest <- if (k < N) obs_dx[k] else 0
     }
     if (k == N) {
       # au-delà de la dernière observation : accroissement du processus, sans pont
@@ -187,7 +200,7 @@ resample <- function(t, x, draw, g = regular_grid(t), sim = NULL) {
       k <- k + 1
       t_inf <- t[k]
       x_inf <- x[k]
-      rest <- if (k < N) x[k + 1] - x[k] else 0
+      rest <- if (k < N) obs_dx[k] else 0
     } else {
       d <- draw(t_inf, rest, g[i + 1], t[k + 1])
       dx[i] <- carry + d[1]
@@ -218,22 +231,23 @@ bridge_paths <- function(x, method, draw, model, parameters, increasing = FALSE,
     stop("option must be 1 or 2", call. = FALSE)
   }
   traj <- as_trajectories(x)
+  dx <- observed_increments(x, traj)
   if (increasing) {
     for (k in seq_along(traj)) {
-      if (any(diff(traj[[k]]$x) < 0)) stop("trajectory ", k, ": the ", model, " process is increasing, the levels must not decrease")
+      if (any(dx[[k]] < 0)) stop("trajectory ", k, ": the ", model, " process is increasing, the levels must not decrease")
     }
   }
   if (method == "Bridge") {
-    res <- lapply(traj, function(d) resample(d$t, d$x, draw))
+    res <- lapply(seq_along(traj), function(k) resample(traj[[k]]$t, traj[[k]]$x, draw, obs_dx = dx[[k]]))
     teq <- vapply(traj, function(d) d$t[length(d$t)] / (length(d$t) - 1), 0)
   } else if (method == "MultiBridge") {
     grids <- multi_grids(lapply(traj, `[[`, "t"), option)
-    res <- lapply(seq_along(traj), function(k) resample(traj[[k]]$t, traj[[k]]$x, draw, grids[[k]]$grid, sim))
+    res <- lapply(seq_along(traj), function(k) resample(traj[[k]]$t, traj[[k]]$x, draw, grids[[k]]$grid, sim, dx[[k]]))
     teq <- vapply(grids, function(g) g$h, 0)
   } else {
     grids <- ext_grids(lapply(traj, `[[`, "t"), digits, common_step)
     for (k in seq_along(traj)) traj[[k]]$t <- grids[[k]]$t
-    res <- lapply(seq_along(traj), function(k) resample(traj[[k]]$t, traj[[k]]$x, draw, grids[[k]]$grid))
+    res <- lapply(seq_along(traj), function(k) resample(traj[[k]]$t, traj[[k]]$x, draw, grids[[k]]$grid, obs_dx = dx[[k]]))
     teq <- vapply(grids, function(g) g$h, 0)
   }
   observed <- lapply(traj, function(d) data.frame(t = d$t, X = d$x))

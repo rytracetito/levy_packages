@@ -205,7 +205,7 @@ sim_ig <- function(t, mu, eta, A = NULL, method = "RWA", type = NULL, n_traj = 1
     dX <- numeric(length(dA))
     pos <- dA > 0
     dX[pos] <- rig(sum(pos), drift * dA[pos], eta * dA[pos]^2)
-    c(0, cumsum(dX))
+    cumul(dX)
   }
   one_path <- if (method == "RWA") rwa_path else bridge_one_path(rwa_path, function(t_A, x_A, t_B, x_B, s) {
     levyBridge::ig_bridge(t_A, x_A, t_B, x_B, s, theta = c(mu = drift, eta = eta))

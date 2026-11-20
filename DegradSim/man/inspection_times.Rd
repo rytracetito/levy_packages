@@ -18,6 +18,7 @@ inspection_times(
 \itemize{
 \item \code{"regular"} (default), \code{"decreasing"} or \code{"increasing"};
 \item \code{"dec-inc"} or \code{"inc-dec"};
+\item \code{"random"} (random times on a fine grid);
 \item or a strictly increasing R function on \eqn{[0, 1]}.
 }}
 
@@ -78,7 +79,17 @@ decrease then increase: inspections rare at the beginning, frequent in
 the middle, rare at the end;
 \item \code{"inc-dec"}: \eqn{f(x) = x - \frac{a}{2\pi} \sin(2\pi x)}, gaps that
 increase then decrease: inspections frequent at the beginning, rare in
-the middle, frequent at the end.
+the middle, frequent at the end;
+\item \code{"random"}: the \eqn{n - 1} intermediate times are drawn at random,
+without replacement and with the same probability, among the 999 points
+\eqn{k t_{max} / 1000}, \eqn{k = 1, \dots, 999}, of a fine grid (step 0.1
+for \eqn{t_{max} = 100}), then sorted; the first time is 0 and the last
+one is \eqn{t_{max}}, as for the other patterns. Two inspections are
+thus at least \eqn{t_{max} / 1000} apart: with times drawn anywhere in
+\eqn{[0, t_{max}]}, two of them can be so close that the simulated
+increment of a gamma or variance-gamma process is rounded to 0 by the
+computer. This pattern needs \eqn{n \le 1000}. A new call gives new
+times: use \code{\link[=set.seed]{set.seed()}} to reproduce them.
 }
 
 The names describe the gaps between successive inspections:
@@ -124,7 +135,12 @@ inspection_times("inc-dec", n = 20, tmax = 100, digits = 1, a = 0.8)
 # Gaps between inspections: from about 2.5 to 7.5 with the default amplitude
 range(diff(inspection_times("inc-dec", n = 20, tmax = 100)$time))
 
-# 7. Three trajectories with 10, 15 and 20 inspections, up to 50, 100 and 150
+# 7. Random times: 20 inspections, drawn among 0.1, 0.2, ..., 99.9, the last
+#    one at 100
+set.seed(1)
+inspection_times("random", n = 20, tmax = 100)
+
+# 8. Three trajectories with 10, 15 and 20 inspections, up to 50, 100 and 150
 plan <- inspection_times("decreasing", n = c(10, 15, 20), n_traj = 3,
                          tmax = c(50, 100, 150), digits = 1)
 plan
@@ -132,25 +148,25 @@ plan
 # Times of the second trajectory only
 plan$time[plan$id == 2]
 
-# 8. Same number of inspections and same tmax: the same times for the
-#    three trajectories
+# 9. Same number of inspections and same tmax: the same times for the
+#    three trajectories (new random times for each one with "random")
 inspection_times("decreasing", n = 20, n_traj = 3, tmax = 100)
 
-# 9. Rounding too strong: the repeated times are removed with a warning
+# 10. Rounding too strong: the repeated times are removed with a warning
 inspection_times("increasing", n = 30, tmax = 20, digits = 0)
 
-# 10. Any strictly increasing function on [0, 1]: with sqrt, the
+# 11. Any strictly increasing function on [0, 1]: with sqrt, the
 #     inspections are rare at the beginning and more and more frequent
 inspection_times(sqrt, n = 20, tmax = 100, digits = 0)
 
-# 11. Mixture of the increasing and decreasing patterns: frequent
+# 12. Mixture of the increasing and decreasing patterns: frequent
 #     inspections around a point that moves to the right when w increases
 #     (0 < w < 1)
 w <- 0.8
 f <- function(x) w * log(1 + 10 * x) - (1 - w) * log(11 - 10 * x)
 inspection_times(f, n = 20, tmax = 100, digits = 1)
 
-# 12. Plot the inspection times, one row per trajectory, then simulate
+# 13. Plot the inspection times, one row per trajectory, then simulate
 plan <- inspection_times("inc-dec", n = c(10, 20, 30), n_traj = 3, tmax = 100)
 plot_plan(plan)
 x <- sim_gamma(plan, a = 0.2, b = 1)

@@ -148,7 +148,7 @@ sim_nig <- function(t, alpha, beta, delta, mu, method = "RWA", type = NULL, n_tr
   one_path <- function(t) {
     dt <- diff(t)
     dZ <- rig(length(dt), delta * dt / gamma, (delta * dt)^2)
-    c(0, cumsum(mu * dt + beta * dZ + sqrt(dZ) * stats::rnorm(length(dt))))
+    cumul(mu * dt + beta * dZ + sqrt(dZ) * stats::rnorm(length(dt)))
   }
   simulate_paths(t, n_traj, one_path, "NIG", c(alpha = alpha, beta = beta, delta = delta, mu = mu))
 }

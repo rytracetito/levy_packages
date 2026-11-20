@@ -86,3 +86,22 @@ test_that("the grid [0, 1] gives the same times as the former grid [0, 10]", {
   expect_equal(inspection_times("inc-dec", n = 30)$time,
                old(function(x) x - a * 10 / (2 * pi) * sin(2 * pi * x / 10), 30))
 })
+
+test_that("the pattern random gives sorted times on the fine grid, from 0 to tmax", {
+  set.seed(1)
+  p <- inspection_times("random", n = 50, n_traj = 2, tmax = 80)
+  for (k in 1:2) {
+    tk <- p$time[p$id == k]
+    expect_length(tk, 51)
+    expect_equal(tk[c(1, 51)], c(0, 80))
+    expect_true(all(diff(tk) >= 80 / 1000 - 1e-9))
+    expect_true(all(abs(tk * 1000 / 80 - round(tk * 1000 / 80)) < 1e-9))
+  }
+  expect_false(identical(p$time[p$id == 1], p$time[p$id == 2]))
+  set.seed(3); a <- inspection_times("random", n = 10)
+  set.seed(3); b <- inspection_times("random", n = 10)
+  expect_identical(a, b)
+  expect_equal(inspection_times("random", n = 1, tmax = 5)$time, c(0, 5))
+  expect_length(inspection_times("random", n = 1000, tmax = 100)$time, 1001)
+  expect_error(inspection_times("random", n = 1001), "at most 1000")
+})

@@ -30,7 +30,16 @@ instance the result of a simulation function of \code{DegradSim}.
 
 The columns are read by position, not by name. The inspection times of
 a trajectory must be strictly increasing; they do not have to start at
-0 (the first inspection is taken as origin).}
+0 (the first inspection is taken as origin).
+
+The observed increments are the differences of the levels. A level only
+keeps about 16 significant digits, so that an increment very small
+compared with the level can be found equal to 0, which is impossible
+under the gamma and inverse Gaussian models. The simulation functions of
+\code{DegradSim} keep the increments exactly as drawn in \code{attr(data, "dx")}:
+when this attribute is present and matches the levels, these exact
+increments are used for the check of the sign, the estimation, the
+bridges and the tests.}
 
 \item{model}{\code{"HGP"} (gamma process), \code{"HWP"} (Wiener process),
 \code{"InvGaus"} (inverse Gaussian process), \code{"VG"} (variance-gamma process)
