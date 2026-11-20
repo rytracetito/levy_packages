@@ -127,7 +127,10 @@ trajectory is resampled on a regular grid by exact simulation of the
 bridge of the process with these parameters (package \code{levyBridge},
 method \code{method}). Under H0 the reconstructed increments are i.i.d. with
 the distribution of \eqn{X_{t_{eq}}}, where \eqn{t_{eq}} is the time step of the
-grid; they are tested.
+grid; they are tested. For the VG model, when the estimation reaches the
+Brownian limit (\eqn{\nu} tends to 0, see \code{\link[=tests_disponibles]{tests_disponibles()}}), the
+bridge is the Wiener bridge with the estimated drift and volatility,
+and \code{parameters} contains \code{nu = 0}.
 \item \strong{Gamma and inverse Gaussian models}: these processes are
 increasing. A negative or zero observed increment is impossible under
 H0, which is then rejected for sure (p-value 0), without estimation

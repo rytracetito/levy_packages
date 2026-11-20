@@ -105,17 +105,34 @@ dmeixner_log <- function(x, a, b, d, m) {
     2 * Re(gsl::lngamma_complex(rep_len(d, length(y)), y))
 }
 
+# Ajustement VG. Quand la vraisemblance croît sans fin vers nu = 0, la loi ajustée est la limite
+# brownienne : la loi normale du maximum de vraisemblance, notée nu = 0
+fit_vg <- function(d) {
+  p <- suppressWarnings(levyfit::vg_mle(d))
+  if (!anyNA(p)) return(p)
+  if (!grepl("Brownian limit", attr(p, "message"))) stop(attr(p, "message"), call. = FALSE)
+  w <- levyfit::wiener_mle(d)
+  c(theta = w[["mu"]], sigma = sqrt(w[["sigma2"]]), nu = 0)
+}
+
+vg_limit_note <- "VG fitted at its Brownian limit (nu tends to 0): normal distribution"
+
+pit_normal <- function(y, m, s) {
+  y <- sort(y)
+  list(F = pmax(stats::pnorm(y, m, s), 1e-300), S = pmax(stats::pnorm(y, m, s, lower.tail = FALSE), 1e-300))
+}
+
 # Lois sur un pas 1 : la famille est stable par changement de pas, le pas des accroissements est sans importance
 # Ajustement sur les accroissements eux-mêmes (increments_data) : aucune perte de précision
 families <- list(
   VG = list(
-    fit = function(y) {
-      p <- suppressWarnings(levyfit::vg_mle(levyfit::increments_data(y)))
-      if (anyNA(p)) stop(attr(p, "message"), call. = FALSE)
-      p
+    fit = function(y) fit_vg(levyfit::increments_data(y)),
+    pit = function(y, p) {
+      if (p[["nu"]] == 0) return(pit_normal(y, p[["theta"]], p[["sigma"]]))
+      pit_numeric(y, safe_density(function(x) dvg_log(x, p[["theta"]], p[["sigma"]], p[["nu"]])), split = 0)
     },
-    pit = function(y, p) pit_numeric(y, safe_density(function(x) dvg_log(x, p[["theta"]], p[["sigma"]], p[["nu"]])), split = 0),
     sim = function(n, p) {
+      if (p[["nu"]] == 0) return(p[["theta"]] + p[["sigma"]] * stats::rnorm(n))
       g <- stats::rgamma(n, 1 / p[["nu"]], scale = p[["nu"]])
       p[["theta"]] * g + p[["sigma"]] * sqrt(g) * stats::rnorm(n)
     }),
@@ -195,8 +212,12 @@ boot_pit <- function(dx, model, tests, B, alpha) {
     pp <- fam$pit(y, fam$fit(y))
     vapply(st, function(f) f(pp), 0)
   })
+  note <- if (model == "VG" && par[["nu"]] == 0) vg_limit_note else NULL
   stats::setNames(lapply(seq_along(st), function(j) {
-    if (inherits(T_obs[[j]], "error")) T_obs[[j]] else boot_result(T_obs[[j]], T_boot[j, ], alpha)
+    if (inherits(T_obs[[j]], "error")) return(T_obs[[j]])
+    r <- boot_result(T_obs[[j]], T_boot[j, ], alpha)
+    r$note <- note
+    r
   }), tests)
 }
 

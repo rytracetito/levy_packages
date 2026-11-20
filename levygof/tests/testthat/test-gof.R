@@ -160,3 +160,22 @@ test_that("the VG density stays finite for large orders 1/nu (near the Brownian 
     expect_equal(integrate(d, -Inf, 0)$value + integrate(d, 0, Inf)$value, 1, tolerance = 1e-6)
   }
 })
+
+test_that("the VG tests use the Brownian limit when nu tends to 0", {
+  set.seed(3)
+  dx <- rnorm(50, 1, 2)
+  expect_true(anyNA(suppressWarnings(levyfit::vg_mle(levyfit::increments_data(dx)))))
+  p <- fit_vg(levyfit::increments_data(dx))
+  expect_equal(unname(p[["nu"]]), 0)
+  r <- test_adequation(dx, "VG", test = c("KS", "AD"), B = 20)
+  expect_false(any(r$decision == "not computed"))
+  expect_true(all(grepl("Brownian limit", r$message)))
+
+  t <- DegradSim::inspection_times("decreasing", n = 50, tmax = 100)$time
+  x <- DegradSim::sim_wiener(t, mu = 0.5, sigma = 1.5)
+  g <- gof.levy(x, "VG", test = "KS", B = 20)
+  if (g$parameters[["nu"]] == 0) {
+    expect_false(g$results$decision == "not computed")
+    expect_true(any(grepl("Brownian limit", capture.output(print(g)))))
+  }
+})

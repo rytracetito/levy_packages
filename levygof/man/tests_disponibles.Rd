@@ -158,6 +158,18 @@ parametric bootstrap (Stute, Gonzalez Manteiga and Presedo Quindimil,
 1993). With a small sample, \code{\link[levyfit:meixner_mle]{levyfit::meixner_mle()}} may give no estimate
 (see the section Algorithm of its help): the test is then not computed,
 with this message.
+
+The Wiener process is the limit of the variance-gamma process when
+\eqn{\nu} tends to 0. On increments without jumps (for instance normal
+increments), the likelihood of the VG model may increase without bound as
+\eqn{\nu} tends to 0, and \code{\link[levyfit:vg_mle]{levyfit::vg_mle()}} gives no estimate. The VG
+tests then use this limit: the fitted distribution is the normal
+distribution of the maximum likelihood estimates (noted \eqn{\nu = 0}), the
+bootstrap samples are drawn from it and each sample is fitted again with
+the same rule. The column \code{message} then says "VG fitted at its Brownian
+limit". Such data are compatible with a VG process whose \eqn{\nu} is close
+to 0: no test can tell them apart from a Wiener process, so compare also
+with the Wiener model (\code{"HWP"}).
 }
 
 \examples{

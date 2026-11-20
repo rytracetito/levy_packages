@@ -167,5 +167,5 @@ one_test <- function(dx, model, test, alpha, B, shared = NULL) {
   p <- if (is.null(r$p.value)) NA_real_ else as.numeric(r$p.value)[1]
   cv <- if (is.null(r$cv)) NA_real_ else as.numeric(r$cv)[1]
   reject <- if (!is.na(p)) p <= alpha else if (is.logical(r$Decision) && length(r$Decision) == 1) r$Decision else NA
-  result_row(test, stat, p, cv, reject, "")
+  result_row(test, stat, p, cv, reject, if (is.null(r$note)) "" else r$note)
 }

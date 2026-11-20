@@ -95,7 +95,10 @@
 #'    bridge of the process with these parameters (package `levyBridge`,
 #'    method `method`). Under H0 the reconstructed increments are i.i.d. with
 #'    the distribution of \eqn{X_{t_{eq}}}, where \eqn{t_{eq}} is the time step of the
-#'    grid; they are tested.
+#'    grid; they are tested. For the VG model, when the estimation reaches the
+#'    Brownian limit (\eqn{\nu} tends to 0, see [tests_disponibles()]), the
+#'    bridge is the Wiener bridge with the estimated drift and volatility,
+#'    and `parameters` contains `nu = 0`.
 #' 3. **Gamma and inverse Gaussian models**: these processes are
 #'    increasing. A negative or zero observed increment is impossible under
 #'    H0, which is then rejected for sure (p-value 0), without estimation
@@ -416,6 +419,11 @@ as_data_frames <- function(traj) lapply(traj, function(d) data.frame(t = d$t, X 
 # Estimation sur les accroissements observés (exacts quand la simulation les a fournis)
 estimate_parameters <- function(traj, model, dx) {
   d <- levyfit::increments_data(unlist(dx), unlist(lapply(traj, function(tr) diff(tr$t))))
+  if (model == "VG") {
+    return(tryCatch(fit_vg(d), error = function(e) {
+      stop("estimation impossible for the model VG, the bridge cannot be built: ", conditionMessage(e), call. = FALSE)
+    }))
+  }
   p <- suppressWarnings(switch(model,
     HGP     = levyfit::gamma_mle(d),
     HWP     = levyfit::wiener_mle(d),
@@ -448,8 +456,14 @@ bridge_trajectories <- function(traj, model, par, method, option = 1, digits = N
                                             common_step = cs, option = option),
     InvGaus = levyBridge::ig_resampling(d, theta = par, method = method, digits = digits,
                                         common_step = cs, option = option),
-    VG      = levyBridge::vg_resampling(d, theta = par, method = method, digits = digits,
-                                        common_step = cs, option = option),
+    # nu = 0 : limite brownienne du VG, le pont est celui du Wiener
+    VG      = if (par[["nu"]] == 0) {
+                levyBridge::wiener_resampling(d, theta = c(mu = par[["theta"]], sigma = par[["sigma"]]), method = method,
+                                              digits = digits, common_step = cs, option = option)
+              } else {
+                levyBridge::vg_resampling(d, theta = par, method = method, digits = digits,
+                                          common_step = cs, option = option)
+              },
     Meixner = levyBridge::meixner_resampling(d, theta = par, method = method, digits = digits,
                                              common_step = cs, option = option)
   )
@@ -501,6 +515,9 @@ print.gof.levy <- function(x, ...) {
   }
   if (!is.null(x$parameters)) {
     cat("Estimated parameters of the process:", paste(names(x$parameters), signif(x$parameters, 4), sep = " = ", collapse = ", "), "\n")
+    if (x$model == "VG" && x$parameters[["nu"]] == 0) {
+      cat("nu = 0: the VG fit reached its Brownian limit, the bridge is a Wiener bridge\n")
+    }
   }
   cat("\n")
   r <- x$results
