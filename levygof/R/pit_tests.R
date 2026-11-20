@@ -144,37 +144,102 @@ boot_result <- function(T_obs, T_boot, alpha) {
        cv = unname(stats::quantile(T_boot, 1 - alpha, na.rm = TRUE)))
 }
 
+# Bootstrap commun : les tests d'un même modèle utilisent les mêmes B échantillons simulés (une
+# simulation et une estimation par échantillon), ce qui ne change pas la loi de la p-valeur de chaque test.
+# T_boot : matrice avec une ligne par test et une colonne par échantillon
+boot_stats <- function(stats, B, one) {
+  matrix(vapply(seq_len(B), function(i) tryCatch(one(), error = function(e) rep(NA_real_, length(stats))),
+                numeric(length(stats))), nrow = length(stats))
+}
+
+# T_obs calculée test par test : une statistique impossible à calculer ne fait échouer que son test
+obs_stats <- function(stats, f) lapply(stats, function(s) tryCatch(f(s), error = function(e) e))
+
 # Tests de gofgamma (HME1, BE, KS, CvM, AD, Watson) : même statistique et même bootstrap paramétrique que
 # gofgamma (forme estimée par gofgamma::gamma_est, échantillons Gamma(k, 1) réestimés), mais on garde
 # toutes les statistiques simulées pour obtenir aussi la p-valeur
-gof_gamma_boot <- function(dx, stat, B, alpha, tuning = NULL) {
-  f <- function(y, k) if (is.null(tuning)) stat(y, k) else stat(y, k, tuning)
+gamma_stats <- list(HME1 = function(y, k) gofgamma::HME1(y, k, 1), BE = function(y, k) gofgamma::BE(y, k, 1),
+                    KS = function(y, k) gofgamma::KS(y, k), CvM = function(y, k) gofgamma::CM(y, k),
+                    AD = function(y, k) gofgamma::AD(y, k), Watson = function(y, k) gofgamma::WA(y, k))
+
+boot_gamma <- function(dx, tests, B, alpha) {
+  st <- gamma_stats[tests]
   par <- gofgamma::gamma_est(dx)
-  T_obs <- f(dx / par[2], par[1])
-  T_boot <- vapply(seq_len(B), function(i) {
+  T_obs <- obs_stats(st, function(f) f(dx / par[2], par[1]))
+  T_boot <- boot_stats(st, B, function() {
     y <- stats::rgamma(length(dx), par[1], 1)
     k <- gofgamma::gamma_est(y)[1]
-    tryCatch(f(y / (mean(y) / k), k), error = function(e) NA_real_)
-  }, 0)
-  r <- boot_result(T_obs, T_boot, alpha)
-  # valeur critique avec la formule d'interpolation de gofgamma::crit.values
-  Tn <- sort(T_boot)
-  j <- floor((1 - alpha) * length(Tn))
-  if (j >= 1 && j < length(Tn)) r$cv <- Tn[j] + (1 - alpha) * (Tn[j + 1] - Tn[j])
-  r
+    z <- y / (mean(y) / k)
+    vapply(st, function(f) tryCatch(f(z, k), error = function(e) NA_real_), 0)
+  })
+  stats::setNames(lapply(seq_along(st), function(j) {
+    if (inherits(T_obs[[j]], "error")) return(T_obs[[j]])
+    r <- boot_result(T_obs[[j]], T_boot[j, ], alpha)
+    # valeur critique avec la formule d'interpolation de gofgamma::crit.values
+    Tn <- sort(T_boot[j, ])
+    i <- floor((1 - alpha) * length(Tn))
+    if (i >= 1 && i < length(Tn)) r$cv <- Tn[i] + (1 - alpha) * (Tn[i + 1] - Tn[i])
+    r
+  }), tests)
 }
 
-# Test `test` (KS, CvM, AD ou Watson) de la famille `model` (VG ou Meixner)
-gof_pit <- function(dx, model, test, B, alpha) {
+# Tests KS, CvM, AD et Watson de la famille `model` (VG ou Meixner)
+boot_pit <- function(dx, model, tests, B, alpha) {
   fam <- families[[model]]
-  stat <- pit_stats[[test]]
+  st <- pit_stats[tests]
   par <- fam$fit(dx)
-  T_obs <- stat(fam$pit(dx, par))
-  T_boot <- vapply(seq_len(B), function(i) {
+  p0 <- fam$pit(dx, par)
+  T_obs <- obs_stats(st, function(f) f(p0))
+  T_boot <- boot_stats(st, B, function() {
     y <- fam$sim(length(dx), par)
-    tryCatch(stat(fam$pit(y, fam$fit(y))), error = function(e) NA_real_)
-  }, 0)
-  boot_result(T_obs, T_boot, alpha)
+    pp <- fam$pit(y, fam$fit(y))
+    vapply(st, function(f) f(pp), 0)
+  })
+  stats::setNames(lapply(seq_along(st), function(j) {
+    if (inherits(T_obs[[j]], "error")) T_obs[[j]] else boot_result(T_obs[[j]], T_boot[j, ], alpha)
+  }), tests)
+}
+
+# Tests de gofIG (ABEV1, ABEV2, HK1, HK2, KS, CvM, AD) : statistiques de gofIG et même bootstrap
+# paramétrique que gofIG (échantillons IG(1, phi), phi = lambda / mu du maximum de vraisemblance ;
+# p-valeur : proportion des statistiques simulées strictement plus grandes)
+ig_stats <- list(ABEV1 = function(x) gofIG::ABEV1(x, 10, "MLE"), ABEV2 = function(x) gofIG::ABEV2(x, 10, "MLE"),
+                 HK1 = function(x) gofIG::HK1(x, 0), HK2 = function(x) gofIG::HK2(x),
+                 KS = function(x) gofIG::KS(x), CvM = function(x) gofIG::CM(x), AD = function(x) gofIG::AD(x))
+
+# Loi IG(m, lambda) par la méthode de Michael, Schucany et Haas (1976)
+rig <- function(n, m, lambda) {
+  nu <- stats::rnorm(n)^2
+  x1 <- m + m^2 * nu / (2 * lambda) - m / (2 * lambda) * sqrt(4 * m * lambda * nu + m^2 * nu^2)
+  ifelse(stats::runif(n) <= m / (m + x1), x1, m^2 / x1)
+}
+
+boot_ig <- function(dx, tests, B) {
+  st <- ig_stats[tests]
+  mu <- mean(dx)
+  phi <- (1 / mean(1 / dx - 1 / mu)) / mu
+  T_obs <- obs_stats(st, function(f) f(dx))
+  T_boot <- boot_stats(st, B, function() {
+    x <- rig(length(dx), 1, phi)
+    vapply(st, function(f) f(x), 0)
+  })
+  stats::setNames(lapply(seq_along(st), function(j) {
+    if (inherits(T_obs[[j]], "error")) return(T_obs[[j]])
+    ok <- !is.na(T_boot[j, ])
+    if (!any(ok)) return(simpleError("all the bootstrap replications failed"))
+    list(statistic = T_obs[[j]], p.value = mean(T_boot[j, ok] > T_obs[[j]]))
+  }), tests)
+}
+
+# Tous les tests du modèle qui partagent un bootstrap, calculés ensemble : liste nommée par test
+shared_tests <- function(dx, model, test, alpha, B) {
+  groupe <- intersect(test, switch(model, HGP = names(gamma_stats), InvGaus = names(ig_stats),
+                                   VG = names(pit_stats), Meixner = names(pit_stats), character(0)))
+  if (length(groupe) == 0) return(list())
+  r <- tryCatch(switch(model, HGP = boot_gamma(dx, groupe, B, alpha), InvGaus = boot_ig(dx, groupe, B),
+                       boot_pit(dx, model, groupe, B, alpha)), error = function(e) e)
+  if (inherits(r, "error")) r <- stats::setNames(rep(list(r), length(groupe)), groupe)
+  r
 }
 
 # Test VGE de la loi gamma : statistique de goft::gamma_test, p-valeur par bootstrap paramétrique

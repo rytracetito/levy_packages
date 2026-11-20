@@ -20,6 +20,14 @@ catalogue <- list(
 #'   per model; otherwise the vector of test names of this model.
 #'
 #' @section The tests:
+#' **Common bootstrap.** For the gamma (tests HME1, BE, KS, CvM, AD and
+#' Watson), inverse Gaussian (ABEV1, ABEV2, HK1, HK2, KS, CvM and AD),
+#' variance-gamma and Meixner models, the tests of a same model use the same
+#' `B` bootstrap samples: each sample is simulated and estimated once, and
+#' all the statistics are computed on it. The p-value of each test has the
+#' same distribution as with a bootstrap of its own; the computation is much
+#' faster when several tests are applied.
+#'
 #' All the tests are tests of a composite hypothesis: the increments
 #' \eqn{\Delta x_1, \dots, \Delta x_n} are i.i.d. with a distribution of the family of
 #' the model, whose parameters are unknown and estimated on the sample.
@@ -98,7 +106,8 @@ catalogue <- list(
 #' \eqn{L^2} distance, H0 is rejected for large values, and the p-value is
 #' obtained by parametric bootstrap: `B` samples of \eqn{IG(1, \hat\varphi)}
 #' of size \eqn{n}, the statistic being computed again (with new estimates)
-#' on each one. `gofIG` gives only the p-value, so the column
+#' on each one. As in `gofIG`, the p-value is the proportion of bootstrap
+#' statistics strictly larger than the observed one, and the column
 #' `critical.value` is `NA`.
 #'
 #' * `"HK2"` compares the empirical Laplace transform

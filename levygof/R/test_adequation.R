@@ -107,7 +107,8 @@ test_adequation <- function(dx, model, test = NULL, alpha = 0.05, B = 200) {
     msg <- paste0(sum(dx <= 0), " negative or zero increment(s): impossible under H0 (increasing process)")
     return(tests_table(do.call(rbind, lapply(test, function(nom) result_row(nom, NA_real_, 0, NA_real_, TRUE, msg)))))
   }
-  tests_table(do.call(rbind, lapply(test, function(nom) one_test(dx, model, nom, alpha, B))))
+  shared <- shared_tests(dx, model, test, alpha, B)
+  tests_table(do.call(rbind, lapply(test, function(nom) one_test(dx, model, nom, alpha, B, shared[[nom]]))))
 }
 
 tests_table <- function(d) {
@@ -136,30 +137,17 @@ result_row <- function(test, stat, p, cv, reject, message) {
 
 call_test <- function(dx, model, test, alpha, B) {
   switch(paste(model, test),
-    "HGP HME1"             = gof_gamma_boot(dx, gofgamma::HME1, B, alpha, tuning = 1),
-    "HGP BE"               = gof_gamma_boot(dx, gofgamma::BE, B, alpha, tuning = 1),
     "HGP VGE"              = gof_gamma_vge(dx, B, alpha),
-    "HGP KS"               = gof_gamma_boot(dx, gofgamma::KS, B, alpha),
-    "HGP CvM"              = gof_gamma_boot(dx, gofgamma::CM, B, alpha),
-    "HGP AD"               = gof_gamma_boot(dx, gofgamma::AD, B, alpha),
-    "HGP Watson"           = gof_gamma_boot(dx, gofgamma::WA, B, alpha),
     "HWP AD"               = nortest::ad.test(dx),
     "HWP CvM"              = suppressWarnings(nortest::cvm.test(dx)),
     "HWP SW"               = stats::shapiro.test(dx),
     "HWP Lilliefors"       = nortest::lillie.test(dx),
     "HWP JB"               = tseries::jarque.bera.test(dx),
     "HWP DAgostinoPearson" = gof_dagostino_pearson(dx),
-    "InvGaus ABEV1"        = gofIG::test.ABEV1(dx, a = 10, meth = "MLE", B = B),
-    "InvGaus ABEV2"        = gofIG::test.ABEV2(dx, a = 10, meth = "MLE", B = B),
-    "InvGaus HK1"          = gofIG::test.HK1(dx, a = 0, B = B),
-    "InvGaus HK2"          = gofIG::test.HK2(dx, B = B),
-    "InvGaus KS"           = gofIG::test.KS(dx, B = B),
-    "InvGaus CvM"          = gofIG::test.CM(dx, B = B),
-    "InvGaus AD"           = gofIG::test.AD(dx, B = B),
     "InvGaus BG"           = gof_ig_bg(dx, B),
     "InvGaus VGE_ratio"    = goft::ig_test(dx, method = "ratio"),
     "InvGaus VGE_gamma"    = goft::ig_test(dx, method = "transf")[[2]],
-    gof_pit(dx, model, test, B, alpha)
+    stop("unknown test ", test, call. = FALSE)
   )
 }
 
@@ -171,8 +159,9 @@ gof_ig_bg <- function(dx, B) {
   gofIG::test.BG(dx, B = B)
 }
 
-one_test <- function(dx, model, test, alpha, B) {
-  r <- tryCatch(call_test(dx, model, test, alpha, B), error = function(e) e)
+# shared : résultat déjà calculé par le bootstrap commun du modèle, s'il y en a un
+one_test <- function(dx, model, test, alpha, B, shared = NULL) {
+  r <- if (is.null(shared)) tryCatch(call_test(dx, model, test, alpha, B), error = function(e) e) else shared
   if (inherits(r, "error")) return(result_row(test, NA_real_, NA_real_, NA_real_, NA, conditionMessage(r)))
   stat <- as.numeric(if (!is.null(r$T.value)) r$T.value else r$statistic)[1]
   p <- if (is.null(r$p.value)) NA_real_ else as.numeric(r$p.value)[1]
