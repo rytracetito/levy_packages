@@ -28,12 +28,18 @@ A data frame with one row per test and the columns:
 \itemize{
 \item \code{test}: name of the test;
 \item \code{statistic}: value of the test statistic;
-\item \code{p.value}: p-value; the test rejects H0 when \code{p.value <= alpha};
+\item \code{p.value}: p-value; the test rejects H0 when \code{p.value <= alpha},
+except the tests HME1, BE, KS, CvM, AD and Watson of the gamma model,
+whose decision is the one of \code{gofgamma} (statistic larger than the
+critical value) and may differ from \code{p.value <= alpha} when the
+statistic is very close to the critical value;
 \item \code{critical.value}: for the tests whose p-value is computed by
 parametric bootstrap, the quantile of order \code{1 - alpha} of the
-bootstrap statistics (H0 is rejected when the statistic exceeds it);
-\code{NA} when it is not available (tests with an exact or asymptotic
-p-value, and tests of \code{gofIG}, which give only the p-value);
+bootstrap statistics (H0 is rejected when the statistic exceeds it;
+for the test SW of the Wiener model, the quantile of order \code{alpha},
+H0 being rejected when the statistic is below it); \code{NA} when it is
+not available (tests with an asymptotic p-value, and tests of
+\code{gofIG}, which give only the p-value);
 \item \code{decision}: \code{"reject H0"}, \code{"do not reject H0"}, or \code{"not computed"}
 when the test failed;
 \item \code{message}: reason of a failure or of a certain rejection, \code{""}
@@ -137,13 +143,9 @@ mean and variance unknown. \emph{Journal of the American Statistical
 Association}, 62(318), 399-402. \doi{10.1080/01621459.1967.10482916}
 (test Lilliefors)
 
-Dallal, G. E. and Wilkinson, L. (1986). An analytic approximation to the
-distribution of Lilliefors' test for normality. \emph{The American
-Statistician}, 40, 294-296. (p-value of the test Lilliefors)
-
 Stephens, M. A. (1986). Tests based on EDF statistics. In D'Agostino, R. B.
 and Stephens, M. A. (eds.), \emph{Goodness-of-Fit Techniques}, Marcel Dekker,
-New York. (tests AD and CvM with estimated parameters, and the EDF
+New York. (statistics AD and CvM with estimated parameters, and the EDF
 statistics of the VG and Meixner tests)
 
 Jarque, C. M. and Bera, A. K. (1987). A test for normality of observations

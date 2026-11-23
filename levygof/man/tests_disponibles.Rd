@@ -22,13 +22,14 @@ each model.
 }
 \section{The tests}{
 
-\strong{Common bootstrap.} For the gamma (tests HME1, BE, KS, CvM, AD and
-Watson), inverse Gaussian (ABEV1, ABEV2, HK1, HK2, KS, CvM and AD),
-variance-gamma and Meixner models, the tests of a same model use the same
-\code{B} bootstrap samples: each sample is simulated and estimated once, and
-all the statistics are computed on it. The p-value of each test has the
-same distribution as with a bootstrap of its own; the computation is much
-faster when several tests are applied.
+\strong{Common bootstrap.} For the Wiener, inverse Gaussian (ABEV1, ABEV2,
+HK1, HK2, KS, CvM and AD), variance-gamma and Meixner models, the tests of
+a same model use the same \code{B} bootstrap samples: each sample is simulated
+and estimated once, and all the statistics are computed on it. The p-value
+of each test has the same distribution as with a bootstrap of its own; the
+computation is much faster when several tests are applied. The tests
+HME1, BE, KS, CvM, AD and Watson of the gamma model each have their own
+bootstrap, as in the package \code{gofgamma}.
 
 All the tests are tests of a composite hypothesis: the increments
 \eqn{\Delta x_1, \dots, \Delta x_n} are i.i.d. with a distribution of the family of
@@ -47,25 +48,41 @@ parametric bootstrap;
 Cramer-von Mises, Anderson-Darling and Watson (\code{gofgamma}).
 }
 
-For the tests HME1, BE, KS, CvM, AD and Watson, the statistic and the
-parametric bootstrap are those of the package \code{gofgamma} (the shape is
-estimated by \code{gofgamma::gamma_est}, and each bootstrap sample of the
-gamma distribution with this shape is estimated again); all the bootstrap
-statistics are kept, which gives both the p-value and the critical value.
+The tests HME1, BE, KS, CvM, AD and Watson repeat step by step the
+functions \code{test.HME1()}, \code{test.BE()}, \code{test.KS()}, \code{test.CM()},
+\code{test.AD()} and \code{test.WA()} of the package \code{gofgamma}: the shape is
+estimated by \code{gofgamma::gamma_est}, \code{B} samples of the gamma distribution
+with this shape are drawn and estimated again, the critical value is the
+one of \code{gofgamma::crit.values}, and H0 is rejected when the statistic
+exceeds it. With the same random seed, the statistic, the critical value
+and the decision are those of \code{gofgamma}. The bootstrap statistics are
+also kept to give the p-value, the proportion of bootstrap statistics
+larger than or equal to the observed one.
 
 \strong{Wiener process (\code{"HWP"})}, increments
 \eqn{\mathcal{N}(\mu \Delta, \sigma^2 \Delta)}: tests of normality with estimated
 mean and variance.
 \itemize{
 \item \code{"AD"}, \code{"CvM"} and \code{"Lilliefors"}: Anderson-Darling, Cramer-von
-Mises and Lilliefors tests (package \code{nortest}). The Lilliefors test is the
-Kolmogorov-Smirnov test with estimated mean and variance: \code{"KS"} is also
-accepted for it, and the result is labelled \code{"Lilliefors"};
-\item \code{"SW"}: Shapiro-Wilk (\code{stats::shapiro.test});
-\item \code{"JB"}: Jarque-Bera (\code{tseries::jarque.bera.test});
-\item \code{"DAgostinoPearson"}: D'Agostino-Pearson omnibus test \eqn{K^2},
+Mises and Lilliefors statistics (package \code{nortest}). The Lilliefors test
+is the Kolmogorov-Smirnov test with estimated mean and variance: \code{"KS"}
+is also accepted for it, and the result is labelled \code{"Lilliefors"};
+\item \code{"SW"}: Shapiro-Wilk statistic \eqn{W} (\code{stats::shapiro.test}), H0
+being rejected for small values of \eqn{W};
+\item \code{"JB"}: Jarque-Bera statistic (\code{tseries::jarque.bera.test});
+\item \code{"DAgostinoPearson"}: D'Agostino-Pearson omnibus statistic \eqn{K^2},
 combining skewness and kurtosis (\code{fBasics::dagoTest}).
 }
+
+The p-values of the six tests are computed by parametric bootstrap, with
+the statistics of these packages: the mean and the standard deviation are
+estimated, \code{B} normal samples with these parameters are drawn, and the
+statistics are computed again on each one (the statistics standardize the
+sample, so that the parameters are estimated again). The p-value is the
+proportion of bootstrap statistics at least as extreme as the observed one
+(plus one, divided by \code{B} plus one). The p-values given by the packages
+themselves (approximations, or asymptotic chi-squared distributions for JB
+and DAgostinoPearson) are not used.
 
 \strong{Inverse Gaussian process (\code{"InvGaus"})}, increments
 \eqn{IG(\mu \Delta, \eta \Delta^2)}:
@@ -212,13 +229,9 @@ mean and variance unknown. \emph{Journal of the American Statistical
 Association}, 62(318), 399-402. \doi{10.1080/01621459.1967.10482916}
 (test Lilliefors)
 
-Dallal, G. E. and Wilkinson, L. (1986). An analytic approximation to the
-distribution of Lilliefors' test for normality. \emph{The American
-Statistician}, 40, 294-296. (p-value of the test Lilliefors)
-
 Stephens, M. A. (1986). Tests based on EDF statistics. In D'Agostino, R. B.
 and Stephens, M. A. (eds.), \emph{Goodness-of-Fit Techniques}, Marcel Dekker,
-New York. (tests AD and CvM with estimated parameters, and the EDF
+New York. (statistics AD and CvM with estimated parameters, and the EDF
 statistics of the VG and Meixner tests)
 
 Jarque, C. M. and Bera, A. K. (1987). A test for normality of observations

@@ -21,12 +21,18 @@
 #' @return A data frame with one row per test and the columns:
 #'   * `test`: name of the test;
 #'   * `statistic`: value of the test statistic;
-#'   * `p.value`: p-value; the test rejects H0 when `p.value <= alpha`;
+#'   * `p.value`: p-value; the test rejects H0 when `p.value <= alpha`,
+#'     except the tests HME1, BE, KS, CvM, AD and Watson of the gamma model,
+#'     whose decision is the one of `gofgamma` (statistic larger than the
+#'     critical value) and may differ from `p.value <= alpha` when the
+#'     statistic is very close to the critical value;
 #'   * `critical.value`: for the tests whose p-value is computed by
 #'     parametric bootstrap, the quantile of order `1 - alpha` of the
-#'     bootstrap statistics (H0 is rejected when the statistic exceeds it);
-#'     `NA` when it is not available (tests with an exact or asymptotic
-#'     p-value, and tests of `gofIG`, which give only the p-value);
+#'     bootstrap statistics (H0 is rejected when the statistic exceeds it;
+#'     for the test SW of the Wiener model, the quantile of order `alpha`,
+#'     H0 being rejected when the statistic is below it); `NA` when it is
+#'     not available (tests with an asymptotic p-value, and tests of
+#'     `gofIG`, which give only the p-value);
 #'   * `decision`: `"reject H0"`, `"do not reject H0"`, or `"not computed"`
 #'     when the test failed;
 #'   * `message`: reason of a failure or of a certain rejection, `""`
@@ -137,13 +143,13 @@ result_row <- function(test, stat, p, cv, reject, message) {
 
 call_test <- function(dx, model, test, alpha, B) {
   switch(paste(model, test),
+    "HGP HME1"             = ,
+    "HGP BE"               = ,
+    "HGP KS"               = ,
+    "HGP CvM"              = ,
+    "HGP AD"               = ,
+    "HGP Watson"           = gofgamma_test(dx, test, B, alpha),
     "HGP VGE"              = gof_gamma_vge(dx, B, alpha),
-    "HWP AD"               = nortest::ad.test(dx),
-    "HWP CvM"              = suppressWarnings(nortest::cvm.test(dx)),
-    "HWP SW"               = stats::shapiro.test(dx),
-    "HWP Lilliefors"       = nortest::lillie.test(dx),
-    "HWP JB"               = tseries::jarque.bera.test(dx),
-    "HWP DAgostinoPearson" = gof_dagostino_pearson(dx),
     "InvGaus BG"           = gof_ig_bg(dx, B),
     "InvGaus VGE_ratio"    = goft::ig_test(dx, method = "ratio"),
     "InvGaus VGE_gamma"    = goft::ig_test(dx, method = "transf")[[2]],
@@ -166,6 +172,8 @@ one_test <- function(dx, model, test, alpha, B, shared = NULL) {
   stat <- as.numeric(if (!is.null(r$T.value)) r$T.value else r$statistic)[1]
   p <- if (is.null(r$p.value)) NA_real_ else as.numeric(r$p.value)[1]
   cv <- if (is.null(r$cv)) NA_real_ else as.numeric(r$cv)[1]
-  reject <- if (!is.na(p)) p <= alpha else if (is.logical(r$Decision) && length(r$Decision) == 1) r$Decision else NA
+  # tests de gofgamma : décision de gofgamma (statistique supérieure à la valeur critique)
+  reject <- if (is.logical(r$Decision) && length(r$Decision) == 1 && !is.na(r$Decision)) r$Decision
+            else if (!is.na(p)) p <= alpha else NA
   result_row(test, stat, p, cv, reject, if (is.null(r$note)) "" else r$note)
 }

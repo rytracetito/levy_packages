@@ -16,9 +16,40 @@ test_that("test_adequation returns one row per test", {
   expect_true(all(r$p.value > 0 & r$p.value <= 1))
   r <- test_adequation(rgamma(40, 2), "HGP", test = c("KS", "VGE", "HME1"), B = 30)
   expect_true(all(!is.na(r$p.value) & !is.na(r$critical.value)))
+  expect_equal(r$decision[2] == "reject H0", r$p.value[2] <= 0.05)
+  expect_equal(r$decision[-2] == "reject H0", r$statistic[-2] > r$critical.value[-2])
+  r <- test_adequation(rnorm(40), "HWP", test = "SW", B = 50)
+  expect_true(r$statistic < 1)
   expect_equal(r$decision == "reject H0", r$p.value <= 0.05)
-  r <- test_adequation(rnorm(40), "HWP", test = "SW")
-  expect_true(is.na(r$critical.value))
+})
+
+test_that("the gamma tests give exactly the results of gofgamma", {
+  dx <- rgamma(30, 2, 3)
+  fonctions <- list(HME1 = function(x, B) gofgamma::test.HME1(x, boot = B), BE = function(x, B) gofgamma::test.BE(x, boot = B),
+                    KS = gofgamma::test.KS, CvM = gofgamma::test.CM, AD = gofgamma::test.AD, Watson = gofgamma::test.WA)
+  for (nom in names(fonctions)) {
+    set.seed(11)
+    g <- fonctions[[nom]](dx, 40)
+    set.seed(11)
+    r <- test_adequation(dx, "HGP", test = nom, B = 40)
+    expect_equal(r$statistic, unname(g$T.value))
+    expect_equal(r$critical.value, unname(g$cv))
+    expect_equal(r$decision == "reject H0", unname(g$Decision))
+  }
+})
+
+test_that("the Wiener tests use a parametric bootstrap", {
+  set.seed(12)
+  x <- rnorm(40, 2, 3)
+  r <- test_adequation(x, "HWP", B = 99)
+  expect_true(all(!is.na(r$critical.value)))
+  expect_true(all(r$p.value >= 1 / 100 & r$p.value <= 1))
+  expect_equal(r$p.value * 100, round(r$p.value * 100))
+  sw <- r[r$test == "SW", ]
+  expect_equal(sw$statistic, unname(stats::shapiro.test(x)$statistic))
+  expect_true(sw$critical.value < 1)
+  set.seed(12)
+  expect_true(test_adequation(rexp(60), "HWP", test = c("SW", "JB"), B = 99)$p.value[1] <= 0.05)
 })
 
 test_that("a negative increment under an increasing model is a certain rejection", {
@@ -137,7 +168,9 @@ test_that("MultiBridge gives one common grid and a test on all the trajectories"
 test_that("KS is accepted for the Wiener model as the Lilliefors test", {
   set.seed(9)
   x <- rnorm(40)
+  set.seed(1)
   r1 <- test_adequation(x, "HWP", test = c("KS", "AD"))
+  set.seed(1)
   r2 <- test_adequation(x, "HWP", test = c("Lilliefors", "AD"))
   expect_equal(r1, r2)
   expect_equal(r1$test, c("Lilliefors", "AD"))

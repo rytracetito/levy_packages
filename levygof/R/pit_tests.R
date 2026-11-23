@@ -172,30 +172,59 @@ boot_stats <- function(stats, B, one) {
 # T_obs calculée test par test : une statistique impossible à calculer ne fait échouer que son test
 obs_stats <- function(stats, f) lapply(stats, function(s) tryCatch(f(s), error = function(e) e))
 
-# Tests de gofgamma (HME1, BE, KS, CvM, AD, Watson) : même statistique et même bootstrap paramétrique que
-# gofgamma (forme estimée par gofgamma::gamma_est, échantillons Gamma(k, 1) réestimés), mais on garde
-# toutes les statistiques simulées pour obtenir aussi la p-valeur
+# Tests de gofgamma (HME1, BE, KS, CvM, AD, Watson) : chaque test refait ligne pour ligne
+# gofgamma::test.HME1, test.BE, test.KS, test.CM, test.AD et test.WA (avec gofgamma::crit.values), avec son
+# propre bootstrap : même statistique, même valeur critique et même décision. Les statistiques simulées
+# sont gardées pour donner aussi la p-valeur.
 gamma_stats <- list(HME1 = function(y, k) gofgamma::HME1(y, k, 1), BE = function(y, k) gofgamma::BE(y, k, 1),
                     KS = function(y, k) gofgamma::KS(y, k), CvM = function(y, k) gofgamma::CM(y, k),
                     AD = function(y, k) gofgamma::AD(y, k), Watson = function(y, k) gofgamma::WA(y, k))
 
-boot_gamma <- function(dx, tests, B, alpha) {
-  st <- gamma_stats[tests]
+gofgamma_test <- function(dx, test, B, alpha) {
+  f <- gamma_stats[[test]]
   par <- gofgamma::gamma_est(dx)
-  T_obs <- obs_stats(st, function(f) f(dx / par[2], par[1]))
+  n <- length(dx)
+  y <- rep(0, B)
+  for (j in seq_len(B)) {
+    BS <- stats::rgamma(n, par[1], 1)
+    k <- gofgamma::gamma_est(BS)[1]
+    y[j] <- f(BS / (mean(BS) / k), k)
+  }
+  Tn <- sort(y)
+  i <- floor((1 - alpha) * B)
+  cv <- if (i >= 1 && i < B) Tn[i] + (1 - alpha) * (Tn[i + 1] - Tn[i]) else NA_real_
+  T_obs <- f(dx / par[2], par[1])
+  list(statistic = T_obs, cv = cv, Decision = T_obs > cv, p.value = mean(y >= T_obs))
+}
+
+# Tests de la loi normale (Wiener) : statistiques des packages nortest, stats, tseries et fBasics,
+# p-valeur par bootstrap paramétrique commun. Les statistiques ne changent pas par changement de position
+# et d'échelle : un échantillon normal simulé avec la moyenne et l'écart-type estimés, puis réestimé, a la
+# même loi de statistique qu'un échantillon N(0, 1). SW rejette pour les petites valeurs de W : on teste -W.
+normal_stats <- list(
+  AD = function(x) unname(nortest::ad.test(x)$statistic),
+  CvM = function(x) unname(suppressWarnings(nortest::cvm.test(x))$statistic),
+  SW = function(x) -unname(stats::shapiro.test(x)$statistic),
+  Lilliefors = function(x) unname(nortest::lillie.test(x)$statistic),
+  JB = function(x) unname(tseries::jarque.bera.test(x)$statistic),
+  DAgostinoPearson = function(x) unname(fBasics::dagoTest(x)@test$statistic[1]))
+
+boot_normal <- function(dx, tests, B, alpha) {
+  st <- normal_stats[tests]
+  m <- mean(dx)
+  s <- stats::sd(dx)
+  T_obs <- obs_stats(st, function(f) f(dx))
   T_boot <- boot_stats(st, B, function() {
-    y <- stats::rgamma(length(dx), par[1], 1)
-    k <- gofgamma::gamma_est(y)[1]
-    z <- y / (mean(y) / k)
-    vapply(st, function(f) tryCatch(f(z, k), error = function(e) NA_real_), 0)
+    x <- stats::rnorm(length(dx), m, s)
+    vapply(st, function(f) tryCatch(f(x), error = function(e) NA_real_), 0)
   })
   stats::setNames(lapply(seq_along(st), function(j) {
     if (inherits(T_obs[[j]], "error")) return(T_obs[[j]])
     r <- boot_result(T_obs[[j]], T_boot[j, ], alpha)
-    # valeur critique avec la formule d'interpolation de gofgamma::crit.values
-    Tn <- sort(T_boot[j, ])
-    i <- floor((1 - alpha) * length(Tn))
-    if (i >= 1 && i < length(Tn)) r$cv <- Tn[i] + (1 - alpha) * (Tn[i + 1] - Tn[i])
+    if (tests[j] == "SW") {
+      r$statistic <- -r$statistic
+      r$cv <- -r$cv
+    }
     r
   }), tests)
 }
@@ -254,10 +283,10 @@ boot_ig <- function(dx, tests, B) {
 
 # Tous les tests du modèle qui partagent un bootstrap, calculés ensemble : liste nommée par test
 shared_tests <- function(dx, model, test, alpha, B) {
-  groupe <- intersect(test, switch(model, HGP = names(gamma_stats), InvGaus = names(ig_stats),
+  groupe <- intersect(test, switch(model, HWP = names(normal_stats), InvGaus = names(ig_stats),
                                    VG = names(pit_stats), Meixner = names(pit_stats), character(0)))
   if (length(groupe) == 0) return(list())
-  r <- tryCatch(switch(model, HGP = boot_gamma(dx, groupe, B, alpha), InvGaus = boot_ig(dx, groupe, B),
+  r <- tryCatch(switch(model, HWP = boot_normal(dx, groupe, B, alpha), InvGaus = boot_ig(dx, groupe, B),
                        boot_pit(dx, model, groupe, B, alpha)), error = function(e) e)
   if (inherits(r, "error")) r <- stats::setNames(rep(list(r), length(groupe)), groupe)
   r
@@ -273,10 +302,4 @@ gof_gamma_vge <- function(dx, B, alpha) {
   T_boot <- vapply(seq_len(B), function(i) tryCatch(stat(stats::rgamma(length(dx), shape = shape, scale = scale)),
                                                    error = function(e) NA_real_), 0)
   boot_result(T_obs, T_boot, alpha)
-}
-
-# Test omnibus de D'Agostino-Pearson (K^2)
-gof_dagostino_pearson <- function(dx) {
-  r <- fBasics::dagoTest(dx)
-  list(statistic = unname(r@test$statistic[1]), p.value = unname(r@test$p.value[1]))
 }
