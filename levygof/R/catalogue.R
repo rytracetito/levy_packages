@@ -20,8 +20,8 @@ catalogue <- list(
 #'   per model; otherwise the vector of test names of this model.
 #'
 #' @section The tests:
-#' **Common bootstrap.** For the Wiener, inverse Gaussian (ABEV1, ABEV2,
-#' HK1, HK2, KS, CvM and AD), variance-gamma and Meixner models, the tests of
+#' **Common bootstrap.** For the Wiener, inverse Gaussian (all the tests
+#' except BG), variance-gamma and Meixner models, the tests of
 #' a same model use the same `B` bootstrap samples: each sample is simulated
 #' and estimated once, and all the statistics are computed on it. The p-value
 #' of each test has the same distribution as with a bootstrap of its own; the
@@ -88,10 +88,11 @@ catalogue <- list(
 #' * `"KS"`, `"CvM"`, `"AD"`: Kolmogorov-Smirnov, Cramer-von Mises and
 #'   Anderson-Darling (`gofIG`);
 #' * `"VGE_ratio"`: Villasenor and Gonzalez-Estrada (2015), ratio of two
-#'   variance estimators, asymptotic p-value, suited to large samples
-#'   (`goft::ig_test`, method `"ratio"`);
+#'   variance estimators (statistic of `goft::ig_test`, method `"ratio"`;
+#'   the absolute value of the standardized ratio is used, the test being
+#'   two-sided);
 #' * `"VGE_gamma"`: Villasenor and Gonzalez-Estrada (2015), transformation of
-#'   the data to gamma variables of shape 1/2 and Anderson-Darling test
+#'   the data to gamma variables of shape 1/2 and Anderson-Darling statistic
 #'   (`goft::ig_test`, method `"transf"`);
 #' * `"BG"`: Baringhaus and Gaigall (2015) (`gofIG`), independence test (see
 #'   below). It is slow and is not applied by default: give `test = "BG"`.

@@ -30,9 +30,9 @@
 #'     parametric bootstrap, the quantile of order `1 - alpha` of the
 #'     bootstrap statistics (H0 is rejected when the statistic exceeds it;
 #'     for the test SW of the Wiener model, the quantile of order `alpha`,
-#'     H0 being rejected when the statistic is below it); `NA` when it is
-#'     not available (tests with an asymptotic p-value, and tests of
-#'     `gofIG`, which give only the p-value);
+#'     H0 being rejected when the statistic is below it); `NA` for the
+#'     tests of the inverse Gaussian model, whose bootstrap, as in `gofIG`,
+#'     gives only the p-value;
 #'   * `decision`: `"reject H0"`, `"do not reject H0"`, or `"not computed"`
 #'     when the test failed;
 #'   * `message`: reason of a failure or of a certain rejection, `""`
@@ -151,8 +151,6 @@ call_test <- function(dx, model, test, alpha, B) {
     "HGP Watson"           = gofgamma_test(dx, test, B, alpha),
     "HGP VGE"              = gof_gamma_vge(dx, B, alpha),
     "InvGaus BG"           = gof_ig_bg(dx, B),
-    "InvGaus VGE_ratio"    = goft::ig_test(dx, method = "ratio"),
-    "InvGaus VGE_gamma"    = goft::ig_test(dx, method = "transf")[[2]],
     stop("unknown test ", test, call. = FALSE)
   )
 }

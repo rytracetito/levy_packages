@@ -38,6 +38,15 @@ test_that("the gamma tests give exactly the results of gofgamma", {
   }
 })
 
+test_that("the tests VGE_ratio and VGE_gamma use the bootstrap of the inverse Gaussian model", {
+  set.seed(13)
+  x <- rig(40, 1, 3)
+  r <- test_adequation(x, "InvGaus", test = c("VGE_ratio", "VGE_gamma"), B = 50)
+  expect_equal(r$statistic[1], abs(unname(goft::ig_test(x, method = "ratio")$statistic)))
+  expect_equal(r$statistic[2], unname(goft::ig_test(x, method = "transf")[[2]]$statistic))
+  expect_equal(r$p.value * 50, round(r$p.value * 50))
+})
+
 test_that("the Wiener tests use a parametric bootstrap", {
   set.seed(12)
   x <- rnorm(40, 2, 3)

@@ -253,9 +253,13 @@ boot_pit <- function(dx, model, tests, B, alpha) {
 # Tests de gofIG (ABEV1, ABEV2, HK1, HK2, KS, CvM, AD) : statistiques de gofIG et même bootstrap
 # paramétrique que gofIG (échantillons IG(1, phi), phi = lambda / mu du maximum de vraisemblance ;
 # p-valeur : proportion des statistiques simulées strictement plus grandes)
+# Tests VGE_ratio et VGE_gamma : statistiques de goft::ig_test (|T| pour le test bilatéral du rapport de
+# variances), avec le même bootstrap. Toutes ces statistiques ne changent pas par changement d'échelle.
 ig_stats <- list(ABEV1 = function(x) gofIG::ABEV1(x, 10, "MLE"), ABEV2 = function(x) gofIG::ABEV2(x, 10, "MLE"),
                  HK1 = function(x) gofIG::HK1(x, 0), HK2 = function(x) gofIG::HK2(x),
-                 KS = function(x) gofIG::KS(x), CvM = function(x) gofIG::CM(x), AD = function(x) gofIG::AD(x))
+                 KS = function(x) gofIG::KS(x), CvM = function(x) gofIG::CM(x), AD = function(x) gofIG::AD(x),
+                 VGE_ratio = function(x) abs(unname(goft::ig_test(x, method = "ratio")$statistic)),
+                 VGE_gamma = function(x) unname(goft::ig_test(x, method = "transf")[[2]]$statistic))
 
 # Loi IG(m, lambda) par la méthode de Michael, Schucany et Haas (1976)
 rig <- function(n, m, lambda) {

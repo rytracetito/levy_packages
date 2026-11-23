@@ -37,9 +37,9 @@ statistic is very close to the critical value;
 parametric bootstrap, the quantile of order \code{1 - alpha} of the
 bootstrap statistics (H0 is rejected when the statistic exceeds it;
 for the test SW of the Wiener model, the quantile of order \code{alpha},
-H0 being rejected when the statistic is below it); \code{NA} when it is
-not available (tests with an asymptotic p-value, and tests of
-\code{gofIG}, which give only the p-value);
+H0 being rejected when the statistic is below it); \code{NA} for the
+tests of the inverse Gaussian model, whose bootstrap, as in \code{gofIG},
+gives only the p-value;
 \item \code{decision}: \code{"reject H0"}, \code{"do not reject H0"}, or \code{"not computed"}
 when the test failed;
 \item \code{message}: reason of a failure or of a certain rejection, \code{""}
