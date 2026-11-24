@@ -34,7 +34,9 @@ confidence_intervals <- function(model, x, t, fit, level) {
     d <- increments(x, t)
     H <- -meixner_hessian(d$dx, d$dt, fit[["a"]], fit[["b"]], fit[["d"]], fit[["m"]])
   } else {
-    H <- optimHess(par, function(p) -ll(p), control = list(parscale = pmax(abs(par), 1e-8)))
+    # Pas relatifs : parscale ne s'applique pas au pas extérieur d'optimHess, qui
+    # resterait 1e-3 en absolu et sortirait de l'espace des paramètres quand ils sont petits
+    H <- optimHess(par, function(p) -ll(p), control = list(ndeps = 1e-3 * pmax(abs(par), 1e-8)))
   }
   V <- tryCatch(chol2inv(chol(H)), error = function(e) matrix(NA, length(par), length(par)))
   se <- sqrt(ifelse(diag(V) > 0, diag(V), NA))

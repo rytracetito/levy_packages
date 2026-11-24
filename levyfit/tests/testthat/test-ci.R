@@ -59,3 +59,31 @@ test_that("positive parameters have intervals on the log scale, real ones symmet
   w <- wiener_mle(x, t, ci = TRUE)
   expect_equal(w$upper[1] - w$estimate[1], w$estimate[1] - w$lower[1], tolerance = 1e-8)
 })
+
+test_that("ci = TRUE works when the parameters are much smaller than 1e-3", {
+  # Ordre de grandeur des données GaAs laser : mu = 0.002, eta = 5e-5, pas de 250 h
+  set.seed(5)
+  t <- seq(0, 4000, by = 250)
+  m <- 2.04e-3 * diff(t)
+  la <- 5.46e-5 * diff(t)^2
+  liste <- lapply(1:15, function(i) {
+    nu <- rnorm(16)^2
+    x1 <- m + m^2 * nu / (2 * la) - m / (2 * la) * sqrt(4 * m * la * nu + m^2 * nu^2)
+    dx <- ifelse(runif(16) <= m / (m + x1), x1, m^2 / x1)
+    data.frame(t = t, X = c(0, cumsum(dx)))
+  })
+  f <- ig_mle(liste)
+  r <- expect_no_warning(ig_mle(liste, ci = TRUE))
+  z <- qnorm(0.975)
+  T <- 15 * 4000
+  expect_equal(log(r$upper[1] / r$estimate[1]), z * sqrt(f[["mu"]] / (f[["eta"]] * T)), tolerance = 1e-3)
+  expect_equal(log(r$upper[2] / r$estimate[2]), z * sqrt(2 / 240), tolerance = 1e-3)
+
+  # Wiener à petite échelle : mêmes intervalles relatifs que les données multipliées par 1000
+  set.seed(6)
+  x <- c(0, cumsum(0.5 * diff(seq(0, 100)) + 1.5 * rnorm(100)))
+  r_small <- wiener_mle(x / 1000, 0:100, ci = TRUE)
+  r_big <- wiener_mle(x, 0:100, ci = TRUE)
+  expect_equal(r_small$lower[1:2] * c(1000, 1e6), r_big$lower[1:2], tolerance = 1e-4)
+  expect_equal(r_small$upper[1:2] * c(1000, 1e6), r_big$upper[1:2], tolerance = 1e-4)
+})
