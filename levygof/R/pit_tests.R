@@ -180,14 +180,22 @@ gamma_stats <- list(HME1 = function(y, k) gofgamma::HME1(y, k, 1), BE = function
                     KS = function(y, k) gofgamma::KS(y, k), CvM = function(y, k) gofgamma::CM(y, k),
                     AD = function(y, k) gofgamma::AD(y, k), Watson = function(y, k) gofgamma::WA(y, k))
 
+# Forme et échelle : gofgamma::gamma_est, sauf quand log(mean(x)) - mean(log(x)) > 17 (forme sous 0,05 environ),
+# où gofgamma prend l'approximation grossière 1/Rn : on prend alors le maximum de vraisemblance de levyfit
+gamma_par <- function(x) {
+  if (log(mean(x)) - mean(log(x)) <= 17) return(gofgamma::gamma_est(x))
+  a <- levyfit::gamma_mle(levyfit::increments_data(x))[["a"]]
+  c(a, mean(x) / a)
+}
+
 gofgamma_test <- function(dx, test, B, alpha) {
   f <- gamma_stats[[test]]
-  par <- gofgamma::gamma_est(dx)
+  par <- gamma_par(dx)
   n <- length(dx)
   y <- rep(0, B)
   for (j in seq_len(B)) {
     BS <- stats::rgamma(n, par[1], 1)
-    k <- gofgamma::gamma_est(BS)[1]
+    k <- gamma_par(BS)[1]
     y[j] <- f(BS / (mean(BS) / k), k)
   }
   Tn <- sort(y)

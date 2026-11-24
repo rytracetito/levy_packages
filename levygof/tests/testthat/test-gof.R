@@ -38,6 +38,15 @@ test_that("the gamma tests give exactly the results of gofgamma", {
   }
 })
 
+test_that("with a very small shape, the gamma tests use the maximum likelihood estimate of levyfit", {
+  set.seed(12)
+  dx <- rgamma(150, 0.04, 1)
+  expect_gt(log(mean(dx)) - mean(log(dx)), 17)
+  a <- levyfit::gamma_mle(levyfit::increments_data(dx))[["a"]]
+  r <- test_adequation(dx, "HGP", test = "KS", B = 20)
+  expect_equal(r$statistic, gofgamma::KS(dx / (mean(dx) / a), a))
+})
+
 test_that("the tests VGE_ratio and VGE_gamma use the bootstrap of the inverse Gaussian model", {
   set.seed(13)
   x <- rig(40, 1, 3)

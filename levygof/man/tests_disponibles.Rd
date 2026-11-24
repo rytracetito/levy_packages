@@ -57,7 +57,13 @@ one of \code{gofgamma::crit.values}, and H0 is rejected when the statistic
 exceeds it. With the same random seed, the statistic, the critical value
 and the decision are those of \code{gofgamma}. The bootstrap statistics are
 also kept to give the p-value, the proportion of bootstrap statistics
-larger than or equal to the observed one.
+larger than or equal to the observed one. One exception: when
+\eqn{\ln(\bar{x}) - \overline{\ln x} > 17} (estimated shape below about
+0.05), \code{gofgamma::gamma_est} uses the rough approximation
+\eqn{1 / (\ln(\bar{x}) - \overline{\ln x})}, which overestimates the shape
+and makes the tests lose their power; the shape is then the maximum
+likelihood estimate of \code{\link[levyfit:gamma_mle]{levyfit::gamma_mle()}}, for the data and for each
+bootstrap sample.
 
 \strong{Wiener process (\code{"HWP"})}, increments
 \eqn{\mathcal{N}(\mu \Delta, \sigma^2 \Delta)}: tests of normality with estimated
